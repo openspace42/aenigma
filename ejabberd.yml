@@ -343,7 +343,7 @@ modules:
       subject: "Hello world"
       body: |-
         Hi there.
-        This is the openspace xmpp server at example.im.
+        This is the xmpp server at example.im.
         Happy to see you onboard.
 
     registration_watchers:
