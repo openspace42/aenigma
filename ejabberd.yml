@@ -5,6 +5,11 @@
 
 ### aenigma.im ejabberd configuration file
 
+### change all settings including "example.im" to fit your preferences.
+### do not change anything else unless you know what you're doing.
+### if you find some better working configs, please let us know!
+### thanks!
+
 loglevel: 4
 
 log_rotate_size: 0
@@ -12,12 +17,12 @@ log_rotate_date: ""
 log_rate_limit: 100
 
 watchdog_admins:
-   - "admin@example.org"
+   - "admin@example.im"
 
 ## net_ticktime: 60
 
 hosts:
-  - "example.org"
+  - "example.im"
 
 ## route_subdomains: s2s
 
@@ -187,7 +192,7 @@ acl:
   ##
   admin:
      user:
-         - "admin": "example.org"
+         - "admin": "example.im"
 
   ## blocked:
   ##   user:
@@ -338,11 +343,11 @@ modules:
       subject: "Hello world"
       body: |-
         Hi there.
-        This is the openspace xmpp server at example.org.
+        This is the openspace xmpp server at example.im.
         Happy to see you onboard.
 
     registration_watchers:
-       - "admin@example.org"
+       - "admin@example.im"
 
     ### ip_access: trusted_network
 
