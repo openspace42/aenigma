@@ -31,7 +31,10 @@ echo
 read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 echo
 
-wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
+echo $hostname #debug
+echo $domain #debug
+
+#wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
 dpkg -i ejabberd_17.08-0_amd64.deb
 
@@ -70,6 +73,7 @@ wget -O aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenig
 
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 
+# cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
 cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml
 
 echo "Finished setting custom ejabberd.yml config file"
@@ -78,7 +82,11 @@ sleep 1
 
 /opt/ejabberd-17.08/bin/ejabberdctl start
 
+sleep 4
+
 /opt/ejabberd-17.08/bin/ejabberdctl status
+
+sleep 1
 
 echo "Finished starting ejabberd"
 echo
