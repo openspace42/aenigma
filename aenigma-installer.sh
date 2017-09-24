@@ -37,7 +37,7 @@ dpkg -i ejabberd_17.08-0_amd64.deb
 
 echo "Finished installing ejabberd"
 echo
-sleep 4
+sleep 1
 
 ufw allow 5222
 ufw allow 5269
@@ -47,49 +47,56 @@ ufw allow 443
 
 echo "Finished setting UFW rules"
 echo
-sleep 4
+sleep 1
 
 wget -qO ee rt.cx/ee && sudo bash ee
 
 echo "Finished installing easyengine"
 echo
-sleep 4
+sleep 1
 
-ee site create $hostname --proxy=127.0.0.1:5280 --le
+ee site create $hostname --le
+
+ee site update $hostname --proxy=127.0.0.1:5280
+
+cat /etc/letsencrypt/live/$hostname/fullchain.pem > /opt/ejabberd-17.08/le.pem
+cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/le.pem
 
 echo "Finished creating easyengine site"
 echo
-sleep 4
+sleep 1
 
 wget -O aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd.yml
 
-sed -i 's/example.im/$domain/g' aenigma-ejabberd.yml
+sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 
 cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml
 
 echo "Finished setting custom ejabberd.yml config file"
 echo
-sleep 4
+sleep 1
 
-service ejabberd restart
+/opt/ejabberd-17.08/bin/ejabberdctl start
+
+/opt/ejabberd-17.08/bin/ejabberdctl status
 
 echo "Finished starting ejabberd"
 echo
-sleep 4
+sleep 1
 
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 
-ejabberdctl register admin localhost $ejbdadminpw
+/opt/ejabberd-17.08/bin/ejabberdctl register admin $domain $ejbdadminpw
 
 echo "Finished registering ejabberd admin user"
 echo
-sleep 4
+sleep 1
 
 echo "Now log in:"
 echo
 echo "https://$hostname"
 echo
-echo "admin@localhost"
+echo "admin@$domain"
 echo $ejbdadminpw
 echo
 
