@@ -5,7 +5,7 @@
 
 ### aenigma.im ejabberd configuration file
 
-### change all settings including "example.im" to fit your preferences.
+### change all settings including "aenigma.xyz" to fit your preferences.
 ### do not change anything else unless you know what you're doing.
 ### if you find some better working configs, please let us know!
 ### thanks!
@@ -18,12 +18,12 @@ log_rotate_count: 1
 log_rate_limit: 100
 
 watchdog_admins:
-  - "admin@example.im"
+  - "admin@aenigma.xyz"
 
 ## net_ticktime: 60
 
 hosts:
-  - "example.im"
+  - "aenigma.xyz"
 
 ## route_subdomains: s2s
 
@@ -116,17 +116,17 @@ listen:
   ##       options: []
 
 
-  ## -
-  ##   port: 5444
-  ##   ip: "::"
-  ##   module: ejabberd_http
-  ##   request_handlers:
-  ##     "": mod_http_upload
-  ##   tls: true
-  ##   certfile: 'CERTFILE'
-  ##   protocol_options: 'TLSOPTS'
-  ##   dhfile: 'DHFILE'
-  ##   ciphers: 'CIPHERS'
+  -
+   port: 5444
+   ip: "::"
+   module: ejabberd_http
+   request_handlers:
+     "": mod_http_upload
+   tls: true
+   certfile: 'CERTFILE'
+   protocol_options: 'TLSOPTS'
+   dhfile: 'DHFILE'
+   ciphers: 'CIPHERS'
 
 disable_sasl_mechanisms: "digest-md5"
 
@@ -212,7 +212,7 @@ acl:
   ##
   admin:
     user:
-      - "admin@example.im"
+      - "admin@aenigma.xyz"
 
   ## blocked:
   ##   user:
@@ -345,7 +345,7 @@ language: "en"
 
 ## captcha_cmd: "/opt/ejabberd-17.08/lib/ejabberd-17.08/priv/bin/captcha.sh"
 
-## captcha_host: "example.im:5280"
+## captcha_host: "aenigma.xyz:5280"
 
 ## captcha_limit: 5
 
@@ -369,9 +369,12 @@ modules:
     docroot: "/var/www"
     accesslog: "/opt/ejabberd-17.08/logs/access.log"
   mod_http_upload:
-    # docroot: "@HOME@/upload"
+    host: xu.@HOST@
+    docroot: "@HOME@/upload"
     put_url: "https://@HOST@:5444"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
+    access:
+      - allow
   mod_http_upload_quota:
     max_days: 30
   mod_last: {}
@@ -415,18 +418,18 @@ modules:
       body: |-
         Hi there.
         Happy to see you onboard.
-        This is the Aenigma XMPP server at example.im.
+        This is the Aenigma XMPP server at aenigma.xyz.
         https://aenigma.xyz
 
     registration_watchers:
-       - "admin@example.im"
+       - "admin@aenigma.xyz"
 
     ### ip_access: trusted_network
 
     access_from: allow
 
     access: register
-  mod_roster: {}
+  mod_roster:
     versioning: true
     store_current_id: true
   mod_shared_roster: {}
