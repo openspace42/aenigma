@@ -122,6 +122,13 @@ echo "admin@$domain"
 echo $ejbdadminpw
 echo
 
+echo "Make sure your DNS settings are as follows:"
+echo
+echo "_jabber._tcp.$domain         SRV    0 0 5269 $hostname."
+echo "_xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname."
+echo "_xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname."
+echo
+
 echo "All done!"
 echo
 
