@@ -74,9 +74,9 @@ listen:
     http_bind: true
     ## register: true
     captcha: true
-    tls: true
-    tls_compression: true
-    certfile: "/opt/ejabberd-17.08/conf/le.pem"
+    ## tls: true
+    ## tls_compression: true
+    ## certfile: "/opt/ejabberd-17.08/conf/le.pem"
   ## -
   ##   port: 8888
   ##   ip: "::"
