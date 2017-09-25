@@ -5,7 +5,7 @@
 
 ### aenigma.im ejabberd configuration file
 
-### change all settings including "os.vu" to fit your preferences.
+### change all settings including "example.im" to fit your preferences.
 ### do not change anything else unless you know what you're doing.
 ### if you find some better working configs, please let us know!
 ### thanks!
@@ -18,12 +18,12 @@ log_rotate_count: 1
 log_rate_limit: 100
 
 watchdog_admins:
-  - "admin@os.vu"
+  - "admin@example.im"
 
 ## net_ticktime: 60
 
 hosts:
-  - "os.vu"
+  - "example.im"
 
 ## route_subdomains: s2s
 
@@ -217,7 +217,7 @@ acl:
   ##
   admin:
      user:
-         - "admin@os.vu"
+         - "admin@example.im"
 
   ## blocked:
   ##   user:
@@ -350,7 +350,7 @@ language: "en"
 
 ## captcha_cmd: "/opt/ejabberd-17.08/lib/ejabberd-17.08/priv/bin/captcha.sh"
 
-## captcha_host: "os.vu:5280"
+## captcha_host: "example.im:5280"
 
 ## captcha_limit: 5
 
@@ -420,11 +420,11 @@ modules:
       body: |-
         Hi there.
         Happy to see you onboard.
-        This is the Aenigma XMPP server at os.vu.
+        This is the Aenigma XMPP server at example.im.
         https://aenigma.xyz
 
     registration_watchers:
-       - "admin@os.vu"
+       - "admin@example.im"
 
     ### ip_access: trusted_network
 
