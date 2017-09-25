@@ -30,14 +30,16 @@ hosts:
 
 define_macro:
   'CERTFILE': "/opt/ejabberd-17.08/conf/le.pem"
-  'CIPHERS': "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+  'CIPHERS': "ECDH:DH:!3DES:!aNULL:!eNULL:!MEDIUM@STRENGTH"
+##  'CIPHERS': "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+
   'TLSOPTS':
     - "no_sslv3"
     - "no_tlsv1"
-    - "no_tlsv1_1"
+##    - "no_tlsv1_1"
     - "cipher_server_preference"
-##   - "no_compression"
-  'DHFILE': "/opt/ejabberd-17.08/conf/dh.pem"
+    - "no_compression"
+   'DHFILE': "/opt/ejabberd-17.08/conf/dh.pem"
 
 listen:
   -
@@ -45,11 +47,10 @@ listen:
     ip: "::"
     module: ejabberd_c2s
     starttls: true
-    certfile: "/opt/ejabberd-17.08/conf/le.pem"
-    protocol_options:
-      - "no_sslv2, no_sslv3, no_tlsv1, no_tlsv1_1"
-    ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
-    dhfile: "/opt/ejabberd-17.08/conf/dh.pem"
+    certfile: 'CERTFILE'
+    protocol_options: 'TLSOPTS'
+    dhfile: 'DHFILE'
+    ciphers: 'CIPHERS'
     starttls_required: true
     zlib: true
     max_stanza_size: 65536
@@ -73,10 +74,7 @@ listen:
     web_admin: true
     http_bind: true
     ## register: true
-    captcha: true
-    ## tls: true
-    ## tls_compression: true
-    ## certfile: "/opt/ejabberd-17.08/conf/le.pem"
+    captcha: false
   ## -
   ##   port: 8888
   ##   ip: "::"
@@ -118,28 +116,25 @@ listen:
   ##       options: []
 
 
-  #### -
-  ####   port: 5444
-  ####   ip: "::"
-  ####   module: ejabberd_http
-  ####   request_handlers:
-  ####     "": mod_http_upload
-  ####   tls: true
-  ####   certfile: '/opt/ejabberd-17.08/conf/le.pem'
-  ####   protocol_options:
-  ####      - "no_sslv2, no_sslv3, no_tlsv1, no_tlsv1_1"
-  ####   ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
-  ####   dhfile: "/opt/ejabberd-17.08/conf/dh.pem"
+  ## -
+  ##   port: 5444
+  ##   ip: "::"
+  ##   module: ejabberd_http
+  ##   request_handlers:
+  ##     "": mod_http_upload
+  ##   tls: true
+  ##   certfile: 'CERTFILE'
+  ##   protocol_options: 'TLSOPTS'
+  ##   dhfile: 'DHFILE'
+  ##   ciphers: 'CIPHERS'
 
 disable_sasl_mechanisms: "digest-md5"
 
 s2s_use_starttls: required
-s2s_ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
-s2s_tls_compression: false
-s2s_certfile: "/opt/ejabberd-17.08/conf/le.pem"
-s2s_dhfile: "/opt/ejabberd-17.08/conf/dh.pem"
-s2s_protocol_options:
-  - "no_sslv2, no_sslv3, no_tlsv1,no_tlsv1_1"
+s2s_certfile: 'CERTFILE'
+s2s_protocol_options: 'TLSOPTS'
+s2s_ciphers: 'CIPHERS'
+s2s_dhfile: 'DHFILE'
 
 ## host_config:
 ##   "example.org":
@@ -216,8 +211,8 @@ acl:
   ## You can put here as many accounts as you want.
   ##
   admin:
-     user:
-         - "admin@example.im"
+    user:
+      - "admin@example.im"
 
   ## blocked:
   ##   user:
@@ -392,8 +387,8 @@ modules:
     default_room_options:
       mam: true
       allow_subscription: true
-  ## mod_muc_log: {}
   mod_muc_admin: {}
+  ## mod_muc_log: {}
   ## mod_multicast: {}
   mod_offline:
     access_max_user_messages: max_user_offline_messages
