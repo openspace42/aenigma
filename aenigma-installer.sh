@@ -67,7 +67,7 @@ touch /opt/ejabberd-17.08/conf/le.pem
 cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/le.pem
 cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/le.pem
 
-openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
+#openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
 
 echo "Finished creating easyengine site"
 echo
