@@ -39,7 +39,7 @@ define_macro:
 ##    - "no_tlsv1_1"
     - "cipher_server_preference"
     - "no_compression"
-   'DHFILE': "/opt/ejabberd-17.08/conf/dh.pem"
+  'DHFILE': "/opt/ejabberd-17.08/conf/dh.pem"
 
 listen:
   -
