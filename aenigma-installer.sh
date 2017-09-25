@@ -34,7 +34,7 @@ echo
 echo $hostname #debug
 echo $domain #debug
 
-#wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
+wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
 dpkg -i ejabberd_17.08-0_amd64.deb
 
@@ -62,14 +62,18 @@ ee site create $hostname --le
 
 ee site update $hostname --proxy=127.0.0.1:5280
 
-cat /etc/letsencrypt/live/$hostname/fullchain.pem > /opt/ejabberd-17.08/le.pem
-cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/le.pem
+touch /opt/ejabberd-17.08/conf/le.pem
+
+cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/le.pem
+cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/le.pem
+
+openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
 
 echo "Finished creating easyengine site"
 echo
 sleep 1
 
-wget -O aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd.yml
+wget -O aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-new.yml
 
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 
@@ -79,6 +83,8 @@ cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml
 echo "Finished setting custom ejabberd.yml config file"
 echo
 sleep 1
+
+exit
 
 /opt/ejabberd-17.08/bin/ejabberdctl start
 
