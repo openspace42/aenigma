@@ -62,7 +62,7 @@ ee site create $hostname --le
 
 wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma/master/nginx.conf
 
-sed -i "s/example.im/${domain}/g" nginx.conf
+sed -i "s/example.im/${hostname}/g" nginx.conf
 
 cp nginx.conf /etc/nginx/sites-available/$hostname
 
