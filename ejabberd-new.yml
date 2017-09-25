@@ -118,15 +118,15 @@ listen:
   ##       options: []
 
 
- -
-   port: 5444
-   ip: "::"
-   module: ejabberd_http
-   request_handlers:
-     "": mod_http_upload
-   tls: true
-   certfile: '/opt/ejabberd-17.08/conf/le.pem'
-   protocol_options:
+  #### -
+  ####   port: 5444
+  ####   ip: "::"
+  ####   module: ejabberd_http
+  ####   request_handlers:
+  ####     "": mod_http_upload
+  ####   tls: true
+  ####   certfile: '/opt/ejabberd-17.08/conf/le.pem'
+  ####   protocol_options:
       - "no_sslv2, no_sslv3, no_tlsv1, no_tlsv1_1"
    ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
    dhfile: "/opt/ejabberd-17.08/conf/dh.pem"
