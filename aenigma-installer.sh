@@ -94,8 +94,6 @@ echo "Finished setting custom ejabberd.yml config file"
 echo
 sleep 1
 
-exit
-
 /opt/ejabberd-17.08/bin/ejabberdctl start
 
 sleep 4
@@ -118,7 +116,7 @@ sleep 1
 
 echo "Now log in:"
 echo
-echo "https://$hostname"
+echo "https://$hostname/admin"
 echo
 echo "admin@$domain"
 echo $ejbdadminpw
