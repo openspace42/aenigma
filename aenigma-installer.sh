@@ -77,7 +77,7 @@ wget -O aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenig
 
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 
-# cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
+cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
 cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml
 
 echo "Finished setting custom ejabberd.yml config file"
