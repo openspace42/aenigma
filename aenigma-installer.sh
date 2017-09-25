@@ -34,7 +34,7 @@ echo
 echo $hostname #debug
 echo $domain #debug
 
-wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
+# wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
 dpkg -i ejabberd_17.08-0_amd64.deb
 
