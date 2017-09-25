@@ -60,7 +60,17 @@ sleep 1
 
 ee site create $hostname --le
 
-ee site update $hostname --proxy=127.0.0.1:5280
+wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma/master/nginx.conf
+
+sed -i "s/example.im/${domain}/g" nginx.conf
+
+cp nginx.conf /etc/nginx/sites-available/$hostname
+
+service nginx reload
+
+echo "Finished creating easyengine site"
+echo
+sleep 1
 
 touch /opt/ejabberd-17.08/conf/le.pem
 
@@ -69,7 +79,7 @@ cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/le
 
 #openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
 
-echo "Finished creating easyengine site"
+echo "Finished creating all-in-one TLS file for ejabberd"
 echo
 sleep 1
 
