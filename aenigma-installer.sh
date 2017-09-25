@@ -25,6 +25,7 @@ else
 fi
 
 hostname="$(cat /etc/hostname)"
+ip="$(curl ipinfo.io/ip)"
 
 read -p "Now set your domain [the part after the @ in your usernames - not your server hostname] " domain
 echo
@@ -34,7 +35,7 @@ echo
 echo $hostname #debug
 echo $domain #debug
 
-# wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
+wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
 dpkg -i ejabberd_17.08-0_amd64.deb
 
@@ -44,7 +45,7 @@ sleep 1
 
 ufw allow 5222
 ufw allow 5269
-ufw allow 5280
+ufw allow 5444
 ufw allow 80
 ufw allow 443
 
@@ -72,12 +73,20 @@ echo "Finished creating easyengine site"
 echo
 sleep 1
 
+wget -qO index.html https://raw.githubusercontent.com/openspace42/aenigma/master/index.html
+
+mv index.html /var/www/$hostname/htdocs/
+
+echo "Finished setting index.html in docroot"
+echo
+sleep 1
+
 touch /opt/ejabberd-17.08/conf/le.pem
 
 cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/le.pem
 cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/le.pem
 
-#openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
+openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
 
 echo "Finished creating all-in-one TLS file for ejabberd"
 echo
@@ -96,7 +105,7 @@ sleep 1
 
 /opt/ejabberd-17.08/bin/ejabberdctl start
 
-sleep 4
+sleep 8
 
 /opt/ejabberd-17.08/bin/ejabberdctl status
 
@@ -107,6 +116,8 @@ echo
 sleep 1
 
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
+
+echo /opt/ejabberd-17.08/bin/ejabberdctl register admin $domain $ejbdadminpw #debug
 
 /opt/ejabberd-17.08/bin/ejabberdctl register admin $domain $ejbdadminpw
 
@@ -123,6 +134,10 @@ echo $ejbdadminpw
 echo
 
 echo "Make sure your DNS settings are as follows:"
+echo
+echo "$hostname                    A      $ip"
+echo "xc.$domain                   A      $ip"
+echo "xu.$domain                   A      $ip"
 echo
 echo "_jabber._tcp.$domain         SRV    0 0 5269 $hostname."
 echo "_xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname."
