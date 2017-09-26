@@ -31,12 +31,11 @@ hosts:
 define_macro:
   'CERTFILE': "/opt/ejabberd-17.08/conf/le.pem"
   'CIPHERS': "ECDH:DH:!3DES:!aNULL:!eNULL:!MEDIUM@STRENGTH"
-##  'CIPHERS': "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
 
   'TLSOPTS':
     - "no_sslv3"
     - "no_tlsv1"
-##    - "no_tlsv1_1"
+    - "no_tlsv1_1"
     - "cipher_server_preference"
     - "no_compression"
   'DHFILE': "/opt/ejabberd-17.08/conf/dh.pem"
@@ -192,12 +191,6 @@ auth_password_format: scram
 ##       - anonymous
 
 ## pgsql_users_number_estimate: true
-
-
-
-
-
-
 
 shaper:
   normal: 1000
@@ -418,7 +411,7 @@ modules:
       body: |-
         Hi there.
         Happy to see you onboard.
-        This is the Aenigma XMPP server at aenigma.xyz.
+        This is the Aenigma XMPP server at example.im.
         https://aenigma.xyz
 
     registration_watchers:
