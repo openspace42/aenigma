@@ -59,6 +59,8 @@ echo "This will place your aenigma server at subdomain.domain.tld and give you a
 echo
 echo "PROs: domain can be logically connected to other stuff and different servers, no separate TLS certificate needed. CONs: longer and more complex addresses, not logically 'clean'."
 echo
+echo "----------------"
+echo
 
 hostname="$(cat /etc/hostname)"
 ip="$(curl ipinfo.io/ip)"
