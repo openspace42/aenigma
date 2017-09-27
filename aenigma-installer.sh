@@ -97,45 +97,137 @@ echo
 echo "----------------"
 echo
 
-#choice='Please enter your choice: '
-#options=("configuration 1" "configuration 2" "configuration 3" "exit")
-#select opt in "${options[@]}"
-#echo
-#do
-#    echo
-#    case $opt in
-#        "configuration 1")
-#            echo "you chose configuration 1"
-#	    echo
-#            ;;
-#        "configuration 2")
-#            echo "you chose configuration 2"
-#	    echo
-#            ;;
-#        "configuration 3")
-#            echo "you chose configuration 3"
-#	    echo
-#            ;;
-#        "exit")
-#            echo "Exiting..."
-#	    echo
-#	    exit
-#            ;;
-#        *) echo "Invalid option. Retry..."
-#	   echo
-#	   ;;
-#    esac
-#done
-
-exit
+choice='Please enter your choice: '
+options=("configuration 1" "configuration 2" "configuration 3" "exit")
+select opt in "${options[@]}"
+echo
+do
+    echo
+    case $opt in
+	"configuration 1")
+	    echo "you chose configuration 1"
+	    echo
+	    set configoption=1
+	    ;;
+	"configuration 2")
+	    echo "you chose configuration 2"
+	    echo
+	    set configoption=2
+	    ;;
+	"configuration 3")
+	    echo "you chose configuration 3"
+	    echo
+	    set configoption=3
+	    ;;
+	"exit")
+	    echo "Exiting..."
+	    echo
+	    set configoption=4
+	    exit
+	    ;;
+	*)  echo "Invalid option. Retry..."
+	    echo
+	    ;;
+    esac
+done
 
 hostname="$(cat /etc/hostname)"
 ip="$(curl ipinfo.io/ip)"
 
-read -p "Now set your domain [the part after the @ in your usernames - not your server hostname] " domain
-echo
-read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-echo
+if [ $configoption = "1" ]
+then
+	echo "Ok, you've chosen option 1."
+	echo
+	read -p "Now set your top level domain, the part after the @ in your XMPP account addresses: " domain
+	echo
+	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+	echo
+	echo Your hostname must be a third level domain [subdomain] of either $domain or another domain.
+	echo
+	echo "Your current hostname is | $hostname |
+	echo
+	read -p "Do you want to change it? (Y/n): " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		read -p "Ok, now set your new hostname: " newhostname
+		echo
+		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		echo
+		echo $hostname > /etc/hostname
+		echo "New hostname set to | $newhostname |"
+		echo
+		hostname="$(cat /etc/hostname)"
+	else
+		echo "Leaving hostname set to | $hostname |"
+		echo
+	fi
+fi
+
+if [ $configoption = "2" ]
+then
+	echo "Ok, you've chosen option 2."
+	echo
+	read -p "Now set your top level domain, the part after the @ in your XMPP account addresses: " domain
+	echo
+	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+	echo
+	echo Your hostname must be identical to your domain: $domain.
+	echo
+	echo "Your current hostname is | $hostname |
+	echo
+	if [ $hostname = $domain ]
+	then
+		echo "Your hostname matches your domain, all good!"
+		echo
+	else
+		echo "Your hostname doesn't match the domain you've specified."
+		echo
+		echo "Having chosen option 2, they must be identical.
+		echo
+		read -p "Do you want to set your hostname to your domain? (Y/n): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "Ok, setting hostname to match domain."
+			echo
+			echo $domain > /etc/hostname
+			echo "New hostname set to | $domain |"
+			echo
+			hostname="$(cat /etc/hostname)"
+		else
+			echo "Not changing hostname. Exiting..."
+			echo
+			exit
+		fi
+	fi
+fi
+
+if [ $configoption = "3" ]
+then
+	echo "Ok, you've chosen option 3."
+	echo
+	echo "The part after the @ in your XMPP account addresses will match your server hostname, which will be a third level domain [subdomain] of your main domain."
+	echo
+	echo "Your current hostname is | $hostname |
+	echo
+	read -p "Do you want to change it? (Y/n): " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		read -p "Ok, now set your new hostname, which will also become the part after the @ in your XMPP account addresses: " newhostname
+		echo
+		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		echo
+		echo $hostname > /etc/hostname
+		echo "New hostname set to | $newhostname |"
+		echo
+		hostname="$(cat /etc/hostname)"
+	else
+		echo "Leaving hostname set to | $hostname |"
+		echo
+	fi
+fi
 
 echo $hostname #debug
 echo $domain #debug
