@@ -100,7 +100,6 @@ echo
 choice='Please enter your choice: '
 options=("configuration 1" "configuration 2" "configuration 3" "exit")
 select opt in "${options[@]}"
-echo
 do
     echo
     case $opt in
@@ -108,21 +107,23 @@ do
 	    echo "you chose configuration 1"
 	    echo
 	    set configoption=1
+	    break
 	    ;;
 	"configuration 2")
 	    echo "you chose configuration 2"
 	    echo
 	    set configoption=2
+	    break
 	    ;;
 	"configuration 3")
 	    echo "you chose configuration 3"
 	    echo
 	    set configoption=3
+	    break
 	    ;;
 	"exit")
 	    echo "Exiting..."
 	    echo
-	    set configoption=4
 	    exit
 	    ;;
 	*)  echo "Invalid option. Retry..."
