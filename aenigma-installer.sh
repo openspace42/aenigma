@@ -90,8 +90,42 @@ echo "                          with no separate TLS certificate needed."
 echo "CONs:                  a] longer and more complex addresses"
 echo "                       b] not logically 'clean'."
 echo
+read -p "[press enter to continue reading...]"
+echo
+echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
+echo
 echo "----------------"
 echo
+
+choice='Please enter your choice: '
+options=("configuration 1" "configuration 2" "configuration 3" "exit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "configuration 1")
+            echo "you chose configuration 1"
+	    echo
+            ;;
+        "configuration 2")
+            echo "you chose configuration 2"
+	    echo
+            ;;
+        "configuration 3")
+            echo "you chose configuration 3"
+	    echo
+            ;;
+        "exit")
+            echo "Exiting..."
+	    echo
+	    break
+            ;;
+        *) echo "Invalid option. Exiting..."
+	   echo
+	   ;;
+    esac
+done
+
+exit
 
 hostname="$(cat /etc/hostname)"
 ip="$(curl ipinfo.io/ip)"
