@@ -35,31 +35,39 @@ echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located a
 echo
 read -p "[press enter to continue reading...]"
 echo
-echo "Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
+echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
 echo
 echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
 echo
-echo "Main domain: amsterdamhacklab.xyz. Website: amsterdamhacklab.xyz hosted by another server. Your XMPP address: mark@amsterdamhacklab.xyz. XMPP server: xmpp.amsterdamhacklab.xyz"
+echo "Main domain: amsterdamhacklab.xyz."
+echo "Website: amsterdamhacklab.xyz hosted by another server."
+echo "Your XMPP address: mark@amsterdamhacklab.xyz."
+echo "XMPP server: xmpp.amsterdamhacklab.xyz"
 echo
-echo "PROs: clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff], more logical setup. CONs: requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz] to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
+echo "PROs: clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff], more logical setup."
+echo "CONs: requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz] to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
 echo
 read -p "[press enter to continue reading...]"
 echo
-echo "If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
+echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
 echo
 echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
 echo
-echo "Your server hostname will be aenigmapod42.im and your addresses will be like mark@aenigmapod42.im."
+echo "Your server hostname will be aenigmapod42.im"
+echo "Your addresses will be like mark@aenigmapod42.im."
 echo
-echo "PROs: clean addresses, no separate TLS certificate needed. CONs: your domain must be logically dedicated to your aenigma server, and not to a wider project."
+echo "PROs: clean addresses, no separate TLS certificate needed."
+echo "CONs: your domain must be logically dedicated to your aenigma server, and not to a wider project."
 echo
 read -p "[press enter to continue reading...]"
 echo
-echo "In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
+echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
 echo
-echo "This will place your aenigma server at subdomain.domain.tld and give you addresses like mark@subdomain.domain.tld."
+echo "This will place your aenigma server at subdomain.domain.tld"
+echo "Your addresses will be like mark@subdomain.domain.tld."
 echo
-echo "PROs: domain can be logically connected to other stuff and different servers, no separate TLS certificate needed. CONs: longer and more complex addresses, not logically 'clean'."
+echo "PROs: domain can be logically connected to other stuff and different servers, no separate TLS certificate needed."
+echo "CONs: longer and more complex addresses, not logically 'clean'."
 echo
 echo "----------------"
 echo
