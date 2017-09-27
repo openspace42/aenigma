@@ -100,6 +100,7 @@ echo
 choice='Please enter your choice: '
 options=("configuration 1" "configuration 2" "configuration 3" "exit")
 select opt in "${options[@]}"
+echo
 do
     case $opt in
         "configuration 1")
@@ -123,6 +124,7 @@ do
 	   echo
 	   ;;
     esac
+    echo
 done
 
 exit
