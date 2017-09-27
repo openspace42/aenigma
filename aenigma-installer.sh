@@ -44,8 +44,10 @@ echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hos
 echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
 echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
 echo
-echo "PROs:                 clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff], more logical setup."
-echo "CONs:                 requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz] to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
+echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
+echo "                      b] more logical setup."
+echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
+echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
 echo
 read -p "[press enter to continue reading...]"
 echo
@@ -56,8 +58,10 @@ echo
 echo "Your server hostname:  aenigmapod42.im"
 echo "Your addresses:        mark@aenigmapod42.im."
 echo
-echo "PROs:                  clean addresses, no separate TLS certificate needed."
-echo "CONs:                  your domain must be logically dedicated to your aenigma server, and not to a wider project."
+echo "PROs:                  a] clean addresses"
+echo "                       b] no separate TLS certificate needed."
+echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
+echo "                          and not to a wider project."
 echo
 read -p "[press enter to continue reading...]"
 echo
@@ -66,8 +70,10 @@ echo
 echo "Your server hostname:  subdomain.domain.tld"
 echo "Your addresses:        mark@subdomain.domain.tld."
 echo
-echo "PROs: domain can be logically connected to other stuff and different servers, no separate TLS certificate needed."
-echo "CONs: longer and more complex addresses, not logically 'clean'."
+echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
+echo "                          with no separate TLS certificate needed."
+echo "CONs:                  a] longer and more complex addresses"
+echo "                       b] not logically 'clean'."
 echo
 echo "----------------"
 echo
