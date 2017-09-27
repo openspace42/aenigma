@@ -97,35 +97,35 @@ echo
 echo "----------------"
 echo
 
-choice='Please enter your choice: '
-options=("configuration 1" "configuration 2" "configuration 3" "exit")
-select opt in "${options[@]}"
-echo
-do
-    echo
-    case $opt in
-        "configuration 1")
-            echo "you chose configuration 1"
-	    echo
-            ;;
-        "configuration 2")
-            echo "you chose configuration 2"
-	    echo
-            ;;
-        "configuration 3")
-            echo "you chose configuration 3"
-	    echo
-            ;;
-        "exit")
-            echo "Exiting..."
-	    echo
-	    exit
-            ;;
-        *) echo "Invalid option. Retry..."
-	   echo
-	   ;;
-    esac
-done
+#choice='Please enter your choice: '
+#options=("configuration 1" "configuration 2" "configuration 3" "exit")
+#select opt in "${options[@]}"
+#echo
+#do
+#    echo
+#    case $opt in
+#        "configuration 1")
+#            echo "you chose configuration 1"
+#	    echo
+#            ;;
+#        "configuration 2")
+#            echo "you chose configuration 2"
+#	    echo
+#            ;;
+#        "configuration 3")
+#            echo "you chose configuration 3"
+#	    echo
+#            ;;
+#        "exit")
+#            echo "Exiting..."
+#	    echo
+#	    exit
+#            ;;
+#        *) echo "Invalid option. Retry..."
+#	   echo
+#	   ;;
+#    esac
+#done
 
 exit
 
