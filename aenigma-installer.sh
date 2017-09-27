@@ -51,6 +51,9 @@ echo
 echo
 echo "In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
 echo
+echo "This will place your aenigma server at subdomain.domain.tld and give you addresses like mark@subdomain.domain.tld."
+echo
+echo "PROs: domain can be logically connected to other stuff and different servers, no separate TLS certificate needed. CONs: longer and more complex addresses, not logically 'clean'."
 echo
 
 hostname="$(cat /etc/hostname)"
