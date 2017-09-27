@@ -25,6 +25,34 @@ else
 	exit
 fi
 
+echo "First of all, a little introduction on how XMPP actually works"
+echo
+echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
+echo
+echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain is handled by xmpp.amsterdamhacklab.xyz."
+echo
+echo "Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
+echo
+echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
+echo
+echo "Main domain: amsterdamhacklab.xyz. Website: amsterdamhacklab.xyz hosted by another server. Your XMPP address: mark@amsterdamhacklab.xyz. XMPP server: xmpp.amsterdamhacklab.xyz"
+echo
+echo "PROs: clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff], more logical setup. CONs: requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz] to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
+echo
+echo
+echo "If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
+echo
+echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
+echo
+echo "Your server hostname will be aenigmapod42.im and your addresses will be like mark@aenigmapod42.im."
+echo
+echo "PROs: clean addresses, no separate TLS certificate needed. CONs: your domain must be logically dedicated to your aenigma server, and not to a wider project."
+echo
+echo
+echo "In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
+echo
+echo
+
 hostname="$(cat /etc/hostname)"
 ip="$(curl ipinfo.io/ip)"
 
