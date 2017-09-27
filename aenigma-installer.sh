@@ -138,7 +138,7 @@ if [ $configoption = "1" ]
 then
 	echo "Ok, you've chosen option 1."
 	echo
-	read -p "Now set your top level domain, the part after the @ in your XMPP account addresses: " domain
+	read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
 	echo
 	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 	echo
@@ -185,7 +185,7 @@ then
 		echo
 		echo "Having chosen option 2, they must be identical.
 		echo
-		read -p "Do you want to set your hostname to your domain? (Y/n): " -n 1 -r
+		read -p "Do you want to set your hostname to match your domain? (Y/n): " -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -211,11 +211,17 @@ then
 	echo
 	echo "Your current hostname is | $hostname |
 	echo
-	read -p "Do you want to change it? (Y/n): " -n 1 -r
+	echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
+	echo
+	read -p "That said, do you want to change it? (Y/n): " -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		read -p "Ok, now set your new hostname, which will also become the part after the @ in your XMPP account addresses: " newhostname
+		echo "Ok, now we'll be setting your new hostname."
+		echo
+		echo "Make sure it is a subdomain [third level domain] of your main domain, and keep in mind it will also become the part after the @ in your XMPP account addresses."
+		echo
+		read -p "Now specify your new new hostname: " newhostname
 		echo
 		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
@@ -229,8 +235,34 @@ then
 	fi
 fi
 
-echo $hostname #debug
-echo $domain #debug
+echo "As a recap, your XMPP domain [the part after the @ in your XMPP account addresses] will be:"
+echo
+echo "| $domain |"
+echo
+echo "And therefore an XMPP account address will look as follows:"
+echo
+echo "| mark@$domain|"
+echo
+echo "And your hostname, the location on the internet of this server, will be:"
+echo
+echo "| $hostname |"
+echo
+echo "And therefore your aenigma admin panel will be located at:"
+echo
+echo "| https://$hostname |"
+echo
+
+read -p "Does everything look allright? (Y/n): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Nn]$ ]]
+then
+	echo "Ok, continuing."
+	echo
+else
+	echo "Ok, no worries. You can re-run this script right now and make the correct choices. Exiting..."
+	echo
+	exit
+fi
 
 wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
