@@ -20,7 +20,7 @@ else
 	echo
 	echo "Run it now [or re-run it and make sure you reboot at the end] by executing the following command:"
 	echo
-	echo "wget -qO dfbs https://gh.nk.ai/dfbs && sudo bash dfbs"
+	echo "        wget -qO dfbs https://gh.nk.ai/dfbs && sudo bash dfbs"
 	echo
 	exit
 fi
