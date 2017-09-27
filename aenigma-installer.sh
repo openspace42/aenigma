@@ -2,7 +2,7 @@
 
 echo
 
-echo "aenigma.xyz ejabberd installer  by nikksno [https://github.com/openspace42/aenigma]"
+echo "aenigma.xyz ejabberd installer by nikksno [https://github.com/openspace42/aenigma]"
 echo
 
 echo "Run this once logged into your newly creater server via ssh as the root user"
@@ -13,11 +13,12 @@ echo "Confirmed. Now continuing..."
 echo
 
 if [ -f /root/.dfbs-run-ok ]; then
-        echo "Debian First Boot Script was previously run successfully. Continuing..."
+        echo "Debian First Boot Setup was previously run successfully. Continuing..."
         echo
 else
-	echo "Debian First Boot Script was NOT previously run successfully."
-	echo "Do this now by running:"
+	echo "Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end."
+	echo
+	echo "Run it now [or re-run it and make sure you reboot at the end] by executing the following command:"
 	echo
 	echo "wget -qO dfbs https://gh.nk.ai/dfbs && sudo bash dfbs"
 	echo
