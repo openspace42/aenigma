@@ -12,6 +12,21 @@ echo
 echo "Confirmed. Now continuing..."
 echo
 
+echo "! ! ! ! ! ! ! !"
+echo
+echo "WARNING: This script is NOT meant to be re-run. If you have previously run it, ONLY run it again if you whish to either:"
+echo
+echo "1] Fix an incomplete deployment that happened on the first run"
+echo
+echo "2] Start fresh with a brand new server"
+echo
+echo "Running this script again WILL completely obliterate any existing conigurations and data."
+echo
+read -p "Have you read and understood the above, and do you whish to continue now? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+echo
+echo "Confirmed. Now continuing..."
+echo
+
 if [ -f /root/.dfbs-run-ok ]; then
         echo "Debian First Boot Setup was previously run successfully. Continuing..."
         echo
