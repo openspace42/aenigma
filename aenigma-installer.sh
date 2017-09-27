@@ -119,9 +119,9 @@ do
         "exit")
             echo "Exiting..."
 	    echo
-	    break
+	    exit
             ;;
-        *) echo "Invalid option. Exiting..."
+        *) echo "Invalid option. Retry..."
 	   echo
 	   ;;
     esac
