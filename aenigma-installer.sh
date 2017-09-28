@@ -133,7 +133,11 @@ do
 done
 
 hostname="$(cat /etc/hostname)"
-ip="$(curl ipinfo.io/ip)"
+ip="$(curl -s ipinfo.io/ip)"
+
+echo #configoption
+
+exit
 
 if [ $configoption = "1" ]
 then
