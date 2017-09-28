@@ -283,10 +283,10 @@ dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
-xcdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-xcdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
-xudignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-xudigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+xcdignxcheck="$(getent hosts xc.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+xcdigresult="$(getent hosts xc.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+xudignxcheck="$(getent hosts xu.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+xudigresult="$(getent hosts xu.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your DNS settings are correct."
 echo
@@ -299,6 +299,7 @@ then
 	echo "Please ensure you set your DNS record as follows:"
 	echo
 	echo "| $hostname                    A      $ip |"
+	echo
 else
 	if [ $digresult = $thisip ]
 	then
@@ -343,6 +344,7 @@ then
 	echo "Please ensure you set your DNS record as follows:"
 	echo
 	echo "| www.$hostname                A      $ip |"
+	echo
 else
 	if [ $wwwdigresult = $thisip ]
 	then
@@ -387,6 +389,7 @@ then
 	echo "Please ensure you set your DNS record as follows:"
 	echo
 	echo "| xc.$hostname                 A      $ip |"
+	echo
 else
 	if [ $xcdigresult = $thisip ]
 	then
@@ -431,6 +434,7 @@ then
 	echo "Please ensure you set your DNS record as follows:"
 	echo
 	echo "| xu.$hostname                 A      $ip |"
+	echo
 else
 	if [ $xudigresult = $thisip ]
 	then
@@ -583,3 +587,6 @@ echo "All done!"
 echo
 
 exit
+
+
+
