@@ -283,6 +283,10 @@ dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+xcdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+xcdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+xudignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+xudigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your DNS settings are correct."
 echo
@@ -349,10 +353,98 @@ else
 	else
 		echo "The www.$hostname record does NOT appear to correctly resolve to this server on public DNS."
 		echo
-		echo "This is the result of a dig query for this machine's hostname:"
+		echo "This is the result of a dig query for this machine's hostname's www. subdomain:"
 		echo
 		sleep 3
 		dig +noall +answer www.$hostname
+		echo
+		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+		echo
+		read -p "Continue setup? (Y/n): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "Ok, continuing..."
+			echo
+		else
+			echo "Ok, exiting..."
+			echo
+			exit
+		fi
+	fi
+fi
+
+sleep 1
+
+echo "3] Now checking this machine's hostname's xc. subdomain in IPv4 on public DNS..."
+echo
+echo "The xc.$hostname subdomain record is required for XMPP messaging groups [aka conferences / MUCs in XMPP lingo]"
+echo
+if [ $xcdignxcheck = "0" ]
+then
+	echo "The xc.$hostname record does NOT appear to be at all set on public DNS."
+	echo
+	echo "Please ensure you set your DNS record as follows:"
+	echo
+	echo "| xc.$hostname                 A      $ip |"
+else
+	if [ $xcdigresult = $thisip ]
+	then
+		echo "The xc.$hostname record appears to resolve correctly to this server on public DNS."
+		echo
+		echo "| xc.$hostname                 A      $ip |"
+		echo
+	else
+		echo "The xc.$hostname record does NOT appear to correctly resolve to this server on public DNS."
+		echo
+		echo "This is the result of a dig query for this machine's hostname's xc. subdomain:"
+		echo
+		sleep 3
+		dig +noall +answer xc.$hostname
+		echo
+		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+		echo
+		read -p "Continue setup? (Y/n): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "Ok, continuing..."
+			echo
+		else
+			echo "Ok, exiting..."
+			echo
+			exit
+		fi
+	fi
+fi
+
+sleep 1
+
+echo "4] Now checking this machine's hostname's xu. subdomain in IPv4 on public DNS..."
+echo
+echo "The xu.$hostname subdomain record is required for XMPP HTTP uploads."
+echo
+if [ $xudignxcheck = "0" ]
+then
+	echo "The xu.$hostname record does NOT appear to be at all set on public DNS."
+	echo
+	echo "Please ensure you set your DNS record as follows:"
+	echo
+	echo "| xu.$hostname                 A      $ip |"
+else
+	if [ $xudigresult = $thisip ]
+	then
+		echo "The xu.$hostname record appears to resolve correctly to this server on public DNS."
+		echo
+		echo "| xu.$hostname                 A      $ip |"
+		echo
+	else
+		echo "The xu.$hostname record does NOT appear to correctly resolve to this server on public DNS."
+		echo
+		echo "This is the result of a dig query for this machine's hostname's xu. subdomain:"
+		echo
+		sleep 3
+		dig +noall +answer xu.$hostname
 		echo
 		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 		echo
@@ -387,8 +479,7 @@ then
 	echo
 	read -p "[press enter to continue when finished setting your DNS SRV records...]"
 	echo
-
-
+fi
 
 wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
