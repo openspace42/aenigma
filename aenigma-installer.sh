@@ -281,10 +281,12 @@ fi
 thisip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your DNS settings are correct."
 echo
-echo "Now checking this machine's hostname in IPv4 on public DNS..."
+echo "1] Now checking this machine's hostname in IPv4 on public DNS..."
 echo
 if [ $dignxcheck = "0" ]
 then
@@ -324,17 +326,67 @@ else
 	fi
 fi
 
-echo "Make sure your DNS settings are as follows:"
-echo
-echo "$hostname                    A      $ip"
-echo "xc.$domain                   A      $ip"
-echo "xu.$domain                   A      $ip"
-echo
-echo "_jabber._tcp.$domain         SRV    0 0 5269 $hostname."
-echo "_xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname."
-echo "_xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname."
-echo
+sleep 1
 
+echo "2] Now checking this machine's hostname's www. subdomain in IPv4 on public DNS..."
+echo
+echo "The www.$hostname subdomain record is required for the TLS certificate we'll be generating later."
+echo
+if [ $wwwdignxcheck = "0" ]
+then
+	echo "The www.$hostname record does NOT appear to be at all set on public DNS."
+	echo
+	echo "Please ensure you set your DNS record as follows:"
+	echo
+	echo "| www.$hostname                A      $ip |"
+else
+	if [ $wwwdigresult = $thisip ]
+	then
+		echo "The www.$hostname record appears to resolve correctly to this server on public DNS."
+		echo
+		echo "| www.$hostname                A      $ip |"
+		echo
+	else
+		echo "The www.$hostname record does NOT appear to correctly resolve to this server on public DNS."
+		echo
+		echo "This is the result of a dig query for this machine's hostname:"
+		echo
+		sleep 3
+		dig +noall +answer www.$hostname
+		echo
+		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+		echo
+		read -p "Continue setup? (Y/n): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "Ok, continuing..."
+			echo
+		else
+			echo "Ok, exiting..."
+			echo
+			exit
+		fi
+	fi
+fi
+
+sleep 1
+
+if [ $configoption = 1 ]
+then
+
+	echo "Since you've chosen option 1, your domain is different from your hostname."
+	echo
+	echo "Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server."
+	echo
+	echo "Make sure your DNS settings are as follows:"
+	echo
+	echo "| _jabber._tcp.$domain         SRV    0 0 5269 $hostname. |"
+	echo "| _xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname. |"
+	echo "| _xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname. |"
+	echo
+	read -p "[press enter to continue when finished setting your DNS SRV records...]"
+	echo
 
 
 
