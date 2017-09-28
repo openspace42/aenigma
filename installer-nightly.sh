@@ -547,6 +547,11 @@ then
 				echo
 			fi
 		fi
+		read -p "Now, however you've installed or copied to this server the TLS cert for $domain, specify its location here: " domtlscertloc
+		echo
+		read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		echo
+		
 	else
 		echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
 		echo
@@ -554,37 +559,41 @@ then
 		echo
 		echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
 		echo
-		echo "or by doing some other manual scripting or manual copying every time. For now, no need to worry about that."
+		echo "[or an adaptation of it] or by doing some other manual scripting or manual copying every time. For now, no need to worry about that."
 		echo
-		echo "Let's point $domain to this server for the time being."
+		echo "Let's point $domain and www.$domain to this server for the time being."
+		echo
+		echo "The www.$domain subdomain record is required for the TLS certificate we'll be generating shortly on this server."
 		echo
 
-		dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-		digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 		additionalTLScertmode=here
+		domdignxcheck="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+		domdigresult="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s')"
+		domwwwdignxcheck="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+		domwwwdigresult="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s')"
 
-		if [ $dignxcheck = "0" ]
+		if [ $domdignxcheck = "0" ]
 		then
-			echo "The hostname does NOT appear to be at all set on public DNS."
+			echo "The domain does NOT appear to be at all set on public DNS."
 			echo
 			echo "Please ensure you set your DNS record as follows:"
 			echo
-			echo "| $hostname                    A      $ip |"
+			echo "| $domain                      A      $ip |"
 			echo
 		else
-			if [ $digresult = $thisip ]
+			if [ $domdigresult = $thisip ]
 			then
-				echo "The hostname appears to resolve correctly to this server on public DNS."
+				echo "The domain appears to already resolve correctly to this server on public DNS."
 				echo
-				echo "| $hostname                    A      $ip |"
+				echo "| $domain                      A      $ip |"
 				echo
 			else
-				echo "The hostname does NOT appear to correctly resolve to this server on public DNS."
+				echo "The domain does NOT yet appear to correctly resolve to this server on public DNS."
 				echo
-				echo "This is the result of a dig query for this machine's hostname:"
+				echo "This is the result of a dig query for $domain:"
 				echo
 				sleep 3
-				dig +noall +answer $hostname
+				dig +noall +answer $domain
 				echo
 				echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 				echo
@@ -601,8 +610,47 @@ then
 				fi
 			fi
 		fi
-
-
+		
+		if [ $domwwwdignxcheck = "0" ]
+		then
+			echo "The domain's www. subdomain does NOT appear to be at all set on public DNS."
+			echo
+			echo "Please ensure you set your DNS record as follows:"
+			echo
+			echo "| www.$domain                  A      $ip |"
+			echo
+		else
+			if [ $domwwwdigresult = $thisip ]
+			then
+				echo "The domain's www. subdomain appears to already resolve correctly to this server on public DNS."
+				echo
+				echo "| www.$domain                  A      $ip |"
+				echo
+			else
+				echo "The domain's www. subdomain does NOT yet appear to correctly resolve to this server on public DNS."
+				echo
+				echo "This is the result of a dig query for www.$domain:"
+				echo
+				sleep 3
+				dig +noall +answer www.$domain
+				echo
+				echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+				echo
+				read -p "Continue setup? (Y/n): " -n 1 -r
+				echo
+				if [[ ! $REPLY =~ ^[Nn]$ ]]
+				then
+					echo "Ok, continuing..."
+					echo
+				else
+					echo "Ok, exiting..."
+					echo
+					exit
+				fi
+			fi
+		fi
+	fi
+fi
 
 wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
 
@@ -628,7 +676,18 @@ echo "Finished installing easyengine"
 echo
 sleep 1
 
-ee site create $hostname --le
+ee site create $hostname
+ee site update $hostname  --le
+
+if [ $configoption = 1]
+then
+	ee site create $domain
+	ee site update $domain --le
+	touch /opt/ejabberd-17.08/conf/domain.pem
+	cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/domain.pem
+	cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/domain.pem
+	domtlscertloc=/opt/ejabberd-17.08/conf/domain.pem
+fi
 
 wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma/master/nginx.conf
 
@@ -650,10 +709,10 @@ echo "Finished setting index.html in docroot"
 echo
 sleep 1
 
-touch /opt/ejabberd-17.08/conf/le.pem
+touch /opt/ejabberd-17.08/conf/hostname.pem
 
-cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/le.pem
-cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/le.pem
+cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/hostname.pem
+cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/hostname.pem
 
 openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
 
