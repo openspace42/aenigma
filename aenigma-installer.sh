@@ -106,19 +106,19 @@ do
 	"configuration 1")
 	    echo "you chose configuration 1"
 	    echo
-	    set configoption=1
+	    configoption=1
 	    break
 	    ;;
 	"configuration 2")
 	    echo "you chose configuration 2"
 	    echo
-	    set configoption=2
+	    configoption=2
 	    break
 	    ;;
 	"configuration 3")
 	    echo "you chose configuration 3"
 	    echo
-	    set configoption=3
+	    configoption=3
 	    break
 	    ;;
 	"exit")
@@ -133,13 +133,14 @@ do
 done
 
 hostname="$(cat /etc/hostname)"
-ip="$(curl -s ipinfo.io/ip)"
+ip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 
-echo #configoption
-
-exit
+echo $configoption
+echo $hostname
+echo $ip
 
 if [ $configoption = "1" ]
+
 then
 	echo "Ok, you've chosen option 1."
 	echo
@@ -147,9 +148,9 @@ then
 	echo
 	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 	echo
-	echo Your hostname must be a third level domain [subdomain] of either $domain or another domain.
+	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 	echo
-	echo "Your current hostname is | $hostname |
+	echo "Your current hostname is | $hostname |"
 	echo
 	read -p "Do you want to change it? (Y/n): " -n 1 -r
 	echo
@@ -159,7 +160,7 @@ then
 		echo
 		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
-		echo $hostname > /etc/hostname
+		echo $newhostname > /etc/hostname
 		echo "New hostname set to | $newhostname |"
 		echo
 		hostname="$(cat /etc/hostname)"
@@ -167,9 +168,9 @@ then
 		echo "Leaving hostname set to | $hostname |"
 		echo
 	fi
-fi
 
-if [ $configoption = "2" ]
+elif [ $configoption = 2 ]
+
 then
 	echo "Ok, you've chosen option 2."
 	echo
@@ -177,9 +178,9 @@ then
 	echo
 	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 	echo
-	echo Your hostname must be identical to your domain: $domain.
+	echo "Your hostname must be identical to your domain: $domain."
 	echo
-	echo "Your current hostname is | $hostname |
+	echo "Your current hostname is | $hostname |"
 	echo
 	if [ $hostname = $domain ]
 	then
@@ -188,7 +189,7 @@ then
 	else
 		echo "Your hostname doesn't match the domain you've specified."
 		echo
-		echo "Having chosen option 2, they must be identical.
+		echo "Having chosen option 2, they must be identical."
 		echo
 		read -p "Do you want to set your hostname to match your domain? (Y/n): " -n 1 -r
 		echo
@@ -206,15 +207,17 @@ then
 			exit
 		fi
 	fi
-fi
 
-if [ $configoption = "3" ]
+elif [ $configoption = 3 ]
+
 then
 	echo "Ok, you've chosen option 3."
 	echo
-	echo "The part after the @ in your XMPP account addresses will match your server hostname, which will be a third level domain [subdomain] of your main domain."
+	echo "The part after the @ in your XMPP account addresses will match your server hostname."
 	echo
-	echo "Your current hostname is | $hostname |
+	echo "Your hostname will be a third level domain [subdomain] of your main domain."
+	echo
+	echo "Your current hostname is | $hostname |"
 	echo
 	echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
 	echo
@@ -230,7 +233,7 @@ then
 		echo
 		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
-		echo $hostname > /etc/hostname
+		echo $newhostname > /etc/hostname
 		echo "New hostname set to | $newhostname |"
 		echo
 		hostname="$(cat /etc/hostname)"
@@ -238,26 +241,35 @@ then
 		echo "Leaving hostname set to | $hostname |"
 		echo
 	fi
+		domain=$hostname
 fi
 
-echo "As a recap, your XMPP domain [the part after the @ in your XMPP account addresses] will be:"
+sleep 1
+
+echo "----------------"
+echo
+echo "To make sure everything is correct:"
+echo
+echo "1] Your XMPP domain [the part after the @ in your XMPP account addresses] will be:"
 echo
 echo "| $domain |"
 echo
-echo "And therefore an XMPP account address will look as follows:"
+echo "2] And therefore an XMPP account address will look as follows:"
 echo
 echo "| mark@$domain|"
 echo
-echo "And your hostname, the location on the internet of this server, will be:"
+echo "3] Your hostname, the location on the internet of this server, will be:"
 echo
 echo "| $hostname |"
 echo
-echo "And therefore your aenigma admin panel will be located at:"
+echo "4] And therefore your aenigma admin panel will be located at:"
 echo
 echo "| https://$hostname |"
 echo
+echo "----------------"
+echo
 
-read -p "Does everything look allright? (Y/n): " -n 1 -r
+read -p "Does everything look all right? (Y/n): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
