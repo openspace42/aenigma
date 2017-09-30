@@ -485,18 +485,28 @@ then
 	read -p "[press enter to continue when finished setting your DNS SRV records...]"
 	echo
 
-	echo "Now it's time to copy the TLS [SSL] certificate from the server responding to $domain."
+	echo "Now it's time to set up the TLS [SSL] certificate that is valid for $domain."
 	echo
-	echo "This is usually a web server, but check your project's infrastructure to see what server it is."
+  echo "The certificate file required for aenigma must be an all-in-one private key + certificate + chain file."
+  echo
+  echo "This means the file must include, in this order, the following:"
+  echo
+  echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
+  echo
+  read -p "[press enter to continue reading...]"
+  echo
+  echo "This certificate, if it already exists, resides on the server responding to $domain"
+  echo
+	echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
 	echo
 	echo "This is the IP to which your bare domain $domain is pointing to:"
 	echo
 	dig +noall +answer $domain
 	echo
-        read -p "[press enter to continue...]"
-        echo
-	echo "If you see no output, then it might be misconfigured or not configured at all."
-	echo
+  echo "[If you see no output, then it might be misconfigured or not configured at all.]"
+  echo
+  read -p "[press enter to continue reading...]"
+  echo
 	read -p "That said, do you have a running server that responds to $domain? (Y/n): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Nn]$ ]]
@@ -524,13 +534,13 @@ then
 					echo
 					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
                                         echo
-					echo "To have it fetch your existing TLS cert on the other server and push it here periodically."
+					echo "To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically."
 					echo
-					echo "Follow the instructions and adapt the paths to the existing TLS cert and private key."
+					echo "Follow the instructions and adapt the paths to the existing TLS certs and private key."
 					echo
 				fi
 			else
-				echo "Ok, no problem, find your TLS certificate on the other server and make a simple script to periodically send it over to this server, or copy it here manually [and remember to copy it over again every time you renew it!]."
+				echo "Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
 				echo
 			fi
 		else
@@ -543,15 +553,14 @@ then
 				echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
 				echo
 			else
-				echo "Ok, no problem. Get a TLS cert for $domain and install it on this server here [not the other one]."
+				echo "Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
 				echo
 			fi
 		fi
-		read -p "Now, however you've installed or copied to this server the TLS cert for $domain, specify its location here: " domtlscertloc
+		read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " domtlscertloc
 		echo
 		read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
-		
 	else
 		echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
 		echo
@@ -559,7 +568,9 @@ then
 		echo
 		echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
 		echo
-		echo "[or an adaptation of it] or by doing some other manual scripting or manual copying every time. For now, no need to worry about that."
+		echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
+    echo
+    echo "For now, no need to worry about that."
 		echo
 		echo "Let's point $domain and www.$domain to this server for the time being."
 		echo
@@ -610,7 +621,7 @@ then
 				fi
 			fi
 		fi
-		
+
 		if [ $domwwwdignxcheck = "0" ]
 		then
 			echo "The domain's www. subdomain does NOT appear to be at all set on public DNS."
@@ -652,110 +663,152 @@ then
 	fi
 fi
 
-wget -O ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
-
-dpkg -i ejabberd_17.08-0_amd64.deb
-
-echo "Finished installing ejabberd"
+echo "Now setting UFW rules..."
 echo
-sleep 1
-
+echo "1] ufw allow 5222"
+echo "2] ufw allow 5269"
+echo "3] ufw allow 5444"
+echo "4] ufw allow 80"
+echo "5] ufw allow 443"
 ufw allow 5222
 ufw allow 5269
 ufw allow 5444
 ufw allow 80
 ufw allow 443
-
-echo "Finished setting UFW rules"
+echo "Finished setting UFW rules."
 echo
 sleep 1
 
+echo "Now installing easyengine..."
+echo
 wget -qO ee rt.cx/ee && sudo bash ee
-
-echo "Finished installing easyengine"
+echo "Finished installing easyengine."
 echo
 sleep 1
 
+echo "Now creating easyengine site for $hostname, generating its TLS certificate, and installing it..."
+echo
 ee site create $hostname
 ee site update $hostname  --le
-
-if [ $configoption = 1]
-then
-	ee site create $domain
-	ee site update $domain --le
-	touch /opt/ejabberd-17.08/conf/domain.pem
-	cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/domain.pem
-	cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/domain.pem
-	domtlscertloc=/opt/ejabberd-17.08/conf/domain.pem
-fi
-
-wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma/master/nginx.conf
-
-sed -i "s/example.im/${hostname}/g" nginx.conf
-
-cp nginx.conf /etc/nginx/sites-available/$hostname
-
-service nginx reload
-
-echo "Finished creating easyengine site"
+echo "Finished creating easyengine site for $hostname."
 echo
 sleep 1
 
-wget -qO index.html https://raw.githubusercontent.com/openspace42/aenigma/master/index.html
-
-mv index.html /var/www/$hostname/htdocs/
-
-echo "Finished setting index.html in docroot"
+echo "Now creating all-in-one TLS file for $hostname for ejabberd..."
 echo
-sleep 1
-
 touch /opt/ejabberd-17.08/conf/hostname.pem
-
 cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/hostname.pem
 cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/hostname.pem
-
-openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
-
-echo "Finished creating all-in-one TLS file for ejabberd"
+echo "Finished creating all-in-one TLS file for $hostname for ejabberd."
 echo
 sleep 1
 
-wget -O aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-new.yml
+echo "Now setting custom nginx config for $hostname..."
+echo
+wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma/master/nginx.conf
+sed -i "s/example.im/${hostname}/g" nginx.conf
+cp nginx.conf /etc/nginx/sites-available/$hostname
+service nginx reload
+echo "Finished setting custom nginx config for $hostname."
+echo
+sleep 1
 
+echo "Now setting index.html in docroot for $hostname..."
+echo
+wget -qO index.html https://raw.githubusercontent.com/openspace42/aenigma/master/index.html
+mv index.html /var/www/$hostname/htdocs/
+echo "Finished setting index.html in docroot for $hostname."
+echo
+sleep 1
+
+echo "Now generating DHparams..."
+echo
+#openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
+echo "Finished generating DHparams."
+echo
+sleep 1
+
+if [ $additionalTLScertmode = "here"]
+then
+
+  echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
+  echo
+
+  echo "Now creating easyengine site for $domain, generating its TLS certificate, and installing it..."
+  echo
+	ee site create $domain
+	ee site update $domain --le
+  echo "Finished creating easyengine site for $domain."
+  echo
+  sleep 1
+
+  echo "Now creating all-in-one TLS file for $domain for ejabberd..."
+  echo
+  touch /opt/ejabberd-17.08/conf/domain.pem
+	cat /etc/letsencrypt/live/$domain/privkey.pem > /opt/ejabberd-17.08/conf/domain.pem
+	cat /etc/letsencrypt/live/$domain/fullchain.pem >> /opt/ejabberd-17.08/conf/domain.pem
+	domtlscertloc=/opt/ejabberd-17.08/conf/domain.pem
+  echo "Finisher creating all-in-one TLS file for $domain for ejabberd..."
+  echo
+  sleep 1
+
+fi
+
+echo "Now downloading ejabberd..."
+echo
+wget -qO ejabberd_17.08-0_amd64.deb https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/17.08/ejabberd_17.08-0_amd64.deb
+echo "Finished downloading ejabberd."
+echo
+sleep 1
+
+echo "Now installing ejabberd..."
+echo
+dpkg -i ejabberd_17.08-0_amd64.deb
+echo "Finished installing ejabberd."
+echo
+sleep 1
+
+echo "Now setting custom aenigma config to ejabberd.yml..."
+echo
+wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-new.yml
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
-
+if [ $configoption = 1 ]
+then
+  wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/ejabberd-tlsaddition.txt
+  sed -i "s/example.im/${domain}/g" ejabberd-tlsaddition.txt
+  sed -i "s/pathtofile/${domtlscertloc}/g" ejabberd-tlsaddition.txt
+  sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
+  sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
+fi
 cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
-cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml
-
-echo "Finished setting custom ejabberd.yml config file"
+cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml #shouldn't be needed
+echo "Finished setting custom aenigma config to ejabberd.yml."
 echo
 sleep 1
 
+echo "Now starting ejabberd..."
+echo
 /opt/ejabberd-17.08/bin/ejabberdctl start
-
+echo
 sleep 8
-
 /opt/ejabberd-17.08/bin/ejabberdctl status
-
+echo
 sleep 1
-
-echo "Finished starting ejabberd"
+echo "Finished starting ejabberd."
 echo
 sleep 1
 
+echo "Now registering ejabberd admin user..."
+echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
-
-echo /opt/ejabberd-17.08/bin/ejabberdctl register admin $domain $ejbdadminpw #debug
-
 /opt/ejabberd-17.08/bin/ejabberdctl register admin $domain $ejbdadminpw
-
 echo "Finished registering ejabberd admin user"
 echo
 sleep 1
 
 echo "Now log in:"
 echo
-echo "https://$hostname/admin"
+echo "https://$hostname"
 echo
 echo "admin@$domain"
 echo $ejbdadminpw
