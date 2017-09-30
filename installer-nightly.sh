@@ -774,15 +774,14 @@ wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aeni
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 if [ $configoption = 1 ]
 then
-  echo $domtlscertloc #debug
   wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/ejabberd-tlsaddition.txt
-  sed -i "s/example.im/${domain}/g" ejabberd-tlsaddition.txt
-  sed -i "s/pathtofile/${domtlscertloc}/g" ejabberd-tlsaddition.txt
+  sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
+  sed -i "s|pathtofile|${domtlscertloc}|g" ejabberd-tlsaddition.txt
   sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
   sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
 fi
 cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
-cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml #shouldn't be needed
+# cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml #shouldn't be needed
 echo "Finished setting custom aenigma config to ejabberd.yml."
 echo
 sleep 1
