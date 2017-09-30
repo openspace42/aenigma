@@ -141,6 +141,8 @@ s2s_dhfile: 'DHFILE'
 ##   "example.com":
 ##     domain_certfile: "/path/to/example_com.pem"
 
+## aenigma_host_config_placeholder:
+
 ## s2s_access: s2s
 
 ## outgoing_s2s_families:
