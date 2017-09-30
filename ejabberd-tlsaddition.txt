@@ -1,0 +1,3 @@
+host_config:
+  "example.im":
+    domain_certfile: "/opt/ejabberd-17.08/conf/example.im.pem"
