@@ -728,7 +728,7 @@ echo "Finished generating DHparams."
 echo
 sleep 1
 
-if [ $additionalTLScertmode = "here"]
+if [ $additionalTLScertmode = "here" ]
 then
 
   echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
@@ -774,6 +774,7 @@ wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aeni
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 if [ $configoption = 1 ]
 then
+  echo $domtlscertloc #debug
   wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/ejabberd-tlsaddition.txt
   sed -i "s/example.im/${domain}/g" ejabberd-tlsaddition.txt
   sed -i "s/pathtofile/${domtlscertloc}/g" ejabberd-tlsaddition.txt
