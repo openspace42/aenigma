@@ -1,14 +1,12 @@
 #!/bin/bash
 
-installdir=/root/aenigma.xyz_install # NO TRAILING SLASH!
-mkdir -p $installdir
-
-additionalTLScertmode=""
-
 echo "aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]"
 echo
 echo "based on ejabberd v17.08"
 echo
+
+installdir=/root/aenigma.xyz_install # NO TRAILING SLASH!
+mkdir -p $installdir
 
 echo "Run this once logged into your newly creater server via ssh as the root user [preferably inside 'screen']"
 echo
@@ -426,10 +424,12 @@ echo
 
 sleep 1
 
+additionalTLScertmode="notset"
+
 if [ $configoption = 1 ]
 then
 
-	additionalTLScertmode=elsewhere
+	additionalTLScertmode="elsewhere"
 	echo "Since you've chosen option 1, your domain is different from your hostname."
 	echo
 	echo "Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server."
@@ -539,7 +539,7 @@ then
 		echo "This is required for the TLS certificate we'll be generating shortly on this server."
 		echo
 
-		additionalTLScertmode=here
+		additionalTLScertmode="here"
 		
 		declare -A domtldarray=(
 			[TLD]=""
