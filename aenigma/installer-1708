@@ -484,7 +484,7 @@ then
   echo
   read -p "[press enter to continue reading...]"
   echo
-	read -p "That said, do you have a running server that responds to $domain? (Y/n): " -n 1 -r
+	read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Nn]$ ]]
         then
