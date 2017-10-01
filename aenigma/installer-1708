@@ -551,99 +551,73 @@ then
 		echo
 		echo "Let's point $domain and www.$domain to this server for the time being."
 		echo
-		echo "The www.$domain subdomain record is required for the TLS certificate we'll be generating shortly on this server."
+		echo "This is required for the TLS certificate we'll be generating shortly on this server."
 		echo
 
 		additionalTLScertmode=here
-		domdignxcheck="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-		domdigresult="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s')"
-		domwwwdignxcheck="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-		domwwwdigresult="$(getent hosts $domain. | grep -oP '^\d+(\.\d+){3}\s')"
+		
+		declare -A domtldarray=(
+			[TLD]=""
+			[www]="www."
+		)
 
-		if [ $domdignxcheck = "0" ]
-		then
-			echo "The domain does NOT appear to be at all set on public DNS."
+		domtldarrayiter=0
+
+		for i in "${!domtldarray[@]}"
+		do
+
+			domtldarrayiter=$(($domtldarrayiter + 1))
+			echo "$domtldarrayiter] Now checking the ${domtldarray[$i]}$domain DNS record in IPv4 on public DNS..."
 			echo
-			echo "Please ensure you set your DNS record as follows:"
-			echo
-			echo "| $domain                      A      $thisip |"
-			echo
-		else
-			if [ $domdigresult = $thisip ]
+
+			dsadignxcheck="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+			dsadigresult="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+
+			if [ $dsadignxcheck = "0" ]
 			then
-				echo "The domain appears to already resolve correctly to this server on public DNS."
+				echo "The ${domtldarray[$i]}$domain record does NOT appear to be at all set on public DNS."
 				echo
-				echo "| $domain                      A      $thisip |"
+				echo "Please ensure you set your DNS record as follows:"
+				echo
+				echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
 				echo
 			else
-				echo "The domain does NOT yet appear to correctly resolve to this server on public DNS."
-				echo
-				echo "This is the result of a dig query for $domain:"
-				echo
-				sleep 3
-				dig +noall +answer $domain
-				echo
-				echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-				echo
-				read -p "Continue setup? (Y/n): " -n 1 -r
-				echo
-				if [[ ! $REPLY =~ ^[Nn]$ ]]
+				if [ $dsadigresult = $thisip ]
 				then
-					echo "Ok, continuing..."
+					echo "The ${domtldarray[$i]}$domain record appears to resolve correctly to this server on public DNS."
+					echo
+					echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
 					echo
 				else
-					echo "Ok, exiting..."
+					echo "The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS."
 					echo
-					exit
+					echo "This is the result of a dig query for ${domtldarray[$i]}$domain:"
+					echo
+					dig +noall +answer ${domtldarray[$i]}$domain
+					echo
+					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+					echo
+					read -p "Continue setup? (Y/n): " -n 1 -r
+					echo
+					if [[ ! $REPLY =~ ^[Nn]$ ]]
+					then
+						echo "Ok, continuing..."
+						echo
+					else
+						echo "Ok, exiting..."
+						echo
+						exit
+					fi
 				fi
 			fi
-		fi
 
-		if [ $domwwwdignxcheck = "0" ]
-		then
-			echo "The domain's www. subdomain does NOT appear to be at all set on public DNS."
-			echo
-			echo "Please ensure you set your DNS record as follows:"
-			echo
-			echo "| www.$domain                  A      $thisip |"
-			echo
-		else
-			if [ $domwwwdigresult = $thisip ]
-			then
-				echo "The domain's www. subdomain appears to already resolve correctly to this server on public DNS."
-				echo
-				echo "| www.$domain                  A      $thisip |"
-				echo
-			else
-				echo "The domain's www. subdomain does NOT yet appear to correctly resolve to this server on public DNS."
-				echo
-				echo "This is the result of a dig query for www.$domain:"
-				echo
-				sleep 3
-				dig +noall +answer www.$domain
-				echo
-				echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-				echo
-				read -p "Continue setup? (Y/n): " -n 1 -r
-				echo
-				if [[ ! $REPLY =~ ^[Nn]$ ]]
-				then
-					echo "Ok, continuing..."
-					echo
-				else
-					echo "Ok, exiting..."
-					echo
-					exit
-				fi
-			fi
-		fi
+		read -p "[press enter to continue...]"
+		echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+		done
+
 	fi
 fi
-
-
-
-
-
 
 echo "Now checking additional DNS settings..."
 echo
@@ -656,13 +630,13 @@ declare -A domsubsarray=(
 	[irc]="join channels on IRC servers."
 )
 
-domsubarrayiter=0
+domsubsarrayiter=0
 
 for i in "${!domsubsarray[@]}"
 do
 
-	domsubarrayiter=$(($domsubarrayiter + 1))
-	echo "$domsubarrayiter] Now checking the $i.$domain subdomain in IPv4 on public DNS..."
+	domsubsarrayiter=$(($domsubsarrayiter + 1))
+	echo "$domsubsarrayiter] Now checking the $i.$domain subdomain in IPv4 on public DNS..."
 	echo
 	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
 	echo
