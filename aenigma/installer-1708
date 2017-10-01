@@ -365,7 +365,7 @@ echo "1] Now checking this machine's hostname in IPv4 on public DNS..."
 echo
 
 		declare -A hostarray=(
-			[TLD]=""
+			[HN]=""
 			[www]="www."
 		)
 
@@ -375,33 +375,33 @@ echo
 		do
 
 			hostarrayiter=$(($hostarrayiter + 1))
-			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$domain DNS record in IPv4 on public DNS..."
+			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$hostname DNS record in IPv4 on public DNS..."
 			echo
 
-			hadignxcheck="$(getent hosts ${hostarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-			hadigresult="$(getent hosts ${hostarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+			hadignxcheck="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+			hadigresult="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 			if [ $hadignxcheck = "0" ]
 			then
-				echo "The ${hostarray[$i]}$domain record does NOT appear to be at all set on public DNS."
+				echo "The ${hostarray[$i]}$hostname record does NOT appear to be at all set on public DNS."
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
-				echo -e "| ${hostarray[$i]}$domain\t\t\tA\t$thisip |"
+				echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
 				echo
 			else
 				if [ $hadigresult = $thisip ]
 				then
-					echo "The ${hostarray[$i]}$domain record appears to resolve correctly to this server on public DNS."
+					echo "The ${hostarray[$i]}$hostname record appears to resolve correctly to this server on public DNS."
 					echo
-					echo -e "| ${hostarray[$i]}$domain\t\t\tA\t$thisip |"
+					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
 					echo
 				else
-					echo "The ${hostarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS."
+					echo "The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server on public DNS."
 					echo
-					echo "This is the result of a dig query for ${hostarray[$i]}$domain:"
+					echo "This is the result of a dig query for ${hostarray[$i]}$hostname:"
 					echo
-					dig +noall +answer ${hostarray[$i]}$domain
+					dig +noall +answer ${hostarray[$i]}$hostname
 					echo
 					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 					echo
