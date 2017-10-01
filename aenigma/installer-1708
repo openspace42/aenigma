@@ -344,17 +344,11 @@ else
 	exit
 fi
 
-#!/bin/bash
-
 thisip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
-xcdignxcheck="$(getent hosts xc.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-xcdigresult="$(getent hosts xc.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
-xudignxcheck="$(getent hosts xu.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-xudigresult="$(getent hosts xu.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your DNS settings are correct."
 echo
@@ -427,96 +421,6 @@ else
 		echo
 		sleep 3
 		dig +noall +answer www.$hostname
-		echo
-		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-		echo
-		read -p "Continue setup? (Y/n): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
-			echo "Ok, continuing..."
-			echo
-		else
-			echo "Ok, exiting..."
-			echo
-			exit
-		fi
-	fi
-fi
-
-sleep 1
-
-echo "3] Now checking this machine's hostname's xc. subdomain in IPv4 on public DNS..."
-echo
-echo "The xc.$hostname subdomain record is required for XMPP messaging groups [aka conferences / MUCs in XMPP lingo]"
-echo
-if [ $xcdignxcheck = "0" ]
-then
-	echo "The xc.$hostname record does NOT appear to be at all set on public DNS."
-	echo
-	echo "Please ensure you set your DNS record as follows:"
-	echo
-	echo "| xc.$hostname                 A      $ip |"
-	echo
-else
-	if [ $xcdigresult = $thisip ]
-	then
-		echo "The xc.$hostname record appears to resolve correctly to this server on public DNS."
-		echo
-		echo "| xc.$hostname                 A      $ip |"
-		echo
-	else
-		echo "The xc.$hostname record does NOT appear to correctly resolve to this server on public DNS."
-		echo
-		echo "This is the result of a dig query for this machine's hostname's xc. subdomain:"
-		echo
-		sleep 3
-		dig +noall +answer xc.$hostname
-		echo
-		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-		echo
-		read -p "Continue setup? (Y/n): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
-			echo "Ok, continuing..."
-			echo
-		else
-			echo "Ok, exiting..."
-			echo
-			exit
-		fi
-	fi
-fi
-
-sleep 1
-
-echo "4] Now checking this machine's hostname's xu. subdomain in IPv4 on public DNS..."
-echo
-echo "The xu.$hostname subdomain record is required for XMPP HTTP uploads."
-echo
-if [ $xudignxcheck = "0" ]
-then
-	echo "The xu.$hostname record does NOT appear to be at all set on public DNS."
-	echo
-	echo "Please ensure you set your DNS record as follows:"
-	echo
-	echo "| xu.$hostname                 A      $ip |"
-	echo
-else
-	if [ $xudigresult = $thisip ]
-	then
-		echo "The xu.$hostname record appears to resolve correctly to this server on public DNS."
-		echo
-		echo "| xu.$hostname                 A      $ip |"
-		echo
-	else
-		echo "The xu.$hostname record does NOT appear to correctly resolve to this server on public DNS."
-		echo
-		echo "This is the result of a dig query for this machine's hostname's xu. subdomain:"
-		echo
-		sleep 3
-		dig +noall +answer xu.$hostname
 		echo
 		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 		echo
@@ -731,18 +635,94 @@ then
 	fi
 fi
 
+
+
+
+
+
+echo "Now checking additional DNS settings..."
+echo
+
+declare -A domsubsarray=(
+	[xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
+	[xu]="XMPP HTTP uploads."
+	[echo]="the ejabberd MOD_ECHO module."
+	[pubsub]="the ejabberd MOD_PUBSUB module."
+	[irc]="join channels on IRC servers."
+)
+
+domsubarrayiter=0
+
+for i in "${!domsubsarray[@]}"
+do
+
+	domsubarrayiter=$(($domsubarrayiter + 1))
+	echo "$domsubarrayiter] Now checking the $i.$domain subdomain in IPv4 on public DNS..."
+	echo
+	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
+	echo
+
+	dsadignxcheck="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+	dsadigresult="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+
+	if [ $dsadignxcheck = "0" ]
+	then
+		echo "Its DNS record does NOT appear to be at all set on public DNS."
+		echo
+		echo "Please ensure you set your DNS record as follows:"
+		echo
+		echo -e "| $i.$domain\t\t\tA\t$thisip |"
+		echo
+	else
+		if [ $dsadigresult = $thisip ]
+		then
+			echo "Its DNS record appears to resolve correctly to this server on public DNS."
+			echo
+			echo -e "| $i.$domain\t\t\tA\t$thisip |"
+			echo
+		else
+			echo "Its DNS record does NOT appear to correctly resolve to this server on public DNS."
+			echo
+			echo "This is the result of a dig query for $i.$domain:"
+			echo
+			dig +noall +answer $i.$domain
+			echo
+			echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+			echo
+			read -p "Continue setup? (Y/n): " -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Nn]$ ]]
+			then
+				echo "Ok, continuing..."
+				echo
+			else
+				echo "Ok, exiting..."
+				echo
+				exit
+			fi
+		fi
+	fi
+
+read -p "[press enter to continue...]"
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+done
+echo
+
+echo "Finished checking additional DNS settings."
+echo
+
 echo "Now setting UFW rules..."
 echo
-echo "1] ufw allow 5222"
-echo "2] ufw allow 5269"
-echo "3] ufw allow 5444"
-echo "4] ufw allow 80"
-echo "5] ufw allow 443"
+
 ufw allow 5222
 ufw allow 5269
 ufw allow 5444
 ufw allow 80
 ufw allow 443
+
+ufw status
+
 echo "Finished setting UFW rules."
 echo
 sleep 1
