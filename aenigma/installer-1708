@@ -834,7 +834,7 @@ echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 if [ -f /opt/ejabberd-17.08/conf/dh.pem ]
 then
-	echo "DHparam file found. Skipping generation...
+	echo "DHparam file found. Skipping generation..."
 	echo
 else
 	echo "One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file."
