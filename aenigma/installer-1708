@@ -775,7 +775,7 @@ sleep 1
 
 echo "Now setting custom nginx config for $hostname..."
 echo
-wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma/master/nginx.conf
+wget -qO nginx.conf https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/nginx/nginx.conf
 sed -i "s/example.im/${hostname}/g" nginx.conf
 cp nginx.conf /etc/nginx/sites-available/$hostname
 service nginx reload
@@ -785,7 +785,7 @@ sleep 1
 
 echo "Now setting index.html in docroot for $hostname..."
 echo
-wget -qO index.html https://raw.githubusercontent.com/openspace42/aenigma/master/index.html
+wget -qO index.html https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/web/index.html
 mv index.html /var/www/$hostname/htdocs/
 echo "Finished setting index.html in docroot for $hostname."
 echo
@@ -849,11 +849,11 @@ sleep 1
 
 echo "Now setting custom aenigma config to ejabberd.yml..."
 echo
-wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-1708.yml
+wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/ejabberd/ejabberd-1708.yml
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 if [ $configoption = 1 ]
 then
-  wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/ejabberd-tlsaddition.txt
+  wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/ejabberd/ejabberd-tlsaddition.txt
   sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
   sed -i "s|pathtofile|${domtlscertloc}|g" ejabberd-tlsaddition.txt
   sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
