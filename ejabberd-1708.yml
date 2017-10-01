@@ -365,7 +365,7 @@ modules:
     docroot: "/var/www"
     accesslog: "/opt/ejabberd-17.08/logs/access.log"
   mod_http_upload:
-    host: xu.@HOST@
+    host: "xu.@HOST@"
     docroot: "@HOME@/upload"
     put_url: "https://@HOST@:5444"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
