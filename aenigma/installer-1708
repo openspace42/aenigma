@@ -365,14 +365,14 @@ then
 	echo
 	echo "Please ensure you set your DNS record as follows:"
 	echo
-	echo "| $hostname                    A      $ip |"
+	echo "| $hostname                    A      $thisip |"
 	echo
 else
 	if [ $digresult = $thisip ]
 	then
 		echo "The hostname appears to resolve correctly to this server on public DNS."
 		echo
-		echo "| $hostname                    A      $ip |"
+		echo "| $hostname                    A      $thisip |"
 		echo
 	else
 		echo "The hostname does NOT appear to correctly resolve to this server on public DNS."
@@ -410,14 +410,14 @@ then
 	echo
 	echo "Please ensure you set your DNS record as follows:"
 	echo
-	echo "| www.$hostname                A      $ip |"
+	echo "| www.$hostname                A      $thisip |"
 	echo
 else
 	if [ $wwwdigresult = $thisip ]
 	then
 		echo "The www.$hostname record appears to resolve correctly to this server on public DNS."
 		echo
-		echo "| www.$hostname                A      $ip |"
+		echo "| www.$hostname                A      $thisip |"
 		echo
 	else
 		echo "The www.$hostname record does NOT appear to correctly resolve to this server on public DNS."
@@ -566,14 +566,14 @@ then
 			echo
 			echo "Please ensure you set your DNS record as follows:"
 			echo
-			echo "| $domain                      A      $ip |"
+			echo "| $domain                      A      $thisip |"
 			echo
 		else
 			if [ $domdigresult = $thisip ]
 			then
 				echo "The domain appears to already resolve correctly to this server on public DNS."
 				echo
-				echo "| $domain                      A      $ip |"
+				echo "| $domain                      A      $thisip |"
 				echo
 			else
 				echo "The domain does NOT yet appear to correctly resolve to this server on public DNS."
@@ -605,14 +605,14 @@ then
 			echo
 			echo "Please ensure you set your DNS record as follows:"
 			echo
-			echo "| www.$domain                  A      $ip |"
+			echo "| www.$domain                  A      $thisip |"
 			echo
 		else
 			if [ $domwwwdigresult = $thisip ]
 			then
 				echo "The domain's www. subdomain appears to already resolve correctly to this server on public DNS."
 				echo
-				echo "| www.$domain                  A      $ip |"
+				echo "| www.$domain                  A      $thisip |"
 				echo
 			else
 				echo "The domain's www. subdomain does NOT yet appear to correctly resolve to this server on public DNS."
