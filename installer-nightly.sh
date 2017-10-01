@@ -770,7 +770,7 @@ sleep 1
 
 echo "Now setting custom aenigma config to ejabberd.yml..."
 echo
-wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-new.yml
+wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-1708.yml
 sed -i "s/example.im/${domain}/g" aenigma-ejabberd.yml
 if [ $configoption = 1 ]
 then
