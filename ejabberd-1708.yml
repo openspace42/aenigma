@@ -366,7 +366,7 @@ modules:
     accesslog: "/opt/ejabberd-17.08/logs/access.log"
   mod_http_upload:
     host: "xu.@HOST@"
-    docroot: "@HOME@/upload"
+    docroot: "@HOME@/uploads"
     put_url: "https://@HOST@:5444"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
     access:
