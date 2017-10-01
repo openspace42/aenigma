@@ -3,6 +3,8 @@
 installdir=/root/aenigma.xyz_install # NO TRAILING SLASH!
 mkdir -p $installdir
 
+additionalTLScertmode=""
+
 echo "aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]"
 echo
 echo "based on ejabberd v17.08"
