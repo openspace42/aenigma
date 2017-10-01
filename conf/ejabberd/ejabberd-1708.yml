@@ -13,12 +13,12 @@ log_rotate_count: 1
 log_rate_limit: 100
 
 watchdog_admins:
-  - "admin@aenigma.xyz"
+  - "admin@example.im"
 
 ## net_ticktime: 60
 
 hosts:
-  - "aenigma.xyz"
+  - "example.im"
 
 ## route_subdomains: s2s
 
@@ -203,7 +203,7 @@ acl:
   ##
   admin:
     user:
-      - "admin@aenigma.xyz"
+      - "admin@example.im"
 
   ## blocked:
   ##   user:
@@ -336,7 +336,7 @@ language: "en"
 
 ## captcha_cmd: "/opt/ejabberd-17.08/lib/ejabberd-17.08/priv/bin/captcha.sh"
 
-## captcha_host: "aenigma.xyz:5280"
+## captcha_host: "example.im:5280"
 
 ## captcha_limit: 5
 
@@ -410,10 +410,10 @@ modules:
         Hi there.
         Happy to see you onboard.
         This is the Aenigma XMPP server at example.im.
-        https://aenigma.xyz
+        https://example.im
 
     registration_watchers:
-       - "admin@aenigma.xyz"
+       - "admin@example.im"
 
     ### ip_access: trusted_network
 
