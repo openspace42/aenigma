@@ -1,8 +1,11 @@
 #!/bin/bash
 
+installdir=/root/aenigma.xyz_install # NO TRAILING SLASH!
+mkdir -p $installdir
+
 echo
 
-echo "aenigma.xyz ejabberd installer by nikksno [https://github.com/openspace42/aenigma]"
+echo "aenigma.xyz v17.08 installer by openspace [https://github.com/openspace42/aenigma]"
 echo
 
 echo "Run this once logged into your newly creater server via ssh as the root user"
@@ -12,7 +15,7 @@ echo
 echo "Confirmed. Now continuing..."
 echo
 
-echo "! ! ! ! ! ! ! !"
+echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
 echo "WARNING: This script is NOT meant to be re-run. If you have previously run it, ONLY run it again if you whish to either:"
 echo
@@ -21,6 +24,8 @@ echo
 echo "2] Start fresh with a brand new server"
 echo
 echo "Running this script again WILL completely obliterate any existing conigurations and data."
+echo
+echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
 read -p "Have you read and understood the above, and do you whish to continue now? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 echo
@@ -134,15 +139,49 @@ done
 
 hostname="$(cat /etc/hostname)"
 
+if [ -f $installdir/domain ]
+then
+	prevdomain="$(cat $installdir/domain)"
+else
+	prevdomain="nx"
+fi
+
 if [ $configoption = "1" ]
 
 then
 	echo "Ok, you've chosen option 1."
 	echo
-	read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
-	echo
-	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-	echo
+	if [ ! $prevdomain = "nx" ]
+	then
+		echo "It appears there was a previous installation of aenigma on this server."
+		echo
+		echo "The domain used for aenigma used to be:"
+		echo
+		echo "| $prevdomain |"
+		echo
+		read -p "Do you want to change it? (Y/n): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "Ok, changing domain"
+			echo
+			changedomain=y
+		else
+			echo "Ok, using previous domain: | $prevdomain |"
+			echo
+			domain=$prevdomain
+			changedomain=n
+		fi
+	else
+		changedomain=y
+	fi
+	if [ ! $changedomain = "y" ]
+	then
+		read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
+		echo
+		read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		echo
+	fi
 	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 	echo
 	echo "Your current hostname is | $hostname |"
@@ -169,10 +208,37 @@ elif [ $configoption = 2 ]
 then
 	echo "Ok, you've chosen option 2."
 	echo
-	read -p "Now set your top level domain, the part after the @ in your XMPP account addresses: " domain
-	echo
-	read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-	echo
+	if [ ! $prevdomain = "nx" ]
+	then
+		echo "It appears there was a previous installation of aenigma on this server."
+		echo
+		echo "The domain used for aenigma used to be:"
+		echo
+		echo "| $prevdomain |"
+		echo
+		read -p "Do you want to change it? (Y/n): " -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "Ok, changing domain"
+			echo
+			changedomain=y
+		else
+			echo "Ok, using previous domain: | $prevdomain |"
+			echo
+			domain=$prevdomain
+			changedomain=n
+		fi
+	else
+		changedomain=y
+	fi
+	if [ ! $changedomain = "y" ]
+	then
+		read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
+		echo
+		read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		echo
+	fi
 	echo "Your hostname must be identical to your domain: $domain."
 	echo
 	echo "Your current hostname is | $hostname |"
@@ -210,7 +276,7 @@ then
 	echo
 	echo "The part after the @ in your XMPP account addresses will match your server hostname."
 	echo
-	echo "Your hostname will be a third level domain [subdomain] of your main domain."
+	echo "Your hostname must be a third level domain [subdomain] of your main domain."
 	echo
 	echo "Your current hostname is | $hostname |"
 	echo
@@ -270,6 +336,8 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
 	echo "Ok, continuing."
 	echo
+	touch $installdir/domain
+	echo "$domain" > $installdir/domain
 else
 	echo "Ok, no worries. You can re-run this script right now and make the correct choices. Exiting..."
 	echo
