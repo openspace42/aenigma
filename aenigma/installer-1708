@@ -439,7 +439,7 @@ then
 	echo "| _xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname. |"
 	echo
 	read -p "[press enter to continue when finished setting your DNS SRV records...]"
-	echo
+	echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 	echo "Now it's time to set up the TLS [SSL] certificate that is valid for $domain."
 	echo
@@ -450,7 +450,8 @@ then
   echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
   echo
   read -p "[press enter to continue reading...]"
-  echo
+  echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  
   echo "This certificate, if it already exists, resides on the server responding to $domain"
   echo
 	echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
@@ -462,7 +463,8 @@ then
   echo "[If you see no output, then it might be misconfigured or not configured at all.]"
   echo
   read -p "[press enter to continue reading...]"
-  echo
+  echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  
 	read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Nn]$ ]]
@@ -527,7 +529,9 @@ then
 		echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
     echo
     echo "For now, no need to worry about that."
-		echo
+    read -p "[press enter to continue reading...]"
+    echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    
 		echo "Let's point $domain and www.$domain to this server for the time being."
 		echo
 		echo "This is required for the TLS certificate we'll be generating shortly on this server."
@@ -679,6 +683,7 @@ ufw allow 5444
 ufw allow 80
 ufw allow 443
 
+echo
 ufw status
 
 echo "Finished setting UFW rules."
@@ -696,6 +701,7 @@ echo "Now creating easyengine site for $hostname, generating its TLS certificate
 echo
 ee site create $hostname
 ee site update $hostname  --le
+echo
 echo "Finished creating easyengine site for $hostname."
 echo
 sleep 1
@@ -727,13 +733,6 @@ echo "Finished setting index.html in docroot for $hostname."
 echo
 sleep 1
 
-echo "Now generating DHparams..."
-echo
-#openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
-echo "Finished generating DHparams."
-echo
-sleep 1
-
 if [ $additionalTLScertmode = "here" ]
 then
 
@@ -744,6 +743,7 @@ then
   echo
 	ee site create $domain
 	ee site update $domain --le
+	echo
   echo "Finished creating easyengine site for $domain."
   echo
   sleep 1
@@ -828,6 +828,13 @@ echo
 echo "admin@$domain"
 echo $ejbdadminpw
 echo
+
+echo "Now generating DHparams..."
+echo
+#openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
+echo "Finished generating DHparams."
+echo
+sleep 1
 
 echo "All done!"
 echo
