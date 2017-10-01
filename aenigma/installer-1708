@@ -47,6 +47,7 @@ fi
 
 echo "----------------"
 echo
+
 echo "0] First of all, a little introduction on how XMPP actually works"
 echo
 echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
@@ -54,7 +55,8 @@ echo
 echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
 echo
 read -p "[press enter to continue reading...]"
-echo
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
 echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
 echo
 echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
@@ -70,7 +72,8 @@ echo "CONs:                 a] requires TLS [SSL] certificate for the top level 
 echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
 echo
 read -p "[press enter to continue reading...]"
-echo
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
 echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
 echo
 echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
@@ -84,7 +87,8 @@ echo "CONs:                  a] your domain must be logically dedicated to your 
 echo "                          and not to a wider project."
 echo
 read -p "[press enter to continue reading...]"
-echo
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
 echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
 echo
 echo "Your server hostname:  subdomain.domain.tld"
@@ -96,7 +100,8 @@ echo "CONs:                  a] longer and more complex addresses"
 echo "                       b] not logically 'clean'."
 echo
 read -p "[press enter to continue reading...]"
-echo
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
 echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
 echo
 echo "----------------"
