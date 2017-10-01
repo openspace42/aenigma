@@ -768,6 +768,15 @@ echo "Finished installing ejabberd."
 echo
 sleep 1
 
+echo "Now creating uploads directory..."
+echo
+mkdir -p /opt/ejabberd/uploads/
+chown -R ejabberd:ejabberd /opt/ejabberd/uploads/
+chmod -R 755 /opt/ejabberd/uploads/
+echo "Finished creating uploads directory."
+echo
+sleep 1
+
 echo "Now setting custom aenigma config to ejabberd.yml..."
 echo
 wget -qO aenigma-ejabberd.yml https://raw.githubusercontent.com/openspace42/aenigma/master/ejabberd-1708.yml
