@@ -8,7 +8,7 @@ echo
 echo "based on ejabberd v17.08"
 echo
 
-echo "Run this once logged into your newly creater server via ssh as the root user"
+echo "Run this once logged into your newly creater server via ssh as the root user [preferably inside 'screen']"
 echo
 read -p "Are you currently root in your target machine (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 echo
