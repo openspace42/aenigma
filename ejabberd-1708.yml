@@ -5,11 +5,6 @@
 
 ### aenigma.xyz ejabberd v17.08 configuration file
 
-### change all settings including "aenigma.xyz" to fit your preferences.
-### do not change anything else unless you know what you're doing.
-### if you find some better working configs, please let us know!
-### thanks!
-
 loglevel: 4
 
 log_rotate_size: 10485760
