@@ -350,98 +350,79 @@ else
 fi
 
 thisip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
+
+
+
+
 dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
-echo "Now let's make sure your DNS settings are correct."
+echo "Now let's make sure your hostname DNS settings are correct."
 echo
 echo "1] Now checking this machine's hostname in IPv4 on public DNS..."
 echo
-if [ $dignxcheck = "0" ]
-then
-	echo "The hostname does NOT appear to be at all set on public DNS."
-	echo
-	echo "Please ensure you set your DNS record as follows:"
-	echo
-	echo "| $hostname                    A      $thisip |"
-	echo
-else
-	if [ $digresult = $thisip ]
-	then
-		echo "The hostname appears to resolve correctly to this server on public DNS."
-		echo
-		echo "| $hostname                    A      $thisip |"
-		echo
-	else
-		echo "The hostname does NOT appear to correctly resolve to this server on public DNS."
-		echo
-		echo "This is the result of a dig query for this machine's hostname:"
-		echo
-		sleep 3
-		dig +noall +answer $hostname
-		echo
-		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-		echo
-		read -p "Continue setup? (Y/n): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
-			echo "Ok, continuing..."
-			echo
-		else
-			echo "Ok, exiting..."
-			echo
-			exit
-		fi
-	fi
-fi
 
-sleep 1
+		declare -A hostarray=(
+			[TLD]=""
+			[www]="www."
+		)
 
-echo "2] Now checking this machine's hostname's www. subdomain in IPv4 on public DNS..."
-echo
-echo "The www.$hostname subdomain record is required for the TLS certificate we'll be generating later."
-echo
-if [ $wwwdignxcheck = "0" ]
-then
-	echo "The www.$hostname record does NOT appear to be at all set on public DNS."
-	echo
-	echo "Please ensure you set your DNS record as follows:"
-	echo
-	echo "| www.$hostname                A      $thisip |"
-	echo
-else
-	if [ $wwwdigresult = $thisip ]
-	then
-		echo "The www.$hostname record appears to resolve correctly to this server on public DNS."
-		echo
-		echo "| www.$hostname                A      $thisip |"
-		echo
-	else
-		echo "The www.$hostname record does NOT appear to correctly resolve to this server on public DNS."
-		echo
-		echo "This is the result of a dig query for this machine's hostname's www. subdomain:"
-		echo
-		sleep 3
-		dig +noall +answer www.$hostname
-		echo
-		echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-		echo
-		read -p "Continue setup? (Y/n): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
-			echo "Ok, continuing..."
+		hostarrayiter=0
+
+		for i in "${!hostarray[@]}"
+		do
+
+			hostarrayiter=$(($hostarrayiter + 1))
+			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$domain DNS record in IPv4 on public DNS..."
 			echo
-		else
-			echo "Ok, exiting..."
-			echo
-			exit
-		fi
-	fi
-fi
+
+			hadignxcheck="$(getent hosts ${hostarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+			hadigresult="$(getent hosts ${hostarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+
+			if [ $hadignxcheck = "0" ]
+			then
+				echo "The ${hostarray[$i]}$domain record does NOT appear to be at all set on public DNS."
+				echo
+				echo "Please ensure you set your DNS record as follows:"
+				echo
+				echo -e "| ${hostarray[$i]}$domain\t\t\tA\t$thisip |"
+				echo
+			else
+				if [ $hadigresult = $thisip ]
+				then
+					echo "The ${hostarray[$i]}$domain record appears to resolve correctly to this server on public DNS."
+					echo
+					echo -e "| ${hostarray[$i]}$domain\t\t\tA\t$thisip |"
+					echo
+				else
+					echo "The ${hostarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS."
+					echo
+					echo "This is the result of a dig query for ${hostarray[$i]}$domain:"
+					echo
+					dig +noall +answer ${hostarray[$i]}$domain
+					echo
+					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+					echo
+					read -p "Continue setup? (Y/n): " -n 1 -r
+					echo
+					if [[ ! $REPLY =~ ^[Nn]$ ]]
+					then
+						echo "Ok, continuing..."
+						echo
+					else
+						echo "Ok, exiting..."
+						echo
+						exit
+					fi
+				fi
+			fi
+
+		read -p "[press enter to continue...]"
+		echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+		done
 
 sleep 1
 
@@ -570,10 +551,10 @@ then
 			echo "$domtldarrayiter] Now checking the ${domtldarray[$i]}$domain DNS record in IPv4 on public DNS..."
 			echo
 
-			dsadignxcheck="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-			dsadigresult="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+			dtdignxcheck="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+			dtdigresult="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s')"
 
-			if [ $dsadignxcheck = "0" ]
+			if [ $dtdignxcheck = "0" ]
 			then
 				echo "The ${domtldarray[$i]}$domain record does NOT appear to be at all set on public DNS."
 				echo
@@ -582,7 +563,7 @@ then
 				echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
 				echo
 			else
-				if [ $dsadigresult = $thisip ]
+				if [ $dtdigresult = $thisip ]
 				then
 					echo "The ${domtldarray[$i]}$domain record appears to resolve correctly to this server on public DNS."
 					echo
@@ -641,10 +622,10 @@ do
 	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
 	echo
 
-	dsadignxcheck="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-	dsadigresult="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+	dsdignxcheck="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+	dsdigresult="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s')"
 
-	if [ $dsadignxcheck = "0" ]
+	if [ $dsdignxcheck = "0" ]
 	then
 		echo "Its DNS record does NOT appear to be at all set on public DNS."
 		echo
@@ -653,7 +634,7 @@ do
 		echo -e "| $i.$domain\t\t\tA\t$thisip |"
 		echo
 	else
-		if [ $dsadigresult = $thisip ]
+		if [ $dsdigresult = $thisip ]
 		then
 			echo "Its DNS record appears to resolve correctly to this server on public DNS."
 			echo
