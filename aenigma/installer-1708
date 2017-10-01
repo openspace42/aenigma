@@ -361,8 +361,6 @@ wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your hostname DNS settings are correct."
 echo
-echo "1] Now checking this machine's hostname in IPv4 on public DNS..."
-echo
 
 		declare -A hostarray=(
 			[HN]=""
