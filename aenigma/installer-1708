@@ -832,36 +832,39 @@ echo
 read -p "[press enter to continue reading...]"
 echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
-echo "One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file."
-echo
-echo "To do so, simply answer yes, but be aware that this is a very time consuming cryptographic operation, although it must only be performed once."
-echo
-
-read -p "Generate openssl DHparams file? (Y/n): " -n 1 -r
-echo
-
-if [[ ! $REPLY =~ ^[Nn]$ ]]
+if [ -f /opt/ejabberd-17.08/conf/dh.pem ]
 then
-	echo "Ok, proceeding with DHparams file generation..."
-	openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096
-	mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem
+	echo "DHparam file found. Skipping generation...
 	echo
 else
-	echo "Skipping DHparams generation."
+	echo "One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file."
 	echo
-	echo "You can always generate them at a later time by executing:"
+	echo "To do so, simply answer yes, but be aware that this is a very time consuming cryptographic operation, although it must only be performed once."
 	echo
-	echo "openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096"
+	read -p "Generate openssl DHparams file? (Y/n): " -n 1 -r
 	echo
-	echo "[and making sure you let the command run until it exits]. Once it's done, execute:"
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "Ok, proceeding with DHparams file generation..."
+		openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096
+		mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem
+		echo
+	else
+		echo "Skipping DHparams generation."
+		echo
+		echo "You can always generate them at a later time by executing:"
+		echo
+		echo "openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096"
+		echo
+		echo "[and making sure you let the command run until it exits]. Once it's done, execute:"
+		echo
+		echo "mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem"
+		echo
+	fi
+	echo "Finished generating DHparams."
 	echo
-	echo "mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem"
-	echo
+	sleep 1
 fi
-
-echo "Finished generating DHparams."
-echo
-sleep 1
 
 echo "aenigma installation complete!"
 echo
