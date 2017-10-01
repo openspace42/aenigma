@@ -821,7 +821,7 @@ echo "Finished registering ejabberd admin user"
 echo
 sleep 1
 
-echo "Now log in:"
+echo "You can finally log in:"
 echo
 echo "https://$hostname"
 echo
@@ -829,14 +829,41 @@ echo "admin@$domain"
 echo $ejbdadminpw
 echo
 
-echo "Now generating DHparams..."
+read -p "[press enter to continue reading...]"
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+echo "One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file."
 echo
-#openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem 4096
+echo "To do so, simply answer yes, but be aware that this is a very time consuming cryptographic operation, although it must only be performed once."
+echo
+
+read -p "Generate openssl DHparams file? (Y/n): " -n 1 -r
+echo
+
+if [[ ! $REPLY =~ ^[Nn]$ ]]
+then
+	echo "Ok, proceeding with DHparams file generation..."
+	openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096
+	mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem
+	echo
+else
+	echo "Skipping DHparams generation."
+	echo
+	echo "You can always generate them at a later time by executing:"
+	echo
+	echo "openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096"
+	echo
+	echo "[and making sure you let the command run until it exits]. Once it's done, execute:"
+	echo
+	echo "mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem"
+	echo
+fi
+
 echo "Finished generating DHparams."
 echo
 sleep 1
 
-echo "All done!"
+echo "aenigma installation complete!"
 echo
 
 exit
