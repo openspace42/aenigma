@@ -5,7 +5,9 @@ mkdir -p $installdir
 
 echo
 
-echo "aenigma.xyz v17.08 installer by openspace [https://github.com/openspace42/aenigma]"
+echo "aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]"
+echo
+echo "based on ejabberd v17.08"
 echo
 
 echo "Run this once logged into your newly creater server via ssh as the root user"
