@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo
+
 echo "Initiating installer..."
 echo
 wget -qO  aenigma-installer-1708 https://raw.githubusercontent.com/openspace42/aenigma-server/master/aenigma/installer-1708
