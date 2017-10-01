@@ -6,4 +6,4 @@ A] Download and execute install.sh
 
 OR
 
-B] Execute: wget -qO aeni https://gh.nk.ai/aeni && sudo bash aeni
+B] Execute: `wget -qO aeni https://gh.nk.ai/aeni && sudo bash aeni`
