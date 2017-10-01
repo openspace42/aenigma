@@ -237,7 +237,7 @@ then
 	else
 		changedomain=y
 	fi
-	if [ ! $changedomain = "y" ]
+	if [ $changedomain = "y" ]
 	then
 		read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
 		echo
