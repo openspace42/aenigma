@@ -2,7 +2,9 @@
 
 echo
 
-echo "aenigma.xyz ejabberd installer by nikksno [https://github.com/openspace42/aenigma]"
+echo "aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]"
+echo
+echo "based on ejabberd v16.04"
 echo
 
 echo "Run this once logged into your newly creater server via ssh as the root user"
