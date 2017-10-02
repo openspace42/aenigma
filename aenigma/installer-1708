@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]"
+echo "${g}aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
 echo "based on ejabberd v17.08"
 echo
