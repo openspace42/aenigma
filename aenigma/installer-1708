@@ -4,7 +4,6 @@ echo "${g}aenigma.xyz installer by openspace [https://github.com/openspace42/aen
 echo
 echo "based on ejabberd v17.08"
 echo
-echo "2115 [debug]" #debug
 
 installdir=/root/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
@@ -22,13 +21,13 @@ echo
 
 echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
-echo "${r}WARNING: This script is NOT meant to be re-run.${x} If you have previously run it, ONLY run it again if you whish to either:"
+echo "${r}WARNING: This script is NOT meant to be re-run. If you have previously run it, ONLY run it again if you whish to either:"
 echo
 echo "1] Fix an incomplete deployment that happened on the first run"
 echo
 echo "2] Start fresh with a brand new server"
 echo
-echo "${r}Running this script again WILL completely obliterate any existing conigurations and data.${x}"
+echo "Running this script again WILL completely obliterate any existing conigurations and data.${x}"
 echo
 echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
