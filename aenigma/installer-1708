@@ -809,7 +809,7 @@ sleep 1
 
 echo "Now starting ejabberd..."
 echo
-/opt/ejabberd-17.08/bin/ejabberdctl start
+/opt/ejabberd-17.08/bin/ejabberdctl restart
 echo
 sleep 8
 /opt/ejabberd-17.08/bin/ejabberdctl status
@@ -866,6 +866,7 @@ else
 		echo
 		echo "mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem"
 		echo
+		/opt/ejabberd-17.08/bin/ejabberdctl restart
 	fi
 	echo "Finished generating DHparams."
 	echo
