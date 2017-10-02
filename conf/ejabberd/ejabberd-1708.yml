@@ -24,7 +24,7 @@ hosts:
 
 
 define_macro:
-  'CERTFILE': "/opt/ejabberd-17.08/conf/le.pem"
+  'CERTFILE': "/root/aenigma/hostname.pem"
   'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
 
   'TLSOPTS':
@@ -33,7 +33,7 @@ define_macro:
     - "no_tlsv1_1"
     - "cipher_server_preference"
     - "no_compression"
-  'DHFILE': "/opt/ejabberd-17.08/conf/dh.pem"
+  'DHFILE': "/root/aenigma/dh.pem"
 
 listen:
   -
