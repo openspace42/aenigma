@@ -12,8 +12,6 @@ installdir=/root/aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
 mkdir -p $tlsdir
-chown -R ejabberd:ejabberd $tlsdir
-chmod -R 700 $tlsdir
 
 r=`tput setaf 1`
 g=`tput setaf 2`
@@ -706,8 +704,6 @@ sleep 1
 echo "Now creating all-in-one TLS file for $hostname for ejabberd..."
 echo
 touch $tlsdir/hostname.pem
-chown ejabberd:ejabberd $tlsdir/hostname.pem
-chmod 700 $tlsdir/hostname.pem
 cat /etc/letsencrypt/live/$hostname/privkey.pem > $tlsdir/hostname.pem
 cat /etc/letsencrypt/live/$hostname/fullchain.pem >> $tlsdir/hostname.pem
 echo "Finished creating all-in-one TLS file for $hostname for ejabberd."
@@ -748,8 +744,6 @@ then
   echo "Now creating all-in-one TLS file for $domain for ejabberd..."
   echo
   touch $tlsdir/domain.pem
-  chown ejabberd:ejabberd $tlsdir/domain.pem
-  chmod 700 $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/privkey.pem > $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $tlsdir/domain.pem
 	domtlscertloc=$tlsdir/domain.pem
@@ -776,8 +770,6 @@ sleep 1
 echo "Now creating uploads directory..."
 echo
 mkdir -p /opt/ejabberd/uploads/
-chown -R ejabberd:ejabberd /opt/ejabberd/uploads/
-chmod -R 755 /opt/ejabberd/uploads/
 echo "Finished creating uploads directory."
 echo
 sleep 1
@@ -801,6 +793,15 @@ cp $sourcedir/conf/ejabberd/ejabberd-1708.yml /opt/ejabberd/conf/ejabberd.yml
 echo "Finished setting custom aenigma config to ejabberd.yml."
 echo
 sleep 1
+
+echo "Now securing permissions..."
+echo
+chown -R ejabberd:ejabberd $tlsdir
+chmod -R 700 $tlsdir
+chown -R ejabberd:ejabberd /opt/ejabberd/uploads/
+chmod -R 755 /opt/ejabberd/uploads/
+echo "Finished securing permissions."
+echo
 
 echo "Now stopping ejabberd..."
 echo
