@@ -4,7 +4,7 @@ echo "${g}aenigma.xyz installer by openspace [https://github.com/openspace42/aen
 echo
 echo "based on ejabberd v17.08"
 echo
-echo "2050 [debug]" #debug
+echo "2109 [debug]" #debug
 
 installdir=/root/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
@@ -800,7 +800,7 @@ then
 # sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
 # sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
 # This second one instead directly substitutes the main TLS cert in the ejabberd config since we apparently don't need the hostname's one for ejabberd [nginx has its own].
-  sed -i "s|pathtocert|${domtlscertloc}|g" aenigma-ejabberd.yml
+  sed -i "s|${installdir}hostname.pem|${domtlscertloc}|g" aenigma-ejabberd.yml
 fi
 cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
 # cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml #shouldn't be needed
