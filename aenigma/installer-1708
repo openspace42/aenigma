@@ -21,7 +21,7 @@ echo
 
 echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
-echo "${r}WARNING: This script is NOT meant to be re-run.${n} If you have previously run it, ONLY run it again if you whish to either:"
+echo "${r}WARNING: This script is NOT meant to be re-run.${x} If you have previously run it, ONLY run it again if you whish to either:"
 echo
 echo "1] Fix an incomplete deployment that happened on the first run"
 echo
