@@ -4,6 +4,7 @@ echo "${g}aenigma.xyz installer by openspace [https://github.com/openspace42/aen
 echo
 echo "based on ejabberd v17.08"
 echo
+echo "2050 [debug]" #debug
 
 installdir=/root/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
@@ -809,6 +810,9 @@ sleep 1
 
 echo "Now starting ejabberd..."
 echo
+/opt/ejabberd-17.08/bin/ejabberdctl stop
+echo
+sleep 8
 /opt/ejabberd-17.08/bin/ejabberdctl start
 echo
 sleep 8
@@ -823,6 +827,9 @@ echo "Now registering ejabberd admin user..."
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /opt/ejabberd-17.08/bin/ejabberdctl register admin $domain $ejbdadminpw
+echo
+/opt/ejabberd-17.08/bin/ejabberdctl change_password admin $domain $ejbdadminpw
+echo
 echo "Finished registering ejabberd admin user"
 echo
 sleep 1
