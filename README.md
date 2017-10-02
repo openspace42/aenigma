@@ -2,7 +2,10 @@
 
 ## Install on Debian 8 / Ubuntu 16
 
-A] Download and execute install.sh
+```
+git clone https://github.com/openspace42/aenigma-server.git /root/aenigma-server/ && \
+sudo bash ae /root/aenigma-server/install.sh
+```
 
 OR
 
