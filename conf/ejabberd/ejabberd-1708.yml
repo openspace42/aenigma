@@ -25,7 +25,7 @@ hosts:
 
 define_macro:
   'CERTFILE': "/opt/ejabberd-17.08/conf/le.pem"
-  'CIPHERS': "ECDH:DH:!3DES:!aNULL:!eNULL:!MEDIUM@STRENGTH"
+  'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
 
   'TLSOPTS':
     - "no_sslv3"
