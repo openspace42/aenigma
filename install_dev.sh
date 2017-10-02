@@ -22,7 +22,7 @@ else
 	exit
 fi
 
-git clone https://github.com/openspace42/aenigma-server.git aenigma-server
+git clone https://github.com/openspace42/aenigma-server.git /root/aenigma-server/
 
 sudo bash aenigma-server/aenigma/installer-1708-v1.4
 
