@@ -809,7 +809,7 @@ sleep 1
 
 echo "Now starting ejabberd..."
 echo
-/opt/ejabberd-17.08/bin/ejabberdctl restart
+/opt/ejabberd-17.08/bin/ejabberdctl start
 echo
 sleep 8
 /opt/ejabberd-17.08/bin/ejabberdctl status
