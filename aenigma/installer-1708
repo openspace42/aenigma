@@ -5,7 +5,7 @@ echo
 echo "based on ejabberd v17.08"
 echo
 
-installdir=/root/aenigma.xyz_install # NO TRAILING SLASH!
+installdir=/root/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
 
 r=`tput setaf 1`
@@ -711,9 +711,9 @@ sleep 1
 
 echo "Now creating all-in-one TLS file for $hostname for ejabberd..."
 echo
-touch /opt/ejabberd-17.08/conf/hostname.pem
-cat /etc/letsencrypt/live/$hostname/privkey.pem > /opt/ejabberd-17.08/conf/hostname.pem
-cat /etc/letsencrypt/live/$hostname/fullchain.pem >> /opt/ejabberd-17.08/conf/hostname.pem
+touch $installdir/hostname.pem
+cat /etc/letsencrypt/live/$hostname/privkey.pem > $installdir/hostname.pem
+cat /etc/letsencrypt/live/$hostname/fullchain.pem >> $installdir/hostname.pem
 echo "Finished creating all-in-one TLS file for $hostname for ejabberd."
 echo
 sleep 1
@@ -753,10 +753,10 @@ then
 
   echo "Now creating all-in-one TLS file for $domain for ejabberd..."
   echo
-  touch /opt/ejabberd-17.08/conf/domain.pem
-	cat /etc/letsencrypt/live/$domain/privkey.pem > /opt/ejabberd-17.08/conf/domain.pem
-	cat /etc/letsencrypt/live/$domain/fullchain.pem >> /opt/ejabberd-17.08/conf/domain.pem
-	domtlscertloc=/opt/ejabberd-17.08/conf/domain.pem
+  touch $installdir/domain.pem
+	cat /etc/letsencrypt/live/$domain/privkey.pem > $installdir/domain.pem
+	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $installdir/domain.pem
+	domtlscertloc=$installdir/domain.pem
   echo "Finisher creating all-in-one TLS file for $domain for ejabberd..."
   echo
   sleep 1
@@ -795,11 +795,11 @@ then
 # First [commented] one is the old method of installing domain TLS cert, keeping it in case of future need.
 # wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/ejabberd/ejabberd-tlsaddition.txt
 # sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
-# sed -i "s|pathtofile|${domtlscertloc}|g" ejabberd-tlsaddition.txt
+# sed -i "s|/root/aenigma/hostname.pem|${domtlscertloc}|g" ejabberd-tlsaddition.txt
 # sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
 # sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
 # This second one instead directly substitutes the main TLS cert in the ejabberd config since we apparently don't need the hostname's one for ejabberd [nginx has its own].
-  sed -i "s|/opt/ejabberd-17.08/conf/le.pem|${domtlscertloc}|g" aenigma-ejabberd.yml
+  sed -i "s|pathtocert|${domtlscertloc}|g" aenigma-ejabberd.yml
 fi
 cp aenigma-ejabberd.yml /opt/ejabberd/conf/ejabberd.yml
 # cp aenigma-ejabberd.yml /opt/ejabberd-17.08/conf/ejabberd.yml #shouldn't be needed
@@ -838,7 +838,7 @@ echo
 read -p "[press enter to continue reading...]"
 echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
-if [ -f /opt/ejabberd-17.08/conf/dh.pem ]
+if [ -f $installdir/dh.pem ]
 then
 	echo "DHparam file found. Skipping generation..."
 	echo
@@ -852,19 +852,19 @@ else
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
 		echo "Ok, proceeding with DHparams file generation..."
-		openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096
-		mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem
+		openssl dhparam -out $installdir/dh.pem.incomplete 4096
+		mv $installdir/dh.pem.incomplete $installdir/dh.pem
 		echo
 	else
 		echo "Skipping DHparams generation."
 		echo
 		echo "You can always generate them at a later time by executing:"
 		echo
-		echo "openssl dhparam -out /opt/ejabberd-17.08/conf/dh.pem.incomplete 4096"
+		echo "openssl dhparam -out $installdir/dh.pem.incomplete 4096"
 		echo
 		echo "[and making sure you let the command run until it exits]. Once it's done, execute:"
 		echo
-		echo "mv /opt/ejabberd-17.08/conf/dh.pem.incomplete /opt/ejabberd-17.08/conf/dh.pem"
+		echo "mv $installdir/dh.pem.incomplete $installdir/dh.pem"
 		echo
 		/opt/ejabberd-17.08/bin/ejabberdctl restart
 	fi
