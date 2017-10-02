@@ -8,7 +8,11 @@ echo
 installdir=/root/aenigma.xyz_install # NO TRAILING SLASH!
 mkdir -p $installdir
 
-echo "Run this once logged into your newly creater server via ssh as the root user [preferably inside 'screen']"
+r=`tput setaf 1`
+g=`tput setaf 2`
+x=`tput sgr0`
+
+echo "${r}Run this once logged into your newly creater server via ssh as the root user [preferably inside 'screen']${x}"
 echo
 read -p "Are you currently root in your target machine (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 echo
@@ -17,13 +21,13 @@ echo
 
 echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
-echo "WARNING: This script is NOT meant to be re-run. If you have previously run it, ONLY run it again if you whish to either:"
+echo "${r}WARNING: This script is NOT meant to be re-run.${n} If you have previously run it, ONLY run it again if you whish to either:"
 echo
 echo "1] Fix an incomplete deployment that happened on the first run"
 echo
 echo "2] Start fresh with a brand new server"
 echo
-echo "Running this script again WILL completely obliterate any existing conigurations and data."
+echo "${r}Running this script again WILL completely obliterate any existing conigurations and data.${x}"
 echo
 echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
@@ -33,10 +37,10 @@ echo "Confirmed. Now continuing..."
 echo
 
 if [ -f /root/.dfbs-run-ok ]; then
-        echo "Debian First Boot Setup was previously run successfully. Continuing..."
+        echo "${g}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
 else
-	echo "Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end."
+	echo "${r}Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end.${x}"
 	echo
 	echo "Run it now [or re-run it and make sure you reboot at the end] by executing the following command:"
 	echo
@@ -351,13 +355,10 @@ fi
 
 thisip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 
-
-
-
-dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
-wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+#dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+#digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+#wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+#wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your hostname DNS settings are correct."
 echo
@@ -376,26 +377,26 @@ echo
 			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$hostname DNS record in IPv4 on public DNS..."
 			echo
 
-			hadignxcheck="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-			hadigresult="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
+			hndignxcheck="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
+			hndigresult="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
-			if [ $hadignxcheck = "0" ]
+			if [ $hndignxcheck = "0" ]
 			then
-				echo "The ${hostarray[$i]}$hostname record does NOT appear to be at all set on public DNS."
+				echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to be at all set on public DNS.${x}"
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
 				echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
 				echo
 			else
-				if [ $hadigresult = $thisip ]
+				if [ $hndigresult = $thisip ]
 				then
-					echo "The ${hostarray[$i]}$hostname record appears to resolve correctly to this server on public DNS."
+					echo "${g}The ${hostarray[$i]}$hostname record appears to resolve correctly to this server on public DNS.${x}"
 					echo
 					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
 					echo
 				else
-					echo "The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server on public DNS."
+					echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server on public DNS.${x}"
 					echo
 					echo "This is the result of a dig query for ${hostarray[$i]}$hostname:"
 					echo
