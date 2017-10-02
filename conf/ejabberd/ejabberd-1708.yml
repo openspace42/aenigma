@@ -24,7 +24,7 @@ hosts:
 
 
 define_macro:
-  'CERTFILE': "/root/aenigma/hostname.pem"
+  'CERTFILE': "/etc/ssl/aenigma/hostname.pem"
   'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
 
   'TLSOPTS':
@@ -33,7 +33,7 @@ define_macro:
     - "no_tlsv1_1"
     - "cipher_server_preference"
     - "no_compression"
-  'DHFILE': "/root/aenigma/dh.pem"
+  'DHFILE': "/etc/ssl/aenigma/dh.pem"
 
 listen:
   -
