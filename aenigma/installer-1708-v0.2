@@ -819,10 +819,12 @@ echo "Finished updating ejabberd's module repo..."
 echo
 sleep 1
 
-echo "Now creating "ADMIN:EVERYBODY" and "ADMIN:ONLINY shared roster groups [admin@$domain can see "everybody" and "all online"]..."
+echo "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']..."
 echo
-/opt/ejabberd-17.08/bin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This is a shared roster group set by aenigma" ""
+/opt/ejabberd-17.08/bin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
 /opt/ejabberd-17.08/bin/ejabberdctl srg-user-add @all@ localhost everybody $domain
+/opt/ejabberd-17.08/bin/ejabberdctl srg_create online $domain "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
+/opt/ejabberd-17.08/bin/ejabberdctl srg-user-add @online@ localhost online $domain
 /opt/ejabberd-17.08/bin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
 /opt/ejabberd-17.08/bin/ejabberdctl srg-user-add admin $domain admin $domain
 echo "Finished creating shared roster groups."
