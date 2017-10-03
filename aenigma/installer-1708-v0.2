@@ -802,6 +802,22 @@ chown -R ejabberd:ejabberd /opt/ejabberd/uploads/
 chmod -R 755 /opt/ejabberd/uploads/
 echo "Finished securing permissions."
 echo
+sleep 1
+
+echo "Now adding ejabberd's directory to $PATH..."
+echo
+echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/ejabberd-17.08/bin/"' > /etc/environment
+. /etc/environment
+echo "Finished adding ejabberd's directory to $PATH."
+echo
+sleep 1
+
+echo "Now updating ejabberd's module repo..."
+echo
+/opt/ejabberd-17.08/bin/ejabberdctl modules_update_specs
+echo "Finished updating ejabberd's module repo..."
+echo
+sleep 1
 
 echo "Now stopping ejabberd..."
 echo
