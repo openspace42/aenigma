@@ -553,7 +553,7 @@ then
 
 			if [ $dtdignxcheck = "0" ]
 			then
-				echo "The ${domtldarray[$i]}$domain record does NOT appear to be at all set on public DNS."
+				echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to be at all set on public DNS.${x}"
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
@@ -562,12 +562,12 @@ then
 			else
 				if [ $dtdigresult = $thisip ]
 				then
-					echo "The ${domtldarray[$i]}$domain record appears to resolve correctly to this server on public DNS."
+					echo "${g}The ${domtldarray[$i]}$domain record appears to resolve correctly to this server on public DNS.${x}"
 					echo
 					echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
 					echo
 				else
-					echo "The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS."
+					echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS.${x}"
 					echo
 					echo "This is the result of a dig query for ${domtldarray[$i]}$domain:"
 					echo
@@ -624,7 +624,7 @@ do
 
 	if [ $dsdignxcheck = "0" ]
 	then
-		echo "Its DNS record does NOT appear to be at all set on public DNS."
+		echo "${r}Its DNS record does NOT appear to be at all set on public DNS.${x}"
 		echo
 		echo "Please ensure you set your DNS record as follows:"
 		echo
@@ -633,12 +633,12 @@ do
 	else
 		if [ $dsdigresult = $thisip ]
 		then
-			echo "Its DNS record appears to resolve correctly to this server on public DNS."
+			echo "${g}Its DNS record appears to resolve correctly to this server on public DNS.${x}"
 			echo
 			echo -e "| $i.$domain\t\t\tA\t$thisip |"
 			echo
 		else
-			echo "Its DNS record does NOT appear to correctly resolve to this server on public DNS."
+			echo "${r}Its DNS record does NOT appear to correctly resolve to this server on public DNS.${x}"
 			echo
 			echo "This is the result of a dig query for $i.$domain:"
 			echo
