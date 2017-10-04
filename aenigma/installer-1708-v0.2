@@ -721,13 +721,20 @@ sleep 1
 
 echo "Now setting index.html in docroot for $hostname..."
 echo
-cp $sourcedir/conf/web/index.html /var/www/$hostname/htdocs/
+cp $sourcedir/conf/web/hostname/index.html /var/www/$hostname/htdocs/
 echo "Finished setting index.html in docroot for $hostname."
 echo
 sleep 1
 
 if [ $additionalTLScertmode = "here" ]
 then
+
+  echo "Now setting index.html in docroot for $domain..."
+  echo
+  cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
+  echo "Finished setting index.html in docroot for $domain."
+  echo
+  sleep 1
 
   echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
   echo
