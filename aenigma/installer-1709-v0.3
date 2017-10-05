@@ -7,6 +7,8 @@ echo
 echo "aenigma-server v0.3"
 echo
 
+newsubver=09 # specify ejabberd minor version here! [only valid up until v17.12]
+newver=ejabberd-17.$newsubver
 sourcedir=/root/aenigma-server # Don't change! | No trailing slash!
 installdir=/root/aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
@@ -16,6 +18,7 @@ mkdir -p $tlsdir
 r=`tput setaf 1`
 g=`tput setaf 2`
 x=`tput sgr0`
+b=`tput bold`
 
 echo "${r}Run this once logged into your newly creater server via ssh as the root user [preferably inside 'screen']${x}"
 echo
@@ -767,9 +770,99 @@ echo "Finished downloading ejabberd."
 echo
 sleep 1
 
+echo "Now checking for previous installs of ejabberd..."
+echo
+
+if ls /opt/ejabberd-17.* 1> /dev/null 2>&1
+then
+	echo "An old ejabberd version was found installed on this machine."
+	echo
+	array=$(echo "$(ls -d /opt/ejabberd-17.*)" | sed "s|/opt/ejabberd-17.||g")
+	IFS=$'\n'
+	ejcurrlatestsubver=$(echo "${array[*]}" | sort -nr | head -n1)
+	ejcurrlatestver="ejabberd-17.$ejcurrlatestsubver"
+	echo "The latest version of ejabberd currently installed is | $ejcurrlatestver |"
+	echo
+	if [ $newsubver -gt $ejcurrlatestsubver ]
+	then
+		echo "${g}The version of ejabberd being installed is ${b}newer${x}${g} than the one currently installed on this machine.${x}"
+		echo
+		echo "Moving ejabberd directory in preparation for upgrade..."
+		echo
+		mv /opt/$ejcurrlatestver /opt/$newver
+	elif [ $newsubver = $ejcurrlatestsubver ]
+	then
+		echo "${g}The version of ejabberd being installed is ${b}identical${x}${g} to the one currently installed on this machine.${x}"
+		echo
+		echo "Continuing..."
+		echo
+	else
+		echo "${r}The version of ejabberd being installed is ${b}older${x}${r} than the one currently installed on this machine.${x}"
+		echo
+		echo "Aborting..."
+		echo
+		exit
+	fi
+else
+
+	echo "No previous version of ejabberd found."
+	echo
+	echo "Continuing..."
+	echo
+
+fi
+
+echo "Finished checking for previous installs of ejabberd."
+echo
+
+echo "Now checking for previous installs of bitrock..."
+echo
+
+if ls /opt/bitrock/ejabberd-17.* 1> /dev/null 2>&1
+then
+	echo "Old bitrock version found installed on this machine."
+	echo
+	brarray=$(echo "$(ls -d /opt/bitrock/ejabberd-17.*)" | sed "s|/opt/bitrock/ejabberd-17.||g" | sed "s|-0||g")
+	IFS=$'\n'
+	brcurrlatestsubver=$(echo "${brarray[*]}" | sort -nr | head -n1)
+	brcurrlatestver="ejabberd-17.$brcurrlatestsubver"
+	echo "The latest version of bitrock currently installed is | $brcurrlatestver |"
+	echo
+	if [ $newsubver -gt $brcurrlatestsubver ]
+	then
+		echo "${g}The version of bitrock being installed is ${b}newer${x}${g} than the one currently installed on this machine.${x}"
+		echo
+		echo "Moving bitrock directory in preparation for upgrade..."
+		echo
+		mv /opt/bitrock/$brcurrlatestver-0 /opt/bitrock/$newver-0
+	elif [ $newsubver = $brcurrlatestsubver ]
+	then
+		echo "${g}The version of bitrock being installed is ${b}identical${x}${g} to the one currently installed on this machine.${x}"
+		echo
+		echo "Continuing..."
+		echo
+	else
+		echo "${r}The version of bitrock being installed is ${b}older${x}${r} than the one currently installed on this machine.${x}"
+		echo
+		echo "Aborting..."
+		echo
+		exit
+	fi
+else
+
+	echo "No previous version of bitrock found."
+	echo
+	echo "Continuing..."
+	echo
+
+fi
+
+echo "Finished checking for previous installs of bitrock..."
+echo
+
 echo "Now installing ejabberd..."
 echo
-dpkg -i ejabberd_17.09-0_amd64.deb
+dpkg -i ejabberd_17.$newsubver-0_amd64.deb
 echo "Finished installing ejabberd."
 echo
 sleep 1
