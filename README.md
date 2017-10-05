@@ -12,7 +12,7 @@ current version: v0.4 [2017-10-06]
 
 ## Recommended client:
 
-The one and only **conversations** [github](https://github.com/siacs/Conversations) [f-droid](https://f-droid.org/packages/eu.siacs.conversations/) [website](https://conversations.im/)
+The one and only **conversations** [[github](https://github.com/siacs/Conversations)] [[f-droid](https://f-droid.org/packages/eu.siacs.conversations/)] [[website](https://conversations.im/)]
 
 ## Credits
 
