@@ -358,7 +358,7 @@ modules:
   mod_http_bind: {}
   mod_http_fileserver:
     docroot: "/var/www"
-    accesslog: "/opt/ejabberd-17.09/logs/access.log"
+    accesslog: "/var/logs/ejabberd/www_access.log"
   mod_http_upload:
     host: "xu.@HOST@"
     docroot: "@HOME@/uploads"
