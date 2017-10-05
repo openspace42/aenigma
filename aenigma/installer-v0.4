@@ -1,14 +1,10 @@
 #!/bin/bash
 
-echo "${g}aenigma.xyz installer by openspace [https://github.com/openspace42/aenigma]${x}"
+echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
-echo "based on ejabberd v17.09"
-echo
-echo "aenigma-server v0.3"
+echo "aenigma-server v0.4"
 echo
 
-newsubver=09 # specify ejabberd minor version here! [only valid up until v17.12]
-newver=ejabberd-17.$newsubver
 sourcedir=/root/aenigma-server # Don't change! | No trailing slash!
 installdir=/root/aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
@@ -807,41 +803,33 @@ echo "Now securing permissions..."
 echo
 chown -R ejabberd:ejabberd $tlsdir
 chmod -R 700 $tlsdir
-chown -R ejabberd:ejabberd /opt/ejabberd/uploads/
-chmod -R 755 /opt/ejabberd/uploads/
+chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
+chmod -R 755 /etc/ejabberd/uploads/
 echo "Finished securing permissions."
-echo
-sleep 1
-
-echo "Now adding ejabberd's directory to $PATH..."
-echo
-echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/ejabberd-17.09/bin/"' > /etc/environment
-. /etc/environment
-echo "Finished adding ejabberd's directory to $PATH."
 echo
 sleep 1
 
 echo "Now updating ejabberd's module repo..."
 echo
-/opt/ejabberd-17.09/bin/ejabberdctl modules_update_specs
+/usr/sbin/ejabberdctl modules_update_specs
 echo "Finished updating ejabberd's module repo..."
 echo
 sleep 1
 
 echo "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']..."
 echo
-/opt/ejabberd-17.09/bin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
-/opt/ejabberd-17.09/bin/ejabberdctl srg-user-add @all@ localhost everybody $domain
-/opt/ejabberd-17.09/bin/ejabberdctl srg_create online $domain "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
-/opt/ejabberd-17.09/bin/ejabberdctl srg-user-add @online@ localhost online $domain
-/opt/ejabberd-17.09/bin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
-/opt/ejabberd-17.09/bin/ejabberdctl srg-user-add admin $domain admin $domain
+/usr/sbin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
+/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody $domain
+/usr/sbin/ejabberdctl srg_create online $domain "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
+/usr/sbin/ejabberdctl srg-user-add @online@ localhost online $domain
+/usr/sbin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
+/usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
 echo "Finished creating shared roster groups."
 echo
 
 echo "Now stopping ejabberd..."
 echo
-/opt/ejabberd-17.09/bin/ejabberdctl stop
+/usr/sbin/ejabberdctl stop
 echo
 sleep 8
 echo "Finished starting ejabberd."
@@ -850,10 +838,10 @@ sleep 1
 
 echo "Now starting ejabberd..."
 echo
-/opt/ejabberd-17.09/bin/ejabberdctl start
+/usr/sbin/ejabberdctl start
 echo
 sleep 8
-/opt/ejabberd-17.09/bin/ejabberdctl status
+/usr/sbin/ejabberdctl status
 echo
 sleep 1
 echo "Finished starting ejabberd."
@@ -863,9 +851,9 @@ sleep 1
 echo "Now registering ejabberd admin user..."
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
-/opt/ejabberd-17.09/bin/ejabberdctl register admin $domain $ejbdadminpw
+/usr/sbin/ejabberdctl register admin $domain $ejbdadminpw
 echo
-/opt/ejabberd-17.09/bin/ejabberdctl change_password admin $domain $ejbdadminpw
+/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
 echo
 echo "Finished registering ejabberd admin user"
 echo
@@ -910,7 +898,7 @@ else
 		echo
 		echo "mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem"
 		echo
-		/opt/ejabberd-17.09/bin/ejabberdctl restart
+		/usr/sbin/ejabberdctl restart
 	fi
 	echo "Finished generating DHparams."
 	echo
