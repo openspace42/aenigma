@@ -28,4 +28,4 @@ David Gultsch + Holger Weiß for their excellent work and for their very preciou
 
 Also, anyone involved in the XMPP community.
 
-Thanks to all of you. Let's make this happen.
+Thanks to all of you. Let's make this happen. It's about time [finally].
