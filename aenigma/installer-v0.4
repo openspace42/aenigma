@@ -379,6 +379,7 @@ echo
 				echo
 				echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
 				echo
+				read -p "[press enter to continue...]"
 			else
 				if [ $hndigresult = $thisip ]
 				then
@@ -386,6 +387,7 @@ echo
 					echo
 					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
 					echo
+					sleep 1
 				else
 					echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server on public DNS.${x}"
 					echo
@@ -395,23 +397,10 @@ echo
 					echo
 					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 					echo
-					read -p "Continue setup? (Y/n): " -n 1 -r
-					echo
-					if [[ ! $REPLY =~ ^[Nn]$ ]]
-					then
-						echo "Ok, continuing..."
-						echo
-					else
-						echo "Ok, exiting..."
-						echo
-						exit
-					fi
+					read -p "[press enter to continue...]"
 				fi
 			fi
-
-		read -p "[press enter to continue...]"
-		echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-
+			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 		done
 
 sleep 1
@@ -523,6 +512,7 @@ then
 		echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
     echo
     echo "For now, no need to worry about that."
+    echo
     read -p "[press enter to continue reading...]"
     echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     
@@ -558,6 +548,7 @@ then
 				echo
 				echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
 				echo
+				read -p "[press enter to continue...]"
 			else
 				if [ $dtdigresult = $thisip ]
 				then
@@ -565,6 +556,7 @@ then
 					echo
 					echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
 					echo
+					sleep 1
 				else
 					echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS.${x}"
 					echo
@@ -574,23 +566,10 @@ then
 					echo
 					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 					echo
-					read -p "Continue setup? (Y/n): " -n 1 -r
-					echo
-					if [[ ! $REPLY =~ ^[Nn]$ ]]
-					then
-						echo "Ok, continuing..."
-						echo
-					else
-						echo "Ok, exiting..."
-						echo
-						exit
-					fi
+					read -p "[press enter to continue...]"
 				fi
 			fi
-
-		read -p "[press enter to continue...]"
-		echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-
+			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 		done
 
 	fi
@@ -629,6 +608,7 @@ do
 		echo
 		echo -e "| $i.$domain\t\t\tA\t$thisip |"
 		echo
+		read -p "[press enter to continue...]"
 	else
 		if [ $dsdigresult = $thisip ]
 		then
@@ -636,6 +616,7 @@ do
 			echo
 			echo -e "| $i.$domain\t\t\tA\t$thisip |"
 			echo
+			sleep 1
 		else
 			echo "${r}Its DNS record does NOT appear to correctly resolve to this server on public DNS.${x}"
 			echo
@@ -645,23 +626,10 @@ do
 			echo
 			echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 			echo
-			read -p "Continue setup? (Y/n): " -n 1 -r
-			echo
-			if [[ ! $REPLY =~ ^[Nn]$ ]]
-			then
-				echo "Ok, continuing..."
-				echo
-			else
-				echo "Ok, exiting..."
-				echo
-				exit
-			fi
+			read -p "[press enter to continue...]"
 		fi
 	fi
-
-read -p "[press enter to continue...]"
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-
+	echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 done
 echo
 
