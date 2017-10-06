@@ -167,6 +167,7 @@ then
 			echo
 			changedomain=y
 		else
+			echo
 			echo "Ok, using previous domain: | $prevdomain |"
 			echo
 			domain=$prevdomain
@@ -199,6 +200,7 @@ then
 		echo
 		hostname="$(cat /etc/hostname)"
 	else
+		echo
 		echo "Leaving hostname set to | $hostname |"
 		echo
 	fi
@@ -224,6 +226,7 @@ then
 			echo
 			changedomain=y
 		else
+			echo
 			echo "Ok, using previous domain: | $prevdomain |"
 			echo
 			domain=$prevdomain
@@ -263,6 +266,7 @@ then
 			echo
 			hostname="$(cat /etc/hostname)"
 		else
+			echo
 			echo "Not changing hostname. Exiting..."
 			echo
 			exit
@@ -299,6 +303,7 @@ then
 		echo
 		hostname="$(cat /etc/hostname)"
 	else
+		echo
 		echo "Leaving hostname set to | $hostname |"
 		echo
 	fi
@@ -471,6 +476,7 @@ then
 					echo "Now configure it to push its LE TLS cert to this server by following the instructions."
 					echo
 				else
+					echo
 					echo "Ok, no problem, you can adapt this script:"
 					echo
 					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
@@ -856,6 +862,7 @@ else
 		mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem
 		echo
 	else
+		echo
 		echo "Skipping DHparams generation."
 		echo
 		echo "You can always generate them at a later time by executing:"
