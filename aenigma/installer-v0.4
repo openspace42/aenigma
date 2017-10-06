@@ -810,7 +810,6 @@ echo
 sleep 1
 
 echo "Now starting ejabberd..."
-echo
 /usr/sbin/ejabberdctl start
 echo
 sleep 8
@@ -827,7 +826,6 @@ ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /usr/sbin/ejabberdctl register admin $domain $ejbdadminpw
 echo
 /usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
-echo
 echo "Finished registering ejabberd admin user"
 echo
 sleep 1
@@ -837,6 +835,7 @@ echo
 echo "https://$hostname"
 echo
 echo "admin@$domain"
+echo
 echo $ejbdadminpw
 echo
 
