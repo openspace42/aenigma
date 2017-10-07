@@ -895,6 +895,20 @@ echo
 echo "Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt..."
 echo
 
+echo "Now adding IPv6 support to the HTTPS version of the $hostname site..."
+echo
+sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/ssl-hostname.conf
+cp $sourcedir/conf/nginx/ssl-hostname.conf /var/www/$hostname/conf/nginx/ssl.conf
+echo "Finished adding IPv6 support to the HTTPS version of the $hostname site..."
+echo
+
+echo "Now adding IPv6 support to the HTTPS redirect for the $hostname site..."
+echo
+sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/force-ssl-hostname.conf
+cp $sourcedir/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-$hostname.conf
+echo "Finished adding IPv6 support to the HTTPS redirect for the $hostname site..."
+echo
+
 echo "Now creating all-in-one TLS file for $hostname for ejabberd..."
 echo
 touch $tlsdir/hostname.pem
@@ -946,6 +960,20 @@ then
   ee site update $domain  --le
   echo
   echo "Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+  echo
+
+  echo "Now adding IPv6 support to the HTTPS version of the $domain site..."
+  echo
+  sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
+  cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
+  echo "Finished adding IPv6 support to the HTTPS version of the $domain site..."
+  echo
+
+  echo "Now adding IPv6 support to the HTTPS redirect for the $domain site..."
+  echo
+  sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
+  cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
+  echo "Finished adding IPv6 support to the HTTPS redirect for the $domain site..."
   echo
 
   echo "Now creating all-in-one TLS file for $domain for ejabberd..."
