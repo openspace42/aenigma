@@ -469,7 +469,7 @@ echo
 				else
 					echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
 					echo
-					echo "This is the result of a dig query for ${digarray[$i]}$hostname:"
+					echo "This is the result of a DNS query for ${digarray[$i]}$hostname:"
 					echo
 					getent ahostsv4 ${digarray[$i]}$hostname | head -1
 					echo
@@ -515,7 +515,7 @@ then
 					echo
 					echo "Please ensure you set your DNS record as follows:"
 					echo
-					echo -e "| ${digarray[$i]}$hostname\t\t\tAAAA\t$thisipv6 |"
+					echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
 					echo
 					read -p "[press enter to continue...]"
 				else
@@ -523,13 +523,13 @@ then
 					then
 						echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 						echo
-						echo -e "| ${digarray[$i]}$hostname\t\t\tAAAA\t$thisipv6 |"
+						echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
 						echo
 						sleep 1
 					else
 						echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
 						echo
-						echo "This is the result of a dig query for ${digarray[$i]}$hostname:"
+						echo "This is the result of a DNS query for ${digarray[$i]}$hostname:"
 						echo
 						getent ahostsv6 ${digarray[$i]}$hostname | head -1
 						echo
@@ -665,57 +665,123 @@ then
 		echo
 
 		additionalTLScertmode="here"
-		
-		declare -A domtldarray=(
-			[TLD]=""
-			[www]="www."
-		)
 
-		domtldarrayiter=0
+    		declare -A digarray=(
+    			[HN]=""
+    			[www]="www."
+    		)
 
-		for i in "${!domtldarray[@]}"
-		do
+    		digarrayiter=0
 
-			domtldarrayiter=$(($domtldarrayiter + 1))
-			echo "$domtldarrayiter] Now checking the ${domtldarray[$i]}$domain DNS record in IPv4..."
-			echo
+    		for i in "${!digarray[@]}"
+    		do
 
-			dtdignxcheck="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-			dtdigresult="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s')"
+    			digarrayiter=$(($digarrayiter + 1))
+    			echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv4..."
+    			echo
+    			sleep 1
 
-			if [ $dtdignxcheck = "0" ]
-			then
-				echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to be at all set.${x}"
-				echo
-				echo "Please ensure you set your DNS record as follows:"
-				echo
-				echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-				echo
-				read -p "[press enter to continue...]"
-			else
-				if [ $dtdigresult = $thisipv4 ]
-				then
-					echo "${g}The ${domtldarray[$i]}$domain record appears to resolve correctly to this server.${x}"
-					echo
-					echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-					echo
-					sleep 1
-				else
-					echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
-					echo
-					echo "This is the result of a dig query for ${domtldarray[$i]}$domain:"
-					echo
-					dig +noall +answer ${domtldarray[$i]}$domain
-					echo
-					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-					echo
-					read -p "[press enter to continue...]"
-				fi
-			fi
-			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
-		done
+    			dignxcheck="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 | sed 's/ .*//' | wc -l)"
+    			digresult="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 |sed 's/ .*//')"
 
-	fi
+    			if [ $dignxcheck = "0" ]
+    			then
+    				echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
+    				echo
+    				echo "Please ensure you set your DNS record as follows:"
+    				echo
+    				echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
+    				echo
+    				read -p "[press enter to continue...]"
+    			else
+    				if [ $digresult = $thisipv4 ]
+    				then
+    					echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
+    					echo
+    					echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
+    					echo
+    					sleep 1
+    				else
+    					echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
+    					echo
+    					echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
+    					echo
+    					getent ahostsv4 ${digarray[$i]}$domain | head -1
+    					echo
+    					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+    					echo
+    					read -p "[press enter to continue...]"
+    				fi
+    			fi
+    			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    		done
+
+    echo "Finished checking domain IPv4 DNS settings."
+    echo
+    sleep 1
+
+    if [ $ipv6avail = "y" ]
+    then
+
+    	echo "Now let's make sure your domain IPv6 DNS settings are correct."
+    	echo
+
+    			declare -A digarray=(
+    				[HN]=""
+    				[www]="www."
+    			)
+
+    			digarrayiter=0
+
+    			for i in "${!digarray[@]}"
+    			do
+
+    				digarrayiter=$(($digarrayiter + 1))
+    				echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv6..."
+    				echo
+    				sleep 1
+
+    				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$domain. | head -1 | sed 's/ .*//' | wc -l)"
+    				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | head -1 | sed 's/ .*//')"
+
+    				if [ $dignxcheck = "0" ]
+    				then
+    					echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
+    					echo
+    					echo "Please ensure you set your DNS record as follows:"
+    					echo
+    					echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
+    					echo
+    					read -p "[press enter to continue...]"
+    				else
+    					if [ ""$digresult" = ""$thisipv6" ]
+    					then
+    						echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
+    						echo
+    						echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
+    						echo
+    						sleep 1
+    					else
+    						echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
+    						echo
+    						echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
+    						echo
+    						getent ahostsv6 ${digarray[$i]}$domain | head -1
+    						echo
+    						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+    						echo
+    						read -p "[press enter to continue...]"
+    					fi
+    				fi
+    				echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    			done
+    			
+    	echo "Finished checking hostname IPv6 DNS settings."
+    	echo
+    	sleep 1
+    	
+    fi
+
 fi
 
 echo "Now checking additional DNS settings..."
@@ -763,7 +829,7 @@ do
 		else
 			echo "${r}Its DNS record does NOT appear to correctly resolve to this server.${x}"
 			echo
-			echo "This is the result of a dig query for $i.$domain:"
+			echo "This is the result of a DNS query for $i.$domain:"
 			echo
 			dig +noall +answer $i.$domain
 			echo
@@ -805,6 +871,16 @@ sleep 1
 echo "Now creating easyengine site for $hostname, generating its TLS certificate, and installing it..."
 echo
 ee site create $hostname
+
+echo "Now setting custom nginx config for $hostname..."
+echo
+sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/hostname.conf
+cp $sourcedir/conf/nginx/hostname.conf /etc/nginx/sites-available/$hostname
+service nginx reload
+echo "Finished setting custom nginx config for $hostname."
+echo
+sleep 1
+
 ee site update $hostname  --le
 echo
 echo "Finished creating easyengine site for $hostname."
@@ -817,15 +893,6 @@ touch $tlsdir/hostname.pem
 cat /etc/letsencrypt/live/$hostname/privkey.pem > $tlsdir/hostname.pem
 cat /etc/letsencrypt/live/$hostname/fullchain.pem >> $tlsdir/hostname.pem
 echo "Finished creating all-in-one TLS file for $hostname for ejabberd."
-echo
-sleep 1
-
-echo "Now setting custom nginx config for $hostname..."
-echo
-sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/nginx.conf
-cp $sourcedir/conf/nginx/nginx.conf /etc/nginx/sites-available/$hostname
-service nginx reload
-echo "Finished setting custom nginx config for $hostname."
 echo
 sleep 1
 
