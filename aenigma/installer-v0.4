@@ -348,6 +348,7 @@ else
 	echo
 	exit
 fi
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 echo "Is this server reachable [or intended to be reachable] from the public internet?"
 echo
@@ -374,13 +375,14 @@ else
 fi
 echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
-if [ deptype = "internet" ]
+if [ $deptype = "internet" ]
 then
 	thisipv4="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 	echo "Now testing IPv6 connectivity..."
 	echo
 	ipv6pingaddr="2001:4860:4860::8888"
-	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null; then
+	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null
+	then
 		echo "IPv6 connectivity good."
 		echo
 		ipv6avail=y
