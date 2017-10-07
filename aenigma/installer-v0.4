@@ -351,6 +351,49 @@ fi
 
 thisip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
 
+echo "Now testing IPv6 connectivity..."
+echo
+ipv6pingaddr="2001:4860:4860::8888"
+if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null; then
+	echo "IPv6 connectivity good."
+	echo
+	ipv6avail=y
+else
+	counter=4
+	pingacquired=y
+	echo
+	until ping6 -c1 $ipv6pingaddr &>/dev/null
+	do
+	echo "Waiting $counter more seconds for IPv6 connectivity..."
+	echo
+	if [ $counter = 0 ]
+	then
+		pingacquired=n
+		break
+	fi
+	counter=$(($counter - 1))
+	sleep 1
+	done
+	if [ $pingacquired = "y" ]
+	then
+		echo "IPv6 connectivity acquired."
+		echo
+		ipv6avail=y
+	else
+		echo "IPv6 connectivity not found."
+		echo
+		ipv6avail=n
+	fi
+fi
+if [ $ipv6avail = "y" ]
+then
+	thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
+	echo "Your IPv6 global [public] address seems to be: | $thisipv6 |"
+	echo
+fi
+echo "Finished testing IPv6 connectivity."
+echo
+
 #dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 #digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 #wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
