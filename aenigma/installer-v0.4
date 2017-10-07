@@ -349,55 +349,81 @@ else
 	exit
 fi
 
-thisip="$(dig +short myip.opendns.com @resolver1.opendns.com)"
-
-echo "Now testing IPv6 connectivity..."
+echo "Is this server reachable [or intended to be reachable] from the public internet?"
 echo
-ipv6pingaddr="2001:4860:4860::8888"
-if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null; then
-	echo "IPv6 connectivity good."
-	echo
-	ipv6avail=y
+echo "[Answer no if it is only intended for local network usage (i.e. NOT reachable from outside)]"
+echo
+read -p "Set up the server for public internet access? (Y/n): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Nn]$ ]]
+then
+  echo "Ok, continuing in ${b}public internet accessibilty${x} mode"
+  echo
+  deptype=internet
+  sleep 1
 else
-	counter=4
-	pingacquired=y
+  echo "Ok, continuing in ${b}local network accessibility${x} mode"
+  echo
+  echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well${x}"
+  echo
+  echo "${b}Open a shell to this machine and make sure it's using your local DNS server now before continuing.${x}"
+  echo
+  echo ${b} The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server.${x}"
+  deptype=local
+  read -p "[press enter to continue...]"
+fi
+echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+if [ deptype = "internet" ]
+then
+	thisipv4="$(dig +short myip.opendns.com @resolver1.opendns.com)"
+	echo "Now testing IPv6 connectivity..."
 	echo
-	until ping6 -c1 $ipv6pingaddr &>/dev/null
-	do
-	echo "Waiting $counter more seconds for IPv6 connectivity..."
-	echo
-	if [ $counter = 0 ]
-	then
-		pingacquired=n
-		break
-	fi
-	counter=$(($counter - 1))
-	sleep 1
-	done
-	if [ $pingacquired = "y" ]
-	then
-		echo "IPv6 connectivity acquired."
+	ipv6pingaddr="2001:4860:4860::8888"
+	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null; then
+		echo "IPv6 connectivity good."
 		echo
 		ipv6avail=y
 	else
-		echo "IPv6 connectivity not found."
+		counter=4
+		pingacquired=y
 		echo
-		ipv6avail=n
+		until ping6 -c1 $ipv6pingaddr &>/dev/null
+		do
+		echo "Waiting $counter more seconds for IPv6 connectivity..."
+		echo
+		if [ $counter = 0 ]
+		then
+			pingacquired=n
+			break
+		fi
+		counter=$(($counter - 1))
+		sleep 1
+		done
+		if [ $pingacquired = "y" ]
+		then
+			echo "IPv6 connectivity acquired."
+			echo
+			ipv6avail=y
+		else
+			echo "IPv6 connectivity not found."
+			echo
+			ipv6avail=n
+		fi
 	fi
-fi
-if [ $ipv6avail = "y" ]
-then
-	thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
-	echo "Your IPv6 global [public] address seems to be: | $thisipv6 |"
+	if [ $ipv6avail = "y" ]
+	then
+		thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
+		echo "Your IPv6 global [public] address appears to be: | $thisipv6 |"
+		echo
+	fi
+	echo "Finished testing IPv6 connectivity."
+	echo
+else
+	# get local ipv4 address into thislocalipv4
+	echo "Your local IPv4 address appears to be: | $thislocalipv4 |"
 	echo
 fi
-echo "Finished testing IPv6 connectivity."
-echo
-
-#dignxcheck="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-#digresult="$(getent hosts $hostname. | grep -oP '^\d+(\.\d+){3}\s')"
-#wwwdignxcheck="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
-#wwwdigresult="$(getent hosts www.$hostname. | grep -oP '^\d+(\.\d+){3}\s')"
 
 echo "Now let's make sure your hostname DNS settings are correct."
 echo
@@ -413,7 +439,7 @@ echo
 		do
 
 			hostarrayiter=$(($hostarrayiter + 1))
-			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$hostname DNS record in IPv4 on public DNS..."
+			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$hostname DNS record in IPv4..."
 			echo
 
 			hndignxcheck="$(getent hosts ${hostarray[$i]}$hostname. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
@@ -421,23 +447,23 @@ echo
 
 			if [ $hndignxcheck = "0" ]
 			then
-				echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to be at all set on public DNS.${x}"
+				echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to be at all set.${x}"
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
-				echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
+				echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
 				echo
 				read -p "[press enter to continue...]"
 			else
-				if [ $hndigresult = $thisip ]
+				if [ $hndigresult = $thisipv4 ]
 				then
-					echo "${g}The ${hostarray[$i]}$hostname record appears to resolve correctly to this server on public DNS.${x}"
+					echo "${g}The ${hostarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 					echo
-					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisip |"
+					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
 					echo
 					sleep 1
 				else
-					echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server on public DNS.${x}"
+					echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
 					echo
 					echo "This is the result of a dig query for ${hostarray[$i]}$hostname:"
 					echo
@@ -583,7 +609,7 @@ then
 		do
 
 			domtldarrayiter=$(($domtldarrayiter + 1))
-			echo "$domtldarrayiter] Now checking the ${domtldarray[$i]}$domain DNS record in IPv4 on public DNS..."
+			echo "$domtldarrayiter] Now checking the ${domtldarray[$i]}$domain DNS record in IPv4..."
 			echo
 
 			dtdignxcheck="$(getent hosts ${domtldarray[$i]}$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
@@ -591,23 +617,23 @@ then
 
 			if [ $dtdignxcheck = "0" ]
 			then
-				echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to be at all set on public DNS.${x}"
+				echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to be at all set.${x}"
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
-				echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
+				echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisipv4 |"
 				echo
 				read -p "[press enter to continue...]"
 			else
-				if [ $dtdigresult = $thisip ]
+				if [ $dtdigresult = $thisipv4 ]
 				then
-					echo "${g}The ${domtldarray[$i]}$domain record appears to resolve correctly to this server on public DNS.${x}"
+					echo "${g}The ${domtldarray[$i]}$domain record appears to resolve correctly to this server.${x}"
 					echo
-					echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisip |"
+					echo -e "| ${domtldarray[$i]}$domain\t\t\tA\t$thisipv4 |"
 					echo
 					sleep 1
 				else
-					echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server on public DNS.${x}"
+					echo "${r}The ${domtldarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
 					echo
 					echo "This is the result of a dig query for ${domtldarray[$i]}$domain:"
 					echo
@@ -641,7 +667,7 @@ for i in "${!domsubsarray[@]}"
 do
 
 	domsubsarrayiter=$(($domsubsarrayiter + 1))
-	echo "$domsubsarrayiter] Now checking the $i.$domain subdomain in IPv4 on public DNS..."
+	echo "$domsubsarrayiter] Now checking the $i.$domain subdomain in IPv4..."
 	echo
 	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
 	echo
@@ -651,23 +677,23 @@ do
 
 	if [ $dsdignxcheck = "0" ]
 	then
-		echo "${r}Its DNS record does NOT appear to be at all set on public DNS.${x}"
+		echo "${r}Its DNS record does NOT appear to be at all set.${x}"
 		echo
 		echo "Please ensure you set your DNS record as follows:"
 		echo
-		echo -e "| $i.$domain\t\t\tA\t$thisip |"
+		echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
 		echo
 		read -p "[press enter to continue...]"
 	else
-		if [ $dsdigresult = $thisip ]
+		if [ $dsdigresult = $thisipv4 ]
 		then
-			echo "${g}Its DNS record appears to resolve correctly to this server on public DNS.${x}"
+			echo "${g}Its DNS record appears to resolve correctly to this server.${x}"
 			echo
-			echo -e "| $i.$domain\t\t\tA\t$thisip |"
+			echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
 			echo
 			sleep 1
 		else
-			echo "${r}Its DNS record does NOT appear to correctly resolve to this server on public DNS.${x}"
+			echo "${r}Its DNS record does NOT appear to correctly resolve to this server.${x}"
 			echo
 			echo "This is the result of a dig query for $i.$domain:"
 			echo
