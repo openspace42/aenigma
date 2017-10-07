@@ -502,7 +502,7 @@ then
 			do
 
 				digarrayiter=$(($digarrayiter + 1))
-				echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv4..."
+				echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv6..."
 				echo
 				sleep 1
 
@@ -515,7 +515,7 @@ then
 					echo
 					echo "Please ensure you set your DNS record as follows:"
 					echo
-					echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv6 |"
+					echo -e "| ${digarray[$i]}$hostname\t\t\tAAAA\t$thisipv6 |"
 					echo
 					read -p "[press enter to continue...]"
 				else
@@ -523,7 +523,7 @@ then
 					then
 						echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 						echo
-						echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv6 |"
+						echo -e "| ${digarray[$i]}$hostname\t\t\tAAAA\t$thisipv6 |"
 						echo
 						sleep 1
 					else
