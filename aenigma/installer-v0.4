@@ -515,15 +515,15 @@ then
 					echo
 					echo "Please ensure you set your DNS record as follows:"
 					echo
-					echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+					echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv6 |"
 					echo
 					read -p "[press enter to continue...]"
 				else
-					if [ $digresult = $thisipv4 ]
+					if [ ""$digresult" = ""$thisipv6" ]
 					then
 						echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 						echo
-						echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+						echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv6 |"
 						echo
 						sleep 1
 					else
