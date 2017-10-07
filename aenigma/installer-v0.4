@@ -352,7 +352,7 @@ echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
 echo "Is this server reachable [or intended to be reachable] from the public internet?"
 echo
-echo "[Answer no if it is only intended for local network usage (i.e. NOT reachable from outside)]"
+echo "[Answer no if it is only intended for local network usage (i.e. NOT reachable from outside)]"
 echo
 read -p "Set up the server for public internet access? (Y/n): " -n 1 -r
 echo
@@ -646,6 +646,7 @@ then
 		read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
 	else
+    echo
 		echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
 		echo
 		echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
@@ -754,7 +755,7 @@ then
     					echo
     					read -p "[press enter to continue...]"
     				else
-    					if [ ""$digresult" = ""$thisipv6" ]
+    					if [ "$digresult" = "$thisipv6" ]
     					then
     						echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
     						echo
@@ -776,11 +777,13 @@ then
     				echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
     			done
     			
-    	echo "Finished checking hostname IPv6 DNS settings."
+    	echo "Finished checking domain IPv6 DNS settings."
     	echo
     	sleep 1
     	
     fi
+
+fi
 
 fi
 
@@ -871,6 +874,10 @@ sleep 1
 echo "Now creating easyengine site for $hostname, generating its TLS certificate, and installing it..."
 echo
 ee site create $hostname
+echo
+echo "Finished creating easyengine site for $hostname."
+echo
+sleep 1
 
 echo "Now setting custom nginx config for $hostname..."
 echo
@@ -881,11 +888,12 @@ echo "Finished setting custom nginx config for $hostname."
 echo
 sleep 1
 
+echo "Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt..."
+echo
 ee site update $hostname  --le
 echo
-echo "Finished creating easyengine site for $hostname."
+echo "Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt..."
 echo
-sleep 1
 
 echo "Now creating all-in-one TLS file for $hostname for ejabberd..."
 echo
@@ -918,12 +926,27 @@ then
 
   echo "Now creating easyengine site for $domain, generating its TLS certificate, and installing it..."
   echo
-	ee site create $domain
-	ee site update $domain --le
-	echo
+  ee site create $domain
+  echo
   echo "Finished creating easyengine site for $domain."
   echo
   sleep 1
+
+  echo "Now setting custom nginx config for $domain..."
+  echo
+  sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/domain.conf
+  cp $sourcedir/conf/nginx/domain.conf /etc/nginx/sites-available/$domain
+  service nginx reload
+  echo "Finished setting custom nginx config for $domain."
+  echo
+  sleep 1
+
+  echo "Now updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+  echo
+  ee site update $domain  --le
+  echo
+  echo "Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+  echo
 
   echo "Now creating all-in-one TLS file for $domain for ejabberd..."
   echo
