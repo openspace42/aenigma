@@ -426,50 +426,52 @@ else
 	echo "Your local IPv4 address appears to be: | $thislocalipv4 |"
 	echo
 fi
+sleep 1
 
 echo "Now let's make sure your hostname IPv4 DNS settings are correct."
 echo
 
-		declare -A hostarray=(
+		declare -A digarray=(
 			[HN]=""
 			[www]="www."
 		)
 
-		hostarrayiter=0
+		digarrayiter=0
 
-		for i in "${!hostarray[@]}"
+		for i in "${!digarray[@]}"
 		do
 
-			hostarrayiter=$(($hostarrayiter + 1))
-			echo "$hostarrayiter] Now checking the ${hostarray[$i]}$hostname DNS record in IPv4..."
+			digarrayiter=$(($digarrayiter + 1))
+			echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv4..."
 			echo
+			sleep 1
 
-			dignxcheck="$(getent ahostsv4 ${hostarray[$i]}$hostname. | head -1 | sed 's/ .*//' | wc -l)"
-			digresult="$(getent ahostsv4 ${hostarray[$i]}$hostname. | head -1 |sed 's/ .*//')"
+			dignxcheck="$(getent ahostsv4 ${digarray[$i]}$hostname. | head -1 | sed 's/ .*//' | wc -l)"
+			digresult="$(getent ahostsv4 ${digarray[$i]}$hostname. | head -1 |sed 's/ .*//')"
 
 			if [ $dignxcheck = "0" ]
 			then
-				echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to be at all set.${x}"
+				echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
-				echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+				echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
 				echo
 				read -p "[press enter to continue...]"
 			else
 				if [ $digresult = $thisipv4 ]
 				then
-					echo "${g}The ${hostarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
+					echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 					echo
-					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+					echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
 					echo
 					sleep 1
 				else
-					echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
+					echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
 					echo
-					echo "This is the result of a dig query for ${hostarray[$i]}$hostname:"
+					echo "This is the result of a dig query for ${digarray[$i]}$hostname:"
 					echo
-					getent ahostsv4 ${hostarray[$i]}$hostname | head -1
+					getent ahostsv4 ${digarray[$i]}$hostname | head -1
 					echo
 					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 					echo
@@ -479,6 +481,8 @@ echo
 			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 		done
 
+echo "Finished checking hostname IPv4 DNS settings."
+echo
 sleep 1
 
 if [ $ipv6avail = "y" ]
@@ -487,46 +491,47 @@ then
 	echo "Now let's make sure your hostname IPv6 DNS settings are correct."
 	echo
 
-			declare -A hostarray=(
+			declare -A digarray=(
 				[HN]=""
 				[www]="www."
 			)
 
-			hostarrayiter=0
+			digarrayiter=0
 
-			for i in "${!hostarray[@]}"
+			for i in "${!digarray[@]}"
 			do
 
-				hostarrayiter=$(($hostarrayiter + 1))
-				echo "$hostarrayiter] Now checking the ${hostarray[$i]}$hostname DNS record in IPv4..."
+				digarrayiter=$(($digarrayiter + 1))
+				echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv4..."
 				echo
+				sleep 1
 
-				dignxcheck="$(getent ahostsv6 ${hostarray[$i]}$hostname. | head -1 | sed 's/ .*//' | wc -l)"
-				digresult="$(getent ahostsv6 ${hostarray[$i]}$hostname. | head -1 | sed 's/ .*//')"
+				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$hostname. | head -1 | sed 's/ .*//' | wc -l)"
+				digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | head -1 | sed 's/ .*//')"
 
 				if [ $dignxcheck = "0" ]
 				then
-					echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to be at all set.${x}"
+					echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
 					echo
 					echo "Please ensure you set your DNS record as follows:"
 					echo
-					echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+					echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
 					echo
 					read -p "[press enter to continue...]"
 				else
 					if [ $digresult = $thisipv4 ]
 					then
-						echo "${g}The ${hostarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
+						echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 						echo
-						echo -e "| ${hostarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+						echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
 						echo
 						sleep 1
 					else
-						echo "${r}The ${hostarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
+						echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
 						echo
-						echo "This is the result of a dig query for ${hostarray[$i]}$hostname:"
+						echo "This is the result of a dig query for ${digarray[$i]}$hostname:"
 						echo
-						getent ahostsv6 ${hostarray[$i]}$hostname | head -1
+						getent ahostsv6 ${digarray[$i]}$hostname | head -1
 						echo
 						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 						echo
@@ -535,7 +540,9 @@ then
 				fi
 				echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 			done
-
+			
+	echo "Finished checking hostname IPv6 DNS settings."
+	echo
 	sleep 1
 	
 fi
