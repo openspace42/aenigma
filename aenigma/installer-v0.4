@@ -473,6 +473,10 @@ echo
 					echo
 					getent ahostsv4 ${digarray[$i]}$hostname | head -1
 					echo
+          echo "Please set it instead to:"
+          echo
+          echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
+          echo
 					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 					echo
 					read -p "[press enter to continue...]"
@@ -506,8 +510,8 @@ then
 				echo
 				sleep 1
 
-				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$hostname. | head -1 | sed 's/ .*//' | wc -l)"
-				digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | head -1 | sed 's/ .*//')"
+				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//' | wc -l)"
+				digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
 
 				if [ $dignxcheck = "0" ]
 				then
@@ -519,7 +523,7 @@ then
 					echo
 					read -p "[press enter to continue...]"
 				else
-					if [ ""$digresult" = ""$thisipv6" ]
+					if [ "$digresult" = "$thisipv6" ]
 					then
 						echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 						echo
@@ -533,6 +537,10 @@ then
 						echo
 						getent ahostsv6 ${digarray[$i]}$hostname | head -1
 						echo
+            echo "Please set it instead to:"
+            echo
+            echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
+            echo
 						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 						echo
 						read -p "[press enter to continue...]"
@@ -709,6 +717,10 @@ then
     					echo
     					getent ahostsv4 ${digarray[$i]}$domain | head -1
     					echo
+              echo "Please set it instead to:"
+              echo
+              echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
+              echo
     					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
     					echo
     					read -p "[press enter to continue...]"
@@ -742,8 +754,8 @@ then
     				echo
     				sleep 1
 
-    				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$domain. | head -1 | sed 's/ .*//' | wc -l)"
-    				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | head -1 | sed 's/ .*//')"
+    				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//' | wc -l)"
+    				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
 
     				if [ $dignxcheck = "0" ]
     				then
@@ -769,6 +781,10 @@ then
     						echo
     						getent ahostsv6 ${digarray[$i]}$domain | head -1
     						echo
+                echo "Please set it instead to:"
+                echo
+                echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
+                echo
     						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
     						echo
     						read -p "[press enter to continue...]"
@@ -836,6 +852,10 @@ do
 			echo
 			dig +noall +answer $i.$domain
 			echo
+      echo "Please set it instead to:"
+      echo
+      echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
+      echo
 			echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 			echo
 			read -p "[press enter to continue...]"
@@ -928,13 +948,6 @@ sleep 1
 if [ $additionalTLScertmode = "here" ]
 then
 
-  echo "Now setting index.html in docroot for $domain..."
-  echo
-  cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
-  echo "Finished setting index.html in docroot for $domain."
-  echo
-  sleep 1
-
   echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
   echo
 
@@ -983,6 +996,13 @@ then
 	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $tlsdir/domain.pem
 	domtlscertloc=$tlsdir/domain.pem
   echo "Finisher creating all-in-one TLS file for $domain for ejabberd..."
+  echo
+  sleep 1
+
+  echo "Now setting index.html in docroot for $domain..."
+  echo
+  cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
+  echo "Finished setting index.html in docroot for $domain."
   echo
   sleep 1
 
