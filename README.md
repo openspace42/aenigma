@@ -7,20 +7,28 @@
 * One touch deployment: install it in three minutes with two commands!
 * Has a guided, step-by-step install that makes sure you get everything perfect on the first run
 * Always based on the latest version of ejabberd, a modern, scalable, and robust XMPP server
-* Passes all of the compliance checks performed by the Conversations client<sup>[1](###01)
-* Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester)<sup>[2](###02)
+* Passes all of the compliance checks performed by the Conversations client <sup>[1](#01)
+* Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester) <sup>[2](#02)
 * Automatically makes the ejabberd web admin interface available at https://[hostname]
 * Easily allows for the website for your top level domain to be hosted on the same server as well
 * Listens for c2s [aka client to server] connections *also* on port 443 [thanks to SSLH] to allow clients behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
 * Natively supports Signal-level encrypted conversations with all the required modules for OMEMO E2EE
 
-###### 01
+##### 01
 
 Although Conversations says PEP [Avatars / OMEMO] is *not* supported, it actually is, and both work perfectly
 
-###### 02
+##### 02
 
+Not yet supported by ejabberd:
 
+* XEP-0357: Push Notifications
+* XEP-0368: SRV records for XMPP over TLS [should start working soon thanks to ejabberd v17.09]
+* XEP-0384: OMEMO Encryption [even though OMEMO works perfectly]
+
+## Non-features
+
+* Keeps backwards compatibility with legacy XMPP clients and [most importantly] servers by using a not very restrictive ciphersuite, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by uncommenting one line in the config file
 
 ## Install on Debian 8 / Ubuntu 16
 
