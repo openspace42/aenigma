@@ -1,9 +1,5 @@
 # aenigma-server
 
-current version: v0.4 [2017-10-06 ~ ]
-
-[for older versions edit the install.sh file before running `sudo bash [...]`]
-
 ## Features
 
 * State of the art configuration
@@ -27,6 +23,10 @@ Although Conversations says PEP [Avatars / OMEMO] is *not* supported, it actuall
 
 
 ## Install on Debian 8 / Ubuntu 16
+
+current version: v0.4 [2017-10-06 ~ ]
+
+[for older versions edit the install.sh file before running `sudo bash [...]`]
 
 ```git clone https://github.com/openspace42/aenigma-server.git```
 
