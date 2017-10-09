@@ -1,4 +1,4 @@
-# aenigma-server
+# aenigma
 
 ## Features
 
