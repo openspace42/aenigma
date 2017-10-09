@@ -26,3 +26,6 @@ sudo bash aenigma/aenigma/installer-v0.4
 
 echo "Exiting installer."
 echo
+
+rm -r aenigma/
+exit
