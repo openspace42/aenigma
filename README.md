@@ -15,7 +15,7 @@
 * **Validates all required IPv4 and IPv6 DNS settings** [even those for specific modules such as `pubsub.`] and tells you exactly the correct values for every record
 * Sets up **UFW rules** for all configured services
 * Provisions **free and fully valid TLS [SSL] certificates** for everything [ejabberd and web] thanks to LetsEncrypt
-* Installs nginx and makes the ejabberd **web admin interface securely available** at https://<hostname>
+* Installs nginx and makes the ejabberd **web admin interface securely available** at https://[hostname]
 * Easily allows for the website for your top level domain to be hosted on the same server as well
 * Listens for **XMPP c2s [aka client to server] and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
 * Natively supports **Signal-level encrypted conversations** with all the required modules for OMEMO E2EE
