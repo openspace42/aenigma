@@ -1008,6 +1008,8 @@ then
 
 fi
 
+service nginx restart
+
 echo "Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml..."
 echo
 mkdir -p /etc/ejabberd/
@@ -1091,7 +1093,7 @@ echo "Now stopping ejabberd..."
 echo
 /usr/sbin/ejabberdctl stop
 sleep 8
-echo "Finished starting ejabberd."
+echo "Finished stopping ejabberd."
 echo
 sleep 1
 
