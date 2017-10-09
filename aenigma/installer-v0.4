@@ -6,7 +6,7 @@ echo "aenigma-server v0.4"
 echo
 
 sourcedir=/root/aenigma-server # Don't change! | No trailing slash!
-installdir=/root/aenigma # Don't change! | No trailing slash!
+installdir=/root/os-aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
 mkdir -p $tlsdir
@@ -1020,7 +1020,7 @@ then
 # First [commented] one is the old method of installing domain TLS cert, keeping it in case of future need.
 ## wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/ejabberd/ejabberd-tlsaddition.txt
 ## sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
-## sed -i "s|/root/aenigma/hostname.pem|${domtlscertloc}|g" ejabberd-tlsaddition.txt
+## sed -i "s|/root/os-aenigma/hostname.pem|${domtlscertloc}|g" ejabberd-tlsaddition.txt
 ## sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
 ## sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
 # This second one instead directly substitutes the main TLS cert in the ejabberd config since we apparently don't need the hostname's one for ejabberd [nginx has its own].
