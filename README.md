@@ -2,17 +2,24 @@
 
 ## Features
 
-* State of the art configuration
-* Secure by default [see [non-features](#non-features) for backwards compatibility exceptions]
-* One touch deployment: install it in three minutes with two commands!
-* Has a guided, step-by-step install that makes sure you get everything perfect on the first run
-* Always based on the latest version of ejabberd, a modern, scalable, and robust XMPP server
-* Passes all of the compliance checks performed by the Conversations client <sup>[1](#01)
+* **State of the art configuration**
+* **Secure by default** [see [non-features](#non-features) for backwards compatibility exceptions]
+* **One touch deployment**: install it in three minutes with two commands!
+* Has a guided, **step-by-step install** that makes sure you get everything perfect on the first run
+* Always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server
+* Passes all of the **compliance checks** performed by the Conversations client <sup>[1](#01)
 * Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester) <sup>[2](#02)
-* Automatically makes the ejabberd web admin interface available at https://[hostname]
+* Allows you to and guides you through using your **top level domain as the xmpp domain [@example.im]** while hosting the server on a subdomain [xmpp.example.im] as its hostname by using SRV records without any XMPP client UI/UX or TLS conflicts.
+* Works perfectly for both internet accessible and local network deployments
+* **Supports IPv6** out of the box
+* **Validates all required IPv4 and IPv6 DNS settings** [even those for specific modules such as `pubsub.`] and tells you exactly the correct values for every record
+* Sets up **UFW rules** for all configured services
+* Provisions **free and fully valid TLS [SSL] certificates** for everything [ejabberd and web] thanks to LetsEncrypt
+* Installs nginx and makes the ejabberd **web admin interface securely available** at https://<hostname>
 * Easily allows for the website for your top level domain to be hosted on the same server as well
-* Listens for c2s [aka client to server] connections *also* on port 443 [thanks to SSLH] to allow clients behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
-* Natively supports Signal-level encrypted conversations with all the required modules for OMEMO E2EE
+* Listens for **XMPP c2s [aka client to server] and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
+* Natively supports **Signal-level encrypted conversations** with all the required modules for OMEMO E2EE
+* Configures ejabberd **Shared Roster Groups** to easily allow the desired users to see eachother on their own rosters
 
 ##### 01
 
