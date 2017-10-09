@@ -1,8 +1,30 @@
 # aenigma-server
 
-current version: v0.4 [2017-10-06]
+current version: v0.4 [2017-10-06 ~ ]
 
 [for older versions edit the install.sh file before running `sudo bash [...]`]
+
+## Features
+
+* State of the art configuration
+* Secure by default [see "non-features" for backwards compatibility exceptions]
+* One touch deployment: install it in three minutes with two commands!
+* Has a guided, step-by-step install that makes sure you get everything perfect on the first run
+* Always based on the latest version of ejabberd, a modern, scalable, and robust XMPP server
+* Passes all of the compliance checks performed by the Conversations client<sup>[1](###01)
+* Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester)<sup>[2](###02)
+* Automatically makes the ejabberd web admin interface available at https://[hostname]
+* Easily allows for the website for your top level domain to be hosted on the same server as well
+* Listens for c2s [aka client to server] connections *also* on port 443 [thanks to SSLH] to allow clients behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
+* Natively supports Signal-level encrypted conversations with all the required modules for OMEMO E2EE
+
+###### 01
+
+Although Conversations says PEP [Avatars / OMEMO] is *not* supported, it actually is, and both work perfectly
+
+###### 02
+
+
 
 ## Install on Debian 8 / Ubuntu 16
 
