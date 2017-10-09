@@ -22,7 +22,7 @@ else
 	exit
 fi
 
-sudo bash aenigma-server/aenigma/installer-v0.4
+sudo bash aenigma/aenigma/installer-v0.4
 
 echo "Exiting installer."
 echo
