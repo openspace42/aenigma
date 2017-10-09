@@ -9,7 +9,7 @@ echo
 echo "Initiating installer..."
 echo
 
-if [ -f /root/.dfbs-run-ok ]; then
+if [ -f /root/os-dfbs/run-ok ]; then
         echo "${g}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
 else
