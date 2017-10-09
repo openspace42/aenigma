@@ -1029,6 +1029,17 @@ echo "Finished creating ejabberd directory and setting custom aenigma config to 
 echo
 sleep 1
 
+echo "Now installing SSLH..."
+echo
+sshport="$(cat /root/os-dfbs/ssh-port)"
+apt-get -y install sslh
+sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
+sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
+cp $sourcedir/conf/sslh/sslh /etc/default/sslh
+service sslh start
+echo "Finished installing SSLH."
+echo
+
 echo "Now installing ejabberd..."
 echo
 currdistro="$(lsb_release --codename | cut -f2)"
