@@ -2,10 +2,10 @@
 
 echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
-echo "aenigma-server v0.4"
+echo "aenigma v0.4"
 echo
 
-sourcedir=/root/aenigma-server # Don't change! | No trailing slash!
+sourcedir=/root/aenigma # Don't change! | No trailing slash!
 installdir=/root/os-aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 mkdir -p $installdir
@@ -1018,7 +1018,7 @@ sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 if [ $configoption = 1 ]
 then
 # First [commented] one is the old method of installing domain TLS cert, keeping it in case of future need.
-## wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma-server/master/conf/ejabberd/ejabberd-tlsaddition.txt
+## wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma/master/conf/ejabberd/ejabberd-tlsaddition.txt
 ## sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
 ## sed -i "s|/root/os-aenigma/hostname.pem|${domtlscertloc}|g" ejabberd-tlsaddition.txt
 ## sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
