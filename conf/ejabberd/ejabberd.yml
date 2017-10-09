@@ -22,18 +22,27 @@ hosts:
 
 ## route_subdomains: s2s
 
+### aenigma notice
+### to enable state-of-the-art, NOT backwards-compatible TLS encryption
+### [breaking all bridges with legacy servers and therefore the rest of XMPP community]
+### simply set: | s2s_protocol_options: 'TLSOPTS' | and | s2s_ciphers: 'CIPHERS' |
 
 define_macro:
-  'CERTFILE': "/etc/ssl/aenigma/hostname.pem"
-  'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
 
+  'CERTFILE': "/etc/ssl/aenigma/hostname.pem"
+  'DHFILE': "/etc/ssl/aenigma/dh.pem"
+  'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
+  'S2SCIPHERS': "HIGH:!MEDIUM:!LOW:!3DES:!CAMELLIA:!aNULL@STRENGTH"
   'TLSOPTS':
     - "no_sslv3"
     - "no_tlsv1"
     - "no_tlsv1_1"
     - "cipher_server_preference"
     - "no_compression"
-  'DHFILE': "/etc/ssl/aenigma/dh.pem"
+  'S2STLSOPTS':
+    - "no_sslv3"
+    - "cipher_server_preference"
+    - "no_compression"    
 
 listen:
   -
@@ -126,9 +135,9 @@ disable_sasl_mechanisms: "digest-md5"
 
 s2s_use_starttls: required
 s2s_certfile: 'CERTFILE'
-s2s_protocol_options: 'TLSOPTS'
-s2s_ciphers: 'CIPHERS'
 s2s_dhfile: 'DHFILE'
+s2s_protocol_options: 'S2STLSOPTS'
+s2s_ciphers: 'S2SCIPHERS'
 
 ## host_config:
 ##   "example.org":
