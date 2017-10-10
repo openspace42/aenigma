@@ -4,6 +4,10 @@
 
 It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email and [Streisand](https://github.com/StreisandEffect/streisand) has done for VPNs.
 
+The installation takes you on a three-minute, clearly worded, step-by-step setup and takes care of everything automagically.
+
+As soon as you're up and running join our conference at **os@xc.os.vu** !
+
 ## Features
 
 * **State of the art configuration** [work in progress ;]
@@ -43,9 +47,7 @@ Not yet supported by ejabberd:
 
 ## Install on Debian 8 / Ubuntu 16
 
-current version: v0.4 [2017-10-06 ~ ]
-
-[for older versions edit the install.sh file before running `sudo bash [...]`]
+current version: v0.4
 
 ```git clone https://github.com/openspace42/aenigma.git```
 
