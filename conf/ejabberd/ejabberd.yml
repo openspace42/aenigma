@@ -378,7 +378,7 @@ modules:
     docroot: "@HOME@/uploads"
     put_url: "https://@HOST@:5444"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
-    max_size: 104857600
+    max_size: 262144000
     file_mode: "0640"
     dir_mode: "2750"
     access:
