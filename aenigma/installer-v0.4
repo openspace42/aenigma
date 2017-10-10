@@ -31,7 +31,7 @@ b=`tput bold`
 if [ -d $installdir ]
 then
 	previnstall=y
-	echo "Found a previous install of aenigma."
+	echo "${g}Found a previous install of aenigma.${x}"
 	echo
 	read -p "Skip the introduction on XMPP basics? (Y/n): " -n 1 -r
 	echo
@@ -156,6 +156,7 @@ fi
 if [ $configoption = "notyetset" ]
 then
 	choice='Please select your desired configuration option: '
+	echo $choice
 	options=("configuration 1" "configuration 2" "configuration 3" "exit")
 	select opt in "${options[@]}"
 	do
@@ -1166,10 +1167,24 @@ echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /usr/sbin/ejabberdctl register admin $domain $ejbdadminpw
 echo
-/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
 echo "Finished registering ejabberd admin user"
 echo
 sleep 1
+
+read -p "Leave ejabberd admin user password the same as previously set? (Y/n): " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Nn]$ ]]
+then
+	echo "Skipping ejabberd admin user password reset."
+	echo
+	ejbdadminpwreset=y
+else
+	echo
+	echo "Ok, resetting ejabberd admin user password to: | $ejbdadminpw |"
+	echo
+	/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
+	ejbdadminpwreset=n	
+fi
 
 echo "You can finally log in:"
 echo
@@ -1177,11 +1192,18 @@ echo "https://$hostname"
 echo
 echo "admin@$domain"
 echo
-echo $ejbdadminpw
-echo
+
+if [ $ejbdadminpwreset = "y" ]
+then
+	echo $ejbdadminpw
+	echo
+else
+	echo "[your previously set password]"
+	echo
+fi
 
 read -p "[press enter to continue reading...]"
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 if [ -f $tlsdir/dh.pem ]
 then
@@ -1219,7 +1241,7 @@ else
 	sleep 1
 fi
 
-echo "aenigma installation complete!"
+echo "${b}${g}aenigma installation complete!${x}"
 echo
 
 exit
