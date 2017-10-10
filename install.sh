@@ -9,6 +9,14 @@ echo
 echo "Initiating installer..."
 echo
 
+if [[ $EUID -ne 0 ]]; then
+	echo "This script must be run as root. Run it as:"
+	echo
+	echo "sudo bash aenigma/install.sh"
+	echo
+	exit
+fi
+
 if [ -f /root/os-dfbs/run-ok ]; then
         echo "${g}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
