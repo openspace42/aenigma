@@ -43,7 +43,7 @@ Not yet supported by ejabberd:
 
 ## Non-features
 
-* Keeps backwards compatibility with legacy XMPP clients and [most importantly] servers by using a not very restrictive ciphersuite, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by uncommenting one line in the config file
+* Keeps backwards compatibility with legacy XMPP servers by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by changing two lines in the config file.
 
 ## Install on Debian 8 / Ubuntu 16
 
@@ -53,9 +53,15 @@ current version: v0.4
 
 ```sudo bash ./aenigma/install.sh```
 
-## Recommended client:
+## Recommended clients:
 
-The one and only **conversations** [[github](https://github.com/siacs/Conversations)] [[f-droid](https://f-droid.org/packages/eu.siacs.conversations/)] [[website](https://conversations.im/)]
+### For Android:
+
+**Conversations** [[github](https://github.com/siacs/Conversations)] [[f-droid](https://f-droid.org/packages/eu.siacs.conversations/)] [[website](https://conversations.im/)]
+
+### For iOS:
+
+**ChatSecure** [[github](https://github.com/chatsecure)] [[app store](https://itunes.apple.com/us/app/chatsecure/id464200063)] [[website](https://chatsecure.org/)]
 
 ## Credits
 
