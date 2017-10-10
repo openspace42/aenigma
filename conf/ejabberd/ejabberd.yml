@@ -378,6 +378,9 @@ modules:
     docroot: "@HOME@/uploads"
     put_url: "https://@HOST@:5444"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
+    max_size: 104857600
+    file_mode: "0640"
+    dir_mode: "2750"
     access:
       - allow
   mod_http_upload_quota:
@@ -409,9 +412,11 @@ modules:
   ## mod_proxy65: {}
   mod_pubsub:
     access_createnode: pubsub_createnode
-    ## ignore_pep_from_offline: true
-    ## ignore_pep_from_offline: false
+    ignore_pep_from_offline: false
     last_item_cache: false
+    max_items_node: 1000
+    default_node_config:
+      max_items: 1000
     plugins:
       - "flat"
       - "pep" # pep requires mod_caps
