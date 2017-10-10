@@ -6,7 +6,7 @@ It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabo
 
 The installation takes you on a three-minute, clearly worded, step-by-step setup and takes care of everything automagically.
 
-As soon as you're up and running join our conference at **os@xc.os.vu** !
+As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## Features
 
