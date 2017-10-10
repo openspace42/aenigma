@@ -16,32 +16,44 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-echo "${r}Run this once logged into your newly creater server via ssh as the root user [preferably inside 'screen']${x}"
-echo
-read -p "Are you currently root in your target machine (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-echo
-echo "Confirmed. Now continuing..."
-echo
+# warning kept in case of future need
 
 echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
-echo "${r}WARNING: This script is NOT meant to be re-run. If you have previously run it, ONLY run it again if you whish to either:"
-echo
-echo "1] Fix an incomplete deployment that happened on the first run"
-echo
-echo "2] Start fresh with a brand new server"
-echo
-echo "Running this script again WILL completely obliterate any existing conigurations and data.${x}"
-echo
-echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+echo "${r}WARNING:"
 echo
 read -p "Have you read and understood the above, and do you whish to continue now? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 echo
 echo "Confirmed. Now continuing..."
 echo
-
-echo "----------------"
+echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 echo
+
+if [ -d $installdir ]
+then
+	previnstall=y
+	echo "Found a previous install of aenigma."
+	echo
+	read -p "Skip the introduction on XMPP basics? (Y/n): " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "Ok, continuing..."
+		echo
+		skipintro=y
+	else
+		echo
+		skipintro=n
+	fi
+else
+	previnstall=n
+	skipintro=n
+fi
+
+if [ $skipintro = "n" ]
+then
+
+# ///
 
 echo "0] First of all, a little introduction on how XMPP actually works"
 echo
@@ -102,40 +114,70 @@ echo
 echo "----------------"
 echo
 
-choice='Please enter your choice: '
-options=("configuration 1" "configuration 2" "configuration 3" "exit")
-select opt in "${options[@]}"
-do
-    echo
-    case $opt in
-	"configuration 1")
-	    echo "you chose configuration 1"
+# \\\
+
+fi
+
+if [ -f $installdir/configoption ]
+then
+	prevconfigoption="$(cat $installdir/configoption)"
+	echo "You previously chose configuration option | $prevconfigoption |"
+	echo
+	read -p "Keep this option for this installation as well? (Y/n): " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		configoption=$prevconfigoption
+		echo "Ok, keeping configuration option | $prevconfigoption |"
+		echo
+	else
+		echo
+		configoption=notyetset
+		touch $installdir/configoption
+	fi
+	configoption=notyetset
+fi
+
+if [ $configoption = "notyetset" ]
+then
+	choice='Please select your desired configuration option: '
+	options=("configuration 1" "configuration 2" "configuration 3" "exit")
+	select opt in "${options[@]}"
+	do
 	    echo
-	    configoption=1
-	    break
-	    ;;
-	"configuration 2")
-	    echo "you chose configuration 2"
-	    echo
-	    configoption=2
-	    break
-	    ;;
-	"configuration 3")
-	    echo "you chose configuration 3"
-	    echo
-	    configoption=3
-	    break
-	    ;;
-	"exit")
-	    echo "Exiting..."
-	    echo
-	    exit
-	    ;;
-	*)  echo "Invalid option. Retry..."
-	    echo
-	    ;;
-    esac
-done
+	    case $opt in
+		"configuration 1")
+		    echo "you chose configuration 1"
+		    echo
+		    echo "1" > $installdir/configoption
+		    configoption=1
+		    break
+		    ;;
+		"configuration 2")
+		    echo "you chose configuration 2"
+		    echo
+		    echo "2" > $installdir/configoption
+		    configoption=2
+		    break
+		    ;;
+		"configuration 3")
+		    echo "you chose configuration 3"
+		    echo
+		    echo "3" > $installdir/configoption
+		    configoption=3
+		    break
+		    ;;
+		"exit")
+		    echo "Exiting..."
+		    echo
+		    exit
+		    ;;
+		*)  echo "Invalid option. Retry..."
+		    echo
+		    ;;
+	    esac
+	done
+fi
 
 hostname="$(cat /etc/hostname)"
 
@@ -153,25 +195,23 @@ then
 	echo
 	if [ ! $prevdomain = "nx" ]
 	then
-		echo "It appears there was a previous installation of aenigma on this server."
-		echo
-		echo "The domain used for aenigma used to be:"
+		echo "The domain used for your previous aenigma installation is:"
 		echo
 		echo "| $prevdomain |"
 		echo
-		read -p "Do you want to change it? (Y/n): " -n 1 -r
+		read -p "Keep this domain for this installation as well? (Y/n): " -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-			echo "Ok, changing domain"
-			echo
-			changedomain=y
-		else
-			echo
 			echo "Ok, using previous domain: | $prevdomain |"
 			echo
 			domain=$prevdomain
 			changedomain=n
+		else
+			echo
+			echo "Ok, changing domain..."
+			echo
+			changedomain=y
 		fi
 	else
 		changedomain=y
@@ -187,10 +227,14 @@ then
 	echo
 	echo "Your current hostname is | $hostname |"
 	echo
-	read -p "Do you want to change it? (Y/n): " -n 1 -r
+	read -p "Keep this hostname? (Y/n): " -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
+		echo "Ok, leaving hostname set to | $hostname |"
+		echo
+	else
+		echo
 		read -p "Ok, now set your new hostname: " newhostname
 		echo
 		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
@@ -198,11 +242,7 @@ then
 		echo $newhostname > /etc/hostname
 		echo "New hostname set to | $newhostname |"
 		echo
-		hostname="$(cat /etc/hostname)"
-	else
-		echo
-		echo "Leaving hostname set to | $hostname |"
-		echo
+		hostname="$(cat /etc/hostname)"		
 	fi
 
 elif [ $configoption = 2 ]
@@ -212,25 +252,23 @@ then
 	echo
 	if [ ! $prevdomain = "nx" ]
 	then
-		echo "It appears there was a previous installation of aenigma on this server."
-		echo
-		echo "The domain used for aenigma used to be:"
+		echo "The domain used for your previous aenigma installation is:"
 		echo
 		echo "| $prevdomain |"
 		echo
-		read -p "Do you want to change it? (Y/n): " -n 1 -r
+		read -p "Keep this domain for this installation as well? (Y/n): " -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-			echo "Ok, changing domain"
-			echo
-			changedomain=y
-		else
-			echo
 			echo "Ok, using previous domain: | $prevdomain |"
 			echo
 			domain=$prevdomain
 			changedomain=n
+		else
+			echo
+			echo "Ok, changing domain..."
+			echo
+			changedomain=y
 		fi
 	else
 		changedomain=y
