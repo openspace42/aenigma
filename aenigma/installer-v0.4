@@ -8,7 +8,6 @@ echo
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 installdir=/root/os-aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
-mkdir -p $installdir
 mkdir -p $tlsdir
 
 r=`tput setaf 1`
@@ -46,6 +45,7 @@ then
 		skipintro=n
 	fi
 else
+	mkdir -p $installdir
 	previnstall=n
 	skipintro=n
 fi
@@ -133,9 +133,11 @@ then
 	else
 		echo
 		configoption=notyetset
-		touch $installdir/configoption
 	fi
 	configoption=notyetset
+else
+	touch $installdir/configoption
+	configoption=notyetset	
 fi
 
 if [ $configoption = "notyetset" ]
@@ -163,7 +165,7 @@ then
 		"configuration 3")
 		    echo "you chose configuration 3"
 		    echo
-		    echo "3" > $installdir/configoption
+		    echo "3" > $installdir/configoption		    
 		    configoption=3
 		    break
 		    ;;
