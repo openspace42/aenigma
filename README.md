@@ -1,6 +1,6 @@
 # aenigma
 
-aenigma provisions a fully functional and secure out of the box XMPP server you can get running today.
+**aenigma** provisions a **fully functional** and **secure** out of the box **XMPP server** you can get running today.
 
 It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email and [Streisand](https://github.com/StreisandEffect/streisand) has done for VPNs.
 
