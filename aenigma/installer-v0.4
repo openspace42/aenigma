@@ -1177,13 +1177,13 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
 	echo "Skipping ejabberd admin user password reset."
 	echo
-	ejbdadminpwreset=y
+	ejbdadminpwreset=n
 else
 	echo
 	echo "Ok, resetting ejabberd admin user password to: | $ejbdadminpw |"
 	echo
 	/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
-	ejbdadminpwreset=n	
+	ejbdadminpwreset=y	
 fi
 
 echo "You can finally log in:"
