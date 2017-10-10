@@ -1,5 +1,9 @@
 # aenigma
 
+aenigma provisions a fully functional and secure out of the box XMPP server you can get running today.
+
+It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email and [Streisand](https://github.com/StreisandEffect/streisand) has done for VPNs.
+
 ## Features
 
 * **State of the art configuration** [work in progress ;]
@@ -18,7 +22,7 @@
 * Installs nginx and makes the ejabberd **web admin interface securely available** at https://[hostname]
 * Easily allows for the website for your top level domain to be hosted on the same server as well
 * Listens for **XMPP c2s [aka client to server] and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
-* Natively supports **Signal-level encrypted conversations** with all the required modules for OMEMO E2EE
+* Natively supports **Signal-level encrypted conversations** with all the required modules for **OMEMO E2EE**
 * Configures ejabberd **Shared Roster Groups** to easily allow the desired users to see eachother on their own rosters
 
 ##### 01
