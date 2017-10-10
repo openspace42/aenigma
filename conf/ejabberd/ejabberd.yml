@@ -60,12 +60,14 @@ listen:
     shaper: c2s_shaper
     access: c2s
     resend_on_timeout: if_offline
+    inet6: true
   -
     port: 5269
     ip: "::"
     module: ejabberd_s2s_in
     max_stanza_size: 131072
     shaper: s2s_shaper
+    inet6: true
   -
     port: 5280
     ip: "::"
@@ -75,9 +77,11 @@ listen:
       "/api": mod_http_api
     ##  "/pub/archive": mod_http_fileserver
     web_admin: true
+    http_poll: true
     http_bind: true
     ## register: true
     captcha: false
+    inet6: true
   ## -
   ##   port: 8888
   ##   ip: "::"
@@ -130,6 +134,7 @@ listen:
    protocol_options: 'TLSOPTS'
    dhfile: 'DHFILE'
    ciphers: 'CIPHERS'
+   inet6: true
 
 disable_sasl_mechanisms: "digest-md5"
 
@@ -250,11 +255,11 @@ acl:
 
 shaper_rules:
   ## Maximum number of simultaneous sessions allowed for a single user:
-  max_user_sessions: 10
+  max_user_sessions: 24
   ## Maximum number of offline messages that users can have:
   max_user_offline_messages:
     - 5000: admin
-    - 100
+    - 1000
   ## For C2S connections, all users except admins use the "normal" shaper
   c2s_shaper:
     - none: admin
