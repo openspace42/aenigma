@@ -436,7 +436,7 @@ then
 	ipv6pingaddr="2001:4860:4860::8888"
 	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null
 	then
-		echo "IPv6 connectivity good."
+		echo "${g}IPv6 connectivity good.${x}"
 		echo
 		ipv6avail=y
 	else
@@ -457,11 +457,11 @@ then
 		done
 		if [ $pingacquired = "y" ]
 		then
-			echo "IPv6 connectivity acquired."
+			echo "${g}IPv6 connectivity acquired.${x}"
 			echo
 			ipv6avail=y
 		else
-			echo "IPv6 connectivity not found."
+			echo "${r}IPv6 connectivity not found.${x}"
 			echo
 			ipv6avail=n
 		fi
