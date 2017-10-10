@@ -1049,7 +1049,7 @@ then
 	cat /etc/letsencrypt/live/$domain/privkey.pem > $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $tlsdir/domain.pem
 	domtlscertloc=$tlsdir/domain.pem
-  echo "Finisher creating all-in-one TLS file for $domain for ejabberd..."
+  echo "Finished creating all-in-one TLS file for $domain for ejabberd..."
   echo
   sleep 1
 
