@@ -121,6 +121,21 @@ fi
 if [ -f $installdir/configoption ]
 then
 	prevconfigoption="$(cat $installdir/configoption)"
+	case "$prevconfigoption" in
+	    1|2|3)
+		validprevconfigoption=y
+		;;
+	    *)
+		validprevconfigoption=n
+		;;
+	esac
+else
+	touch $installdir/configoption
+	validprevconfigoption=n
+fi
+
+if [ $validprevconfigoption = "y" ]
+then
 	echo "You previously chose configuration option | $prevconfigoption |"
 	echo
 	read -p "Keep this option for this installation as well? (Y/n): " -n 1 -r
@@ -134,9 +149,7 @@ then
 		echo
 		configoption=notyetset
 	fi
-	configoption=notyetset
 else
-	touch $installdir/configoption
 	configoption=notyetset	
 fi
 
