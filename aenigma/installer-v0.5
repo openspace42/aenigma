@@ -1056,6 +1056,7 @@ sleep 1
 echo "Now installing easyengine..."
 echo
 wget -qO ee rt.cx/ee && sudo bash ee
+echo
 echo "Finished installing easyengine."
 echo
 sleep 1
@@ -1208,6 +1209,7 @@ sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
 sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
 cp $sourcedir/conf/sslh/sslh /etc/default/sslh
 service sslh start
+echo
 echo "Finished installing SSLH."
 echo
 
@@ -1277,11 +1279,11 @@ echo "Finished starting ejabberd."
 echo
 sleep 1
 
-echo "Now registering ejabberd admin user..."
+echo "Now registering ejabberd admin user [if it doesn't yet exist]..."
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null
-echo "Finished registering ejabberd admin user"
+echo "Finished registering ejabberd admin user."
 echo
 sleep 1
 
@@ -1300,19 +1302,19 @@ else
 	ejbdadminpwreset=y	
 fi
 
-echo "You can finally log in:"
+echo "${b}${g}You can finally log in:${x}"
 echo
-echo "https://$hostname"
+echo "${b}https://$hostname${x}"
 echo
-echo "admin@$domain"
+echo "${b}admin@$domain${x}"
 echo
 
 if [ $ejbdadminpwreset = "y" ]
 then
-	echo $ejbdadminpw
+	echo "${b}$ejbdadminpw${x}"
 	echo
 else
-	echo "[your previously set password]"
+	echo "${b}[your previously set password]${x}"
 	echo
 fi
 
@@ -1321,7 +1323,7 @@ clear
 
 if [ -f $tlsdir/dh.pem ]
 then
-	echo "DHparam file found. Skipping generation..."
+	echo "${g}DHparam file found. Skipping generation...${x}"
 	echo
 else
 	echo "One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file."
