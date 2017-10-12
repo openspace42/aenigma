@@ -1281,7 +1281,6 @@ echo "Now registering ejabberd admin user..."
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null
-echo
 echo "Finished registering ejabberd admin user"
 echo
 sleep 1
