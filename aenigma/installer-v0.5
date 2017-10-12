@@ -1287,7 +1287,6 @@ ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 echo "Finished registering ejabberd admin user."
 echo
 sleep 1
-clear
 
 read -p "Leave ejabberd admin user password the same as previously set? (Y/n): " -n 1 -r
 echo
@@ -1303,6 +1302,8 @@ else
 	/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
 	ejbdadminpwreset=y	
 fi
+sleep 1
+clear
 
 echo "${b}${g}You can finally log in:${x}"
 echo
