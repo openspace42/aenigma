@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# specify version to be installed in the format "x.y"
+installvers=0.4
+
 r=`tput setaf 1`
 g=`tput setaf 2`
 x=`tput sgr0`
@@ -30,10 +33,9 @@ else
 	exit
 fi
 
-sudo bash aenigma/aenigma/installer-v0.4
+sudo bash aenigma/aenigma/installer-v"$installvers"
 
 echo "Exiting installer."
 echo
 
-rm -r aenigma/
 exit
