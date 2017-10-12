@@ -232,13 +232,53 @@ then
 	else
 		changedomain=y
 	fi
+
 	if [ $changedomain = "y" ]
 	then
-		read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
-		echo
-		read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-		echo
+		defined=n
+		until [ $defined = "y" ]
+		do
+			domain=""
+			until [ ! $domain = "" ]
+			do
+				echo
+				read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
+				echo
+			done
+			valid=n
+			until [ $valid = "y" ]
+			do
+				read -n 1 -p "Is | $domain | correct? (Y/n/e[xit]) " answer;
+				case $answer in
+				""|y)
+					echo -e "\n"
+					valid=y
+					defined=y
+					;;
+				n)
+					echo -e "\n"
+					echo "Ok, then please try again..."
+					valid=y
+					defined=n
+					;;
+				e)
+					echo -e "\n"
+		        		echo "Exiting..."
+		        		echo
+		        		exit
+		        		;;
+				*)
+					echo -e "\n"
+					echo "Invalid option. Retry..."
+		        		echo
+					valid=n
+				defined=n
+			        ;;
+				esac
+			done
+		done
 	fi
+	
 	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 	echo
 	echo "${g}Your current hostname is | $hostname |${x}"
@@ -249,17 +289,60 @@ then
 	then
 		echo "Ok, leaving hostname set to | $hostname |"
 		echo
+		changehostname=n
 	else
 		echo
-		read -p "Ok, now set your new hostname: " newhostname
+		echo "Ok, changing hostname..."
 		echo
-		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-		echo
-		echo $newhostname > /etc/hostname
-		echo "New hostname set to | $newhostname |"
-		echo
-		hostname="$(cat /etc/hostname)"		
+		changehostname=y		
 	fi
+	
+	if [ $changehostname = "y" ]
+	then
+		defined=n
+		until [ $defined = "y" ]
+		do
+			hostname=""
+			until [ ! $hostname = "" ]
+			do
+				echo
+				read -p "Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: " hostname
+				echo
+			done
+			valid=n
+			until [ $valid = "y" ]
+			do
+				read -n 1 -p "Is | $hostname | correct? (Y/n/e[xit]) " answer;
+				case $answer in
+				""|y)
+					echo -e "\n"
+					valid=y
+					defined=y
+					;;
+				n)
+					echo -e "\n"
+					echo "Ok, then please try again..."
+					valid=y
+					defined=n
+					;;
+				e)
+					echo -e "\n"
+		        		echo "Exiting..."
+		        		echo
+		        		exit
+		        		;;
+				*)
+					echo -e "\n"
+					echo "Invalid option. Retry..."
+		        		echo
+					valid=n
+				defined=n
+			        ;;
+				esac
+			done
+		done
+	fi
+	
 
 elif [ $configoption = 2 ]
 
