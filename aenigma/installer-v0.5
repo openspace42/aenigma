@@ -249,7 +249,11 @@ then
 			do
 				read -n 1 -p "Is | $domain | correct? (Y/n/e[xit]) " answer;
 				case $answer in
-				""|y)
+				"")
+					valid=y
+					defined=y
+					;;
+				y)
 					echo -e "\n"
 					valid=y
 					defined=y
