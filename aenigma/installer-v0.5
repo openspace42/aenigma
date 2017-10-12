@@ -62,7 +62,7 @@ echo
 echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
 echo
 read -p "[press enter to continue reading...]"
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
 echo
@@ -79,7 +79,7 @@ echo "CONs:                 a] requires TLS [SSL] certificate for the top level 
 echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
 echo
 read -p "[press enter to continue reading...]"
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
 echo
@@ -94,7 +94,7 @@ echo "CONs:                  a] your domain must be logically dedicated to your 
 echo "                          and not to a wider project."
 echo
 read -p "[press enter to continue reading...]"
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
 echo
@@ -107,7 +107,7 @@ echo "CONs:                  a] longer and more complex addresses"
 echo "                       b] not logically 'clean'."
 echo
 read -p "[press enter to continue reading...]"
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
 echo
@@ -495,7 +495,7 @@ else
 	echo
 	exit
 fi
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 echo "${b}Is this server reachable [or intended to be reachable] from the public internet?${x}"
 echo
@@ -522,7 +522,7 @@ else
   deptype=local
   read -p "[press enter to continue...]"
 fi
-echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+clear
 
 if [ $deptype = "internet" ]
 then
@@ -651,7 +651,7 @@ echo
 					read -p "[press enter to continue...]"
 				fi
 			fi
-			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+			clear
 		done
 
 echo "Finished checking hostname IPv4 DNS settings."
@@ -715,7 +715,7 @@ then
 						read -p "[press enter to continue...]"
 					fi
 				fi
-				echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+				clear
 			done
 			
 	echo "Finished checking hostname IPv6 DNS settings."
@@ -741,7 +741,7 @@ then
 	echo "| _xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname. |"
 	echo
 	read -p "[press enter to continue when finished setting your DNS SRV records...]"
-	echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+	clear
 
 	echo "Now it's time to set up the TLS [SSL] certificate that is valid for $domain."
 	echo
@@ -752,7 +752,7 @@ then
   echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
   echo
   read -p "[press enter to continue reading...]"
-  echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  clear
   
   echo "This certificate, if it already exists, resides on the server responding to $domain"
   echo
@@ -765,7 +765,7 @@ then
   echo "[If you see no output, then it might be misconfigured or not configured at all.]"
   echo
   read -p "[press enter to continue reading...]"
-  echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+  clear
   
 	read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
         echo
@@ -835,7 +835,7 @@ then
     echo "For now, no need to worry about that."
     echo
     read -p "[press enter to continue reading...]"
-    echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    clear
     
 		echo "Let's point $domain and www.$domain to this server for the time being."
 		echo
@@ -895,7 +895,7 @@ then
     					read -p "[press enter to continue...]"
     				fi
     			fi
-    			echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    			clear
     		done
 
     echo "Finished checking domain IPv4 DNS settings."
@@ -959,7 +959,7 @@ then
     						read -p "[press enter to continue...]"
     					fi
     				fi
-    				echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    				clear
     			done
     			
     	echo "Finished checking domain IPv6 DNS settings."
@@ -1030,7 +1030,7 @@ do
 			read -p "[press enter to continue...]"
 		fi
 	fi
-	echo -e "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+	clear
 done
 echo
 
