@@ -136,7 +136,7 @@ fi
 
 if [ $validprevconfigoption = "y" ]
 then
-	echo "You previously chose configuration option | $prevconfigoption |"
+	echo "${g}You previously chose configuration option | $prevconfigoption |${x}"
 	echo
 	read -p "Keep this option for this installation as well? (Y/n): " -n 1 -r
 	echo
@@ -211,7 +211,7 @@ then
 	echo
 	if [ ! $prevdomain = "nx" ]
 	then
-		echo "The domain used for your previous aenigma installation is:"
+		echo "${g}The domain used for your previous aenigma installation is:${x}"
 		echo
 		echo "| $prevdomain |"
 		echo
@@ -241,7 +241,7 @@ then
 	fi
 	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 	echo
-	echo "Your current hostname is | $hostname |"
+	echo "${g}Your current hostname is | $hostname |${x}"
 	echo
 	read -p "Keep this hostname? (Y/n): " -n 1 -r
 	echo
@@ -268,7 +268,7 @@ then
 	echo
 	if [ ! $prevdomain = "nx" ]
 	then
-		echo "The domain used for your previous aenigma installation is:"
+		echo "${g}The domain used for your previous aenigma installation is:${x}"
 		echo
 		echo "| $prevdomain |"
 		echo
@@ -302,10 +302,10 @@ then
 	echo
 	if [ $hostname = $domain ]
 	then
-		echo "Your hostname matches your domain, all good!"
+		echo "${g}Your hostname matches your domain, all good!${x}"
 		echo
 	else
-		echo "Your hostname doesn't match the domain you've specified."
+		echo "${r}Your hostname doesn't match the domain you've specified.${x}"
 		echo
 		echo "Having chosen option 2, they must be identical."
 		echo
@@ -408,7 +408,7 @@ echo "Is this server reachable [or intended to be reachable] from the public int
 echo
 echo "[Answer no if it is only intended for local network usage (i.e. NOT reachable from outside)]"
 echo
-read -p "Set up the server for public internet access? (Y/n): " -n 1 -r
+read -p "Set up the server for ${b}public internet access${x}? (Y/n): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
