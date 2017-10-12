@@ -412,12 +412,12 @@ read -p "Set up the server for ${b}public internet access${x}? (Y/n): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
-  echo "Ok, continuing in ${b}public internet accessibilty${x} mode"
+  echo "Ok, continuing in public internet accessibilty mode..."
   echo
   deptype=internet
   sleep 1
 else
-  echo "Ok, continuing in ${b}local network accessibility${x} mode"
+  echo "Ok, continuing in local network accessibility mode..."
   echo
   echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well${x}"
   echo
@@ -1165,7 +1165,7 @@ sleep 1
 echo "Now registering ejabberd admin user..."
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
-/usr/sbin/ejabberdctl register admin $domain $ejbdadminpw
+/usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null
 echo
 echo "Finished registering ejabberd admin user"
 echo
