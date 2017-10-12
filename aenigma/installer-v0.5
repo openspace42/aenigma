@@ -250,6 +250,7 @@ then
 				read -n 1 -p "Is | $domain | correct? (Y/n/e[xit]) " answer;
 				case $answer in
 				"")
+					echo
 					valid=y
 					defined=y
 					;;
@@ -309,8 +310,7 @@ then
 			hostname=""
 			until [ ! $hostname = "" ]
 			do
-				echo
-				read -p "Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: " hostname
+				read -p "Now set your hostname, which must be a third level hostname [subhostname] of either $hostname or another hostname: " hostname
 				echo
 			done
 			valid=n
@@ -318,7 +318,12 @@ then
 			do
 				read -n 1 -p "Is | $hostname | correct? (Y/n/e[xit]) " answer;
 				case $answer in
-				""|y)
+				"")
+					echo
+					valid=y
+					defined=y
+					;;
+				y)
 					echo -e "\n"
 					valid=y
 					defined=y
@@ -326,6 +331,7 @@ then
 				n)
 					echo -e "\n"
 					echo "Ok, then please try again..."
+					echo
 					valid=y
 					defined=n
 					;;
