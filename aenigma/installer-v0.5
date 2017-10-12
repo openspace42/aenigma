@@ -241,7 +241,6 @@ then
 			domain=""
 			until [ ! $domain = "" ]
 			do
-				echo
 				read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
 				echo
 			done
@@ -258,6 +257,7 @@ then
 				n)
 					echo -e "\n"
 					echo "Ok, then please try again..."
+					echo
 					valid=y
 					defined=n
 					;;
