@@ -419,11 +419,12 @@ then
 else
   echo "Ok, continuing in local network accessibility mode..."
   echo
-  echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well${x}"
+  echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well.${x}"
   echo
-  echo "${b}Open a shell to this machine and make sure it's using your local DNS server now before continuing.${x}"
+  echo "Open a shell to this machine and make sure it's using your local DNS server now before continuing."
   echo
-  echo "${b} The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server.${x}"
+  echo "The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server."
+  echo
   deptype=local
   read -p "[press enter to continue...]"
 fi
@@ -476,9 +477,28 @@ then
 	echo "Finished testing IPv6 connectivity."
 	echo
 else
-	thislocalipv4="$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')"
-	echo "Your local IPv4 address appears to be: | $thislocalipv4 |"
+	ipv6avail=n
+	thisipv4="$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')"
+	echo "Your local IPv4 address appears to be: | $thisipv4 |"
 	echo
+	echo "${b}If this is not the primary local network interface [i.e. with a private subnet address like 10., 192.168, 172.16, etc...] you must set it correctly now.${x}"
+	echo
+	read -p "That said, is this your machine's correct primary interface's IPv4 address? (Y/n): " -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "Ok, basing install on local IPv4 address: | $thisipv4 |"
+		echo
+	else
+		echo
+		read -p "Ok, then specify now your machine's correct primary interface's IPv4 address: " newthisipv4
+		echo
+		read -p "Is | $newthisipv4 | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		echo
+		thisipv4=$newthisipv4
+		echo "Ok, basing install on newly set local IPv4 address: | $thisipv4 |"
+		echo
+	fi
 fi
 sleep 1
 
