@@ -1221,6 +1221,7 @@ echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/
 wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
 apt-get update
 export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
+echo
 echo "Finished installing ejabberd."
 echo
 sleep 1
