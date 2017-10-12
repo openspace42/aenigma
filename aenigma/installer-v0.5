@@ -2,7 +2,7 @@
 
 echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
-echo "aenigma v0.4"
+echo "aenigma v0.5"
 echo
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
@@ -1355,6 +1355,13 @@ else
 	echo
 	sleep 1
 fi
+
+echo "${b}Now removing installer directory${x}"
+echo
+echo "Run ${b}git clone https://https://github.com/openspace42/aenigma${x} once again to download the latest installer!"
+echo
+
+rm -r aenigma/
 
 echo "${b}${g}aenigma installation complete!${x}"
 echo
