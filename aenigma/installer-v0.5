@@ -1264,24 +1264,6 @@ echo "Finished securing permissions."
 echo
 sleep 1
 
-echo "Now updating ejabberd's module repo..."
-echo
-/usr/sbin/ejabberdctl modules_update_specs
-echo "Finished updating ejabberd's module repo..."
-echo
-sleep 1
-
-echo "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']..."
-echo
-/usr/sbin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
-/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody $domain
-/usr/sbin/ejabberdctl srg_create online $domain "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
-/usr/sbin/ejabberdctl srg-user-add @online@ localhost online $domain
-/usr/sbin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
-/usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
-echo "Finished creating shared roster groups."
-echo
-
 echo "Now stopping ejabberd..."
 echo
 /usr/sbin/ejabberdctl stop
@@ -1323,6 +1305,27 @@ else
 	/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
 	ejbdadminpwreset=y	
 fi
+sleep 1
+clear
+
+echo "Now updating ejabberd's module repo..."
+echo
+/usr/sbin/ejabberdctl modules_update_specs
+echo "Finished updating ejabberd's module repo..."
+echo
+sleep 1
+clear
+
+echo "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']..."
+echo
+/usr/sbin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
+/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody $domain
+/usr/sbin/ejabberdctl srg_create online $domain "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
+/usr/sbin/ejabberdctl srg-user-add @online@ localhost online $domain
+/usr/sbin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
+/usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
+echo "Finished creating shared roster groups."
+echo
 sleep 1
 clear
 
