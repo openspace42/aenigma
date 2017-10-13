@@ -373,7 +373,7 @@ modules:
   mod_bosh: {}
   mod_http_bind: {}
   mod_http_fileserver:
-    docroot: "/var/www"
+    docroot: "/var/www/ejabberd/"
     accesslog: "/var/logs/ejabberd/www_access.log"
   mod_http_upload:
     host: "xu.@HOST@"
