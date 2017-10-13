@@ -213,7 +213,7 @@ then
 	then
 		echo "${g}The domain used for your previous aenigma installation is:${x}"
 		echo
-		echo "| $prevdomain |"
+		echo "\t| $prevdomain |"
 		echo
 		read -p "Keep this domain for this installation as well? (Y/n): " -n 1 -r
 		echo
@@ -286,7 +286,9 @@ then
 	
 	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 	echo
-	echo "${g}Your current hostname is | $hostname |${x}"
+	echo "${g}Your current hostname is:${x}"
+	echo
+	echo "\t| $hostname |"
 	echo
 	read -p "Keep this hostname? (Y/n): " -n 1 -r
 	echo
@@ -363,7 +365,7 @@ then
 	then
 		echo "${g}The domain used for your previous aenigma installation is:${x}"
 		echo
-		echo "| $prevdomain |"
+		echo "\t| $prevdomain |"
 		echo
 		read -p "Keep this domain for this installation as well? (Y/n): " -n 1 -r
 		echo
@@ -391,7 +393,9 @@ then
 	fi
 	echo "Your hostname must be identical to your domain: $domain."
 	echo
-	echo "Your current hostname is | $hostname |"
+	echo "Your current hostname is:"
+	echo
+	echo "\t| $hostname |"
 	echo
 	if [ $hostname = $domain ]
 	then
@@ -429,7 +433,9 @@ then
 	echo
 	echo "Your hostname must be a third level domain [subdomain] of your main domain."
 	echo
-	echo "Your current hostname is | $hostname |"
+	echo "Your current hostname is:"
+	echo
+	echo "\t| $hostname |"
 	echo
 	echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
 	echo
@@ -465,19 +471,19 @@ echo "To make sure everything is correct:"
 echo
 echo "1] Your XMPP domain [the part after the @ in your XMPP account addresses] will be:"
 echo
-echo "| $domain |"
+echo "\t| $domain |"
 echo
 echo "2] And therefore an XMPP account address will look as follows:"
 echo
-echo "| mark@$domain|"
+echo "\t| mark@$domain|"
 echo
 echo "3] Your hostname, the location on the internet of this server, will be:"
 echo
-echo "| $hostname |"
+echo "\t| $hostname |"
 echo
 echo "4] And therefore your aenigma admin panel will be located at:"
 echo
-echo "| https://$hostname |"
+echo "\t| https://$hostname |"
 echo
 echo "----------------"
 echo
@@ -736,9 +742,9 @@ then
 	echo
 	echo "Make sure your DNS settings are as follows:"
 	echo
-	echo "| _jabber._tcp.$domain         SRV    0 0 5269 $hostname. |"
-	echo "| _xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname. |"
-	echo "| _xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname. |"
+	echo "\t| _jabber._tcp.$domain         SRV    0 0 5269 $hostname. |"
+	echo "\t| _xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname. |"
+	echo "\t| _xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname. |"
 	echo
 	read -p "[press enter to continue when finished setting your DNS SRV records...]"
 	clear
