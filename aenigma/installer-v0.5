@@ -1239,12 +1239,27 @@ echo "Finished creating uploads directory."
 echo
 sleep 1
 
+echo "Now creating HTTP fileserver directory..."
+echo
+mkdir -p /var/www/ejabberd/
+echo "Finished creating HTTP fileserver directory."
+echo
+sleep 1
+
+echo "Now creating logfile..."
+echo
+touch /var/log/ejabberd/www_access.log
+echo "Finished creating logfile."
+echo
+
 echo "Now securing permissions..."
 echo
 chown -R ejabberd:ejabberd $tlsdir
 chmod -R 700 $tlsdir
 chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
 chmod -R 755 /etc/ejabberd/uploads/
+chown -R ejabberd:ejabberd /var/www/ejabberd/
+chmod -R 755 /var/www/ejabberd/
 echo "Finished securing permissions."
 echo
 sleep 1
@@ -1265,12 +1280,6 @@ echo
 /usr/sbin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
 /usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
 echo "Finished creating shared roster groups."
-echo
-
-echo "Now creating logfile..."
-echo
-/var/logs/ejabberd/www_access.log
-echo "Finished creating logfile."
 echo
 
 echo "Now stopping ejabberd..."
