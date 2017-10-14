@@ -195,8 +195,6 @@ then
 	done
 fi
 
-currhostname="$(cat /etc/hostname)"
-
 if [ -f $installdir/domain ]
 then
 	prevdomain="$(cat $installdir/domain)"
@@ -204,10 +202,10 @@ else
 	prevdomain="nx"
 fi
 
-if [ $configoption = "1" ]
+if [ ! $configoption = "3" ]
 
 then
-	echo "Ok, you've chosen option 1."
+	echo "Ok, you've chosen option $configoption."
 	echo
 	if [ ! $prevdomain = "nx" ]
 	then
@@ -287,6 +285,12 @@ then
 	echo
 	domain="$(cat $installdir/domain)"
 	fi
+fi
+
+currhostname="$(cat /etc/hostname)"
+
+if [ $configoption = "1"]
+then
 
 	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 	echo
@@ -366,40 +370,8 @@ then
 
 
 elif [ $configoption = 2 ]
-
 then
-	echo "Ok, you've chosen option 2."
-	echo
-	if [ ! $prevdomain = "nx" ]
-	then
-		echo "${g}The domain used for your previous aenigma installation is:${x}"
-		echo
-		echo " | $prevdomain |"
-		echo
-		read -p "Keep this domain for this installation as well? (Y/n): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
-			echo "Ok, using previous domain: | $prevdomain |"
-			echo
-			domain=$prevdomain
-			changedomain=n
-		else
-			echo
-			echo "Ok, changing domain..."
-			echo
-			changedomain=y
-		fi
-	else
-		changedomain=y
-	fi
-	if [ $changedomain = "y" ]
-	then
-		read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " domain
-		echo
-		read -p "Is | $domain | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-		echo
-	fi
+
 	echo "Your hostname must be identical to your domain: $domain."
 	echo
 	echo "Your current hostname is:"
@@ -434,11 +406,11 @@ then
 	fi
 
 elif [ $configoption = 3 ]
-
 then
+
 	echo "Ok, you've chosen option 3."
 	echo
-	echo "The part after the @ in your XMPP account addresses will match your server hostname."
+	echo "Your domain [the part after the @ in your XMPP account addresses] will match your server hostname."
 	echo
 	echo "Your hostname must be a third level domain [subdomain] of your main domain."
 	echo
