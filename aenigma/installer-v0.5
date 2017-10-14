@@ -714,7 +714,6 @@ do
 		fi
 		clear
 	done
-#	clear
 done
 
 echo "Finished checking hostname IPv4 DNS settings."
@@ -727,59 +726,106 @@ then
 	echo "Now let's make sure your hostname IPv6 DNS settings are correct."
 	echo
 
-			declare -A digarray=(
-				[HN]=""
-				[www]="www."
-			)
+	declare -A digarray=(
+		[HN]=""
+		[www]="www."
+	)
 
-			digarrayiter=0
+	digarrayiter=0
 
-			for i in "${!digarray[@]}"
-			do
+	for i in "${!digarray[@]}"
+	do
 
-				digarrayiter=$(($digarrayiter + 1))
-				echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv6..."
+		digarrayiter=$(($digarrayiter + 1))
+		echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv6..."
+		echo
+		sleep 1
+
+		accept=n
+		until [ $accept = "y" ]
+		do
+
+			dignxcheck="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//' | wc -l)"
+			digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+
+			if [ $dignxcheck = "0" ]
+			then
+				echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
 				echo
-				sleep 1
-
-				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//' | wc -l)"
-				digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-
-				if [ $dignxcheck = "0" ]
+				echo "Please ensure you set your DNS record as follows:"
+				echo
+				echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
+				echo
+				result=notset
+			else
+				if [ $digresult = $thisipv4 ]
 				then
-					echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
-					echo
-					echo "Please ensure you set your DNS record as follows:"
+					echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 					echo
 					echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
 					echo
-					read -p "[press enter to continue...]"
+					result=ok
+					sleep 1
 				else
-					if [ "$digresult" = "$thisipv6" ]
-					then
-						echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
-						echo
-						echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
-						echo
-						sleep 1
-					else
-						echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
-						echo
-						echo "This is the result of a DNS query for ${digarray[$i]}$hostname:"
-						echo
-						echo $digresult
-						echo
-            echo "Please set it instead to:"
-            echo
-            echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
-            echo
-						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-						echo
-						read -p "[press enter to continue...]"
-					fi
+					echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
+					echo
+					echo "This is the result of a DNS query for ${digarray[$i]}$hostname:"
+					echo
+					echo $digresult
+					echo
+					echo "Please set it instead to:"
+					echo
+					echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
+					echo
+					result=incorrect
 				fi
-				clear
-			done
+			fi
+
+			if [ ! $result = "ok" ]
+			then
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						accept=n
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						accept=n
+						;;
+					s)
+						echo -e "\n"
+						echo "Skipping DNS check for this record..."
+						echo
+						valid=y
+						accept=y
+						;;
+					e)
+						echo -e "\n"
+		        			echo "Exiting..."
+		        			echo
+		        			exit
+		        			;;
+					*)
+						echo -e "\n"
+						echo "Invalid option. Retry..."
+		        			echo
+						valid=n
+						accept=n
+				        	;;
+					esac
+				done
+			else
+				accept=y
+			fi
+			clear
+		done
+	done
 
 	echo "Finished checking hostname IPv6 DNS settings."
 	echo
