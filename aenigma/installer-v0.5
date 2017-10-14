@@ -143,8 +143,6 @@ then
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
 		configoption=$prevconfigoption
-		echo "Ok, keeping configuration option | $prevconfigoption |"
-		echo
 	else
 		echo
 		configoption=notyetset
@@ -163,22 +161,16 @@ then
 	    echo
 	    case $opt in
 		"configuration 1")
-		    echo "you chose configuration 1"
-		    echo
 		    echo "1" > $installdir/configoption
 		    configoption=1
 		    break
 		    ;;
 		"configuration 2")
-		    echo "you chose configuration 2"
-		    echo
 		    echo "2" > $installdir/configoption
 		    configoption=2
 		    break
 		    ;;
 		"configuration 3")
-		    echo "you chose configuration 3"
-		    echo
 		    echo "3" > $installdir/configoption
 		    configoption=3
 		    break
@@ -294,20 +286,21 @@ else
 	echo
 
 fi
+sleep 1
+clear
 
 currhostname="$(cat /etc/hostname)"
 
-# devline start 1820
-
-if [ ! $configoption = "2"]
+if [ ! $configoption = "2" ]
 then
 
-	if [ $configoption = "1"]
+	if [ $configoption = "1" ]
 	then
 		echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
 		echo
-	elif [ $configoption = "3"]
-		echo "Your hostname must be a third level domain [subdomain] of $domain."
+	elif [ $configoption = "3" ]
+	then
+		echo "Your hostname must be a third level domain [subdomain] of your main domain."
 		echo
 	fi
 
@@ -315,6 +308,13 @@ then
 	echo
 	echo " | $currhostname |"
 	echo
+
+	if [ $configoption = "3" ]
+	then
+		echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
+		echo
+	fi
+
 	read -p "Keep this hostname? (Y/n): " -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
@@ -338,8 +338,17 @@ then
 			newhostname=""
 			until [ ! $newhostname = "" ]
 			do
-				read -p "Now set your hostname, which must be a third level hostname [subhostname] of either $hostname or another hostname: " newhostname
-				echo
+				if [ $configoption = "1" ]
+				then
+					read -p "Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: " newhostname
+					echo
+				elif [ $configoption = "3" ]
+				then
+					echo "Keep in mind that your hostname will also become your domain [the part after the @ in your XMPP account addresses]."
+					echo
+					read -p "Now set your hostname, which must be a third level domain [subdomain] of your main domain: " newhostname
+					echo
+				fi
 			done
 			valid=n
 			until [ $valid = "y" ]
@@ -385,6 +394,11 @@ then
 	hostname="$(cat /etc/hostname)"
 	fi
 
+	if [ $configoption = "3" ]
+	then
+		domain=$hostname
+	fi
+
 else
 
 	echo "Your hostname must be identical to your domain: $domain."
@@ -411,7 +425,6 @@ else
 			echo $domain > /etc/hostname
 			echo "New hostname set to | $domain |"
 			echo
-			hostname="$(cat /etc/hostname)"
 		else
 			echo
 			echo "Not changing hostname. Exiting..."
@@ -419,6 +432,8 @@ else
 			exit
 		fi
 	fi
+
+	hostname="$(cat /etc/hostname)"
 
 fi
 sleep 1
@@ -584,10 +599,9 @@ do
 	until [ $accept = "y" ]
 	do
 
-		dignxcheck="$(getent ahostsv4 ${digarray[$i]}$hostname. | head -1 | sed 's/ .*//' | wc -l)"
 		digresult="$(getent ahostsv4 ${digarray[$i]}$hostname. | head -1 |sed 's/ .*//')"
 
-		if [ $dignxcheck = "0" ]
+		if [ -z "$digresult" ]
 		then
 			echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
 			echo
@@ -695,10 +709,9 @@ then
 		until [ $accept = "y" ]
 		do
 
-			dignxcheck="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//' | wc -l)"
 			digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
 
-			if [ $dignxcheck = "0" ]
+			if [ -z "$digresult" ]
 			then
 				echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
 				echo
@@ -708,7 +721,7 @@ then
 				echo
 				result=notset
 			else
-				if [ $digresult = $thisipv4 ]
+				if [ $digresult = $thisipv6 ]
 				then
 					echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
 					echo
@@ -918,10 +931,9 @@ then
     			echo
     			sleep 1
 
-    			dignxcheck="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 | sed 's/ .*//' | wc -l)"
     			digresult="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 |sed 's/ .*//')"
 
-    			if [ $dignxcheck = "0" ]
+    			if [ -z "$digresult" ]
     			then
     				echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
     				echo
@@ -982,10 +994,9 @@ then
     				echo
     				sleep 1
 
-    				dignxcheck="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//' | wc -l)"
     				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
 
-    				if [ $dignxcheck = "0" ]
+    				if [ -z "$digresult" ]
     				then
     					echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
     					echo
@@ -1053,10 +1064,9 @@ do
 	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
 	echo
 
-	dsdignxcheck="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s' | wc -l)"
 	dsdigresult="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s')"
 
-	if [ $dsdignxcheck = "0" ]
+	if [ -z "$dsdigresult" ]
 	then
 		echo "${r}Its DNS record does NOT appear to be at all set.${x}"
 		echo
