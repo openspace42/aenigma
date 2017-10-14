@@ -203,8 +203,8 @@ else
 fi
 
 if [ ! $configoption = "3" ]
-
 then
+
 	echo "Ok, you've chosen option $configoption."
 	echo
 	if [ ! $prevdomain = "nx" ]
@@ -285,15 +285,32 @@ then
 	echo
 	domain="$(cat $installdir/domain)"
 	fi
+
+else
+
+	echo "Ok, you've chosen option 3."
+	echo
+	echo "Your domain [the part after the @ in your XMPP account addresses] will match your server hostname."
+	echo
+
 fi
 
 currhostname="$(cat /etc/hostname)"
 
-if [ $configoption = "1"]
+# devline start 1820
+
+if [ ! $configoption = "2"]
 then
 
-	echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
-	echo
+	if [ $configoption = "1"]
+	then
+		echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
+		echo
+	elif [ $configoption = "3"]
+		echo "Your hostname must be a third level domain [subdomain] of $domain."
+		echo
+	fi
+
 	echo "${g}Your current hostname is:${x}"
 	echo
 	echo " | $currhostname |"
@@ -368,22 +385,20 @@ then
 	hostname="$(cat /etc/hostname)"
 	fi
 
-
-elif [ $configoption = 2 ]
-then
+else
 
 	echo "Your hostname must be identical to your domain: $domain."
 	echo
 	echo "Your current hostname is:"
 	echo
-	echo " | $hostname |"
+	echo " | $currhostname |"
 	echo
-	if [ $hostname = $domain ]
+	if [ $currhostname = $domain ]
 	then
 		echo "${g}Your hostname matches your domain, all good!${x}"
 		echo
 	else
-		echo "${r}Your hostname doesn't match the domain you've specified.${x}"
+		echo "${r}Your hostname does NOT match the domain you've specified.${x}"
 		echo
 		echo "Having chosen option 2, they must be identical."
 		echo
@@ -405,66 +420,29 @@ then
 		fi
 	fi
 
-elif [ $configoption = 3 ]
-then
-
-	echo "Ok, you've chosen option 3."
-	echo
-	echo "Your domain [the part after the @ in your XMPP account addresses] will match your server hostname."
-	echo
-	echo "Your hostname must be a third level domain [subdomain] of your main domain."
-	echo
-	echo "Your current hostname is:"
-	echo
-	echo " | $hostname |"
-	echo
-	echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
-	echo
-	read -p "That said, do you want to change it? (Y/n): " -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
-		echo "Ok, now we'll be setting your new hostname."
-		echo
-		echo "Make sure it is a subdomain [third level domain] of your main domain, and keep in mind it will also become the part after the @ in your XMPP account addresses."
-		echo
-		read -p "Now specify your new new hostname: " newhostname
-		echo
-		read -p "Is | $newhostname | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-		echo
-		echo $newhostname > /etc/hostname
-		echo "New hostname set to | $newhostname |"
-		echo
-		hostname="$(cat /etc/hostname)"
-	else
-		echo
-		echo "Leaving hostname set to | $hostname |"
-		echo
-	fi
-		domain=$hostname
 fi
-
 sleep 1
+clear
 
 echo "----------------"
 echo
-echo "To make sure everything is correct:"
+echo "${b}To make sure everything is correct:${x}"
 echo
 echo "1] Your XMPP domain [the part after the @ in your XMPP account addresses] will be:"
 echo
-echo " | $domain |"
+echo "${b} | $domain | ${x}"
 echo
 echo "2] And therefore an XMPP account address will look as follows:"
 echo
-echo " | mark@$domain|"
+echo "${b} | mark@$domain | ${x}"
 echo
 echo "3] Your hostname, the location on the internet of this server, will be:"
 echo
-echo " | $hostname |"
+echo "${b} | $hostname | ${x}"
 echo
 echo "4] And therefore your aenigma admin panel will be located at:"
 echo
-echo " | https://$hostname |"
+echo "${b} | https://$hostname | ${x}"
 echo
 echo "----------------"
 echo
