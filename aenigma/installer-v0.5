@@ -52,80 +52,80 @@ fi
 
 if [ $skipintro = "n" ]
 then
-	
-	# ///
-	
-	echo "0] First of all, a little introduction on how XMPP actually works"
-	echo
-	echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
-	echo
-	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
-	echo
-	read -p "[press enter to continue reading...]"
-	clear
-	
-	echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
-	echo
-	echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
-	echo
-	echo "Main domain:          amsterdamhacklab.xyz."
-	echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
-	echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
-	echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
-	echo
-	echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
-	echo "                      b] more logical setup."
-	echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
-	echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
-	echo
-	read -p "[press enter to continue reading...]"
-	clear
-	
-	echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
-	echo
-	echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
-	echo
-	echo "Your server hostname:  aenigmapod42.im"
-	echo "Your addresses:        mark@aenigmapod42.im."
-	echo
-	echo "PROs:                  a] clean addresses"
-	echo "                       b] no separate TLS certificate needed."
-	echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
-	echo "                          and not to a wider project."
-	echo
-	read -p "[press enter to continue reading...]"
-	clear
-	
-	echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
-	echo
-	echo "Your server hostname:  subdomain.domain.tld"
-	echo "Your addresses:        mark@subdomain.domain.tld."
-	echo
-	echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
-	echo "                          with no separate TLS certificate needed."
-	echo "CONs:                  a] longer and more complex addresses"
-	echo "                       b] not logically 'clean'."
-	echo
-	read -p "[press enter to continue reading...]"
-	clear
-	
-	echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
-	echo
-	echo "----------------"
-	echo
-	
-	# \\\
-	
+
+# ///
+
+echo "0] First of all, a little introduction on how XMPP actually works"
+echo
+echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
+echo
+echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
+echo
+read -p "[press enter to continue reading...]"
+clear
+
+echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
+echo
+echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
+echo
+echo "Main domain:          amsterdamhacklab.xyz."
+echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
+echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
+echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
+echo
+echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
+echo "                      b] more logical setup."
+echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
+echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
+echo
+read -p "[press enter to continue reading...]"
+clear
+
+echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
+echo
+echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
+echo
+echo "Your server hostname:  aenigmapod42.im"
+echo "Your addresses:        mark@aenigmapod42.im."
+echo
+echo "PROs:                  a] clean addresses"
+echo "                       b] no separate TLS certificate needed."
+echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
+echo "                          and not to a wider project."
+echo
+read -p "[press enter to continue reading...]"
+clear
+
+echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
+echo
+echo "Your server hostname:  subdomain.domain.tld"
+echo "Your addresses:        mark@subdomain.domain.tld."
+echo
+echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
+echo "                          with no separate TLS certificate needed."
+echo "CONs:                  a] longer and more complex addresses"
+echo "                       b] not logically 'clean'."
+echo
+read -p "[press enter to continue reading...]"
+clear
+
+echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
+echo
+echo "----------------"
+echo
+
+# \\\
+
 fi
 
 if [ -f $installdir/configoption ]
 then
 	prevconfigoption="$(cat $installdir/configoption)"
 	case "$prevconfigoption" in
-		1|2|3)
+	    1|2|3)
 		validprevconfigoption=y
 		;;
-		*)
+	    *)
 		validprevconfigoption=n
 		;;
 	esac
@@ -158,32 +158,32 @@ then
 	options=("configuration 1" "configuration 2" "configuration 3" "exit")
 	select opt in "${options[@]}"
 	do
-		echo
-		case $opt in
-			"configuration 1")
-			echo "1" > $installdir/configoption
-			configoption=1
-			break
-			;;
-			"configuration 2")
-			echo "2" > $installdir/configoption
-			configoption=2
-			break
-			;;
-			"configuration 3")
-			echo "3" > $installdir/configoption
-			configoption=3
-			break
-			;;
-			"exit")
-			echo "Exiting..."
-			echo
-			exit
-			;;
-			*)  echo "Invalid option. Retry..."
-			echo
-			;;
-		esac
+	    echo
+	    case $opt in
+		"configuration 1")
+		    echo "1" > $installdir/configoption
+		    configoption=1
+		    break
+		    ;;
+		"configuration 2")
+		    echo "2" > $installdir/configoption
+		    configoption=2
+		    break
+		    ;;
+		"configuration 3")
+		    echo "3" > $installdir/configoption
+		    configoption=3
+		    break
+		    ;;
+		"exit")
+		    echo "Exiting..."
+		    echo
+		    exit
+		    ;;
+		*)  echo "Invalid option. Retry..."
+		    echo
+		    ;;
+	    esac
 	done
 fi
 
@@ -196,7 +196,7 @@ fi
 
 if [ ! $configoption = "3" ]
 then
-	
+
 	echo "Ok, you've chosen option $configoption."
 	echo
 	if [ ! $prevdomain = "nx" ]
@@ -222,7 +222,7 @@ then
 	else
 		changedomain=y
 	fi
-	
+
 	if [ $changedomain = "y" ]
 	then
 		defined=n
@@ -239,52 +239,52 @@ then
 			do
 				read -n 1 -p "Is | $newdomain | correct? (Y/n/e[xit]) " answer;
 				case $answer in
-					"")
+				"")
 					echo
 					valid=y
 					defined=y
 					;;
-					y)
+				y)
 					echo -e "\n"
 					valid=y
 					defined=y
 					;;
-					n)
+				n)
 					echo -e "\n"
 					echo "Ok, then please try again..."
 					echo
 					valid=y
 					defined=n
 					;;
-					e)
+				e)
 					echo -e "\n"
-					echo "Exiting..."
-					echo
-					exit
-					;;
-					*)
+		        		echo "Exiting..."
+		        		echo
+		        		exit
+		        		;;
+				*)
 					echo -e "\n"
 					echo "Invalid option. Retry..."
-					echo
+		        		echo
 					valid=n
-					defined=n
-					;;
+				defined=n
+			        ;;
 				esac
 			done
 		done
-		echo $newdomain > $installdir/domain
-		echo "New hostname set to | $newdomain |"
-		echo
-		domain="$(cat $installdir/domain)"
+	echo $newdomain > $installdir/domain
+	echo "New hostname set to | $newdomain |"
+	echo
+	domain="$(cat $installdir/domain)"
 	fi
-	
+
 else
-	
+
 	echo "Ok, you've chosen option 3."
 	echo
 	echo "Your domain [the part after the @ in your XMPP account addresses] will match your server hostname."
 	echo
-	
+
 fi
 sleep 1
 clear
@@ -293,7 +293,7 @@ currhostname="$(cat /etc/hostname)"
 
 if [ ! $configoption = "2" ]
 then
-	
+
 	if [ $configoption = "1" ]
 	then
 		echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
@@ -303,18 +303,18 @@ then
 		echo "Your hostname must be a third level domain [subdomain] of your main domain."
 		echo
 	fi
-	
+
 	echo "${g}Your current hostname is:${x}"
 	echo
 	echo " | $currhostname |"
 	echo
-	
+
 	if [ $configoption = "3" ]
 	then
 		echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
 		echo
 	fi
-	
+
 	read -p "Keep this hostname? (Y/n): " -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
@@ -329,7 +329,7 @@ then
 		echo
 		changehostname=y
 	fi
-	
+
 	if [ $changehostname = "y" ]
 	then
 		defined=n
@@ -355,52 +355,52 @@ then
 			do
 				read -n 1 -p "Is | $newhostname | correct? (Y/n/e[xit]) " answer;
 				case $answer in
-					"")
+				"")
 					echo
 					valid=y
 					defined=y
 					;;
-					y)
+				y)
 					echo -e "\n"
 					valid=y
 					defined=y
 					;;
-					n)
+				n)
 					echo -e "\n"
 					echo "Ok, then please try again..."
 					echo
 					valid=y
 					defined=n
 					;;
-					e)
+				e)
 					echo -e "\n"
-					echo "Exiting..."
-					echo
-					exit
-					;;
-					*)
+		        		echo "Exiting..."
+		        		echo
+		        		exit
+		        		;;
+				*)
 					echo -e "\n"
 					echo "Invalid option. Retry..."
-					echo
+		        		echo
 					valid=n
-					defined=n
-					;;
+				defined=n
+			        ;;
 				esac
 			done
 		done
-		echo $newhostname > /etc/hostname
-		echo "New hostname set to | $newhostname |"
-		echo
-		hostname="$(cat /etc/hostname)"
+	echo $newhostname > /etc/hostname
+	echo "New hostname set to | $newhostname |"
+	echo
+	hostname="$(cat /etc/hostname)"
 	fi
-	
+
 	if [ $configoption = "3" ]
 	then
 		domain=$hostname
 	fi
-	
+
 else
-	
+
 	echo "Your hostname must be identical to your domain: $domain."
 	echo
 	echo "Your current hostname is:"
@@ -432,9 +432,9 @@ else
 			exit
 		fi
 	fi
-	
+
 	hostname="$(cat /etc/hostname)"
-	
+
 fi
 sleep 1
 clear
@@ -485,22 +485,22 @@ read -p "Set up the server for ${b}public internet access${x}? (Y/n): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
-	echo "Ok, continuing in public internet accessibilty mode..."
-	echo
-	deptype=internet
-	sleep 1
+  echo "Ok, continuing in public internet accessibilty mode..."
+  echo
+  deptype=internet
+  sleep 1
 else
-	echo
-	echo "Ok, continuing in local network accessibility mode..."
-	echo
-	echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well.${x}"
-	echo
-	echo "Open a shell to this machine and make sure it's using your local DNS server now before continuing."
-	echo
-	echo "${b}The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server.${x}"
-	echo
-	deptype=local
-	read -p "[press enter to continue...]"
+  echo
+  echo "Ok, continuing in local network accessibility mode..."
+  echo
+  echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well.${x}"
+  echo
+  echo "Open a shell to this machine and make sure it's using your local DNS server now before continuing."
+  echo
+  echo "${b}The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server.${x}"
+  echo
+  deptype=local
+  read -p "[press enter to continue...]"
 fi
 clear
 
@@ -521,15 +521,15 @@ then
 		echo
 		until ping6 -c1 $ipv6pingaddr &>/dev/null
 		do
-			echo "Waiting $counter more seconds for IPv6 connectivity..."
-			echo
-			if [ $counter = 0 ]
-			then
-				pingacquired=n
-				break
-			fi
-			counter=$(($counter - 1))
-			sleep 1
+		echo "Waiting $counter more seconds for IPv6 connectivity..."
+		echo
+		if [ $counter = 0 ]
+		then
+			pingacquired=n
+			break
+		fi
+		counter=$(($counter - 1))
+		sleep 1
 		done
 		if [ $pingacquired = "y" ]
 		then
@@ -581,26 +581,26 @@ echo "Now let's make sure your hostname IPv4 DNS settings are correct."
 echo
 
 declare -A digarray=(
-[HN]=""
-[www]="www."
+	[HN]=""
+	[www]="www."
 )
 
 digarrayiter=0
 
 for i in "${!digarray[@]}"
 do
-	
+
 	digarrayiter=$(($digarrayiter + 1))
 	echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv4..."
 	echo
 	sleep 1
-	
+
 	accept=n
 	until [ $accept = "y" ]
 	do
-		
+
 		digresult="$(getent ahostsv4 ${digarray[$i]}$hostname. | head -1 |sed 's/ .*//')"
-		
+
 		if [ -z "$digresult" ]
 		then
 			echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
@@ -633,7 +633,7 @@ do
 				result=incorrect
 			fi
 		fi
-		
+
 		if [ ! $result = "ok" ]
 		then
 			valid=n
@@ -641,36 +641,36 @@ do
 			do
 				read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
 				case $answer in
-					"")
+				"")
 					echo
 					valid=y
 					accept=n
 					;;
-					y)
+				y)
 					echo -e "\n"
 					valid=y
 					accept=n
 					;;
-					s)
+				s)
 					echo -e "\n"
 					echo "Skipping DNS check for this record..."
 					echo
 					valid=y
 					accept=y
 					;;
-					e)
+				e)
 					echo -e "\n"
-					echo "Exiting..."
-					echo
-					exit
-					;;
-					*)
+	        			echo "Exiting..."
+	        			echo
+	        			exit
+	        			;;
+				*)
 					echo -e "\n"
 					echo "Invalid option. Retry..."
-					echo
+	        			echo
 					valid=n
 					accept=n
-					;;
+			        	;;
 				esac
 			done
 		else
@@ -686,31 +686,31 @@ sleep 1
 
 if [ $ipv6avail = "y" ]
 then
-	
+
 	echo "Now let's make sure your hostname IPv6 DNS settings are correct."
 	echo
-	
+
 	declare -A digarray=(
-	[HN]=""
-	[www]="www."
+		[HN]=""
+		[www]="www."
 	)
-	
+
 	digarrayiter=0
-	
+
 	for i in "${!digarray[@]}"
 	do
-		
+
 		digarrayiter=$(($digarrayiter + 1))
 		echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv6..."
 		echo
 		sleep 1
-		
+
 		accept=n
 		until [ $accept = "y" ]
 		do
-			
+
 			digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-			
+
 			if [ -z "$digresult" ]
 			then
 				echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
@@ -743,7 +743,7 @@ then
 					result=incorrect
 				fi
 			fi
-			
+
 			if [ ! $result = "ok" ]
 			then
 				valid=n
@@ -751,36 +751,36 @@ then
 				do
 					read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
 					case $answer in
-						"")
+					"")
 						echo
 						valid=y
 						accept=n
 						;;
-						y)
+					y)
 						echo -e "\n"
 						valid=y
 						accept=n
 						;;
-						s)
+					s)
 						echo -e "\n"
 						echo "Skipping DNS check for this record..."
 						echo
 						valid=y
 						accept=y
 						;;
-						e)
+					e)
 						echo -e "\n"
-						echo "Exiting..."
-						echo
-						exit
-						;;
-						*)
+		        			echo "Exiting..."
+		        			echo
+		        			exit
+		        			;;
+					*)
 						echo -e "\n"
 						echo "Invalid option. Retry..."
-						echo
+		        			echo
 						valid=n
 						accept=n
-						;;
+				        	;;
 					esac
 				done
 			else
@@ -789,18 +789,18 @@ then
 			clear
 		done
 	done
-	
+
 	echo "Finished checking hostname IPv6 DNS settings."
 	echo
 	sleep 1
-	
+
 fi
 
 additionalTLScertmode="notset"
 
 if [ $configoption = 1 ]
 then
-	
+
 	additionalTLScertmode="elsewhere"
 	echo "Since you've chosen option 1, your domain is different from your hostname."
 	echo
@@ -814,47 +814,47 @@ then
 	echo
 	read -p "[press enter to continue when finished setting your DNS SRV records...]"
 	clear
-	
+
 	echo "Now it's time to set up the TLS [SSL] certificate that is valid for $domain."
 	echo
-	echo "The certificate file required for aenigma must be an all-in-one private key + certificate + chain file."
-	echo
-	echo "This means the file must include, in this order, the following:"
-	echo
-	echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
-	echo
-	read -p "[press enter to continue reading...]"
-	clear
-	
-	echo "This certificate, if it already exists, resides on the server responding to $domain"
-	echo
+  echo "The certificate file required for aenigma must be an all-in-one private key + certificate + chain file."
+  echo
+  echo "This means the file must include, in this order, the following:"
+  echo
+  echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
+  echo
+  read -p "[press enter to continue reading...]"
+  clear
+
+  echo "This certificate, if it already exists, resides on the server responding to $domain"
+  echo
 	echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
 	echo
 	echo "This is the IP to which your bare domain $domain is pointing to:"
 	echo
 	dig +noall +answer $domain
 	echo
-	echo "[If you see no output, then it might be misconfigured or not configured at all.]"
-	echo
-	read -p "[press enter to continue reading...]"
-	clear
-	
+  echo "[If you see no output, then it might be misconfigured or not configured at all.]"
+  echo
+  read -p "[press enter to continue reading...]"
+  clear
+
 	read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
+        echo
+        if [[ ! $REPLY =~ ^[Nn]$ ]]
+        then
 		read -p "Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): " -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
+	        echo
+	        if [[ ! $REPLY =~ ^[Nn]$ ]]
+	        then
 			read -p "Ok, is this a Linux server? (Y/n): " -n 1 -r
-			echo
-			if [[ ! $REPLY =~ ^[Nn]$ ]]
-			then
+                        echo
+                        if [[ ! $REPLY =~ ^[Nn]$ ]]
+                        then
 				read -p "Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): " -n 1 -r
-				echo
-				if [[ ! $REPLY =~ ^[Nn]$ ]]
-				then
+	                	echo
+	                	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	                	then
 					echo "Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:"
 					echo
 					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
@@ -866,7 +866,7 @@ then
 					echo "Ok, no problem, you can adapt this script:"
 					echo
 					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
-					echo
+                                        echo
 					echo "To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically."
 					echo
 					echo "Follow the instructions and adapt the paths to the existing TLS certs and private key."
@@ -878,9 +878,9 @@ then
 			fi
 		else
 			read -p "Ok, no problem. Is this server a linux server? (Y/n): " -n 1 -r
-			echo
-			if [[ ! $REPLY =~ ^[Nn]$ ]]
-			then
+                        echo
+                        if [[ ! $REPLY =~ ^[Nn]$ ]]
+                        then
 				echo "Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:"
 				echo
 				echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
@@ -895,7 +895,7 @@ then
 		read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
 	else
-		echo
+    echo
 		echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
 		echo
 		echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
@@ -903,169 +903,169 @@ then
 		echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
 		echo
 		echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
-		echo
-		echo "For now, no need to worry about that."
-		echo
-		read -p "[press enter to continue reading...]"
-		clear
-		
+    echo
+    echo "For now, no need to worry about that."
+    echo
+    read -p "[press enter to continue reading...]"
+    clear
+
 		echo "Let's point $domain and www.$domain to this server for the time being."
 		echo
 		echo "This is required for the TLS certificate we'll be generating shortly on this server."
 		echo
-		
+
 		additionalTLScertmode="here"
-		
-		declare -A digarray=(
-		[HN]=""
-		[www]="www."
-		)
-		
-		digarrayiter=0
-		
-		for i in "${!digarray[@]}"
-		do
-			
-			digarrayiter=$(($digarrayiter + 1))
-			echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv4..."
-			echo
-			sleep 1
-			
-			digresult="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 |sed 's/ .*//')"
-			
-			if [ -z "$digresult" ]
-			then
-				echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
-				echo
-				echo "Please ensure you set your DNS record as follows:"
-				echo
-				echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-				echo
-				read -p "[press enter to continue...]"
-			else
-				if [ $digresult = $thisipv4 ]
-				then
-					echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
-					echo
-					echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-					echo
-					sleep 1
-				else
-					echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
-					echo
-					echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
-					echo
-					getent ahostsv4 ${digarray[$i]}$domain | head -1
-					echo
-					echo "Please set it instead to:"
-					echo
-					echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-					echo
-					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-					echo
-					read -p "[press enter to continue...]"
-				fi
-			fi
-			clear
-		done
-		
-		echo "Finished checking domain IPv4 DNS settings."
-		echo
-		sleep 1
-		
-		if [ $ipv6avail = "y" ]
-		then
-			
-			echo "Now let's make sure your domain IPv6 DNS settings are correct."
-			echo
-			
-			declare -A digarray=(
-			[HN]=""
-			[www]="www."
-			)
-			
-			digarrayiter=0
-			
-			for i in "${!digarray[@]}"
-			do
-				
-				digarrayiter=$(($digarrayiter + 1))
-				echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv6..."
-				echo
-				sleep 1
-				
-				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-				
-				if [ -z "$digresult" ]
-				then
-					echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
-					echo
-					echo "Please ensure you set your DNS record as follows:"
-					echo
-					echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
-					echo
-					read -p "[press enter to continue...]"
-				else
-					if [ "$digresult" = "$thisipv6" ]
-					then
-						echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
-						echo
-						echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
-						echo
-						sleep 1
-					else
-						echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
-						echo
-						echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
-						echo
-						getent ahostsv6 ${digarray[$i]}$domain | head -1
-						echo
-						echo "Please set it instead to:"
-						echo
-						echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
-						echo
-						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-						echo
-						read -p "[press enter to continue...]"
-					fi
-				fi
-				clear
-			done
-			
-			echo "Finished checking domain IPv6 DNS settings."
-			echo
-			sleep 1
-			
-		fi
-		
-	fi
-	
+
+    		declare -A digarray=(
+    			[HN]=""
+    			[www]="www."
+    		)
+
+    		digarrayiter=0
+
+    		for i in "${!digarray[@]}"
+    		do
+
+    			digarrayiter=$(($digarrayiter + 1))
+    			echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv4..."
+    			echo
+    			sleep 1
+
+    			digresult="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 |sed 's/ .*//')"
+
+    			if [ -z "$digresult" ]
+    			then
+    				echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
+    				echo
+    				echo "Please ensure you set your DNS record as follows:"
+    				echo
+    				echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
+    				echo
+    				read -p "[press enter to continue...]"
+    			else
+    				if [ $digresult = $thisipv4 ]
+    				then
+    					echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
+    					echo
+    					echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
+    					echo
+    					sleep 1
+    				else
+    					echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
+    					echo
+    					echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
+    					echo
+    					getent ahostsv4 ${digarray[$i]}$domain | head -1
+    					echo
+              echo "Please set it instead to:"
+              echo
+              echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
+              echo
+    					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+    					echo
+    					read -p "[press enter to continue...]"
+    				fi
+    			fi
+    			clear
+    		done
+
+    echo "Finished checking domain IPv4 DNS settings."
+    echo
+    sleep 1
+
+    if [ $ipv6avail = "y" ]
+    then
+
+    	echo "Now let's make sure your domain IPv6 DNS settings are correct."
+    	echo
+
+    			declare -A digarray=(
+    				[HN]=""
+    				[www]="www."
+    			)
+
+    			digarrayiter=0
+
+    			for i in "${!digarray[@]}"
+    			do
+
+    				digarrayiter=$(($digarrayiter + 1))
+    				echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv6..."
+    				echo
+    				sleep 1
+
+    				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+
+    				if [ -z "$digresult" ]
+    				then
+    					echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
+    					echo
+    					echo "Please ensure you set your DNS record as follows:"
+    					echo
+    					echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
+    					echo
+    					read -p "[press enter to continue...]"
+    				else
+    					if [ "$digresult" = "$thisipv6" ]
+    					then
+    						echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
+    						echo
+    						echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
+    						echo
+    						sleep 1
+    					else
+    						echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
+    						echo
+    						echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
+    						echo
+    						getent ahostsv6 ${digarray[$i]}$domain | head -1
+    						echo
+                echo "Please set it instead to:"
+                echo
+                echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
+                echo
+    						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
+    						echo
+    						read -p "[press enter to continue...]"
+    					fi
+    				fi
+    				clear
+    			done
+
+    	echo "Finished checking domain IPv6 DNS settings."
+    	echo
+    	sleep 1
+
+    fi
+
+  fi
+
 fi
 
 echo "Now checking additional DNS settings..."
 echo
 
 declare -A domsubsarray=(
-[xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
-[xu]="XMPP HTTP uploads."
-[xe]="the ejabberd MOD_ECHO module."
-[xp]="the ejabberd MOD_PUBSUB module."
-[xi]="join channels on IRC servers."
+	[xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
+	[xu]="XMPP HTTP uploads."
+	[xe]="the ejabberd MOD_ECHO module."
+	[xp]="the ejabberd MOD_PUBSUB module."
+	[xi]="join channels on IRC servers."
 )
 
 domsubsarrayiter=0
 
 for i in "${!domsubsarray[@]}"
 do
-	
+
 	domsubsarrayiter=$(($domsubsarrayiter + 1))
 	echo "$domsubsarrayiter] Now checking the $i.$domain subdomain in IPv4..."
 	echo
 	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
 	echo
-	
+
 	dsdigresult="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s')"
-	
+
 	if [ -z "$dsdigresult" ]
 	then
 		echo "${r}Its DNS record does NOT appear to be at all set.${x}"
@@ -1090,10 +1090,10 @@ do
 			echo
 			dig +noall +answer $i.$domain
 			echo
-			echo "Please set it instead to:"
-			echo
-			echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
-			echo
+      echo "Please set it instead to:"
+      echo
+      echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
+      echo
 			echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
 			echo
 			read -p "[press enter to continue...]"
@@ -1186,65 +1186,65 @@ sleep 1
 
 if [ $additionalTLScertmode = "here" ]
 then
-	
-	echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
-	echo
-	
-	echo "Now creating easyengine site for $domain, generating its TLS certificate, and installing it..."
-	echo
-	ee site create $domain
-	echo
-	echo "Finished creating easyengine site for $domain."
-	echo
-	sleep 1
-	
-	echo "Now setting custom nginx config for $domain..."
-	echo
-	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/domain.conf
-	cp $sourcedir/conf/nginx/domain.conf /etc/nginx/sites-available/$domain
-	service nginx reload
-	echo "Finished setting custom nginx config for $domain."
-	echo
-	sleep 1
-	
-	echo "Now updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
-	echo
-	ee site update $domain  --le
-	echo
-	echo "Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
-	echo
-	
-	echo "Now adding IPv6 support to the HTTPS version of the $domain site..."
-	echo
-	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
-	cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
-	echo "Finished adding IPv6 support to the HTTPS version of the $domain site..."
-	echo
-	
-	echo "Now adding IPv6 support to the HTTPS redirect for the $domain site..."
-	echo
-	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
-	cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
-	echo "Finished adding IPv6 support to the HTTPS redirect for the $domain site..."
-	echo
-	
-	echo "Now creating all-in-one TLS file for $domain for ejabberd..."
-	echo
-	touch $tlsdir/domain.pem
+
+  echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
+  echo
+
+  echo "Now creating easyengine site for $domain, generating its TLS certificate, and installing it..."
+  echo
+  ee site create $domain
+  echo
+  echo "Finished creating easyengine site for $domain."
+  echo
+  sleep 1
+
+  echo "Now setting custom nginx config for $domain..."
+  echo
+  sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/domain.conf
+  cp $sourcedir/conf/nginx/domain.conf /etc/nginx/sites-available/$domain
+  service nginx reload
+  echo "Finished setting custom nginx config for $domain."
+  echo
+  sleep 1
+
+  echo "Now updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+  echo
+  ee site update $domain  --le
+  echo
+  echo "Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+  echo
+
+  echo "Now adding IPv6 support to the HTTPS version of the $domain site..."
+  echo
+  sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
+  cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
+  echo "Finished adding IPv6 support to the HTTPS version of the $domain site..."
+  echo
+
+  echo "Now adding IPv6 support to the HTTPS redirect for the $domain site..."
+  echo
+  sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
+  cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
+  echo "Finished adding IPv6 support to the HTTPS redirect for the $domain site..."
+  echo
+
+  echo "Now creating all-in-one TLS file for $domain for ejabberd..."
+  echo
+  touch $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/privkey.pem > $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $tlsdir/domain.pem
 	domtlscertloc=$tlsdir/domain.pem
-	echo "Finished creating all-in-one TLS file for $domain for ejabberd..."
-	echo
-	sleep 1
-	
-	echo "Now setting index.html in docroot for $domain..."
-	echo
-	cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
-	echo "Finished setting index.html in docroot for $domain."
-	echo
-	sleep 1
-	
+  echo "Finished creating all-in-one TLS file for $domain for ejabberd..."
+  echo
+  sleep 1
+
+  echo "Now setting index.html in docroot for $domain..."
+  echo
+  cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
+  echo "Finished setting index.html in docroot for $domain."
+  echo
+  sleep 1
+
 fi
 
 service nginx restart
@@ -1256,14 +1256,14 @@ touch /etc/ejabberd/ejabberd.yml
 sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 if [ $configoption = 1 ]
 then
-	# First [commented] one is the old method of installing domain TLS cert, keeping it in case of future need.
-	## wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma/master/conf/ejabberd/ejabberd-tlsaddition.txt
-	## sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
-	## sed -i "s|/root/os-aenigma/hostname.pem|${domtlscertloc}|g" ejabberd-tlsaddition.txt
-	## sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
-	## sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
-	# This second one instead directly substitutes the main TLS cert in the ejabberd config since we apparently don't need the hostname's one for ejabberd [nginx has its own].
-	sed -i "s|${tlsdir}/hostname.pem|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd.yml
+# First [commented] one is the old method of installing domain TLS cert, keeping it in case of future need.
+## wget -qO ejabberd-tlsaddition.txt https://raw.githubusercontent.com/openspace42/aenigma/master/conf/ejabberd/ejabberd-tlsaddition.txt
+## sed -i "s|example.im|${domain}|g" ejabberd-tlsaddition.txt
+## sed -i "s|/root/os-aenigma/hostname.pem|${domtlscertloc}|g" ejabberd-tlsaddition.txt
+## sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' aenigma-ejabberd.yml
+## sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' aenigma-ejabberd.yml
+# This second one instead directly substitutes the main TLS cert in the ejabberd config since we apparently don't need the hostname's one for ejabberd [nginx has its own].
+  sed -i "s|${tlsdir}/hostname.pem|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd.yml
 fi
 cp $sourcedir/conf/ejabberd/ejabberd.yml /etc/ejabberd/ejabberd.yml
 echo "Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml."
