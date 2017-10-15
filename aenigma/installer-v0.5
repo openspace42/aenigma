@@ -577,224 +577,7 @@ fi
 sleep 1
 clear
 
-echo "Now let's make sure your hostname IPv4 DNS settings are correct."
-echo
 
-declare -A digarray=(
-	[HN]=""
-	[www]="www."
-)
-
-digarrayiter=0
-
-for i in "${!digarray[@]}"
-do
-
-	digarrayiter=$(($digarrayiter + 1))
-	echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv4..."
-	echo
-	sleep 1
-
-	accept=n
-	until [ $accept = "y" ]
-	do
-
-		digresult="$(getent ahostsv4 ${digarray[$i]}$hostname. | head -1 |sed 's/ .*//')"
-
-		if [ -z "$digresult" ]
-		then
-			echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
-			echo
-			echo "Please ensure you set your DNS record as follows:"
-			echo
-			echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
-			echo
-			result=notset
-		else
-			if [ $digresult = $thisipv4 ]
-			then
-				echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
-				echo
-				echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
-				echo
-				result=ok
-				sleep 1
-			else
-				echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
-				echo
-				echo "This is the result of a DNS query for ${digarray[$i]}$hostname:"
-				echo
-				echo $digresult
-				echo
-				echo "Please set it instead to:"
-				echo
-				echo -e "| ${digarray[$i]}$hostname\t\t\tA\t$thisipv4 |"
-				echo
-				result=incorrect
-			fi
-		fi
-
-		if [ ! $result = "ok" ]
-		then
-			valid=n
-			until [ $valid = "y" ]
-			do
-				read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-				case $answer in
-				"")
-					echo
-					valid=y
-					accept=n
-					;;
-				y)
-					echo -e "\n"
-					valid=y
-					accept=n
-					;;
-				s)
-					echo -e "\n"
-					echo "Skipping DNS check for this record..."
-					echo
-					valid=y
-					accept=y
-					;;
-				e)
-					echo -e "\n"
-	        			echo "Exiting..."
-	        			echo
-	        			exit
-	        			;;
-				*)
-					echo -e "\n"
-					echo "Invalid option. Retry..."
-	        			echo
-					valid=n
-					accept=n
-			        	;;
-				esac
-			done
-		else
-			accept=y
-		fi
-		clear
-	done
-done
-
-echo "Finished checking hostname IPv4 DNS settings."
-echo
-sleep 1
-
-if [ $ipv6avail = "y" ]
-then
-
-	echo "Now let's make sure your hostname IPv6 DNS settings are correct."
-	echo
-
-	declare -A digarray=(
-		[HN]=""
-		[www]="www."
-	)
-
-	digarrayiter=0
-
-	for i in "${!digarray[@]}"
-	do
-
-		digarrayiter=$(($digarrayiter + 1))
-		echo "$digarrayiter] Now checking the ${digarray[$i]}$hostname DNS record in IPv6..."
-		echo
-		sleep 1
-
-		accept=n
-		until [ $accept = "y" ]
-		do
-
-			digresult="$(getent ahostsv6 ${digarray[$i]}$hostname. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-
-			if [ -z "$digresult" ]
-			then
-				echo "${r}The ${digarray[$i]}$hostname record does NOT appear to be at all set.${x}"
-				echo
-				echo "Please ensure you set your DNS record as follows:"
-				echo
-				echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
-				echo
-				result=notset
-			else
-				if [ $digresult = $thisipv6 ]
-				then
-					echo "${g}The ${digarray[$i]}$hostname record appears to resolve correctly to this server.${x}"
-					echo
-					echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
-					echo
-					result=ok
-					sleep 1
-				else
-					echo "${r}The ${digarray[$i]}$hostname record does NOT appear to correctly resolve to this server.${x}"
-					echo
-					echo "This is the result of a DNS query for ${digarray[$i]}$hostname:"
-					echo
-					echo $digresult
-					echo
-					echo "Please set it instead to:"
-					echo
-					echo -e "| ${digarray[$i]}$hostname\t\tAAAA\t$thisipv6 |"
-					echo
-					result=incorrect
-				fi
-			fi
-
-			if [ ! $result = "ok" ]
-			then
-				valid=n
-				until [ $valid = "y" ]
-				do
-					read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-					case $answer in
-					"")
-						echo
-						valid=y
-						accept=n
-						;;
-					y)
-						echo -e "\n"
-						valid=y
-						accept=n
-						;;
-					s)
-						echo -e "\n"
-						echo "Skipping DNS check for this record..."
-						echo
-						valid=y
-						accept=y
-						;;
-					e)
-						echo -e "\n"
-		        			echo "Exiting..."
-		        			echo
-		        			exit
-		        			;;
-					*)
-						echo -e "\n"
-						echo "Invalid option. Retry..."
-		        			echo
-						valid=n
-						accept=n
-				        	;;
-					esac
-				done
-			else
-				accept=y
-			fi
-			clear
-		done
-	done
-
-	echo "Finished checking hostname IPv6 DNS settings."
-	echo
-	sleep 1
-
-fi
 
 additionalTLScertmode="notset"
 
@@ -895,7 +678,7 @@ then
 		read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
 	else
-    echo
+		echo
 		echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
 		echo
 		echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
@@ -903,144 +686,191 @@ then
 		echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
 		echo
 		echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
-    echo
-    echo "For now, no need to worry about that."
-    echo
-    read -p "[press enter to continue reading...]"
-    clear
+		echo
+		echo "For now, no need to worry about that."
+		echo
+		read -p "[press enter to continue reading...]"
+		clear
 
 		echo "Let's point $domain and www.$domain to this server for the time being."
 		echo
 		echo "This is required for the TLS certificate we'll be generating shortly on this server."
 		echo
+		echo "The DNS checks we'll be running shortly will guide you through these settings as well."
+		echo
 
 		additionalTLScertmode="here"
-
-    		declare -A digarray=(
-    			[HN]=""
-    			[www]="www."
-    		)
-
-    		digarrayiter=0
-
-    		for i in "${!digarray[@]}"
-    		do
-
-    			digarrayiter=$(($digarrayiter + 1))
-    			echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv4..."
-    			echo
-    			sleep 1
-
-    			digresult="$(getent ahostsv4 ${digarray[$i]}$domain. | head -1 |sed 's/ .*//')"
-
-    			if [ -z "$digresult" ]
-    			then
-    				echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
-    				echo
-    				echo "Please ensure you set your DNS record as follows:"
-    				echo
-    				echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-    				echo
-    				read -p "[press enter to continue...]"
-    			else
-    				if [ $digresult = $thisipv4 ]
-    				then
-    					echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
-    					echo
-    					echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-    					echo
-    					sleep 1
-    				else
-    					echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
-    					echo
-    					echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
-    					echo
-    					getent ahostsv4 ${digarray[$i]}$domain | head -1
-    					echo
-              echo "Please set it instead to:"
-              echo
-              echo -e "| ${digarray[$i]}$domain\t\t\tA\t$thisipv4 |"
-              echo
-    					echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-    					echo
-    					read -p "[press enter to continue...]"
-    				fi
-    			fi
-    			clear
-    		done
-
-    echo "Finished checking domain IPv4 DNS settings."
-    echo
-    sleep 1
-
-    if [ $ipv6avail = "y" ]
-    then
-
-    	echo "Now let's make sure your domain IPv6 DNS settings are correct."
-    	echo
-
-    			declare -A digarray=(
-    				[HN]=""
-    				[www]="www."
-    			)
-
-    			digarrayiter=0
-
-    			for i in "${!digarray[@]}"
-    			do
-
-    				digarrayiter=$(($digarrayiter + 1))
-    				echo "$digarrayiter] Now checking the ${digarray[$i]}$domain DNS record in IPv6..."
-    				echo
-    				sleep 1
-
-    				digresult="$(getent ahostsv6 ${digarray[$i]}$domain. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-
-    				if [ -z "$digresult" ]
-    				then
-    					echo "${r}The ${digarray[$i]}$domain record does NOT appear to be at all set.${x}"
-    					echo
-    					echo "Please ensure you set your DNS record as follows:"
-    					echo
-    					echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
-    					echo
-    					read -p "[press enter to continue...]"
-    				else
-    					if [ "$digresult" = "$thisipv6" ]
-    					then
-    						echo "${g}The ${digarray[$i]}$domain record appears to resolve correctly to this server.${x}"
-    						echo
-    						echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
-    						echo
-    						sleep 1
-    					else
-    						echo "${r}The ${digarray[$i]}$domain record does NOT appear to correctly resolve to this server.${x}"
-    						echo
-    						echo "This is the result of a DNS query for ${digarray[$i]}$domain:"
-    						echo
-    						getent ahostsv6 ${digarray[$i]}$domain | head -1
-    						echo
-                echo "Please set it instead to:"
-                echo
-                echo -e "| ${digarray[$i]}$domain\t\tAAAA\t$thisipv6 |"
-                echo
-    						echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-    						echo
-    						read -p "[press enter to continue...]"
-    					fi
-    				fi
-    				clear
-    			done
-
-    	echo "Finished checking domain IPv6 DNS settings."
-    	echo
-    	sleep 1
-
-    fi
 
   fi
 
 fi
+sleep 1
+clear
+
+if [ $additionalTLScertmode = "here" ]
+then
+	declare -a dnsarray=(
+                "domain"
+                "hostname"
+                )
+else
+        declare -a dnsarray=(
+                "hostname"
+                )
+fi
+
+# ///
+
+if [ $ipv6avail = "y" ]
+then
+        declare -a iparray=(
+                "v4"
+                "v6"
+                )
+else
+        declare -a iparray=(
+                "v4"
+                )
+fi
+
+for dnstype in "${dnsarray[@]}"
+do
+
+if [ $dnstype = "domain" ]
+then
+	dnschecktype=$domain
+else
+	dnschecktype=$hostname
+fi
+
+for ipversion in "${iparray[@]}"
+do
+
+echo "Now let's make sure your $dnstype's IP$ipversion DNS settings are correct."
+echo
+
+declare -A digarray=(
+	[HN]=""
+	[www]="www."
+)
+
+digarrayiter=0
+
+for i in "${!digarray[@]}"
+do
+
+	digarrayiter=$(($digarrayiter + 1))
+	echo "$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion..."
+	echo
+	sleep 1
+
+	accept=n
+	until [ $accept = "y" ]
+	do
+
+	if [ $ipversion = "v4" ]
+	then
+                	thisip=$thisipv4
+			digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
+                	rectype="A"
+	else
+                	thisip=$thisipv6
+                	digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+                	rectype="AAAA"
+	fi
+
+			if [ -z "$digresult" ]
+			then
+				echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to be at all set.${x}"
+				echo
+				echo "Please ensure you set your DNS record as follows:"
+				echo
+				echo -e "| ${digarray[$i]}$dnschecktype\t\t\t$rectype\t$thisip |"
+				echo
+				result=notset
+			else
+				if [ $digresult = $thisip ]
+				then
+					echo "${g}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
+					echo
+					echo -e "| ${digarray[$i]}$dnschecktype\t\t\t$rectype\t$thisip |"
+					echo
+					result=ok
+					sleep 1
+				else
+					echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
+					echo
+					echo "This is the result of a DNS query for ${digarray[$i]}$dnschecktype:"
+					echo
+					echo $digresult
+					echo
+					echo "Please set it instead to:"
+					echo
+					echo -e "| ${digarray[$i]}$dnschecktype\t\t\t$rectype\t$thisip |"
+					echo
+					result=incorrect
+				fi
+			fi
+
+			if [ ! $result = "ok" ]
+			then
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						accept=n
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						accept=n
+						;;
+					s)
+						echo -e "\n"
+						echo "Skipping DNS check for this record..."
+						echo
+						valid=y
+						accept=y
+						;;
+					e)
+						echo -e "\n"
+	        				echo "Exiting..."
+	        				echo
+	        				exit
+	        				;;
+					*)
+						echo -e "\n"
+						echo "Invalid option. Retry..."
+	        				echo
+						valid=n
+						accept=n
+			        		;;
+					esac
+				done
+			else
+				accept=y
+			fi
+			clear
+		done
+	done
+
+	echo "Finished checking your $dnstype's IP$ipversion DNS settings."
+	echo
+	sleep 1
+
+done
+
+# \\\
+
+done
+
+
+
+
 
 echo "Now checking additional DNS settings..."
 echo
