@@ -710,12 +710,14 @@ clear
 if [ $additionalTLScertmode = "here" ]
 then
 	declare -a dnsarray=(
-                "domain"
                 "hostname"
+                "domain"
+		"XMPP"
                 )
 else
         declare -a dnsarray=(
                 "hostname"
+		"XMPP"
                 )
 fi
 
@@ -736,11 +738,11 @@ fi
 for dnstype in "${dnsarray[@]}"
 do
 
-if [ $dnstype = "domain" ]
+if [ $dnstype = "hostname" ]
 then
-	dnschecktype=$domain
-else
 	dnschecktype=$hostname
+else
+	dnschecktype=$domain
 fi
 
 for ipversion in "${iparray[@]}"
@@ -749,10 +751,34 @@ do
 echo "Now let's make sure your $dnstype's IP$ipversion DNS settings are correct."
 echo
 
-declare -A digarray=(
-	[HN]=""
-	[www]="www."
-)
+if [ $dnstype = "domain" ]
+then
+	declare -A digarray=(
+		[HN]=""
+		[www]="www."
+	)
+elif [ $dnstype = "XMPP" ]
+then
+	declare -A digarray=(
+		[xc]="xc."
+		[xu]="xu."
+		[xe]="xe."
+		[xp]="xp."
+		[xi]="xi."
+	)
+elif [ $dnstype = "hostname" ]
+then
+	declare -A digarray=(
+		[HN]=""
+		[www]="www."
+	)
+fi
+
+# [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
+# [xu]="XMPP HTTP uploads."
+# [xe]="the ejabberd MOD_ECHO module."
+# [xp]="the ejabberd MOD_PUBSUB module."
+# [xi]="join channels on IRC servers."
 
 digarrayiter=0
 
@@ -869,72 +895,6 @@ done
 done
 
 
-
-
-
-echo "Now checking additional DNS settings..."
-echo
-
-declare -A domsubsarray=(
-	[xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
-	[xu]="XMPP HTTP uploads."
-	[xe]="the ejabberd MOD_ECHO module."
-	[xp]="the ejabberd MOD_PUBSUB module."
-	[xi]="join channels on IRC servers."
-)
-
-domsubsarrayiter=0
-
-for i in "${!domsubsarray[@]}"
-do
-
-	domsubsarrayiter=$(($domsubsarrayiter + 1))
-	echo "$domsubsarrayiter] Now checking the $i.$domain subdomain in IPv4..."
-	echo
-	echo "The $i.$domain subdomain is required for ${domsubsarray[$i]}"
-	echo
-
-	dsdigresult="$(getent hosts $i.$domain. | grep -oP '^\d+(\.\d+){3}\s')"
-
-	if [ -z "$dsdigresult" ]
-	then
-		echo "${r}Its DNS record does NOT appear to be at all set.${x}"
-		echo
-		echo "Please ensure you set your DNS record as follows:"
-		echo
-		echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
-		echo
-		read -p "[press enter to continue...]"
-	else
-		if [ $dsdigresult = $thisipv4 ]
-		then
-			echo "${g}Its DNS record appears to resolve correctly to this server.${x}"
-			echo
-			echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
-			echo
-			sleep 1
-		else
-			echo "${r}Its DNS record does NOT appear to correctly resolve to this server.${x}"
-			echo
-			echo "This is the result of a DNS query for $i.$domain:"
-			echo
-			dig +noall +answer $i.$domain
-			echo
-      echo "Please set it instead to:"
-      echo
-      echo -e "| $i.$domain\t\t\tA\t$thisipv4 |"
-      echo
-			echo "If you think this result is not accurate or if you've just now corrected this issue, please continue."
-			echo
-			read -p "[press enter to continue...]"
-		fi
-	fi
-	clear
-done
-echo
-
-echo "Finished checking additional DNS settings."
-echo
 
 echo "Now setting UFW rules..."
 echo
