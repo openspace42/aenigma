@@ -1064,7 +1064,12 @@ echo "Now installing SSLH..."
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
 apt-get -y install sslh
-sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
+if [ $ipv6avail = "y" ]
+then
+	sed -i "s|thisipv4|${thisipv4}:443 -p ${thisipv6}|g" $sourcedir/conf/sslh/sslh
+else
+	sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
+fi
 sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
 cp $sourcedir/conf/sslh/sslh /etc/default/sslh
 service sslh start
