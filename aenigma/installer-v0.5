@@ -828,7 +828,8 @@ do
 		else
 			thisip="0 0 5222 $hostname."
 		fi
-		digresult=#figurethisout
+		echo dig +short -t srv $i$domain #debug
+		digresult="$(dig +short -t srv $i$domain)"
 		rectype="SRV"
 	fi
 
