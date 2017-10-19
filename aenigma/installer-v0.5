@@ -1046,14 +1046,13 @@ touch /etc/ejabberd/ejabberd.yml
 sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 if [ $configoption = 1 ]
 then
-# [old] direct main cert substitution
+### [old] direct main cert substitution
 # sed -i "s|${tlsdir}/hostname.pem|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd.yml
-# [new] append ${domtlscertloc} in host_config
-# sed -i "s|${tlsdir}/hostname.pem|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
+### [new] append ${domtlscertloc} in host_config
 sed -i "s|example.im|${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
 sed -i "s|pathtofile|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
 sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
-sed -i '/## aenigma_host_config_placeholder_start:/ r ${sourcedir}/conf/ejabberd/ejabberd-tlsaddition.txt' $sourcedir/conf/ejabberd/ejabberd.yml
+sed -i "/## aenigma_host_config_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt" $sourcedir/conf/ejabberd/ejabberd.yml
 fi
 cp $sourcedir/conf/ejabberd/ejabberd.yml /etc/ejabberd/ejabberd.yml
 echo "Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml."
