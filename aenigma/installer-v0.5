@@ -1052,8 +1052,8 @@ then
 # sed -i "s|${tlsdir}/hostname.pem|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
 sed -i "s|example.im|${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
 sed -i "s|pathtofile|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
-sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
-sed -i '/## aenigma_host_config_placeholder_start:/ r ejabberd-tlsaddition.txt' $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt
+sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
+sed -i '/## aenigma_host_config_placeholder_start:/ r ${sourcedir}/conf/ejabberd/ejabberd-tlsaddition.txt' $sourcedir/conf/ejabberd/ejabberd.yml
 fi
 cp $sourcedir/conf/ejabberd/ejabberd.yml /etc/ejabberd/ejabberd.yml
 echo "Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml."
