@@ -713,9 +713,17 @@ then
                 "hostname"
                 "domain"
 		"XMPP"
+		"SRV"
+                )
+elif [ $additionalTLScertmode = "elsewhere" ]
+then
+        declare -a dnsarray=(
+                "hostname"
+		"XMPP"
+		"SRV"
                 )
 else
-        declare -a dnsarray=(
+	declare -a dnsarray=(
                 "hostname"
 		"XMPP"
                 )
@@ -751,7 +759,13 @@ do
 echo "Now let's make sure your $dnstype's IP$ipversion DNS settings are correct."
 echo
 
-if [ $dnstype = "domain" ]
+if [ $dnstype = "hostname" ]
+then
+	declare -A digarray=(
+		[HN]=""
+		[www]="www."
+	)
+elif [ $dnstype = "domain" ]
 then
 	declare -A digarray=(
 		[HN]=""
@@ -766,11 +780,12 @@ then
 		[xp]="xp."
 		[xi]="xi."
 	)
-elif [ $dnstype = "hostname" ]
+elif [ $dnstype = "SRV" ]
 then
 	declare -A digarray=(
-		[HN]=""
-		[www]="www."
+		[jt]="_jabber._tcp."
+		[xs]="_xmpp-server._tcp."
+		[xc]="_xmpp-client._tcp."
 	)
 fi
 
@@ -794,15 +809,27 @@ do
 	until [ $accept = "y" ]
 	do
 
-	if [ $ipversion = "v4" ]
+	if [ ! $dnstype = "SRV" ]
 	then
-                	thisip=$thisipv4
+		if [ $ipversion = "v4" ]
+		then
+	                thisip=$thisipv4
 			digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
-                	rectype="A"
+	                rectype="A"
+		else
+	                thisip=$thisipv6
+	                digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+	                rectype="AAAA"
+		fi
 	else
-                	thisip=$thisipv6
-                	digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-                	rectype="AAAA"
+		if [ ! $i = "_xmpp-client._tcp." ]
+		then
+			thisip="0 0 5269 $hostname."
+		else
+			thisip="0 0 5222 $hostname."
+		fi
+		digresult=#figurethisout
+		rectype="SRV"
 	fi
 
 			if [ -z "$digresult" ]
