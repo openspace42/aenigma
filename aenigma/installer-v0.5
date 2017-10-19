@@ -585,18 +585,6 @@ if [ $configoption = 1 ]
 then
 
 	additionalTLScertmode="elsewhere"
-	echo "Since you've chosen option 1, your domain is different from your hostname."
-	echo
-	echo "Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server."
-	echo
-	echo "Make sure your DNS settings are as follows:"
-	echo
-	echo " | _jabber._tcp.$domain         SRV    0 0 5269 $hostname. |"
-	echo " | _xmpp-server._tcp.$domain    SRV    0 0 5269 $hostname. |"
-	echo " | _xmpp-client._tcp.$domain    SRV    0 0 5222 $hostname. |"
-	echo
-	read -p "[press enter to continue when finished setting your DNS SRV records...]"
-	clear
 
 	echo "Now it's time to set up the TLS [SSL] certificate that is valid for $domain."
 	echo
@@ -783,9 +771,9 @@ then
 elif [ $dnstype = "SRV" ]
 then
 	declare -A digarray=(
-		[jt]="_jabber._tcp."
-		[xs]="_xmpp-server._tcp."
-		[xc]="_xmpp-client._tcp."
+		[sj]="_jabber._tcp."
+		[ss]="_xmpp-server._tcp."
+		[sc]="_xmpp-client._tcp."
 	)
 fi
 
@@ -794,6 +782,9 @@ fi
 # [xe]="the ejabberd MOD_ECHO module."
 # [xp]="the ejabberd MOD_PUBSUB module."
 # [xi]="join channels on IRC servers."
+
+# Since you've chosen option 1, your domain is different from your hostname.
+# Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server.
 
 digarrayiter=0
 
@@ -822,14 +813,13 @@ do
 	                rectype="AAAA"
 		fi
 	else
-		if [ ! $i = "_xmpp-client._tcp." ]
+		if [ ! ${digarray[$i]} = "_xmpp-client._tcp." ]
 		then
 			thisip="0 0 5269 $hostname."
 		else
 			thisip="0 0 5222 $hostname."
 		fi
-		echo dig +short -t srv $i$domain #debug
-		digresult="$(dig +short -t srv $i$domain)"
+		digresult="$(dig +short -t srv ${digarray[$i]}$domain)"
 		rectype="SRV"
 	fi
 
@@ -839,15 +829,15 @@ do
 				echo
 				echo "Please ensure you set your DNS record as follows:"
 				echo
-				echo -e "| ${digarray[$i]}$dnschecktype\t\t\t$rectype\t$thisip |"
+				echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 				echo
 				result=notset
 			else
-				if [ $digresult = $thisip ]
+				if [ "$digresult" = "$thisip" ]
 				then
 					echo "${g}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
 					echo
-					echo -e "| ${digarray[$i]}$dnschecktype\t\t\t$rectype\t$thisip |"
+					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 					echo
 					result=ok
 					sleep 1
@@ -856,11 +846,11 @@ do
 					echo
 					echo "This is the result of a DNS query for ${digarray[$i]}$dnschecktype:"
 					echo
-					echo $digresult
+					echo "$digresult"
 					echo
 					echo "Please set it instead to:"
 					echo
-					echo -e "| ${digarray[$i]}$dnschecktype\t\t\t$rectype\t$thisip |"
+					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 					echo
 					result=incorrect
 				fi
