@@ -26,9 +26,11 @@ if [ -f /root/os-dfbs/run-ok ]; then
 else
 	echo "${r}Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end.${x}"
 	echo
-	echo "Run it now [or re-run it and make sure you reboot at the end] by executing the following command:"
+	echo "Run it now [or re-run it and make sure you reboot at the end] by executing the following commands:"
 	echo
-	echo "        wget -qO dfbs https://gh.nk.ai/dfbs && sudo bash dfbs"
+	echo " | git clone https://github.com/openspace42/Debian-First-Boot-Setup |"
+	echo
+	echo " | bash Debian-First-Boot-Setup/script.sh |"
 	echo
 	exit
 fi
