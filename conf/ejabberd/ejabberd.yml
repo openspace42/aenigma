@@ -427,10 +427,11 @@ modules:
     welcome_message:
       subject: "Hello world"
       body: |-
-        Hi there.
+        Hi there!
         Happy to see you onboard.
-        This is the Aenigma XMPP server at example.im.
-        https://example.im
+        This is the Aenigma XMPP server at hostname.im hosting domain example.im.
+        The admin for this instance is admin@example.im.
+        https://aenigma.xyz
 
     registration_watchers:
        - "admin@example.im"
