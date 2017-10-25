@@ -384,6 +384,7 @@ modules:
   mod_http_upload_quota:
     max_days: 30
   mod_last: {}
+  mod_mix: {}  
   mod_muc:
     host: "xc.@HOST@"
     access:
@@ -418,6 +419,7 @@ modules:
       max_items: 1000
     plugins:
       - "flat"
+      - "hometree"      
       - "pep" # pep requires mod_caps
   mod_register:
     ## captcha_protected: true
@@ -450,8 +452,8 @@ modules:
   mod_stream_mgmt: {}
   mod_mam:
     default: always
-    cache_size: 1000
-    cache_life_time: 3600
+    cache_size: 1048576
+    cache_life_time: 2678400
   mod_s2s_dialback: {}
   mod_http_api: {}
 
