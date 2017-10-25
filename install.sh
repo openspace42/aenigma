@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # specify version to be installed in the format "x.y"
-installvers=0.5
+installvers=0.42
 
 r=`tput setaf 1`
 g=`tput setaf 2`
@@ -32,6 +32,13 @@ else
 	echo
 	exit
 fi
+
+echo "Now installing dependencies..."
+echo
+apt-get update
+apt-get -y install dig ufw
+echo "Finished installing dependencies."
+echo
 
 sudo bash aenigma/aenigma/installer-v"$installvers"
 
