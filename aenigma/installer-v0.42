@@ -2,7 +2,7 @@
 
 echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
-echo "aenigma v0.5"
+echo "aenigma v0.42"
 echo
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
