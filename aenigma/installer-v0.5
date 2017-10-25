@@ -1060,6 +1060,7 @@ echo
 mkdir -p /etc/ejabberd/
 touch /etc/ejabberd/ejabberd.yml
 sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
+sed -i "s/hostname.im/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 sed -i "s/xu.@HOST@/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 if [ $configoption = 1 ]
 then
