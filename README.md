@@ -47,7 +47,7 @@ Not yet supported by ejabberd:
 
 ## Install on Debian 8 / Ubuntu 16
 
-current version: v0.4
+current version: v0.5 [2017-10-24]
 
 ```git clone https://github.com/openspace42/aenigma.git```
 
