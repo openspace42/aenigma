@@ -429,7 +429,7 @@ modules:
       body: |-
         Hi there!
         Happy to see you onboard.
-        This is the Aenigma XMPP server at hostname.im hosting domain example.im.
+        This is the aenigma XMPP server at hostname.im hosting domain example.im.
         The admin for this instance is admin@example.im.
         https://aenigma.xyz
 
