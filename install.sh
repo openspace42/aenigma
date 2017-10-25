@@ -13,7 +13,7 @@ echo "Initiating installer..."
 echo
 
 if [[ $EUID -ne 0 ]]; then
-	echo "This script must be run as root. Run it as:"
+	echo "${r}This script must be run as root. Run it as:${x}"
 	echo
 	echo "sudo bash aenigma/install.sh"
 	echo
@@ -40,6 +40,11 @@ echo
 apt-get update
 apt-get -y install dnsutils ufw
 echo "Finished installing dependencies."
+echo
+
+echo "${g}Preflight check complete.${x}"
+echo
+echo "Now proceeding with aenigma installation..."
 echo
 
 sudo bash aenigma/aenigma/installer-v"$installvers"
