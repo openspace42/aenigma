@@ -36,7 +36,7 @@ fi
 echo "Now installing dependencies..."
 echo
 apt-get update
-apt-get -y install dig ufw
+apt-get -y install dnsutils ufw
 echo "Finished installing dependencies."
 echo
 
