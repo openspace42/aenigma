@@ -761,9 +761,7 @@ elif [ $dnstype = "XMPP" ]
 then
 	declare -A digarray=(
 		[xc]="xc."
-		[xu]="xu."
 		[xe]="xe."
-		[xp]="xp."
 		[xi]="xi."
 	)
 elif [ $dnstype = "SRV" ]
@@ -1062,6 +1060,7 @@ touch /etc/ejabberd/ejabberd.yml
 sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 sed -i "s/hostname.im/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 sed -i "s/xu.@HOST@/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
+sed -i "s/xp.@HOST@/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 if [ $configoption = 1 ]
 then
 ### [old] direct main cert substitution
