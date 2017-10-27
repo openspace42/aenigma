@@ -577,123 +577,165 @@ clear
 
 
 
-additionalTLScertmode="notset"
+addTLSmode="notset"
 
 if [ $configoption = 1 ]
 then
 
-	additionalTLScertmode="elsewhere"
+	echo "Having chosen config option 1, now it's time to set up the TLS [SSL] certificate that is valid for $domain on this machine."
+	echo
 
-	echo "Now it's time to set up the TLS [SSL] certificate that is valid for $domain."
-	echo
-  echo "The certificate file required for aenigma must be an all-in-one private key + certificate + chain file."
-  echo
-  echo "This means the file must include, in this order, the following:"
-  echo
-  echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
-  echo
-  read -p "[press enter to continue reading...]"
-  clear
-
-  echo "This certificate, if it already exists, resides on the server responding to $domain"
-  echo
-	echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
-	echo
-	echo "This is the IP to which your bare domain $domain is pointing to:"
-	echo
-	dig +noall +answer $domain
-	echo
-  echo "[If you see no output, then it might be misconfigured or not configured at all.]"
-  echo
-  read -p "[press enter to continue reading...]"
-  clear
-
-	read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Nn]$ ]]
-        then
-		read -p "Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): " -n 1 -r
-	        echo
-	        if [[ ! $REPLY =~ ^[Nn]$ ]]
-	        then
-			read -p "Ok, is this a Linux server? (Y/n): " -n 1 -r
-                        echo
-                        if [[ ! $REPLY =~ ^[Nn]$ ]]
-                        then
-				read -p "Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): " -n 1 -r
-	                	echo
-	                	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	                	then
-					echo "Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:"
-					echo
-					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
-					echo
-					echo "Now configure it to push its LE TLS cert to this server by following the instructions."
-					echo
-				else
-					echo
-					echo "Ok, no problem, you can adapt this script:"
-					echo
-					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
-                                        echo
-					echo "To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically."
-					echo
-					echo "Follow the instructions and adapt the paths to the existing TLS certs and private key."
-					echo
-				fi
-			else
-				echo "Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
-				echo
-			fi
-		else
-			read -p "Ok, no problem. Is this server a linux server? (Y/n): " -n 1 -r
-                        echo
-                        if [[ ! $REPLY =~ ^[Nn]$ ]]
-                        then
-				echo "Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:"
-				echo
-				echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
-				echo
-			else
-				echo "Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
-				echo
-			fi
-		fi
-		read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " domtlscertloc
-		echo
-		read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-		echo
+	if [ -f $installdir/addTLSmode ]
+	then
+		prevaddTLSmode="$(cat $installdir/addTLSmode)"
+		case "$prevaddTLSmode" in
+		    "elsewhere"|"here")
+			validprevaddTLSmode=y
+			;;
+		    *)
+			validprevaddTLSmode=n
+			;;
+		esac
 	else
+		touch $installdir/addTLSmode
+		validprevaddTLSmode=n
+	fi
+
+	if [ $validprevaddTLSmode = "y" ]
+	then
+		echo "${g}You previously specified that the A/AAAA DNS records for $domain already point [or are supposed to point] | $prevaddTLSmode |${x}"
 		echo
-		echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
+		read -p "Is this still true? (Y/n): " -n 1 -r
 		echo
-		echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			addTLSmode=$prevaddTLSmode
+		else
+			echo
+			addTLSmode=notyetset
+		fi
+	else
+		addTLSmode=notyetset
+	fi
+
+	if [ $addTLSmode = "notyetset" ]
+	then
+
+		echo "The certificate file required for aenigma must be an all-in-one private key + certificate + chain file."
 		echo
-		echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+		echo "This means the file must include, in this order, the following:"
 		echo
-		echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
-		echo
-		echo "For now, no need to worry about that."
+		echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
 		echo
 		read -p "[press enter to continue reading...]"
 		clear
 
-		echo "Let's point $domain and www.$domain to this server for the time being."
+		echo "This certificate, if it already exists, resides on the server responding to $domain"
 		echo
-		echo "This is required for the TLS certificate we'll be generating shortly on this server."
+		echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
 		echo
-		echo "The DNS checks we'll be running shortly will guide you through these settings as well."
+		echo "This is the IP to which your bare domain $domain is pointing to:"
 		echo
+		dig +noall +answer $domain
+		echo
+		echo "[If you see no output, then it might be misconfigured or not configured at all.]"
+		echo
+		read -p "[press enter to continue reading...]"
+		clear
 
-		additionalTLScertmode="here"
+		read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
+        	echo
+        	if [[ ! $REPLY =~ ^[Nn]$ ]]
+        	then
+			read -p "Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): " -n 1 -r
+	        	echo
+	        	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	        	then
+				read -p "Ok, is this a Linux server? (Y/n): " -n 1 -r
+                        	echo
+                        	if [[ ! $REPLY =~ ^[Nn]$ ]]
+                        	then
+					read -p "Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): " -n 1 -r
+	                		echo
+	                		if [[ ! $REPLY =~ ^[Nn]$ ]]
+	                		then
+						echo "Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:"
+						echo
+						echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+						echo
+						echo "Now configure it to push its LE TLS cert to this server by following the instructions."
+						echo
+					else
+						echo
+						echo "Ok, no problem, you can adapt this script:"
+						echo
+						echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+                                        	echo
+						echo "To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically."
+						echo
+						echo "Follow the instructions and adapt the paths to the existing TLS certs and private key."
+						echo
+					fi
+				else
+					echo "Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
+					echo
+				fi
+			else
+				read -p "Ok, no problem. Is this server a linux server? (Y/n): " -n 1 -r
+                        	echo
+                        	if [[ ! $REPLY =~ ^[Nn]$ ]]
+                        	then
+					echo "Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:"
+					echo
+					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+					echo
+				else
+					echo "Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
+					echo
+				fi
+			fi
 
-  fi
+			read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " domtlscertloc
+			echo
+			read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+			echo
+
+			addTLSmode="elsewhere"
+
+		else
+
+			echo
+			echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
+			echo
+			echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
+			echo
+			echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+			echo
+			echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
+			echo
+			echo "For now, no need to worry about that."
+			echo
+			read -p "[press enter to continue reading...]"
+			clear
+
+			echo "Let's point $domain and www.$domain to this server for the time being."
+			echo
+			echo "This is required for the TLS certificate we'll be generating shortly on this server."
+			echo
+			echo "The DNS checks we'll be running shortly will guide you through these settings as well."
+			echo
+
+			addTLSmode="here"
+
+		fi
+
+	fi
 
 fi
 sleep 1
 clear
 
-if [ $additionalTLScertmode = "here" ]
+if [ $addTLSmode = "here" ]
 then
 	declare -a dnsarray=(
                 "hostname"
@@ -701,7 +743,7 @@ then
 		"XMPP"
 		"SRV"
                 )
-elif [ $additionalTLScertmode = "elsewhere" ]
+elif [ $addTLSmode = "elsewhere" ]
 then
         declare -a dnsarray=(
                 "hostname"
@@ -988,7 +1030,7 @@ echo "Finished setting index.html in docroot for $hostname."
 echo
 sleep 1
 
-if [ $additionalTLScertmode = "here" ]
+if [ $addTLSmode = "here" ]
 then
 
   echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
