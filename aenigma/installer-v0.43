@@ -701,6 +701,7 @@ then
 			echo
 
 			addTLSmode="elsewhere"
+			echo "elsewhere" > $installdir/addTLSmode
 
 		else
 
@@ -726,6 +727,7 @@ then
 			echo
 
 			addTLSmode="here"
+			echo "here" > $installdir/addTLSmode
 
 		fi
 
