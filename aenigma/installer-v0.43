@@ -745,7 +745,7 @@ then
 			validprevdomtlscertloc=n
 		fi
 
-		if [ $validprevaddTLSmode = "y" ]
+		if [ $validprevdomtlscertloc = "y" ]
 		then
 			echo "${g}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc |${x}"
 			echo
