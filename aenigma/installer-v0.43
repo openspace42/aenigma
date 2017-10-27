@@ -434,7 +434,6 @@ else
 	hostname="$(cat /etc/hostname)"
 
 fi
-sleep 1
 clear
 
 echo "----------------"
@@ -734,7 +733,7 @@ then
 		if [ -f $installdir/domtlscertloc ]
 		then
 			prevdomtlscertloc="$(cat $installdir/domtlscertloc)"
-			if [ -f $prevdomtlscertloc ]
+			if [[ -f "$prevdomtlscertloc" && -s "$prevdomtlscertloc" ]]
 			then
 				validprevdomtlscertloc=y
 			else
@@ -764,10 +763,58 @@ then
 
 		if [ $domtlscertloc = "notyetset" ]
 		then
-			read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " domtlscertloc
-			echo
-			read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-			echo
+
+			defined=n
+			until [ $defined = "y" ]
+			do
+				newdomtlscertloc=""
+				until [ ! $newdomtlscertloc = "" ]
+				do
+					read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " newdomtlscertloc
+					echo
+				done
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "Is | $newdomtlscertloc | correct? (Y/n/e[xit]) " answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						defined=y
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						defined=y
+						;;
+					n)
+						echo -e "\n"
+						echo "Ok, then please try again..."
+						echo
+						valid=y
+						defined=n
+						;;
+					e)
+						echo -e "\n"
+			        		echo "Exiting..."
+			        		echo
+			        		exit
+			        		;;
+					*)
+						echo -e "\n"
+						echo "Invalid option. Retry..."
+			        		echo
+						valid=n
+					defined=n
+				        ;;
+					esac
+				done
+			done
+		echo $newdomtlscertloc > $installdir/domtlscertloc
+		echo "New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc |"
+		echo
+		domtlscertloc="$(cat $installdir/domtlscertloc)"
 		fi
 
 	fi
