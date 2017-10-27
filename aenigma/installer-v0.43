@@ -603,7 +603,7 @@ then
 
 	if [ $validprevaddTLSmode = "y" ]
 	then
-		echo "${g}You previously specified that the A/AAAA DNS records for $domain already point [or are supposed to point] | $prevaddTLSmode |${x}"
+		echo "${g}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode |${x}"
 		echo
 		read -p "Is this still true? (Y/n): " -n 1 -r
 		echo
@@ -695,11 +695,6 @@ then
 				fi
 			fi
 
-			read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " domtlscertloc
-			echo
-			read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-			echo
-
 			addTLSmode="elsewhere"
 			echo "elsewhere" > $installdir/addTLSmode
 
@@ -729,6 +724,50 @@ then
 			addTLSmode="here"
 			echo "here" > $installdir/addTLSmode
 
+		fi
+
+	fi
+
+	if [ $addTLSmode = "elsewhere" ]
+	then
+
+		if [ -f $installdir/domtlscertloc ]
+		then
+			prevdomtlscertloc="$(cat $installdir/domtlscertloc)"
+			if [ -f $prevdomtlscertloc ]
+			then
+				validprevdomtlscertloc=y
+			else
+				validprevdomtlscertloc=n
+			fi
+		else
+			touch $installdir/domtlscertloc
+			validprevdomtlscertloc=n
+		fi
+
+		if [ $validprevaddTLSmode = "y" ]
+		then
+			echo "${g}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc |${x}"
+			echo
+			read -p "Is this still correct? (Y/n): " -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Nn]$ ]]
+			then
+				domtlscertloc=$prevdomtlscertloc
+			else
+				echo
+				domtlscertloc=notyetset
+			fi
+		else
+			domtlscertloc=notyetset
+		fi
+
+		if [ $domtlscertloc = "notyetset" ]
+		then
+			read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " domtlscertloc
+			echo
+			read -p "Is | $domtlscertloc | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+			echo
 		fi
 
 	fi
