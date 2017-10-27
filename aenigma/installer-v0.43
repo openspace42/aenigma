@@ -767,11 +767,23 @@ then
 			defined=n
 			until [ $defined = "y" ]
 			do
-				newdomtlscertloc=""
-				until [ ! $newdomtlscertloc = "" ]
+				exists=n
+				until [ $exists = "y" ]
 				do
-					read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " newdomtlscertloc
-					echo
+					newdomtlscertloc=""
+					until [ ! $newdomtlscertloc = "" ]
+					do
+						read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " newdomtlscertloc
+						echo
+					done
+					if [ -f $newdomtlscertloc ]
+					then
+						exists=y
+					else
+						echo "${r}The specified file does not exists. Please retry...${x}"
+						echo
+						exists=n
+					fi
 				done
 				valid=n
 				until [ $valid = "y" ]
