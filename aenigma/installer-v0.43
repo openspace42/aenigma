@@ -1375,6 +1375,7 @@ else
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
 		echo "${b}Ok, proceeding with DHparams file generation...${x}"
+		echo
 		openssl dhparam -out $tlsdir/dh.pem.incomplete 4096
 		mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem
 		echo
