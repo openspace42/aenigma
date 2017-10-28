@@ -6,10 +6,11 @@ installvers=0.42
 r=`tput setaf 1`
 g=`tput setaf 2`
 x=`tput sgr0`
+b=`tput bold`
 
 echo
 
-echo "Initiating installer..."
+echo "${b}Initiating installer...${x}"
 echo
 
 if [[ $EUID -ne 0 ]]; then
@@ -21,35 +22,35 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 if [ -f /root/os-dfbs/run-ok ]; then
-        echo "${g}Debian First Boot Setup was previously run successfully. Continuing...${x}"
+        echo "${g}${b}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
 else
-	echo "${r}Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end.${x}"
+	echo "${r}${b}Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end.${x}"
 	echo
-	echo "Run it now [or re-run it and make sure you reboot at the end] by executing the following commands:"
+	echo "${b}Run it now [or re-run it and make sure you reboot at the end] by executing the following commands:${x}"
 	echo
-	echo " | git clone https://github.com/openspace42/Debian-First-Boot-Setup |"
+	echo "${b} | git clone https://github.com/openspace42/Debian-First-Boot-Setup |${x}"
 	echo
-	echo " | bash Debian-First-Boot-Setup/script.sh |"
+	echo "${b} | bash Debian-First-Boot-Setup/script.sh |${x}"
 	echo
 	exit
 fi
 
-echo "Now installing dependencies..."
+echo "${b}Now installing dependencies...${x}"
 echo
 apt-get update
 apt-get -y install dnsutils ufw
-echo "Finished installing dependencies."
+echo "${b}Finished installing dependencies.${x}"
 echo
 
-echo "${g}Preflight check complete.${x}"
+echo "${g}${b}Preflight check complete.${x}"
 echo
-echo "Now proceeding with aenigma installation..."
+echo "${b}Now proceeding with aenigma installation...${x}"
 echo
 
 sudo bash aenigma/aenigma/installer-v"$installvers"
 
-echo "Exiting installer."
+echo "${b}Exiting installer.${x}"
 echo
 
 exit
