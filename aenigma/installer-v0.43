@@ -857,8 +857,6 @@ else
                 )
 fi
 
-# ///
-
 if [ $ipv6avail = "y" ]
 then
         declare -a iparray=(
@@ -874,192 +872,189 @@ fi
 for dnstype in "${dnsarray[@]}"
 do
 
-if [ $dnstype = "hostname" ]
-then
-	dnschecktype=$hostname
-else
-	dnschecktype=$domain
-fi
-
-for ipversion in "${iparray[@]}"
-do
-
-echo "${b}Now let's make sure your $dnstype's IP$ipversion DNS settings are correct.${x}"
-echo
-
-if [ $dnstype = "hostname" ]
-then
-	declare -A digarray=(
-		[HN]=""
-		[www]="www."
-	)
-elif [ $dnstype = "domain" ]
-then
-	declare -A digarray=(
-		[HN]=""
-		[www]="www."
-	)
-elif [ $dnstype = "XMPP" ]
-then
-	declare -A digarray=(
-		[xc]="xc."
-		[xe]="xe."
-		[xi]="xi."
-	)
-elif [ $dnstype = "SRV" ]
-then
-	declare -A digarray=(
-		[sj]="_jabber._tcp."
-		[ss]="_xmpp-server._tcp."
-		[sc]="_xmpp-client._tcp."
-	)
-fi
-
-# [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
-# [xu]="XMPP HTTP uploads."
-# [xe]="the ejabberd MOD_ECHO module."
-# [xp]="the ejabberd MOD_PUBSUB module."
-# [xi]="join channels on IRC servers."
-
-# Since you've chosen option 1, your domain is different from your hostname.
-# Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server.
-
-digarrayiter=0
-
-for i in "${!digarray[@]}"
-do
-
-	digarrayiter=$(($digarrayiter + 1))
-	echo "$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
-	echo
-	sleep 1
-
-	accept=n
-	until [ $accept = "y" ]
-	do
-
-	if [ ! $dnstype = "SRV" ]
+	if [ $dnstype = "hostname" ]
 	then
-		if [ $ipversion = "v4" ]
-		then
-	                thisip=$thisipv4
-			digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
-	                rectype="A"
-		else
-	                thisip=$thisipv6
-	                digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-	                rectype="AAAA"
-		fi
+		dnschecktype=$hostname
 	else
-		if [ ! ${digarray[$i]} = "_xmpp-client._tcp." ]
-		then
-			thisip="0 0 5269 $hostname."
-		else
-			thisip="0 0 5222 $hostname."
-		fi
-		digresult="$(dig +short -t srv ${digarray[$i]}$domain)"
-		rectype="SRV"
+		dnschecktype=$domain
 	fi
 
-			if [ -z "$digresult" ]
-			then
-				echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to be at all set.${x}"
-				echo
-				echo "Please ensure you set your DNS record as follows:"
-				echo
-				echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
-				echo
-				result=notset
-			else
-				if [ "$digresult" = "$thisip" ]
-				then
-					echo "${g}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
-					echo
-					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
-					echo
-					result=ok
-					sleep 1
-				else
-					echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
-					echo
-					echo "This is the result of a DNS query for ${digarray[$i]}$dnschecktype:"
-					echo
-					echo "$digresult"
-					echo
-					echo "Please set it instead to:"
-					echo
-					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
-					echo
-					result=incorrect
-				fi
-			fi
+	for ipversion in "${iparray[@]}"
+	do
 
-			if [ ! $result = "ok" ]
+	echo "${b}Now let's make sure your $dnstype's IP$ipversion DNS settings are correct.${x}"
+	echo
+
+	if [ $dnstype = "hostname" ]
+	then
+		declare -A digarray=(
+			[HN]=""
+			[www]="www."
+		)
+	elif [ $dnstype = "domain" ]
+	then
+		declare -A digarray=(
+			[HN]=""
+			[www]="www."
+		)
+	elif [ $dnstype = "XMPP" ]
+	then
+		declare -A digarray=(
+			[xc]="xc."
+			[xe]="xe."
+			[xi]="xi."
+		)
+	elif [ $dnstype = "SRV" ]
+	then
+		declare -A digarray=(
+			[sj]="_jabber._tcp."
+			[ss]="_xmpp-server._tcp."
+			[sc]="_xmpp-client._tcp."
+		)
+	fi
+
+	# [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
+	# [xu]="XMPP HTTP uploads."
+	# [xe]="the ejabberd MOD_ECHO module."
+	# [xp]="the ejabberd MOD_PUBSUB module."
+	# [xi]="join channels on IRC servers."
+
+	# Since you've chosen option 1, your domain is different from your hostname.
+	# Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server.
+
+	digarrayiter=0
+
+	for i in "${!digarray[@]}"
+	do
+
+		digarrayiter=$(($digarrayiter + 1))
+		echo "$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+		echo
+		sleep 1
+
+		accept=n
+		until [ $accept = "y" ]
+		do
+
+		if [ ! $dnstype = "SRV" ]
+		then
+			if [ $ipversion = "v4" ]
 			then
-				valid=n
-				until [ $valid = "y" ]
-				do
-					read -n 1 -p "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-					case $answer in
-					"")
-						echo
-						valid=y
-						accept=n
-						;;
-					y)
-						echo -e "\n"
-						valid=y
-						accept=n
-						;;
-					s)
-						echo -e "\n"
-						echo "${b}Skipping DNS check for this record...${x}"
-						echo
-						valid=y
-						accept=y
-						;;
-					e)
-						echo -e "\n"
-	        				echo "Exiting...${x}"
-	        				echo
-	        				exit
-	        				;;
-					*)
-						echo -e "\n"
-						echo "Invalid option. Retry...${x}"
-	        				echo
-						valid=n
-						accept=n
-			        		;;
-					esac
-				done
+	                	thisip=$thisipv4
+				digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
+	                	rectype="A"
 			else
-				accept=y
+	                	thisip=$thisipv6
+	                	digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+	                	rectype="AAAA"
 			fi
-			clear
+		else
+			if [ ! ${digarray[$i]} = "_xmpp-client._tcp." ]
+			then
+				thisip="0 0 5269 $hostname."
+			else
+				thisip="0 0 5222 $hostname."
+			fi
+			digresult="$(dig +short -t srv ${digarray[$i]}$domain)"
+			rectype="SRV"
+		fi
+
+				if [ -z "$digresult" ]
+				then
+					echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to be at all set.${x}"
+					echo
+					echo "Please ensure you set your DNS record as follows:"
+					echo
+					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
+					echo
+					result=notset
+				else
+					if [ "$digresult" = "$thisip" ]
+					then
+						echo "${g}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
+						echo
+						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
+						echo
+						result=ok
+						sleep 1
+					else
+						echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
+						echo
+						echo "This is the result of a DNS query for ${digarray[$i]}$dnschecktype:"
+						echo
+						echo "$digresult"
+						echo
+						echo "Please set it instead to:"
+						echo
+						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
+						echo
+						result=incorrect
+					fi
+				fi
+
+				if [ ! $result = "ok" ]
+				then
+					valid=n
+					until [ $valid = "y" ]
+					do
+						read -n 1 -p "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+						case $answer in
+						"")
+							echo
+							valid=y
+							accept=n
+							;;
+						y)
+							echo -e "\n"
+							valid=y
+							accept=n
+							;;
+						s)
+							echo -e "\n"
+							echo "${b}Skipping DNS check for this record...${x}"
+							echo
+							valid=y
+							accept=y
+							;;
+						e)
+							echo -e "\n"
+	        					echo "Exiting...${x}"
+	        					echo
+	        					exit
+	        					;;
+						*)
+							echo -e "\n"
+							echo "Invalid option. Retry...${x}"
+	        					echo
+							valid=n
+							accept=n
+			        			;;
+						esac
+					done
+				else
+					accept=y
+				fi
+				clear
+			done
 		done
+
+		echo "${b}Finished checking your $dnstype's IP$ipversion DNS settings.${x}"
+		echo
+		sleep 1
+
 	done
 
-	echo "${b}Finished checking your $dnstype's IP$ipversion DNS settings.${x}"
-	echo
-	sleep 1
-
 done
-
-# \\\
-
-done
-
-
+clear
 
 echo "${b}Now setting UFW rules...${x}"
 echo
 
-ufw allow 5222 &> /dev/null
-ufw allow 5269 &> /dev/null
-ufw allow 5444 &> /dev/null
-ufw allow 80 &> /dev/null
-ufw allow 443 &> /dev/null
+ufw allow 5222
+ufw allow 5269
+ufw allow 5444
+ufw allow 80
+ufw allow 443
 
 echo "${b}Finished setting UFW rules.${x}"
 echo
@@ -1130,7 +1125,7 @@ sleep 1
 if [ $addTLSmode = "here" ]
 then
 
-	echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
+	echo "${b}Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so.${x}"
  	echo
 
 	echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it...${x}"
@@ -1218,7 +1213,7 @@ sleep 1
 echo "${b}Now installing SSLH...${x}"
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
-apt-get -y install sslh &> /dev/null
+apt-get -y install sslh
 if [ $ipv6avail = "y" ]
 then
 	sed -i "s|thisipv4|${thisipv4}:443 -p ${thisipv6}|g" $sourcedir/conf/sslh/sslh
@@ -1234,11 +1229,11 @@ echo
 echo "${b}Now installing ejabberd...${x}"
 echo
 currdistro="$(lsb_release --codename | cut -f2)"
-apt-get -y install apt-transport-https &> /dev/null
+apt-get -y install apt-transport-https
 echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
 wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
-apt-get update &> /dev/null
-export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd &> /dev/null
+apt-get update
+export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
 echo
 echo "${b}Finished installing ejabberd.${x}"
 echo
