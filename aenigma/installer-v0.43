@@ -1221,7 +1221,7 @@ sleep 1
 echo "Now installing SSLH..."
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
-apt-get -y install sslh
+apt-get -y install sslh &> /dev/null
 if [ $ipv6avail = "y" ]
 then
 	sed -i "s|thisipv4|${thisipv4}:443 -p ${thisipv6}|g" $sourcedir/conf/sslh/sslh
@@ -1238,11 +1238,11 @@ echo
 echo "Now installing ejabberd..."
 echo
 currdistro="$(lsb_release --codename | cut -f2)"
-apt-get -y install apt-transport-https
+apt-get -y install apt-transport-https &> /dev/null
 echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
 wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
-apt-get update
-export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
+apt-get update &> /dev/null
+export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd &> /dev/null
 echo
 echo "Finished installing ejabberd."
 echo
