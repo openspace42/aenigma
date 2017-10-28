@@ -1319,6 +1319,7 @@ then
 	fi
 else
 	touch $installdir/ejabberdadminpwset
+	ejbdadminpwreset=y
 fi
 
 echo "${b}Now updating ejabberd's module repo...${x}"
