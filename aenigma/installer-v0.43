@@ -1301,21 +1301,25 @@ echo
 sleep 1
 clear
 
-read -p "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Nn]$ ]]
+if [ -f $installdir/ejabberdadminpwset ]
 then
-	echo "${b}Skipping ejabberd admin user password reset.${x}"
+	read -p "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1 -r
 	echo
-	ejbdadminpwreset=n
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Skipping ejabberd admin user password reset.${x}"
+		echo
+		ejbdadminpwreset=n
+	else
+		echo
+		echo "${b}Ok, resetting ejabberd admin user password to: | $ejbdadminpw |${x}"
+		echo
+		/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
+		ejbdadminpwreset=y
+	fi
 else
-	echo
-	echo "${b}Ok, resetting ejabberd admin user password to: | $ejbdadminpw |${x}"
-	echo
-	/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
-	ejbdadminpwreset=y
+	touch $installdir/ejabberdadminpwset
 fi
-sleep 1
 
 echo "${b}Now updating ejabberd's module repo...${x}"
 echo
