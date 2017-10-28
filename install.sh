@@ -40,6 +40,7 @@ echo "${b}Now installing dependencies...${x}"
 echo
 apt-get update
 apt-get -y install dnsutils ufw
+echo
 echo "${b}Finished installing dependencies.${x}"
 echo
 
