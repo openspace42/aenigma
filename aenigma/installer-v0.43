@@ -1093,20 +1093,6 @@ echo
 echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
 
-echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
-echo
-sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/ssl-hostname.conf
-cp $sourcedir/conf/nginx/ssl-hostname.conf /var/www/$hostname/conf/nginx/ssl.conf
-echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
-echo
-
-echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
-echo
-sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/force-ssl-hostname.conf
-cp $sourcedir/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-$hostname.conf
-echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
-echo
-
 echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
 echo
 touch $tlsdir/hostname.pem
@@ -1185,6 +1171,20 @@ then
 	sleep 1
 
 fi
+
+echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+echo
+sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/ssl-hostname.conf
+cp $sourcedir/conf/nginx/ssl-hostname.conf /var/www/$hostname/conf/nginx/ssl.conf
+echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+echo
+
+echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+echo
+sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/force-ssl-hostname.conf
+cp $sourcedir/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-$hostname.conf
+echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+echo
 
 service nginx restart
 
