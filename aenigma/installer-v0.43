@@ -1316,7 +1316,6 @@ else
 	ejbdadminpwreset=y
 fi
 sleep 1
-clear
 
 echo "${b}Now updating ejabberd's module repo...${x}"
 echo
@@ -1324,7 +1323,6 @@ echo
 echo "${b}Finished updating ejabberd's module repo...${x}"
 echo
 sleep 1
-clear
 
 echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
 echo
