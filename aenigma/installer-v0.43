@@ -37,7 +37,7 @@ then
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "Ok, continuing..."
+		echo "Ok, continuing...${x}"
 		echo
 		skipintro=y
 	else
@@ -176,11 +176,11 @@ then
 		    break
 		    ;;
 		"exit")
-		    echo "Exiting..."
+		    echo "Exiting...${x}"
 		    echo
 		    exit
 		    ;;
-		*)  echo "Invalid option. Retry..."
+		*)  echo "Invalid option. Retry...${x}"
 		    echo
 		    ;;
 	    esac
@@ -215,7 +215,7 @@ then
 			changedomain=n
 		else
 			echo
-			echo "Ok, changing domain..."
+			echo "Ok, changing domain...${x}"
 			echo
 			changedomain=y
 		fi
@@ -251,20 +251,20 @@ then
 					;;
 				n)
 					echo -e "\n"
-					echo "Ok, then please try again..."
+					echo "Ok, then please try again...${x}"
 					echo
 					valid=y
 					defined=n
 					;;
 				e)
 					echo -e "\n"
-		        		echo "Exiting..."
+		        		echo "Exiting...${x}"
 		        		echo
 		        		exit
 		        		;;
 				*)
 					echo -e "\n"
-					echo "Invalid option. Retry..."
+					echo "Invalid option. Retry...${x}"
 		        		echo
 					valid=n
 				defined=n
@@ -323,7 +323,7 @@ then
 		hostname=$currhostname
 	else
 		echo
-		echo "Ok, changing hostname..."
+		echo "Ok, changing hostname...${x}"
 		echo
 		changehostname=y
 	fi
@@ -365,20 +365,20 @@ then
 					;;
 				n)
 					echo -e "\n"
-					echo "Ok, then please try again..."
+					echo "Ok, then please try again...${x}"
 					echo
 					valid=y
 					defined=n
 					;;
 				e)
 					echo -e "\n"
-		        		echo "Exiting..."
+		        		echo "Exiting...${x}"
 		        		echo
 		        		exit
 		        		;;
 				*)
 					echo -e "\n"
-					echo "Invalid option. Retry..."
+					echo "Invalid option. Retry...${x}"
 		        		echo
 					valid=n
 				defined=n
@@ -425,7 +425,7 @@ else
 			echo
 		else
 			echo
-			echo "Not changing hostname. Exiting..."
+			echo "Not changing hostname. Exiting...${x}"
 			echo
 			exit
 		fi
@@ -459,16 +459,16 @@ echo
 echo "----------------"
 echo
 
-read -p "Does everything look all right? (Y/n): " -n 1 -r
+read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
-	echo "Ok, continuing."
+	echo "${b}Ok, continuing.${x}"
 	echo
 	touch $installdir/domain
 	echo "$domain" > $installdir/domain
 else
-	echo "Ok, no worries. You can re-run this script right now and make the correct choices. Exiting..."
+	echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
 	echo
 	exit
 fi
@@ -482,17 +482,17 @@ read -p "Set up the server for ${b}public internet access${x}? (Y/n): " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
-  echo "Ok, continuing in public internet accessibilty mode..."
+  echo "${b}Ok, continuing in public internet accessibilty mode...${x}"
   echo
   deptype=internet
   sleep 1
 else
   echo
-  echo "Ok, continuing in local network accessibility mode..."
+  echo "${b}Ok, continuing in local network accessibility mode...${x}"
   echo
   echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well.${x}"
   echo
-  echo "Open a shell to this machine and make sure it's using your local DNS server now before continuing."
+  echo "${b}Open a shell to this machine and make sure it's using your local DNS server now before continuing.${x}"
   echo
   echo "${b}The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server.${x}"
   echo
@@ -504,7 +504,7 @@ clear
 if [ $deptype = "internet" ]
 then
 	thisipv4="$(dig +short myip.opendns.com @resolver1.opendns.com)"
-	echo "Now testing IPv6 connectivity..."
+	echo "${b}Now testing IPv6 connectivity...${x}"
 	echo
 	ipv6pingaddr="2001:4860:4860::8888"
 	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null
@@ -518,7 +518,7 @@ then
 		echo
 		until ping6 -c1 $ipv6pingaddr &>/dev/null
 		do
-		echo "Waiting $counter more seconds for IPv6 connectivity..."
+		echo "${b}Waiting $counter more seconds for IPv6 connectivity...${x}"
 		echo
 		if [ $counter = 0 ]
 		then
@@ -542,32 +542,32 @@ then
 	if [ $ipv6avail = "y" ]
 	then
 		thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
-		echo "Your IPv6 global [public] address appears to be: | $thisipv6 |"
+		echo "${b}Your IPv6 global [public] address appears to be: | $thisipv6 |${x}"
 		echo
 	fi
-	echo "Finished testing IPv6 connectivity."
+	echo "${b}Finished testing IPv6 connectivity.${x}"
 	echo
 else
 	ipv6avail=n
 	thisipv4="$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')"
-	echo "Your machine's primary interface's IPv4 address appears to be: | $thisipv4 |"
+	echo "${b}Your machine's primary interface's IPv4 address appears to be: | $thisipv4 |${x}"
 	echo
 	echo "${b}If this is not your machine's correct primary interface's IPv4 address [i.e. with a private subnet address like 10., 192.168, 172.16, etc...] you must set it correctly now.${x}"
 	echo
-	read -p "That said, is this your machine's correct primary interface's IPv4 address? (Y/n): " -n 1 -r
+	read -p "${b}That said, is this your machine's correct primary interface's IPv4 address? (Y/n): ${x}" -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "Ok, basing install on local IPv4 address: | $thisipv4 |"
+		echo "${b}Ok, basing install on local IPv4 address: | $thisipv4 |${x}"
 		echo
 	else
 		echo
-		read -p "Ok, then specify now your machine's correct primary interface's IPv4 address: " newthisipv4
+		read -p "${b}Ok, then specify now your machine's correct primary interface's IPv4 address: ${x}" newthisipv4
 		echo
-		read -p "Is | $newthisipv4 | correct? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
+		read -p "${b}Is | $newthisipv4 | correct? (y/N): ${x}" confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
 		thisipv4=$newthisipv4
-		echo "Ok, basing install on newly set local IPv4 address: | $thisipv4 |"
+		echo "${b}Ok, basing install on newly set local IPv4 address: | $thisipv4 |${x}"
 		echo
 	fi
 fi
@@ -581,7 +581,7 @@ addTLSmode="notset"
 if [ $configoption = 1 ]
 then
 
-	echo "Having chosen config option 1, now it's time to set up the TLS [SSL] certificate that is valid for $domain on this machine."
+	echo "${b}Having chosen config option 1, now it's time to set up the TLS [SSL] certificate that is valid for $domain on this machine.${x}"
 	echo
 
 	if [ -f $installdir/addTLSmode ]
@@ -602,7 +602,7 @@ then
 
 	if [ $validprevaddTLSmode = "y" ]
 	then
-		echo "${g}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode |${x}"
+		echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode |${x}"
 		echo
 		read -p "Is this still true? (Y/n): " -n 1 -r
 		echo
@@ -662,7 +662,7 @@ then
 						echo
 						echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
 						echo
-						echo "Now configure it to push its LE TLS cert to this server by following the instructions."
+						echo "${b}Now configure it to push its LE TLS cert to this server by following the instructions.${x}"
 						echo
 					else
 						echo
@@ -802,20 +802,20 @@ then
 						;;
 					n)
 						echo -e "\n"
-						echo "Ok, then please try again..."
+						echo "Ok, then please try again...${x}"
 						echo
 						valid=y
 						defined=n
 						;;
 					e)
 						echo -e "\n"
-			        		echo "Exiting..."
+			        		echo "Exiting...${x}"
 			        		echo
 			        		exit
 			        		;;
 					*)
 						echo -e "\n"
-						echo "Invalid option. Retry..."
+						echo "Invalid option. Retry...${x}"
 			        		echo
 						valid=n
 					defined=n
@@ -884,7 +884,7 @@ fi
 for ipversion in "${iparray[@]}"
 do
 
-echo "Now let's make sure your $dnstype's IP$ipversion DNS settings are correct."
+echo "${b}Now let's make sure your $dnstype's IP$ipversion DNS settings are correct.${x}"
 echo
 
 if [ $dnstype = "hostname" ]
@@ -930,7 +930,7 @@ for i in "${!digarray[@]}"
 do
 
 	digarrayiter=$(($digarrayiter + 1))
-	echo "$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion..."
+	echo "$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
 	echo
 	sleep 1
 
@@ -999,7 +999,7 @@ do
 				valid=n
 				until [ $valid = "y" ]
 				do
-					read -n 1 -p "Test again? (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+					read -n 1 -p "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
 					case $answer in
 					"")
 						echo
@@ -1013,20 +1013,20 @@ do
 						;;
 					s)
 						echo -e "\n"
-						echo "Skipping DNS check for this record..."
+						echo "${b}Skipping DNS check for this record...${x}"
 						echo
 						valid=y
 						accept=y
 						;;
 					e)
 						echo -e "\n"
-	        				echo "Exiting..."
+	        				echo "Exiting...${x}"
 	        				echo
 	        				exit
 	        				;;
 					*)
 						echo -e "\n"
-						echo "Invalid option. Retry..."
+						echo "Invalid option. Retry...${x}"
 	        				echo
 						valid=n
 						accept=n
@@ -1040,7 +1040,7 @@ do
 		done
 	done
 
-	echo "Finished checking your $dnstype's IP$ipversion DNS settings."
+	echo "${b}Finished checking your $dnstype's IP$ipversion DNS settings.${x}"
 	echo
 	sleep 1
 
@@ -1052,7 +1052,7 @@ done
 
 
 
-echo "Now setting UFW rules..."
+echo "${b}Now setting UFW rules...${x}"
 echo
 
 ufw allow 5222 &> /dev/null
@@ -1061,69 +1061,69 @@ ufw allow 5444 &> /dev/null
 ufw allow 80 &> /dev/null
 ufw allow 443 &> /dev/null
 
-echo "Finished setting UFW rules."
+echo "${b}Finished setting UFW rules.${x}"
 echo
 sleep 1
 
-echo "Now installing easyengine..."
+echo "${b}Now installing easyengine...${x}"
 echo
 wget -qO ee rt.cx/ee && sudo bash ee
 echo
-echo "Finished installing easyengine."
+echo "${b}Finished installing easyengine.${x}"
 echo
 sleep 1
 
-echo "Now creating easyengine site for $hostname, generating its TLS certificate, and installing it..."
+echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
 echo
 ee site create $hostname
 echo
-echo "Finished creating easyengine site for $hostname."
+echo "${b}Finished creating easyengine site for $hostname.${x}"
 echo
 sleep 1
 
-echo "Now setting custom nginx config for $hostname..."
+echo "${b}Now setting custom nginx config for $hostname...${x}"
 echo
 sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/hostname.conf
 cp $sourcedir/conf/nginx/hostname.conf /etc/nginx/sites-available/$hostname
 service nginx reload
-echo "Finished setting custom nginx config for $hostname."
+echo "${b}Finished setting custom nginx config for $hostname.${x}"
 echo
 sleep 1
 
-echo "Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt..."
+echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
 ee site update $hostname  --le
 echo
-echo "Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt..."
+echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
 
-echo "Now adding IPv6 support to the HTTPS version of the $hostname site..."
+echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 echo
 sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/ssl-hostname.conf
 cp $sourcedir/conf/nginx/ssl-hostname.conf /var/www/$hostname/conf/nginx/ssl.conf
-echo "Finished adding IPv6 support to the HTTPS version of the $hostname site..."
+echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 echo
 
-echo "Now adding IPv6 support to the HTTPS redirect for the $hostname site..."
+echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
 echo
 sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/force-ssl-hostname.conf
 cp $sourcedir/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-$hostname.conf
-echo "Finished adding IPv6 support to the HTTPS redirect for the $hostname site..."
+echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
 echo
 
-echo "Now creating all-in-one TLS file for $hostname for ejabberd..."
+echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
 echo
 touch $tlsdir/hostname.pem
 cat /etc/letsencrypt/live/$hostname/privkey.pem > $tlsdir/hostname.pem
 cat /etc/letsencrypt/live/$hostname/fullchain.pem >> $tlsdir/hostname.pem
-echo "Finished creating all-in-one TLS file for $hostname for ejabberd."
+echo "${b}Finished creating all-in-one TLS file for $hostname for ejabberd.${x}"
 echo
 sleep 1
 
-echo "Now setting index.html in docroot for $hostname..."
+echo "${b}Now setting index.html in docroot for $hostname...${x}"
 echo
 cp $sourcedir/conf/web/hostname/index.html /var/www/$hostname/htdocs/
-echo "Finished setting index.html in docroot for $hostname."
+echo "${b}Finished setting index.html in docroot for $hostname.${x}"
 echo
 sleep 1
 
@@ -1133,58 +1133,58 @@ then
 	echo "Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so."
  	echo
 
-	echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it..."
+	echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it...${x}"
 	echo
 	ee site create $domain
 	echo
-	echo "Finished creating easyengine site for $domain."
+	echo "${b}Finished creating easyengine site for $domain.${x}"
 	echo
 	sleep 1
 
-	echo "${b}Now setting custom nginx config for $domain..."
+	echo "${b}Now setting custom nginx config for $domain...${x}"
 	echo
 	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/domain.conf
 	cp $sourcedir/conf/nginx/domain.conf /etc/nginx/sites-available/$domain
 	service nginx reload
-	echo "Finished setting custom nginx config for $domain."
+	echo "${b}Finished setting custom nginx config for $domain.${x}"
 	echo
 	sleep 1
 
-	echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+	echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
 	ee site update $domain  --le
 	echo
-	echo "Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt..."
+	echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site..."
+	echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site...${x}"
 	echo
 	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
 	cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
-	echo "Finished adding IPv6 support to the HTTPS version of the $domain site..."
+	echo "${b}Finished adding IPv6 support to the HTTPS version of the $domain site...${x}"
 	echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site..."
+	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
 	echo
 	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
 	cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
-	echo "Finished adding IPv6 support to the HTTPS redirect for the $domain site..."
+	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
 	echo
 
-	echo "${b}Now creating all-in-one TLS file for $domain for ejabberd..."
+	echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
 	echo
 	touch $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/privkey.pem > $tlsdir/domain.pem
 	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $tlsdir/domain.pem
 	domtlscertloc=$tlsdir/domain.pem
-	echo "Finished creating all-in-one TLS file for $domain for ejabberd..."
+	echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
 	echo
 	sleep 1
 
-	echo "${b}Now setting index.html in docroot for $domain..."
+	echo "${b}Now setting index.html in docroot for $domain...${x}"
 	echo
 	cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
-	echo "Finished setting index.html in docroot for $domain."
+	echo "${b}Finished setting index.html in docroot for $domain.${x}"
 	echo
 	sleep 1
 
@@ -1192,7 +1192,7 @@ fi
 
 service nginx restart
 
-echo "Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml..."
+echo "${b}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x}"
 echo
 mkdir -p /etc/ejabberd/
 touch /etc/ejabberd/ejabberd.yml
@@ -1211,11 +1211,11 @@ sed -i '/## aenigma_host_config_placeholder_start:/,/## aenigma_host_config_plac
 sed -i "/## aenigma_host_config_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition.txt" $sourcedir/conf/ejabberd/ejabberd.yml
 fi
 cp $sourcedir/conf/ejabberd/ejabberd.yml /etc/ejabberd/ejabberd.yml
-echo "Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml."
+echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
 echo
 sleep 1
 
-echo "Now installing SSLH..."
+echo "${b}Now installing SSLH...${x}"
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
 apt-get -y install sslh &> /dev/null
@@ -1228,10 +1228,10 @@ fi
 sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
 cp $sourcedir/conf/sslh/sslh /etc/default/sslh
 service sslh start
-echo "Finished installing SSLH."
+echo "${b}Finished installing SSLH.${x}"
 echo
 
-echo "Now installing ejabberd..."
+echo "${b}Now installing ejabberd...${x}"
 echo
 currdistro="$(lsb_release --codename | cut -f2)"
 apt-get -y install apt-transport-https &> /dev/null
@@ -1240,31 +1240,31 @@ wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
 apt-get update &> /dev/null
 export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd &> /dev/null
 echo
-echo "Finished installing ejabberd."
+echo "${b}Finished installing ejabberd.${x}"
 echo
 sleep 1
 
-echo "Now creating uploads directory..."
+echo "${b}Now creating uploads directory...${x}"
 echo
 mkdir -p /etc/ejabberd/uploads/
-echo "Finished creating uploads directory."
+echo "${b}Finished creating uploads directory.${x}"
 echo
 sleep 1
 
-echo "Now creating HTTP fileserver directory..."
+echo "${b}Now creating HTTP fileserver directory...${x}"
 echo
 mkdir -p /var/www/ejabberd/
-echo "Finished creating HTTP fileserver directory."
+echo "${b}Finished creating HTTP fileserver directory.${x}"
 echo
 sleep 1
 
-echo "Now creating logfile..."
+echo "${b}Now creating logfile...${x}"
 echo
 touch /var/log/ejabberd/www_access.log
-echo "Finished creating logfile."
+echo "${b}Finished creating logfile.${x}"
 echo
 
-echo "Now securing permissions..."
+echo "${b}Now securing permissions...${x}"
 echo
 chown -R ejabberd:ejabberd $tlsdir
 chmod -R 700 $tlsdir
@@ -1272,47 +1272,47 @@ chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
 chmod -R 755 /etc/ejabberd/uploads/
 chown -R ejabberd:ejabberd /var/www/ejabberd/
 chmod -R 755 /var/www/ejabberd/
-echo "Finished securing permissions."
+echo "${b}Finished securing permissions.${x}"
 echo
 sleep 1
 
-echo "Now stopping ejabberd..."
+echo "${b}Now stopping ejabberd...${x}"
 echo
 /usr/sbin/ejabberdctl stop
 sleep 8
-echo "Finished stopping ejabberd."
+echo "${b}Finished stopping ejabberd.${x}"
 echo
 sleep 1
 
-echo "Now starting ejabberd..."
+echo "${b}Now starting ejabberd...${x}"
 /usr/sbin/ejabberdctl start
 echo
 sleep 8
 /usr/sbin/ejabberdctl status
 echo
 sleep 1
-echo "Finished starting ejabberd."
+echo "${b}Finished starting ejabberd.${x}"
 echo
 sleep 1
 
-echo "Now registering ejabberd admin user [if it doesn't yet exist]..."
+echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null
-echo "Finished registering ejabberd admin user."
+echo "${b}Finished registering ejabberd admin user.${x}"
 echo
 sleep 1
 
-read -p "Leave ejabberd admin user password the same as previously set? (Y/n): " -n 1 -r
+read -p "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
-	echo "Skipping ejabberd admin user password reset."
+	echo "${b}Skipping ejabberd admin user password reset.${x}"
 	echo
 	ejbdadminpwreset=n
 else
 	echo
-	echo "Ok, resetting ejabberd admin user password to: | $ejbdadminpw |"
+	echo "${b}Ok, resetting ejabberd admin user password to: | $ejbdadminpw |${x}"
 	echo
 	/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
 	ejbdadminpwreset=y
@@ -1320,15 +1320,15 @@ fi
 sleep 1
 clear
 
-echo "Now updating ejabberd's module repo..."
+echo "${b}Now updating ejabberd's module repo...${x}"
 echo
 /usr/sbin/ejabberdctl modules_update_specs
-echo "Finished updating ejabberd's module repo..."
+echo "${b}Finished updating ejabberd's module repo...${x}"
 echo
 sleep 1
 clear
 
-echo "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']..."
+echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
 echo
 /usr/sbin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
 /usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody $domain
@@ -1336,7 +1336,7 @@ echo
 /usr/sbin/ejabberdctl srg-user-add @online@ localhost online $domain
 /usr/sbin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
 /usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
-echo "Finished creating shared roster groups."
+echo "${b}Finished creating shared roster groups.${x}"
 echo
 sleep 1
 clear
@@ -1362,45 +1362,46 @@ clear
 
 if [ -f $tlsdir/dh.pem ]
 then
-	echo "${g}DHparam file found. Skipping generation...${x}"
+	echo "${g}${b}DHparam file found. Skipping generation...${x}"
 	echo
 else
-	echo "One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file."
+	echo "${b}One last thing: to make your TLS connections even more secure, you can generate a file called DH parameters file.${x}"
 	echo
-	echo "To do so, simply answer yes, but be aware that this is a very time consuming cryptographic operation, although it must only be performed once."
+	echo "${b}To do so, simply answer yes, but be aware that this is a very time consuming cryptographic operation, although it must only be performed once.${x}"
 	echo
-	read -p "Generate openssl DHparams file? (Y/n): " -n 1 -r
+	read -p "${b}Generate openssl DHparams file? (Y/n): ${x}" -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "Ok, proceeding with DHparams file generation..."
+		echo "${b}Ok, proceeding with DHparams file generation...${x}"
 		openssl dhparam -out $tlsdir/dh.pem.incomplete 4096
 		mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem
 		echo
 	else
 		echo
-		echo "Skipping DHparams generation."
+		echo "${b}Skipping DHparams generation.${x}"
 		echo
-		echo "You can always generate them at a later time by executing:"
+		echo "${b}You can always generate them at a later time by executing:${x}"
 		echo
-		echo "openssl dhparam -out $tlsdir/dh.pem.incomplete 4096"
+		echo "${b}openssl dhparam -out $tlsdir/dh.pem.incomplete 4096${x}"
 		echo
-		echo "[and making sure you let the command run until it exits]. Once it's done, execute:"
+		echo "${b}[and making sure you let the command run until it exits]. Once it's done, execute:${x}"
 		echo
-		echo "mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem"
+		echo "${b}mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem${x}"
 		echo
 		/usr/sbin/ejabberdctl restart
 	fi
-	echo "Finished generating DHparams."
+	echo "${b}Finished generating DHparams.${x}"
 	echo
 fi
 sleep 1
 clear
 
-echo "${b}Now removing installer directory${x}"
+echo "${b}Now removing installer directory...${x}"
 echo
 echo "Run ${b}git clone https://github.com/openspace42/aenigma${x} once again to download the latest installer!"
 echo
+echo "${b}Finished removing installer directory...${x}"
 
 rm -r aenigma/
 
