@@ -604,7 +604,7 @@ then
 	then
 		echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode |${x}"
 		echo
-		read -p "Is this still true? (Y/n): " -n 1 -r
+		read -p "${b}Is this still true? (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -1056,6 +1056,7 @@ ufw allow 5444
 ufw allow 80
 ufw allow 443
 
+echo
 echo "${b}Finished setting UFW rules.${x}"
 echo
 sleep 1
@@ -1223,6 +1224,7 @@ fi
 sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
 cp $sourcedir/conf/sslh/sslh /etc/default/sslh
 service sslh start
+echo
 echo "${b}Finished installing SSLH.${x}"
 echo
 
@@ -1297,6 +1299,7 @@ ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 echo "${b}Finished registering ejabberd admin user.${x}"
 echo
 sleep 1
+clear
 
 read -p "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1 -r
 echo
