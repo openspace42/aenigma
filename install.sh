@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # specify version to be installed in the format "x.y"
-installvers=0.42
+installvers=0.43
 
 r=`tput setaf 1`
 g=`tput setaf 2`
