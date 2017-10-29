@@ -31,13 +31,13 @@ b=`tput bold`
 if [ -d $installdir ]
 then
 	previnstall=y
-	echo "${g}Found a previous install of aenigma.${x}"
+	echo "${g}${b}Found a previous install of aenigma.${x}"
 	echo
-	read -p "Skip the introduction on XMPP basics? (Y/n): " -n 1 -r
+	read -p "${b}Skip the introduction on XMPP basics? (Y/n): ${x}" -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "Ok, continuing...${x}"
+		echo "${b}Ok, continuing...${x}"
 		echo
 		skipintro=y
 	else
@@ -53,68 +53,64 @@ fi
 if [ $skipintro = "n" ]
 then
 
-# ///
+	echo "0] First of all, a little introduction on how XMPP actually works"
+	echo
+	echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
+	echo
+	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
+	echo
+	read -p "[press enter to continue reading...]"
+	clear
 
-echo "0] First of all, a little introduction on how XMPP actually works"
-echo
-echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
-echo
-echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
-echo
-read -p "[press enter to continue reading...]"
-clear
+	echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
+	echo
+	echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
+	echo
+	echo "Main domain:          amsterdamhacklab.xyz."
+	echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
+	echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
+	echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
+	echo
+	echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
+	echo "                      b] more logical setup."
+	echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
+	echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
+	echo
+	read -p "[press enter to continue reading...]"
+	clear
 
-echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
-echo
-echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
-echo
-echo "Main domain:          amsterdamhacklab.xyz."
-echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
-echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
-echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
-echo
-echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
-echo "                      b] more logical setup."
-echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
-echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
-echo
-read -p "[press enter to continue reading...]"
-clear
+	echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
+	echo
+	echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
+	echo
+	echo "Your server hostname:  aenigmapod42.im"
+	echo "Your addresses:        mark@aenigmapod42.im."
+	echo
+	echo "PROs:                  a] clean addresses"
+	echo "                       b] no separate TLS certificate needed."
+	echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
+	echo "                          and not to a wider project."
+	echo
+	read -p "[press enter to continue reading...]"
+	clear
 
-echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
-echo
-echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
-echo
-echo "Your server hostname:  aenigmapod42.im"
-echo "Your addresses:        mark@aenigmapod42.im."
-echo
-echo "PROs:                  a] clean addresses"
-echo "                       b] no separate TLS certificate needed."
-echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
-echo "                          and not to a wider project."
-echo
-read -p "[press enter to continue reading...]"
-clear
+	echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
+	echo
+	echo "Your server hostname:  subdomain.domain.tld"
+	echo "Your addresses:        mark@subdomain.domain.tld."
+	echo
+	echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
+	echo "                          with no separate TLS certificate needed."
+	echo "CONs:                  a] longer and more complex addresses"
+	echo "                       b] not logically 'clean'."
+	echo
+	read -p "[press enter to continue reading...]"
+	clear
 
-echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
-echo
-echo "Your server hostname:  subdomain.domain.tld"
-echo "Your addresses:        mark@subdomain.domain.tld."
-echo
-echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
-echo "                          with no separate TLS certificate needed."
-echo "CONs:                  a] longer and more complex addresses"
-echo "                       b] not logically 'clean'."
-echo
-read -p "[press enter to continue reading...]"
-clear
-
-echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
-echo
-echo "----------------"
-echo
-
-# \\\
+	echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
+	echo
+	echo "----------------"
+	echo
 
 fi
 
@@ -136,9 +132,9 @@ fi
 
 if [ $validprevconfigoption = "y" ]
 then
-	echo "${g}You previously chose configuration option | $prevconfigoption |${x}"
+	echo "${g}${b}You previously chose configuration option | $prevconfigoption |${x}"
 	echo
-	read -p "Keep this option for this installation as well? (Y/n): " -n 1 -r
+	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -153,7 +149,7 @@ fi
 
 if [ $configoption = "notyetset" ]
 then
-	choice='Please select your desired configuration option: '
+	choice='${b}Please select your desired configuration option: ${x}'
 	echo $choice
 	options=("configuration 1" "configuration 2" "configuration 3" "exit")
 	select opt in "${options[@]}"
@@ -176,11 +172,11 @@ then
 		    break
 		    ;;
 		"exit")
-		    echo "Exiting...${x}"
+		    echo "${b}Exiting...${x}"
 		    echo
 		    exit
 		    ;;
-		*)  echo "Invalid option. Retry...${x}"
+		*)  echo "${r}${b}Invalid option. Retry...${x}"
 		    echo
 		    ;;
 	    esac
@@ -197,25 +193,25 @@ fi
 if [ ! $configoption = "3" ]
 then
 
-	echo "Ok, you've chosen option $configoption."
+	echo "${b}Ok, you've chosen option $configoption.${x}"
 	echo
 	if [ ! $prevdomain = "nx" ]
 	then
-		echo "${g}The domain used for your previous aenigma installation is:${x}"
+		echo "${g}${b}The domain used for your previous aenigma installation is:${x}"
 		echo
 		echo " | $prevdomain |"
 		echo
-		read -p "Keep this domain for this installation as well? (Y/n): " -n 1 -r
+		read -p "${b}Keep this domain for this installation as well? (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-			echo "Ok, using previous domain: | $prevdomain |"
+			echo "${b}Ok, using previous domain: | $prevdomain |${x}"
 			echo
 			domain=$prevdomain
 			changedomain=n
 		else
 			echo
-			echo "Ok, changing domain...${x}"
+			echo "${b}Ok, changing domain...${x}"
 			echo
 			changedomain=y
 		fi
@@ -231,13 +227,13 @@ then
 			newdomain=""
 			until [ ! $newdomain = "" ]
 			do
-				read -p "Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: " newdomain
+				read -p "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: ${x}" newdomain
 				echo
 			done
 			valid=n
 			until [ $valid = "y" ]
 			do
-				read -n 1 -p "Is | $newdomain | correct? (Y/n/e[xit]) " answer;
+				read -n 1 -p "${b}Is | $newdomain | correct? (Y/n/e[xit]) ${x}" answer;
 				case $answer in
 				"")
 					echo
@@ -251,20 +247,20 @@ then
 					;;
 				n)
 					echo -e "\n"
-					echo "Ok, then please try again...${x}"
+					echo "${b}Ok, then please try again...${x}"
 					echo
 					valid=y
 					defined=n
 					;;
 				e)
 					echo -e "\n"
-		        		echo "Exiting...${x}"
+		        		echo "${b}Exiting...${x}"
 		        		echo
 		        		exit
 		        		;;
 				*)
 					echo -e "\n"
-					echo "Invalid option. Retry...${x}"
+					echo "${r}${b}Invalid option. Retry...${x}"
 		        		echo
 					valid=n
 				defined=n
@@ -273,16 +269,16 @@ then
 			done
 		done
 	echo $newdomain > $installdir/domain
-	echo "New hostname set to | $newdomain |"
+	echo "${b}New hostname set to | $newdomain |${x}"
 	echo
 	domain="$(cat $installdir/domain)"
 	fi
 
 else
 
-	echo "Ok, you've chosen option 3."
+	echo "${b}Ok, you've chosen option 3.${x}"
 	echo
-	echo "Your domain [the part after the @ in your XMPP account addresses] will match your server hostname."
+	echo "${b}Your domain [the part after the @ in your XMPP account addresses] will match your server hostname.${x}"
 	echo
 
 fi
@@ -294,36 +290,36 @@ then
 
 	if [ $configoption = "1" ]
 	then
-		echo "Your hostname must be a third level domain [subdomain] of either $domain or another domain."
+		echo "${b}Your hostname must be a third level domain [subdomain] of either $domain or another domain.${x}"
 		echo
 	elif [ $configoption = "3" ]
 	then
-		echo "Your hostname must be a third level domain [subdomain] of your main domain."
+		echo "${b}Your hostname must be a third level domain [subdomain] of your main domain.${x}"
 		echo
 	fi
 
-	echo "${g}Your current hostname is:${x}"
+	echo "${g}${b}Your current hostname is:${x}"
 	echo
 	echo " | $currhostname |"
 	echo
 
 	if [ $configoption = "3" ]
 	then
-		echo "Make sure it is a subdomain of your main domain, and is it what you want it to be."
+		echo "${b}Make sure it is a subdomain of your main domain, and is it what you want it to be.${x}"
 		echo
 	fi
 
-	read -p "Keep this hostname? (Y/n): " -n 1 -r
+	read -p "${b}Keep this hostname? (Y/n): ${x}" -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "Ok, leaving hostname set to | $currhostname |"
+		echo "${b}Ok, leaving hostname set to | $currhostname |${x}"
 		echo
 		changehostname=n
 		hostname=$currhostname
 	else
 		echo
-		echo "Ok, changing hostname...${x}"
+		echo "${b}Ok, changing hostname...${x}"
 		echo
 		changehostname=y
 	fi
@@ -338,20 +334,20 @@ then
 			do
 				if [ $configoption = "1" ]
 				then
-					read -p "Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: " newhostname
+					read -p "${b}Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: ${x}" newhostname
 					echo
 				elif [ $configoption = "3" ]
 				then
-					echo "Keep in mind that your hostname will also become your domain [the part after the @ in your XMPP account addresses]."
+					echo "${b}Keep in mind that your hostname will also become your domain [the part after the @ in your XMPP account addresses].${x}"
 					echo
-					read -p "Now set your hostname, which must be a third level domain [subdomain] of your main domain: " newhostname
+					read -p "${b}Now set your hostname, which must be a third level domain [subdomain] of your main domain: ${x}" newhostname
 					echo
 				fi
 			done
 			valid=n
 			until [ $valid = "y" ]
 			do
-				read -n 1 -p "Is | $newhostname | correct? (Y/n/e[xit]) " answer;
+				read -n 1 -p "${b}Is | $newhostname | correct? (Y/n/e[xit]) ${x}" answer;
 				case $answer in
 				"")
 					echo
@@ -365,20 +361,20 @@ then
 					;;
 				n)
 					echo -e "\n"
-					echo "Ok, then please try again...${x}"
+					echo "${b}Ok, then please try again...${x}"
 					echo
 					valid=y
 					defined=n
 					;;
 				e)
 					echo -e "\n"
-		        		echo "Exiting...${x}"
+		        		echo "${b}Exiting...${x}"
 		        		echo
 		        		exit
 		        		;;
 				*)
 					echo -e "\n"
-					echo "Invalid option. Retry...${x}"
+					echo "${r}${b}Invalid option. Retry...${x}"
 		        		echo
 					valid=n
 				defined=n
@@ -387,7 +383,7 @@ then
 			done
 		done
 	echo $newhostname > /etc/hostname
-	echo "New hostname set to | $newhostname |"
+	echo "${b}New hostname set to | $newhostname |${x}"
 	echo
 	hostname="$(cat /etc/hostname)"
 	fi
@@ -399,33 +395,33 @@ then
 
 else
 
-	echo "Your hostname must be identical to your domain: $domain."
+	echo "${b}Your hostname must be identical to your domain: $domain.${x}"
 	echo
-	echo "Your current hostname is:"
+	echo "${b}Your current hostname is:${x}"
 	echo
 	echo " | $currhostname |"
 	echo
 	if [ $currhostname = $domain ]
 	then
-		echo "${g}Your hostname matches your domain, all good!${x}"
+		echo "${g}${b}Your hostname matches your domain, all good!${x}"
 		echo
 	else
-		echo "${r}Your hostname does NOT match the domain you've specified.${x}"
+		echo "${r}${b}Your hostname does NOT match the domain you've specified.${x}"
 		echo
-		echo "Having chosen option 2, they must be identical."
+		echo "${b}Having chosen option 2, they must be identical.${x}"
 		echo
-		read -p "Do you want to set your hostname to match your domain? (Y/n): " -n 1 -r
+		read -p "${b}Do you want to set your hostname to match your domain? (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-			echo "Ok, setting hostname to match domain."
+			echo "${b}Ok, setting hostname to match domain.${x}"
 			echo
 			echo $domain > /etc/hostname
-			echo "New hostname set to | $domain |"
+			echo "${b}New hostname set to | $domain |${x}"
 			echo
 		else
 			echo
-			echo "Not changing hostname. Exiting...${x}"
+			echo "${b}Not changing hostname. Exiting...${x}"
 			echo
 			exit
 		fi
@@ -509,7 +505,7 @@ then
 	ipv6pingaddr="2001:4860:4860::8888"
 	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null
 	then
-		echo "${g}IPv6 connectivity good.${x}"
+		echo "${g}${b}IPv6 connectivity good.${x}"
 		echo
 		ipv6avail=y
 	else
@@ -530,11 +526,11 @@ then
 		done
 		if [ $pingacquired = "y" ]
 		then
-			echo "${g}IPv6 connectivity acquired.${x}"
+			echo "${g}${b}IPv6 connectivity acquired.${x}"
 			echo
 			ipv6avail=y
 		else
-			echo "${r}IPv6 connectivity not found.${x}"
+			echo "${r}${b}IPv6 connectivity not found.${x}"
 			echo
 			ipv6avail=n
 		fi
@@ -642,54 +638,54 @@ then
 		read -p "[press enter to continue reading...]"
 		clear
 
-		read -p "That said, is there ANOTHER [running] server that responds to $domain? (Y/n): " -n 1 -r
+		read -p "${b}That said, is there ANOTHER [running] server that responds to $domain? (Y/n): ${x}" -n 1 -r
         	echo
         	if [[ ! $REPLY =~ ^[Nn]$ ]]
         	then
-			read -p "Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): " -n 1 -r
+			read -p "${b}Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): ${x}" -n 1 -r
 	        	echo
 	        	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	        	then
-				read -p "Ok, is this a Linux server? (Y/n): " -n 1 -r
+				read -p "${b}Ok, is this a Linux server? (Y/n): ${x}" -n 1 -r
                         	echo
                         	if [[ ! $REPLY =~ ^[Nn]$ ]]
                         	then
-					read -p "Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): " -n 1 -r
+					read -p "${b}Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): ${x}" -n 1 -r
 	                		echo
 	                		if [[ ! $REPLY =~ ^[Nn]$ ]]
 	                		then
-						echo "Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:"
+						echo "${b}Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:${x}"
 						echo
-						echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+						echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
 						echo
 						echo "${b}Now configure it to push its LE TLS cert to this server by following the instructions.${x}"
 						echo
 					else
 						echo
-						echo "Ok, no problem, you can adapt this script:"
+						echo "${b}Ok, no problem, you can adapt this script:${x}"
 						echo
-						echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+						echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
                                         	echo
-						echo "To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically."
+						echo "${b}To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically.${x}"
 						echo
-						echo "Follow the instructions and adapt the paths to the existing TLS certs and private key."
+						echo "${b}Follow the instructions and adapt the paths to the existing TLS certs and private key.${x}"
 						echo
 					fi
 				else
-					echo "Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
+					echo "${b}Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!].${x}"
 					echo
 				fi
 			else
-				read -p "Ok, no problem. Is this server a linux server? (Y/n): " -n 1 -r
+				read -p "${b}Ok, no problem. Is this server a linux server? (Y/n): ${x}" -n 1 -r
                         	echo
                         	if [[ ! $REPLY =~ ^[Nn]$ ]]
                         	then
-					echo "Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:"
+					echo "${b}Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:${x}"
 					echo
-					echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+					echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
 					echo
 				else
-					echo "Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!]."
+					echo "${b}Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!].${x}"
 					echo
 				fi
 			fi
@@ -700,7 +696,7 @@ then
 		else
 
 			echo
-			echo "Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server."
+			echo "${b}Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server.${x}"
 			echo
 			echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
 			echo
@@ -713,7 +709,7 @@ then
 			read -p "[press enter to continue reading...]"
 			clear
 
-			echo "Let's point $domain and www.$domain to this server for the time being."
+			echo "${b}Let's point $domain and www.$domain to this server for the time being.${x}"
 			echo
 			echo "This is required for the TLS certificate we'll be generating shortly on this server."
 			echo
@@ -746,9 +742,9 @@ then
 
 		if [ $validprevdomtlscertloc = "y" ]
 		then
-			echo "${g}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc |${x}"
+			echo "${g}${b}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc |${x}"
 			echo
-			read -p "Is this still correct? (Y/n): " -n 1 -r
+			read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
 			echo
 			if [[ ! $REPLY =~ ^[Nn]$ ]]
 			then
@@ -773,14 +769,14 @@ then
 					newdomtlscertloc=""
 					until [ ! $newdomtlscertloc = "" ]
 					do
-						read -p "Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: " newdomtlscertloc
+						read -p "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: ${x}" newdomtlscertloc
 						echo
 					done
 					if [ -f $newdomtlscertloc ]
 					then
 						exists=y
 					else
-						echo "${r}The specified file does not exists. Please retry...${x}"
+						echo "${r}${b}The specified file does not exists. Please retry...${x}"
 						echo
 						exists=n
 					fi
@@ -788,7 +784,7 @@ then
 				valid=n
 				until [ $valid = "y" ]
 				do
-					read -n 1 -p "Is | $newdomtlscertloc | correct? (Y/n/e[xit]) " answer;
+					read -n 1 -p "${b}Is | $newdomtlscertloc | correct? (Y/n/e[xit]) ${x}" answer;
 					case $answer in
 					"")
 						echo
@@ -802,20 +798,20 @@ then
 						;;
 					n)
 						echo -e "\n"
-						echo "Ok, then please try again...${x}"
+						echo "${b}Ok, then please try again...${x}"
 						echo
 						valid=y
 						defined=n
 						;;
 					e)
 						echo -e "\n"
-			        		echo "Exiting...${x}"
+			        		echo "${b}Exiting...${x}"
 			        		echo
 			        		exit
 			        		;;
 					*)
 						echo -e "\n"
-						echo "Invalid option. Retry...${x}"
+						echo "${r}${b}Invalid option. Retry...${x}"
 			        		echo
 						valid=n
 					defined=n
@@ -824,7 +820,7 @@ then
 				done
 			done
 		echo $newdomtlscertloc > $installdir/domtlscertloc
-		echo "New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc |"
+		echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc |${x}"
 		echo
 		domtlscertloc="$(cat $installdir/domtlscertloc)"
 		fi
@@ -928,7 +924,7 @@ do
 	do
 
 		digarrayiter=$(($digarrayiter + 1))
-		echo "$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+		echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
 		echo
 		sleep 1
 
@@ -961,9 +957,9 @@ do
 
 				if [ -z "$digresult" ]
 				then
-					echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to be at all set.${x}"
+					echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to be at all set.${x}"
 					echo
-					echo "Please ensure you set your DNS record as follows:"
+					echo "${b}Please ensure you set your DNS record as follows:${x}"
 					echo
 					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 					echo
@@ -971,20 +967,20 @@ do
 				else
 					if [ "$digresult" = "$thisip" ]
 					then
-						echo "${g}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
+						echo "${g}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
 						echo
 						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 						echo
 						result=ok
 						sleep 1
 					else
-						echo "${r}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
+						echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
 						echo
-						echo "This is the result of a DNS query for ${digarray[$i]}$dnschecktype:"
+						echo "${b}This is the result of a DNS query for ${digarray[$i]}$dnschecktype:${x}"
 						echo
 						echo "$digresult"
 						echo
-						echo "Please set it instead to:"
+						echo "${b}Please set it instead to:${x}"
 						echo
 						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 						echo
@@ -1018,13 +1014,13 @@ do
 							;;
 						e)
 							echo -e "\n"
-	        					echo "Exiting...${x}"
+	        					echo "${b}Exiting...${x}"
 	        					echo
 	        					exit
 	        					;;
 						*)
 							echo -e "\n"
-							echo "Invalid option. Retry...${x}"
+							echo "${b}Invalid option. Retry...${x}"
 	        					echo
 							valid=n
 							accept=n
@@ -1342,7 +1338,7 @@ echo
 sleep 1
 clear
 
-echo "${b}${g}You can finally log in:${x}"
+echo "${g}${b}You can finally log in:${x}"
 echo
 echo "${b}https://$hostname${x}"
 echo
@@ -1407,7 +1403,7 @@ echo "${b}Finished removing installer directory...${x}"
 
 rm -r aenigma/
 
-echo "${b}${g}aenigma installation complete!${x}"
+echo "${g}${b}aenigma installation complete!${x}"
 echo
 
 exit
