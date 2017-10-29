@@ -27,13 +27,28 @@ if [ -f /root/os-dfbs/run-ok ]; then
 else
 	echo "${r}${b}Debian First Boot Setup was NOT previously run successfully OR the system was not rebooted at the end.${x}"
 	echo
-	echo "${b}Run it now [or re-run it and make sure you reboot at the end] by executing the following commands:${x}"
+	read -p "${b}Run it now? (Y/n): ${x}" -n 1 -r
 	echo
-	echo "${b} | git clone https://github.com/openspace42/Debian-First-Boot-Setup |${x}"
-	echo
-	echo "${b} | bash Debian-First-Boot-Setup/script.sh |${x}"
-	echo
-	exit
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, running DFBS now...${x}"
+		echo
+		echo "${b}After you're done running DFBS [make sure you reboot this machine at the end], simply run the aenigma installer again.${x}"
+		echo
+		sleep 3
+		git clone https://github.com/openspace42/Debian-First-Boot-Setup
+		clear
+		bash Debian-First-Boot-Setup/script.sh
+		exit
+	else
+		echo "${b}No problem, you can run it [make sure you reboot this machine at the end] by executing the following commands:${x}"
+		echo
+		echo "${b} | git clone https://github.com/openspace42/Debian-First-Boot-Setup |${x}"
+		echo
+		echo "${b} | bash Debian-First-Boot-Setup/script.sh |${x}"
+		echo
+		exit
+	fi
 fi
 
 echo "${b}Now installing dependencies...${x}"
