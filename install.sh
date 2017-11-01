@@ -1,7 +1,17 @@
 #!/bin/bash
 
+installdir=/root/os-aenigma # Don't change! | No trailing slash!
+
 # specify version to be installed in the format "x.y"
 installvers=0.43
+
+if [ -f $installdir/beta ]
+then
+	installvers=0.44
+	beta=y
+else
+	beta=n
+fi
 
 r=`tput setaf 1`
 g=`tput setaf 2`
@@ -13,7 +23,16 @@ echo
 echo "${b}Initiating installer...${x}"
 echo
 
-if [[ $EUID -ne 0 ]]; then
+if [ $beta = "y" ]
+then
+	echo "${b}Using beta version v$installvers${x}"
+	echo
+	echo "${b}[delete the | $installdir/beta | file to cancel your opt-in to beta versions]"
+	echo
+fi
+
+if [[ $EUID -ne 0 ]]
+then
 	echo "${r}This script must be run as root. Run it as:${x}"
 	echo
 	echo "sudo bash aenigma/install.sh"
@@ -21,7 +40,8 @@ if [[ $EUID -ne 0 ]]; then
 	exit
 fi
 
-if [ -f /root/os-dfbs/run-ok ]; then
+if [ -f /root/os-dfbs/run-ok ]
+then
         echo "${g}${b}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
 else
