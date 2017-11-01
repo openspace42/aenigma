@@ -209,7 +209,7 @@ then
 	if [ $changedomain = "y" ]
 	then
 
-		echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+		echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
 		echo
 		echo "${r}${b}WARNING:${x}"
 		echo
@@ -217,9 +217,9 @@ then
 		echo
 		echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
 		echo
-		echo "${b}If you abort the domain changing operation now, nothing will be deleted.${x}"
+		echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
 		echo
-		echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+		echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
 		echo
 		read -p "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1 -r
 		echo
@@ -272,14 +272,15 @@ then
 					esac
 				done
 			done
-		echo $newdomain > $installdir/domain
-		echo "${b}New hostname set to | $newdomain |${x}"
-		echo
-		domain="$(cat $installdir/domain)"
+			echo $newdomain > $installdir/domain
+			echo "${b}New hostname set to | $newdomain |${x}"
+			echo
+			domain="$(cat $installdir/domain)"
+		else
+			echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
+			echo
 		fi
-	else
-		echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
-		echo
+
 	fi
 
 else
