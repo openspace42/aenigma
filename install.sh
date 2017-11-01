@@ -25,7 +25,7 @@ echo
 
 if [ $beta = "y" ]
 then
-	echo "${b}Using beta version v$installvers${x}"
+	echo "${r}${b}Using beta version v$installvers${x}"
 	echo
 	echo "${b}[delete the | $installdir/beta | file to cancel your opt-in to beta versions]"
 	echo
