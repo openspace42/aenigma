@@ -175,8 +175,10 @@ fi
 if [ -f $installdir/domain ]
 then
 	prevdomain="$(cat $installdir/domain)"
+	changedomainwarning=y
 else
 	prevdomain="nx"
+	changedomainwarning=n
 fi
 
 if [ ! $configoption = "3" ]
@@ -211,21 +213,33 @@ then
 	if [ $changedomain = "y" ]
 	then
 
-		echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
-		echo
-		echo "${r}${b}WARNING:${x}"
-		echo
-		echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
-		echo
-		echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
-		echo
-		echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
-		echo
-		echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
-		echo
-		read -p "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1 -r
-		echo
-		if [[ $REPLY =~ ^[Yy]$ ]]
+		if [ $changedomainwarning = "y" ]
+		then
+			echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+			echo
+			echo "${r}${b}WARNING:${x}"
+			echo
+			echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
+			echo
+			echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+			echo
+			echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
+			echo
+			echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+			echo
+			read -p "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1 -r
+			echo
+			if [[ $REPLY =~ ^[Yy]$ ]]
+			then
+				confirmchangedomain=y
+			else
+				confirmchangedomain=n
+			fi
+		else
+			confirmchangedomain=y
+		fi
+
+		if [ $confirmchangedomain = "y" ]
 		then
 			clear
 			defined=n
@@ -1417,6 +1431,7 @@ echo
 echo "Run ${b}git clone https://github.com/openspace42/aenigma${x} once again to download the latest installer!"
 echo
 echo "${b}Finished removing installer directory...${x}"
+echo
 
 rm -r aenigma/
 
