@@ -476,6 +476,7 @@ then
 	touch $installdir/domain
 	echo "$domain" > $installdir/domain
 else
+	echo
 	echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
 	echo
 	exit
