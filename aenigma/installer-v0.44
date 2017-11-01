@@ -1320,7 +1320,7 @@ sleep 1
 echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
-/usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null
+/usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null || true
 echo "${b}Finished registering ejabberd admin user.${x}"
 echo
 sleep 1
