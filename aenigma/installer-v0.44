@@ -1094,7 +1094,7 @@ sleep 1
 
 echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
 echo
-ee site create $hostname
+ee site create $hostname || true
 echo
 echo "${b}Finished creating easyengine site for $hostname.${x}"
 echo
@@ -1140,7 +1140,7 @@ then
 
 	echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it...${x}"
 	echo
-	ee site create $domain
+	ee site create $domain || true
 	echo
 	echo "${b}Finished creating easyengine site for $domain.${x}"
 	echo
