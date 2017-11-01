@@ -5,6 +5,8 @@ echo
 echo "aenigma v0.44"
 echo
 
+set -e
+
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 installdir=/root/os-aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
@@ -1180,6 +1182,8 @@ then
 	sleep 1
 
 fi
+
+### only add IPv6 to hostname site after LE TLS cert has been provisioned for domain otherwise .well-known check will fail due to wrong webroot
 
 echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 echo
