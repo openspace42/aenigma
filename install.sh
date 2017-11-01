@@ -40,6 +40,14 @@ then
 	exit
 fi
 
+if [ "`lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/' `" != "Ubuntu 16.04 LTS" ]; then
+	echo "aenigma only runs on Ubuntu 16.04. You are running:"
+	echo
+	lsb_release -d | sed 's/.*:\s*//'
+	echo
+	exit
+fi
+
 if [ -f /root/os-dfbs/run-ok ]
 then
         echo "${g}${b}Debian First Boot Setup was previously run successfully. Continuing...${x}"
