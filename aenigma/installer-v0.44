@@ -5,7 +5,6 @@ echo
 echo "aenigma v0.44"
 echo
 
-set -o pipefail
 set -e
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
