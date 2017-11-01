@@ -27,21 +27,22 @@ if [ $beta = "y" ]
 then
 	echo "${r}${b}Using beta version v$installvers${x}"
 	echo
-	echo "${b}[delete the | $installdir/beta | file to cancel your opt-in to beta versions]"
+	echo "${b}[delete the | $installdir/beta | file to cancel your opt-in to beta versions]${x}"
 	echo
 fi
 
 if [[ $EUID -ne 0 ]]
 then
-	echo "${r}This script must be run as root. Run it as:${x}"
+	echo "${r}${b}This script must be run as root. Run it as:${x}"
 	echo
 	echo "sudo bash aenigma/install.sh"
 	echo
 	exit
 fi
 
-if [ "`lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/' `" != "Ubuntu 16.04 LTS" ]; then
-	echo "aenigma only runs on Ubuntu 16.04. You are running:"
+if [ "`lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/' `" != "Ubuntu 16.04 LTS" ]
+then
+	echo "${r}${b}aenigma only runs on Ubuntu 16.04. You are running:${x}"
 	echo
 	lsb_release -d | sed 's/.*:\s*//'
 	echo
