@@ -235,13 +235,13 @@ then
 			else
 				confirmchangedomain=n
 			fi
+			clear
 		else
 			confirmchangedomain=y
 		fi
 
 		if [ $confirmchangedomain = "y" ]
 		then
-			clear
 			defined=n
 			until [ $defined = "y" ]
 			do
@@ -294,7 +294,6 @@ then
 			echo
 			domain="$(cat $installdir/domain)"
 		else
-			clear
 			domain=$prevdomain
 			echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
 			echo
@@ -955,7 +954,6 @@ do
 		digarrayiter=$(($digarrayiter + 1))
 		echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
 		echo
-		sleep 1
 
 		accept=n
 		until [ $accept = "y" ]
@@ -1001,7 +999,6 @@ do
 						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 						echo
 						result=ok
-						sleep 1
 					else
 						echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
 						echo
@@ -1089,6 +1086,7 @@ sleep 1
 echo "${b}Now installing easyengine...${x}"
 echo
 wget -qO ee rt.cx/ee && sudo bash ee
+source /etc/bash_completion.d/ee_auto.rc
 echo
 echo "${b}Finished installing easyengine.${x}"
 echo
