@@ -45,7 +45,7 @@ Not yet supported by ejabberd:
 
 * Keeps backwards compatibility with legacy XMPP servers by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by changing two lines in the config file.
 
-## Install on Debian 8 / Ubuntu 16
+## Install on Ubuntu 16
 
 current version: v0.43 [2017-10-28]
 
