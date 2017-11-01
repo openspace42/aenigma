@@ -5,6 +5,7 @@ echo
 echo "aenigma v0.44"
 echo
 
+set -o pipefail
 set -e
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
@@ -1085,7 +1086,7 @@ sleep 1
 
 echo "${b}Now installing easyengine...${x}"
 echo
-wget -qO ee rt.cx/ee && sudo bash ee
+wget -qO ee rt.cx/ee && sudo bash ee || true
 source /etc/bash_completion.d/ee_auto.rc
 echo
 echo "${b}Finished installing easyengine.${x}"
