@@ -15,19 +15,6 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-# warning kept in case of future need
-
-# echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
-# echo
-# echo "${r}WARNING:"
-# echo
-# read -p "Have you read and understood the above, and do you whish to continue now? (y/N): " confirm && [[ $confirm == [yY] ]] || exit 1
-# echo
-# echo "Confirmed. Now continuing..."
-# echo
-# echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
-# echo
-
 if [ -d $installdir ]
 then
 	previnstall=y
@@ -221,57 +208,78 @@ then
 
 	if [ $changedomain = "y" ]
 	then
-		defined=n
-		until [ $defined = "y" ]
-		do
-			newdomain=""
-			until [ ! $newdomain = "" ]
+
+		echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+		echo
+		echo "${r}${b}WARNING:${x}"
+		echo
+		echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
+		echo
+		echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+		echo
+		echo "${b}If you abort the domain changing operation now, nothing will be deleted.${x}"
+		echo
+		echo "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+		echo
+		read -p "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Yy]$ ]]
+		then
+			defined=n
+			until [ $defined = "y" ]
 			do
-				read -p "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: ${x}" newdomain
-				echo
-			done
-			valid=n
-			until [ $valid = "y" ]
-			do
-				read -n 1 -p "${b}Is | $newdomain | correct? (Y/n/e[xit]) ${x}" answer;
-				case $answer in
-				"")
+				newdomain=""
+				until [ ! $newdomain = "" ]
+				do
+					read -p "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: ${x}" newdomain
 					echo
-					valid=y
-					defined=y
-					;;
-				y)
-					echo -e "\n"
-					valid=y
-					defined=y
-					;;
-				n)
-					echo -e "\n"
-					echo "${b}Ok, then please try again...${x}"
-					echo
-					valid=y
-					defined=n
-					;;
-				e)
-					echo -e "\n"
-		        		echo "${b}Exiting...${x}"
-		        		echo
-		        		exit
-		        		;;
-				*)
-					echo -e "\n"
-					echo "${r}${b}Invalid option. Retry...${x}"
-		        		echo
-					valid=n
-				defined=n
-			        ;;
-				esac
+				done
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "${b}Is | $newdomain | correct? (Y/n/e[xit]) ${x}" answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						defined=y
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						defined=y
+						;;
+					n)
+						echo -e "\n"
+						echo "${b}Ok, then please try again...${x}"
+						echo
+						valid=y
+						defined=n
+						;;
+					e)
+						echo -e "\n"
+		        			echo "${b}Exiting...${x}"
+		        			echo
+		        			exit
+		        			;;
+					*)
+						echo -e "\n"
+						echo "${r}${b}Invalid option. Retry...${x}"
+		        			echo
+						valid=n
+						defined=n
+			        		;;
+					esac
+				done
 			done
-		done
-	echo $newdomain > $installdir/domain
-	echo "${b}New hostname set to | $newdomain |${x}"
-	echo
-	domain="$(cat $installdir/domain)"
+		echo $newdomain > $installdir/domain
+		echo "${b}New hostname set to | $newdomain |${x}"
+		echo
+		domain="$(cat $installdir/domain)"
+		fi
+	else
+		echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
+		echo
 	fi
 
 else
@@ -1407,4 +1415,3 @@ echo "${g}${b}aenigma installation complete!${x}"
 echo
 
 exit
-
