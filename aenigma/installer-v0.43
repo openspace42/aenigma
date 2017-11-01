@@ -223,8 +223,9 @@ then
 		echo
 		read -p "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1 -r
 		echo
-		if [[ ! $REPLY =~ ^[Yy]$ ]]
+		if [[ $REPLY =~ ^[Yy]$ ]]
 		then
+			clear
 			defined=n
 			until [ $defined = "y" ]
 			do
@@ -277,6 +278,8 @@ then
 			echo
 			domain="$(cat $installdir/domain)"
 		else
+			clear
+			domain=$prevdomain
 			echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
 			echo
 		fi
