@@ -49,9 +49,15 @@ Not yet supported by ejabberd:
 
 current version: v0.43 [2017-10-28]
 
-```git clone https://github.com/openspace42/aenigma.git```
+```
+apt update
+apt install git
+```
 
-```sudo bash ./aenigma/install.sh```
+```
+git clone https://github.com/openspace42/aenigma.git
+sudo bash ./aenigma/install.sh
+```
 
 ## Recommended clients:
 
