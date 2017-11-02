@@ -1257,18 +1257,6 @@ touch /var/log/ejabberd/www_access.log
 echo "${b}Finished creating logfile.${x}"
 echo
 
-echo "${b}Now securing permissions...${x}"
-echo
-chown -R ejabberd:ejabberd $tlsdir
-chmod -R 700 $tlsdir
-chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
-chmod -R 755 /etc/ejabberd/uploads/
-chown -R ejabberd:ejabberd /var/www/ejabberd/
-chmod -R 755 /var/www/ejabberd/
-echo "${b}Finished securing permissions.${x}"
-echo
-sleep 1
-
 echo "${b}Now installing SSLH...${x}"
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
@@ -1296,6 +1284,18 @@ apt-get update
 export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
 echo
 echo "${b}Finished installing ejabberd.${x}"
+echo
+sleep 1
+
+echo "${b}Now securing permissions...${x}"
+echo
+chown -R ejabberd:ejabberd $tlsdir
+chmod -R 700 $tlsdir
+chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
+chmod -R 755 /etc/ejabberd/uploads/
+chown -R ejabberd:ejabberd /var/www/ejabberd/
+chmod -R 755 /var/www/ejabberd/
+echo "${b}Finished securing permissions.${x}"
 echo
 sleep 1
 
