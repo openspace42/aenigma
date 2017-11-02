@@ -47,7 +47,7 @@ Not yet supported by ejabberd:
 
 ## Install on Ubuntu 16
 
-current version: v0.43 [2017-10-28]
+current version: v0.44 [2017-11-03]
 
 ```
 apt update
