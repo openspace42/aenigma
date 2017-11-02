@@ -76,6 +76,8 @@ else
 		echo
 		echo "${b} | bash Debian-First-Boot-Setup/script.sh |${x}"
 		echo
+		echo "${b}Exiting...${x}"
+		echo
 		exit
 	fi
 fi

@@ -1253,19 +1253,6 @@ echo
 echo "${b}Finished installing SSLH.${x}"
 echo
 
-echo "${b}Now installing ejabberd...${x}"
-echo
-currdistro="$(lsb_release --codename | cut -f2)"
-apt-get -y install apt-transport-https
-echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
-wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
-apt-get update
-export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
-echo
-echo "${b}Finished installing ejabberd.${x}"
-echo
-sleep 1
-
 echo "${b}Now creating uploads directory...${x}"
 echo
 mkdir -p /etc/ejabberd/uploads/
@@ -1295,6 +1282,19 @@ chmod -R 755 /etc/ejabberd/uploads/
 chown -R ejabberd:ejabberd /var/www/ejabberd/
 chmod -R 755 /var/www/ejabberd/
 echo "${b}Finished securing permissions.${x}"
+echo
+sleep 1
+
+echo "${b}Now installing ejabberd...${x}"
+echo
+currdistro="$(lsb_release --codename | cut -f2)"
+apt-get -y install apt-transport-https
+echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
+wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
+apt-get update
+export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
+echo
+echo "${b}Finished installing ejabberd.${x}"
 echo
 sleep 1
 
