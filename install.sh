@@ -3,11 +3,11 @@
 installdir=/root/os-aenigma # Don't change! | No trailing slash!
 
 # specify version to be installed in the format "x.y"
-installvers=0.43
+installvers=0.44
 
 if [ -f $installdir/beta ]
 then
-	installvers=0.44
+	installvers=0.45
 	beta=y
 else
 	beta=n
