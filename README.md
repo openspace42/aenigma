@@ -79,7 +79,7 @@ Gio [eigenlab / LibreMesh] for leading me towards XMPP instead after talking abo
 
 Palinuro + MiBoFra [frozenbox.org / parrotsec.org] for actually getting me started on XMPP.
 
-David Gultsch + Holger Weiß for their excellent work and for their very precious advice and opinions about XMPP at large and its future.
+Daniel Gultsch + Holger Weiß for their excellent work and for their very precious advice and opinions about XMPP at large and its future.
 
 Also, anyone involved in the XMPP community.
 
