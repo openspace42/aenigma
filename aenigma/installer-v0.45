@@ -1252,6 +1252,7 @@ sleep 1
 
 echo "${b}Now creating logfile...${x}"
 echo
+mkdir -p /var/log/ejabberd/
 touch /var/log/ejabberd/www_access.log
 echo "${b}Finished creating logfile.${x}"
 echo
