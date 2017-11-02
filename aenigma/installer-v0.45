@@ -1111,7 +1111,7 @@ sleep 1
 
 echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
-ee site update $hostname  --le || true
+ee site update $hostname  --le --experimental || true
 echo
 echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
@@ -1157,7 +1157,7 @@ then
 
 	echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
-	ee site update $domain  --le || true
+	ee site update $domain  --le --experimental || true
 	echo
 	echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
