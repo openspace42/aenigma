@@ -1236,23 +1236,6 @@ echo "${b}Finished creating ejabberd directory and setting custom aenigma config
 echo
 sleep 1
 
-echo "${b}Now installing SSLH...${x}"
-echo
-sshport="$(cat /root/os-dfbs/ssh-port)"
-apt-get -y install sslh
-if [ $ipv6avail = "y" ]
-then
-	sed -i "s|thisipv4|${thisipv4}:443 -p ${thisipv6}|g" $sourcedir/conf/sslh/sslh
-else
-	sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
-fi
-sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
-cp $sourcedir/conf/sslh/sslh /etc/default/sslh
-service sslh start
-echo
-echo "${b}Finished installing SSLH.${x}"
-echo
-
 echo "${b}Now creating uploads directory...${x}"
 echo
 mkdir -p /etc/ejabberd/uploads/
@@ -1284,6 +1267,23 @@ chmod -R 755 /var/www/ejabberd/
 echo "${b}Finished securing permissions.${x}"
 echo
 sleep 1
+
+echo "${b}Now installing SSLH...${x}"
+echo
+sshport="$(cat /root/os-dfbs/ssh-port)"
+apt-get -y install sslh
+if [ $ipv6avail = "y" ]
+then
+	sed -i "s|thisipv4|${thisipv4}:443 -p ${thisipv6}|g" $sourcedir/conf/sslh/sslh
+else
+	sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
+fi
+sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
+cp $sourcedir/conf/sslh/sslh /etc/default/sslh
+service sslh start
+echo
+echo "${b}Finished installing SSLH.${x}"
+echo
 
 echo "${b}Now installing ejabberd...${x}"
 echo
