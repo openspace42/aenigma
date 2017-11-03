@@ -929,6 +929,7 @@ do
 			[xi]="xi."
 			[xp]="xp."
 			[xu]="xu."
+			[wu]="www.xu."
 		)
 	elif [ $dnstype = "SRV" ]
 	then
@@ -1134,6 +1135,43 @@ echo "${b}Finished setting index.html in docroot for $hostname.${x}"
 echo
 sleep 1
 
+
+
+echo "${b}Now creating easyengine site for xu.$domain, generating its TLS certificate, and installing it...${x}"
+echo
+ee site create xu.$domain || true
+echo
+echo "${b}Finished creating easyengine site for xu.$domain.${x}"
+echo
+sleep 1
+
+echo "${b}Now setting custom nginx config for xu.$domain...${x}"
+echo
+sed -i "s/example.im/xu.${domain}/g" $sourcedir/conf/nginx/xu.conf
+cp $sourcedir/conf/nginx/xu.conf /etc/nginx/sites-available/xu.$domain
+service nginx reload
+echo "${b}Finished setting custom nginx config for xu.$domain.${x}"
+echo
+sleep 1
+
+echo "${b}Now updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
+echo
+ee site update xu.$domain  --le --experimental || true
+echo
+echo "${b}Finished updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
+echo
+
+echo "${b}Now creating all-in-one TLS file for xu.$domain for ejabberd...${x}"
+echo
+touch $tlsdir/xu.pem
+cat /etc/letsencrypt/live/xu.$domain/privkey.pem > $tlsdir/xu.pem
+cat /etc/letsencrypt/live/xu.$domain/fullchain.pem >> $tlsdir/xu.pem
+echo "${b}Finished creating all-in-one TLS file for xu.$domain for ejabberd.${x}"
+echo
+sleep 1
+
+
+
 if [ $addTLSmode = "here" ]
 then
 
@@ -1164,20 +1202,6 @@ then
 	echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site...${x}"
-	echo
-	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
-	cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
-	echo "${b}Finished adding IPv6 support to the HTTPS version of the $domain site...${x}"
-	echo
-
-	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
-	echo
-	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
-	cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
-	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
-	echo
-
 	echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
 	echo
 	touch $tlsdir/domain.pem
@@ -1194,6 +1218,20 @@ then
 	echo "${b}Finished setting index.html in docroot for $domain.${x}"
 	echo
 	sleep 1
+
+	echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site...${x}"
+	echo
+	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
+	cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
+	echo "${b}Finished adding IPv6 support to the HTTPS version of the $domain site...${x}"
+	echo
+
+	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
+	echo
+	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
+	cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
+	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
+	echo
 
 fi
 
@@ -1213,7 +1251,23 @@ cp $sourcedir/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-$ho
 echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
 echo
 
+echo "${b}Now adding IPv6 support to the HTTPS version of the xu.$domain site...${x}"
+echo
+sed -i "s/example.im/xu.${domain}/g" $sourcedir/conf/nginx/ssl-xu.conf
+cp $sourcedir/conf/nginx/ssl-xu.conf /var/www/xu.$domain/conf/nginx/ssl.conf
+echo "${b}Finished adding IPv6 support to the HTTPS version of the xu.$domain site...${x}"
+echo
+
+echo "${b}Now adding IPv6 support to the HTTPS redirect for the xu.$domain site...${x}"
+echo
+sed -i "s/example.im/xu.${domain}/g" $sourcedir/conf/nginx/force-ssl-xu.conf
+cp $sourcedir/conf/nginx/force-ssl-xu.conf /etc/nginx/conf.d/force-ssl-xu.$domain.conf
+echo "${b}Finished adding IPv6 support to the HTTPS redirect for the xu.$domain site...${x}"
+echo
+
 service nginx restart
+
+
 
 echo "${b}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x}"
 echo
