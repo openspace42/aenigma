@@ -30,6 +30,7 @@ hosts:
 define_macro:
 
   'CERTFILE': "/etc/ssl/aenigma/hostname.pem"
+  'XUCERTFILE': "/etc/ssl/aenigma/xu.pem"
   'DHFILE': "/etc/ssl/aenigma/dh.pem"
   'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
   'S2SCIPHERS': "HIGH:!MEDIUM:!LOW:!3DES:!CAMELLIA:!aNULL@STRENGTH"
@@ -127,7 +128,7 @@ listen:
    request_handlers:
      "": mod_http_upload
    tls: true
-   certfile: 'CERTFILE'
+   certfile: 'XUCERTFILE'
    protocol_options: 'TLSOPTS'
    dhfile: 'DHFILE'
    ciphers: 'CIPHERS'

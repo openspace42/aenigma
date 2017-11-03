@@ -1285,10 +1285,10 @@ sed -i "s|pathtofile|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsad
 sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
 sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $sourcedir/conf/ejabberd/ejabberd.yml
 fi
-sed -i "s|example.im|xu.${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-sed -i "s|pathtofile|${tlsdir}/xu.pem|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-sed -i '/## aenigma_host_config_xu_placeholder_start:/,/## aenigma_host_config_xu_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
-sed -i "/## aenigma_host_config_xu_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt" $sourcedir/conf/ejabberd/ejabberd.yml
+#sed -i "s|example.im|xu.${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
+#sed -i "s|pathtofile|${tlsdir}/xu.pem|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
+#sed -i '/## aenigma_host_config_xu_placeholder_start:/,/## aenigma_host_config_xu_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
+#sed -i "/## aenigma_host_config_xu_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt" $sourcedir/conf/ejabberd/ejabberd.yml
 cp $sourcedir/conf/ejabberd/ejabberd.yml /etc/ejabberd/ejabberd.yml
 echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
 echo
