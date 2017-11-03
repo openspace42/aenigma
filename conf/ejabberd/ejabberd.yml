@@ -42,7 +42,7 @@ define_macro:
   'S2STLSOPTS':
     - "no_sslv3"
     - "cipher_server_preference"
-    - "no_compression"    
+    - "no_compression"
 
 listen:
   -
@@ -146,8 +146,11 @@ s2s_ciphers: 'S2SCIPHERS'
 ##   "example.com":
 ##     domain_certfile: "/path/to/example_com.pem"
 
-## aenigma_host_config_placeholder_start:
-## aenigma_host_config_placeholder_end:
+## aenigma_host_config_domain_placeholder_start:
+## aenigma_host_config_domain_placeholder_end:
+
+## aenigma_host_config_xu_placeholder_start:
+## aenigma_host_config_xu_placeholder_end:
 
 ## s2s_access: s2s
 
@@ -384,7 +387,7 @@ modules:
   mod_http_upload_quota:
     max_days: 30
   mod_last: {}
-  mod_mix: {}  
+  mod_mix: {}
   mod_muc:
     host: "xc.@HOST@"
     access:
@@ -419,7 +422,7 @@ modules:
       max_items: 1000
     plugins:
       - "flat"
-      - "hometree"      
+      - "hometree"
       - "pep" # pep requires mod_caps
   mod_register:
     ## captcha_protected: true
