@@ -1,0 +1,26 @@
+verbose: false;
+foreground: false;
+inetd: false;
+numeric: false;
+transparent: false;
+timeout: 2;
+user: "nobody";
+pidfile: "/var/run/sslh/sslh.pid";
+
+# syslog_facility: "auth";
+
+listen:
+(
+    { host: 'thisipv4';       port: '443'; }
+);
+
+protocols:  
+(
+    { name: "ssh"; service: "ssh"; host: "localhost"; port: "sshport"; keepalive: true; },
+    { name: "tls"; host: "localhost"; port: "5223"; alpn_protocols: [ "xmpp-client" ]; log_level: 0; },
+    { name: "tls"; host: "localhost"; port: "443"; },
+    { name: "xmpp"; host: "localhost"; port: "5222"; },
+    { name: "timeout"; host: "localhost"; port: "443"; }
+);
+ 
+on-timeout: "timeout";
