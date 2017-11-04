@@ -62,6 +62,20 @@ listen:
     access: c2s
     resend_on_timeout: if_offline
   -
+    port: 5223
+    ip: "::"
+    module: ejabberd_c2s
+    certfile: 'CERTFILE'
+    protocol_options: 'TLSOPTS'
+    dhfile: 'DHFILE'
+    ciphers: 'CIPHERS'
+    tls: true
+    zlib: true
+    max_stanza_size: 65536
+    shaper: c2s_shaper
+    access: c2s
+    resend_on_timeout: if_offline
+  -
     port: 5269
     ip: "::"
     module: ejabberd_s2s_in
