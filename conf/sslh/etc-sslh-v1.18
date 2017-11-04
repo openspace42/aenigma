@@ -9,10 +9,13 @@ pidfile: "/var/run/sslh/sslh.pid";
 
 # syslog_facility: "auth";
 
+## aenigma_listen_placeholder_start
 listen:
 (
     { host: 'thisipv4';       port: '443'; }
+    { host: 'thisipv6';       port: '443'; }
 );
+## aenigma_listen_placeholder_end
 
 protocols:  
 (
