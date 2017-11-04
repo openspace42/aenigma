@@ -11,7 +11,7 @@ pidfile: "/var/run/sslh/sslh.pid";
 
 listen:
 (
-    { host: 'hostname';       port: '443'; }
+    { host: "hostname";       port: "443"; }
 );
 
 protocols:  
