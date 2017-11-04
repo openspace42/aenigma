@@ -1330,11 +1330,14 @@ sshport="$(cat /root/os-dfbs/ssh-port)"
 #service sslh start
 #echo
 apt-get -y install libwrap0-dev libconfig8-dev
+rm -r sslh
 git clone https://github.com/yrutschle/sslh
 ( cd sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
 cp $sourcedir/conf/sslh/etc-default-sslh-v1.18 /etc/default/sslh
+rm -r sslh
 mkdir -p /etc/sslh/
 sed -i "s|hostname|${hostname}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 cp $sourcedir/conf/sslh/etc-sslh-v1.18 /etc/sslh/sslh.cfg
 service sslh restart
 echo
