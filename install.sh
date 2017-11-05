@@ -4,9 +4,16 @@ basedir=/root/openspace42 # Don't change! | No trailing slash!
 installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 
+r=`tput setaf 1`
+g=`tput setaf 2`
+x=`tput sgr0`
+b=`tput bold`
+
 # Detect old installation dir and move to new location
 if [ -d "/root/os-aenigma" ]
 then
+	echo "${b}Detected old installation directory '/root/os-aenigma/'. Moving to new location: | $installdir/ |${x}"
+	echo
 	mkdir -p $configdir
 	mv /root/os-aenigma/* $configdir/
 	rm -r /root/os-aenigma/
@@ -22,11 +29,6 @@ then
 else
 	beta=n
 fi
-
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
 
 echo
 

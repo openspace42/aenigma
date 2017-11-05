@@ -1323,7 +1323,7 @@ echo "${b}Now installing SSLH...${x}"
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
 apt-get -y install libwrap0-dev libconfig8-dev
-rm -r $tmpdir/sslh || true
+rm -r $tmpdir/sslh &> /dev/null || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
 ( cd $tmpdir/sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
 cp $sourcedir/conf/sslh/etc-default-sslh-v1.18 /etc/default/sslh
