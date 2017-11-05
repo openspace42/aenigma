@@ -16,13 +16,14 @@ then
 	echo
 	mkdir -p $configdir
 	mv /root/os-aenigma/* $configdir/
+	mv $configdir/beta $installdir/  &> /dev/null || true
 	rm -r /root/os-aenigma/
 fi
 
 # specify version to be installed in the format "x.y"
 installvers=0.44
 
-if [ -f $configdir/beta ]
+if [ -f $installdir/beta ]
 then
 	installvers=0.45
 	beta=y
@@ -39,7 +40,7 @@ if [ $beta = "y" ]
 then
 	echo "${r}${b}Using beta version v$installvers${x}"
 	echo
-	echo "${b}[delete the | $configdir/beta | file to cancel your opt-in to beta versions]${x}"
+	echo "${b}[delete the | $installdir/beta | file to cancel your opt-in to beta versions]${x}"
 	echo
 fi
 
