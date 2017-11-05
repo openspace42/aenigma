@@ -17,9 +17,10 @@ listen:
 protocols:  
 (
     { name: "ssh"; service: "ssh"; host: "localhost"; port: "sshport"; keepalive: true; },
-    { name: "tls"; host: "localhost"; port: "5223"; alpn_protocols: [ "xmpp-client" ]; log_level: 0; },
-    { name: "tls"; host: "localhost"; port: "443"; },
+    { name: "tls"; host: "localhost"; port: "5223"; alpn_protocols: [ "xmpp-client" ]; },
+    { name: "tls"; host: "localhost"; port: "5444"; sni_hostnames: [ "xu.domain"]; },
     { name: "xmpp"; host: "localhost"; port: "5222"; },
+    { name: "tls"; host: "localhost"; port: "443"; },
     { name: "timeout"; host: "localhost"; port: "443"; }
 );
  
