@@ -8,9 +8,13 @@ echo
 set -e
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
-installdir=/root/os-aenigma # Don't change! | No trailing slash!
+basedir=/root/openspace42 # Don't change! | No trailing slash!
+installdir=$basedir/aenigma # Don't change! | No trailing slash!
+configdir=$installdir/config # Don't change! | No trailing slash!
+toolsdir=$installdir/tools # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
+mkdir -p $basedir
 mkdir -p $tlsdir
 mkdir -p $tmpdir
 
@@ -19,7 +23,14 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-if [ -d $installdir ]
+# Detect old installation dir and move to new location
+if [ -d /root/os-aenigma]
+then
+	mkdir -p $configdir
+	mv /root/os-aenigma $configdir
+fi
+
+if [ -d $configdir ]
 then
 	previnstall=y
 	echo "${g}${b}Found a previous install of aenigma.${x}"
@@ -36,7 +47,7 @@ then
 		skipintro=n
 	fi
 else
-	mkdir -p $installdir
+	mkdir -p $configdir
 	previnstall=n
 	skipintro=n
 fi
@@ -105,9 +116,9 @@ then
 
 fi
 
-if [ -f $installdir/configoption ]
+if [ -f $configdir/configoption ]
 then
-	prevconfigoption="$(cat $installdir/configoption)"
+	prevconfigoption="$(cat $configdir/configoption)"
 	case "$prevconfigoption" in
 	    1|2|3)
 		validprevconfigoption=y
@@ -117,7 +128,7 @@ then
 		;;
 	esac
 else
-	touch $installdir/configoption
+	touch $configdir/configoption
 	validprevconfigoption=n
 fi
 
@@ -148,17 +159,17 @@ then
 	    echo
 	    case $opt in
 		"configuration 1")
-		    echo "1" > $installdir/configoption
+		    echo "1" > $configdir/configoption
 		    configoption=1
 		    break
 		    ;;
 		"configuration 2")
-		    echo "2" > $installdir/configoption
+		    echo "2" > $configdir/configoption
 		    configoption=2
 		    break
 		    ;;
 		"configuration 3")
-		    echo "3" > $installdir/configoption
+		    echo "3" > $configdir/configoption
 		    configoption=3
 		    break
 		    ;;
@@ -174,9 +185,9 @@ then
 	done
 fi
 
-if [ -f $installdir/domain ]
+if [ -f $configdir/domain ]
 then
-	prevdomain="$(cat $installdir/domain)"
+	prevdomain="$(cat $configdir/domain)"
 	changedomainwarning=y
 else
 	prevdomain="nx"
@@ -291,10 +302,10 @@ then
 					esac
 				done
 			done
-			echo $newdomain > $installdir/domain
+			echo $newdomain > $configdir/domain
 			echo "${b}New domain set to | $newdomain |${x}"
 			echo
-			domain="$(cat $installdir/domain)"
+			domain="$(cat $configdir/domain)"
 		else
 			domain=$prevdomain
 			echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
@@ -490,8 +501,8 @@ if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
 	echo "${b}Ok, continuing.${x}"
 	echo
-	touch $installdir/domain
-	echo "$domain" > $installdir/domain
+	touch $configdir/domain
+	echo "$domain" > $configdir/domain
 else
 	echo
 	echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
@@ -610,9 +621,9 @@ then
 	echo "${b}Having chosen config option 1, now it's time to set up the TLS [SSL] certificate that is valid for $domain on this machine.${x}"
 	echo
 
-	if [ -f $installdir/addTLSmode ]
+	if [ -f $configdir/addTLSmode ]
 	then
-		prevaddTLSmode="$(cat $installdir/addTLSmode)"
+		prevaddTLSmode="$(cat $configdir/addTLSmode)"
 		case "$prevaddTLSmode" in
 		    "elsewhere"|"here")
 			validprevaddTLSmode=y
@@ -622,7 +633,7 @@ then
 			;;
 		esac
 	else
-		touch $installdir/addTLSmode
+		touch $configdir/addTLSmode
 		validprevaddTLSmode=n
 	fi
 
@@ -721,7 +732,7 @@ then
 			fi
 
 			addTLSmode="elsewhere"
-			echo "elsewhere" > $installdir/addTLSmode
+			echo "elsewhere" > $configdir/addTLSmode
 
 		else
 
@@ -747,7 +758,7 @@ then
 			echo
 
 			addTLSmode="here"
-			echo "here" > $installdir/addTLSmode
+			echo "here" > $configdir/addTLSmode
 
 		fi
 
@@ -756,9 +767,9 @@ then
 	if [ $addTLSmode = "elsewhere" ]
 	then
 
-		if [ -f $installdir/domtlscertloc ]
+		if [ -f $configdir/domtlscertloc ]
 		then
-			prevdomtlscertloc="$(cat $installdir/domtlscertloc)"
+			prevdomtlscertloc="$(cat $configdir/domtlscertloc)"
 			if [[ -f "$prevdomtlscertloc" && -s "$prevdomtlscertloc" ]]
 			then
 				validprevdomtlscertloc=y
@@ -766,7 +777,7 @@ then
 				validprevdomtlscertloc=n
 			fi
 		else
-			touch $installdir/domtlscertloc
+			touch $configdir/domtlscertloc
 			validprevdomtlscertloc=n
 		fi
 
@@ -849,10 +860,10 @@ then
 					esac
 				done
 			done
-		echo $newdomtlscertloc > $installdir/domtlscertloc
+		echo $newdomtlscertloc > $configdir/domtlscertloc
 		echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc |${x}"
 		echo
-		domtlscertloc="$(cat $installdir/domtlscertloc)"
+		domtlscertloc="$(cat $configdir/domtlscertloc)"
 		fi
 
 	fi
@@ -1386,7 +1397,7 @@ echo
 sleep 1
 clear
 
-if [ -f $installdir/ejabberdadminpwset ]
+if [ -f $configdir/ejabberdadminpwset ]
 then
 	read -p "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1 -r
 	echo
@@ -1403,7 +1414,7 @@ then
 		ejbdadminpwreset=y
 	fi
 else
-	touch $installdir/ejabberdadminpwset
+	touch $configdir/ejabberdadminpwset
 	ejbdadminpwreset=y
 fi
 
