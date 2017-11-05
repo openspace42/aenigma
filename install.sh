@@ -9,6 +9,8 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
+echo
+
 # Detect old installation dir and move to new location
 if [ -d "/root/os-aenigma" ]
 then
@@ -30,8 +32,6 @@ then
 else
 	beta=n
 fi
-
-echo
 
 echo "${b}Initiating installer...${x}"
 echo
