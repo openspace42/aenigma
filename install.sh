@@ -1,11 +1,21 @@
 #!/bin/bash
 
-installdir=/root/os-aenigma # Don't change! | No trailing slash!
+basedir=/root/openspace42 # Don't change! | No trailing slash!
+installdir=$basedir/aenigma # Don't change! | No trailing slash!
+configdir=$installdir/config # Don't change! | No trailing slash!
+
+# Detect old installation dir and move to new location
+if [ -d "/root/os-aenigma" ]
+then
+	mkdir -p $configdir
+	mv /root/os-aenigma/* $configdir/
+	rm -r /root/os-aenigma/
+fi
 
 # specify version to be installed in the format "x.y"
 installvers=0.44
 
-if [ -f $installdir/beta ]
+if [ -f $configdir/beta ]
 then
 	installvers=0.45
 	beta=y
@@ -27,7 +37,7 @@ if [ $beta = "y" ]
 then
 	echo "${r}${b}Using beta version v$installvers${x}"
 	echo
-	echo "${b}[delete the | $installdir/beta | file to cancel your opt-in to beta versions]${x}"
+	echo "${b}[delete the | $configdir/beta | file to cancel your opt-in to beta versions]${x}"
 	echo
 fi
 

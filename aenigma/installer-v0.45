@@ -23,14 +23,6 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-# Detect old installation dir and move to new location
-if [ -d "/root/os-aenigma" ]
-then
-	mkdir -p $configdir
-	mv /root/os-aenigma/* $configdir/
-	rm -r /root/os-aenigma/
-fi
-
 if [ -d $configdir ]
 then
 	previnstall=y
