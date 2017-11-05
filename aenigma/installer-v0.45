@@ -1078,6 +1078,7 @@ echo "${b}Now setting UFW rules...${x}"
 echo
 
 ufw allow 5222
+ufw allow 5223
 ufw allow 5269
 ufw allow 5444
 ufw allow 80
