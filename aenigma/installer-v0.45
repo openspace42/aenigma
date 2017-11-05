@@ -1330,6 +1330,7 @@ cp $sourcedir/conf/sslh/etc-default-sslh-v1.18 /etc/default/sslh
 rm -r $tmpdir/sslh
 mkdir -p /etc/sslh/
 sed -i "s|hostname|${hostname}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+sed -i "s|domain|${domain}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 cp $sourcedir/conf/sslh/etc-sslh-v1.18 /etc/sslh/sslh.cfg
 service sslh restart

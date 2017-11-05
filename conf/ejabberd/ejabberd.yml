@@ -392,7 +392,7 @@ modules:
   mod_http_upload:
     host: "xu.@HOST@"
     docroot: "@HOME@/uploads"
-    put_url: "https://xu.@HOST@:5444"
+    put_url: "https://xu.@HOST@:443"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
     max_size: 262144000
     file_mode: "0640"
