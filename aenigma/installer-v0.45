@@ -1237,7 +1237,7 @@ then
 
 fi
 
-### only add IPv6 to hostname site after LE TLS cert has been provisioned for domain otherwise .well-known check will fail due to wrong webroot
+### only add IPv6 to hostname site after LE TLS cert has been provisioned for all sites otherwise .well-known check will fail due to wrong webroot
 
 echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 echo
@@ -1279,9 +1279,6 @@ sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 sed -i "s/hostname.im/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
 if [ $configoption = 1 ]
 then
-### [old] direct main cert substitution
-# sed -i "s|${tlsdir}/hostname.pem|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd.yml
-### [new] append ${domtlscertloc} in host_config
 sed -i "s|example.im|${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
 sed -i "s|pathtofile|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
 sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
@@ -1320,17 +1317,6 @@ echo
 echo "${b}Now installing SSLH...${x}"
 echo
 sshport="$(cat /root/os-dfbs/ssh-port)"
-#apt-get -y install sslh
-#if [ $ipv6avail = "y" ]
-#then
-#	sed -i "s|thisipv4|${thisipv4}:443 -p ${thisipv6}|g" $sourcedir/conf/sslh/sslh
-#else
-#	sed -i "s|thisipv4|${thisipv4}|g" $sourcedir/conf/sslh/sslh
-#fi
-#sed -i "s|sshport|${sshport}|g" $sourcedir/conf/sslh/sslh
-#cp $sourcedir/conf/sslh/sslh /etc/default/sslh
-#service sslh start
-#echo
 apt-get -y install libwrap0-dev libconfig8-dev
 rm -r $tmpdir/sslh || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
