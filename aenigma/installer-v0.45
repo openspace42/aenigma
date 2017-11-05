@@ -12,7 +12,7 @@ installdir=/root/os-aenigma # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 mkdir -p $tlsdir
-mkdir $tmpdir
+mkdir -p $tmpdir
 
 r=`tput setaf 1`
 g=`tput setaf 2`
@@ -1332,7 +1332,7 @@ sshport="$(cat /root/os-dfbs/ssh-port)"
 #service sslh start
 #echo
 apt-get -y install libwrap0-dev libconfig8-dev
-rm -r $tmpdir/sslh
+rm -r $tmpdir/sslh || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
 ( cd $tmpdir/sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
 cp $sourcedir/conf/sslh/etc-default-sslh-v1.18 /etc/default/sslh
