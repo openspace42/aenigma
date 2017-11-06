@@ -1298,6 +1298,13 @@ echo "${b}Finished creating ejabberd directory and setting custom aenigma config
 echo
 sleep 1
 
+echo "${b}Now creating backups directory...${x}"
+echo
+mkdir -p /etc/ejabberd/backups/
+echo "${b}Finished creating backups directory.${x}"
+echo
+sleep 1
+
 echo "${b}Now creating uploads directory...${x}"
 echo
 mkdir -p /etc/ejabberd/uploads/
@@ -1317,6 +1324,21 @@ echo
 mkdir -p /var/log/ejabberd/
 touch /var/log/ejabberd/www_access.log
 echo "${b}Finished creating logfile.${x}"
+echo
+
+echo "${b}Now copying tools directory...${x}"
+echo
+cp -r $sourcedir/tools/ $toolsdir
+echo "${b}Finished copying tools directory.${x}"
+echo
+
+echo "${b}Now adding backup script to daily crontab...${x}"
+echo
+touch /etc/cron.daily/aenigma-backup
+echo -e '#!/bin/bash' > /etc/cron.daily/aenigma-backup
+echo >> /etc/cron.daily/aenigma-backup
+echo "/root/openspace42/aenigma/tools/aenigma-backup.sh" >> /etc/cron.daily/aenigma-backup
+echo "${b}Finished adding backup script to daily crontab...${x}"
 echo
 
 echo "${b}Now installing SSLH...${x}"
@@ -1353,12 +1375,19 @@ sleep 1
 
 echo "${b}Now securing permissions...${x}"
 echo
+
 chown -R ejabberd:ejabberd $tlsdir
 chmod -R 700 $tlsdir
+
+chown -R ejabberd:ejabberd /etc/ejabberd/backups/
+chmod -R 755 /etc/ejabberd/backups/
+
 chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
 chmod -R 755 /etc/ejabberd/uploads/
+
 chown -R ejabberd:ejabberd /var/www/ejabberd/
 chmod -R 755 /var/www/ejabberd/
+
 echo "${b}Finished securing permissions.${x}"
 echo
 sleep 1
