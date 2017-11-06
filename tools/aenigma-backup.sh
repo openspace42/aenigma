@@ -20,6 +20,5 @@ backupsdir=$installdir/backups # Don't change! | No trailing slash!
 
 mkdir -p $backupsdir
 
-backupdate="$(date +"%Y-%m-%d")"
-/usr/sbin/ejabberdctl backup /tmp/ejabberd-backup-$backupdate
-mv /tmp/ejabberd-backup-$backupdate $backupsdir/
+/usr/sbin/ejabberdctl backup /tmp/ejabberd-backup-$now
+mv /tmp/ejabberd-backup-$now $backupsdir/
