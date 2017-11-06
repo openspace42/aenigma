@@ -1330,7 +1330,7 @@ echo
 touch /etc/cron.daily/aenigma-backup
 echo -e '#!/bin/bash' > /etc/cron.daily/aenigma-backup
 echo >> /etc/cron.daily/aenigma-backup
-echo "/root/openspace42/aenigma/tools/aenigma-backup.sh" >> /etc/cron.daily/aenigma-backup
+echo "bash /root/openspace42/aenigma/tools/aenigma-backup" >> /etc/cron.daily/aenigma-backup
 echo "${b}Finished adding backup script to daily crontab...${x}"
 echo
 
