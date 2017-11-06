@@ -1298,13 +1298,6 @@ echo "${b}Finished creating ejabberd directory and setting custom aenigma config
 echo
 sleep 1
 
-echo "${b}Now creating backups directory...${x}"
-echo
-mkdir -p /etc/ejabberd/backups/
-echo "${b}Finished creating backups directory.${x}"
-echo
-sleep 1
-
 echo "${b}Now creating uploads directory...${x}"
 echo
 mkdir -p /etc/ejabberd/uploads/
@@ -1378,9 +1371,6 @@ echo
 
 chown -R ejabberd:ejabberd $tlsdir
 chmod -R 700 $tlsdir
-
-chown -R ejabberd:ejabberd /etc/ejabberd/backups/
-chmod -R 755 /etc/ejabberd/backups/
 
 chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
 chmod -R 755 /etc/ejabberd/uploads/
