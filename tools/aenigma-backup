@@ -17,8 +17,18 @@ exec 2> >(tee -ia $logfile >&2)                           # Log the other output
 basedir=/root/openspace42 # Don't change! | No trailing slash!
 installdir=$basedir/aenigma # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
+tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
 mkdir -p $backupsdir
+mkdir -p $tmpdir
+backupname=aenigma-backup-$now
+tmpbackupdir=$tmpdir/$backupname
+mkdir -p $tmpbackupdir
 
-/usr/sbin/ejabberdctl backup /tmp/ejabberd-backup-$now
-mv /tmp/ejabberd-backup-$now $backupsdir/
+/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
+mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
+cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
+cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
+cd $tmpdir
+tar -cvjSf $backupsdir/$backupname.tar.bz2 $backupname
+rm -r $tmpbackupdir
