@@ -1321,7 +1321,8 @@ echo
 
 echo "${b}Now copying tools directory...${x}"
 echo
-cp -r $sourcedir/tools/ $toolsdir/
+mkdir -p $toolsdir
+cp -r $sourcedir/tools/* $toolsdir/
 echo "${b}Finished copying tools directory.${x}"
 echo
 
