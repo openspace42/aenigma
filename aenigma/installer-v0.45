@@ -2,7 +2,11 @@
 
 echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
-echo "aenigma v0.45"
+
+filename=`basename "$0"`
+currvers="$(echo $filename | tr -d 'installer\-v')"
+
+echo "aenigma v$currvers"
 echo
 
 set -e
@@ -43,6 +47,26 @@ else
 	mkdir -p $configdir
 	previnstall=n
 	skipintro=n
+fi
+
+if [ -f $configdir/installedvers ]
+then
+	prevvers="$(cat $configdir/installedvers)"
+	if (( $(echo "$currvers < $prevvers" | bc -l) ))
+	then
+        	echo "${r}${b}You have previously installed a newer version of aenigma.${x}"
+		echo
+		echo "${b}You likely recently opted out of beta versions. If so, please re-enable beta versions until the next version's stable release.${x}"
+		echo
+		echo "${b}Exiting...${x}"
+		echo
+		exit
+	else
+		echo $currvers > $configdir/installedvers
+	fi
+else
+	touch $configdir/installedvers
+	echo $currvers > $configdir/installedvers
 fi
 
 if [ $skipintro = "n" ]
