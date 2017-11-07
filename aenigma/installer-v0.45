@@ -1,5 +1,10 @@
 #!/bin/bash
 
+r=`tput setaf 1`
+g=`tput setaf 2`
+x=`tput sgr0`
+b=`tput bold`
+
 echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
 
@@ -21,11 +26,6 @@ tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 mkdir -p $basedir
 mkdir -p $tlsdir
 mkdir -p $tmpdir
-
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
 
 if [ -d $configdir ]
 then
