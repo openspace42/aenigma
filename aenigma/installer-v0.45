@@ -1106,11 +1106,13 @@ then
 
 	echo "${b}Your S3 backups encryption passphrase is:${x}"
 	echo
-	echo "${b} | $backupspw |${x}"
+	echo "${g}${b} | $backupspw |${x}"
 	echo
 	echo "${b}Make sure you keep it saved in a safe location OUTSIDE of this machine and NOT on the S3 file storage server.${x}"
 	echo
-	echo "${b}You will NOT be able to restore ANY backup without this passphrase.${x}"
+	echo "${r}${b}You will NOT be able to restore ANY backup without this passphrase.${x}"
+	echo
+	echo "${b}This is your only chance to save this passphrase. If you don't do it now and this machine's data is lost, so will be your backups.${x}"
 	echo
 	read -p "${b}[press enter to continue reading...]${x}"
 	clear
