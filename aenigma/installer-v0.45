@@ -11,7 +11,7 @@ echo
 filename=`basename "$0"`
 currvers="$(echo $filename | tr -d 'installer\-v')"
 
-echo "aenigma v$currvers"
+echo "${b}aenigma v$currvers${x}"
 echo
 
 set -e
@@ -938,21 +938,28 @@ then
 	then
 		echo "${b}Ok, using S3 as backup type.${x}"
 		echo
-		backuptype=s3
-		echo "s3" > $configdir/backuptype
 		read -p "${b}Do you have an S3 file storage server already set up? (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
 			echo "${b}Ok, so let's set up your S3 file storage server settings now.${x}"
 			echo
+			backuptype=s3
+			echo "s3" > $configdir/backuptype
 		else
 			echo "${b}No problem, follow this guide [link will be published here when ready] to configure your S3 file storage server.${x}"
 			echo
+			echo "${b}Keeping backups local for now [simply re-run this installation when you're ready to upgrade your backups to S3 enabled].${x}"
+			echo
+			backuptype=local
+			echo "local" > $configdir/backuptype
 		fi
 	else
 		echo "${b}Ok, keeping backups local. Remember to periodically copy your backups from $backupsdir over to another machine!${x}"
 		echo
+		backuptype=local
+		echo "local" > $configdir/backuptype
+		sleep 3
 	fi
 fi
 
