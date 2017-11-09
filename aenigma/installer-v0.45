@@ -694,7 +694,7 @@ fi
 
 if [ $backuptype = "s3" ]
 then
-	mkdir $configdir/s3/
+	mkdir -p $configdir/s3/
 
 	declare -A s3array=(
 		[awsaki]="AWS Access Key ID"
@@ -779,6 +779,44 @@ then
 			echo $news3var > $configdir/s3/$i
 		fi
 	done
+
+	echo "----------------"
+	echo
+	echo "${b}To make sure everything is correct:${x}"
+	echo
+	echo "1] Your ${b}AWS Access Key ID${x} will be:"
+	echo
+	echo "${b} | $awsaki | ${x}"
+	echo
+	echo "2] Your ${b}AWS Secret Access Key${x} will be:"
+	echo
+	echo "${b} | $awssak | ${x}"
+	echo
+	echo "3] Your ${b}S3 Endpoint URL${x} will be:"
+	echo
+	echo "${b} | $s3endpoint | ${x}"
+	echo
+	echo "4] Your ${b}S3 Bucket Name${x} will be:"
+	echo
+	echo "${b} | $s3bucketname | ${x}"
+	echo
+	echo "----------------"
+	echo
+
+	read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, continuing.${x}"
+		echo
+	else
+		echo
+		echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
+		echo
+		exit
+	fi
+	clear
+
 fi
 
 
