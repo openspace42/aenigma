@@ -21,6 +21,7 @@ basedir=/root/openspace42 # Don't change! | No trailing slash!
 installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 toolsdir=$installdir/tools # Don't change! | No trailing slash!
+backupsdir=$installdir/backups # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 mkdir -p $basedir
@@ -654,6 +655,8 @@ then
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
+		echo "${b}Ok, keeping | $prevbackuptype | as your backup type${x}"
+		echo
 		backuptype=$prevbackuptype
 	else
 		echo
@@ -669,99 +672,113 @@ then
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
+		echo "${b}Ok, using S3 as backup type.${x}"
+		echo
 		backuptype=s3
 		echo "s3" > $configdir/backuptype
 		read -p "${b}Do you have an S3 file storage server already set up? (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-			mkdir $configdir/s3/
-
-			declare -A s3array=(
-				[awsaki]="AWS Access Key ID"
-				[awssak]="AWS Secret Access Key"
-				[s3endpoint]="S3 Endpoint URL"
-				[s3bucketname]="S3 Bucket Name"
-			)
-
-			for i in "${!s3array[@]}"
-			do
-				if [ -f $configdir/s3/$i ]
-				then
-					prevs3var="$(cat $configdir/s3/$i)"
-					echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var |${x}"
-					echo
-					read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
-					echo
-					if [[ ! $REPLY =~ ^[Nn]$ ]]
-					then
-						echo "${b}Ok, keeping | $prevs3var | as your ${s3array[$i]}${x}"
-						echo
-						news3var=$prevs3var
-					else
-						echo
-						news3var=notyetset
-					fi
-				else
-					news3var=notyetset
-				fi
-
-				if [ $news3var = "notyetset" ]
-				then
-					defined=n
-					until [ $defined = "y" ]
-					do
-						news3var=""
-						until [ ! $news3var = "" ]
-						do
-							read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
-							echo
-						done
-						valid=n
-						until [ $valid = "y" ]
-						do
-							read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
-							case $answer in
-							"")
-								echo
-								valid=y
-								defined=y
-								;;
-							y)
-								echo -e "\n"
-								valid=y
-								defined=y
-								;;
-							n)
-								echo -e "\n"
-								echo "${b}Ok, then please try again...${x}"
-								echo
-								valid=y
-								defined=n
-								;;
-							e)
-								echo -e "\n"
-		        					echo "${b}Exiting...${x}"
-		        					echo
-		        					exit
-		        					;;
-							*)
-								echo -e "\n"
-								echo "${r}${b}Invalid option. Retry...${x}"
-		        					echo
-								valid=n
-								defined=n
-			        				;;
-							esac
-						done
-					done
-					echo "${b}${s3array[$i]} set to | $news3var |${x}"
-					echo
-					echo $news3var > $configdir/s3/$i
-				fi
-			done
+			echo "${b}Ok, so let's set up your S3 file storage server settings now.${x}"
+			echo
+		else
+			echo "${b}No problem, follow this guide [link will be published here when ready] to configure your S3 file storage server.${x}"
+			echo
 		fi
+	else
+		echo "${b}Ok, keeping backups local. Remember to periodically copy your backups from $backupsdir over to another machine!${x}"
+		echo
 	fi
+fi
+
+if [ $backuptype = "s3" ]
+then
+	mkdir $configdir/s3/
+
+	declare -A s3array=(
+		[awsaki]="AWS Access Key ID"
+		[awssak]="AWS Secret Access Key"
+		[s3endpoint]="S3 Endpoint URL"
+		[s3bucketname]="S3 Bucket Name"
+	)
+
+	for i in "${!s3array[@]}"
+	do
+		if [ -f $configdir/s3/$i ]
+		then
+			prevs3var="$(cat $configdir/s3/$i)"
+			echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var |${x}"
+			echo
+			read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Nn]$ ]]
+			then
+				echo "${b}Ok, keeping | $prevs3var | as your ${s3array[$i]}${x}"
+				echo
+				news3var=$prevs3var
+			else
+				echo
+				news3var=notyetset
+			fi
+		else
+			news3var=notyetset
+		fi
+
+		if [ $news3var = "notyetset" ]
+		then
+			defined=n
+			until [ $defined = "y" ]
+			do
+				news3var=""
+				until [ ! $news3var = "" ]
+				do
+					read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
+					echo
+				done
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						defined=y
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						defined=y
+						;;
+					n)
+						echo -e "\n"
+						echo "${b}Ok, then please try again...${x}"
+						echo
+						valid=y
+						defined=n
+						;;
+					e)
+						echo -e "\n"
+						echo "${b}Exiting...${x}"
+						echo
+						exit
+						;;
+					*)
+						echo -e "\n"
+						echo "${r}${b}Invalid option. Retry...${x}"
+						echo
+						valid=n
+						defined=n
+						;;
+					esac
+				done
+			done
+			echo "${b}${s3array[$i]} set to | $news3var |${x}"
+			echo
+			echo $news3var > $configdir/s3/$i
+		fi
+	done
 fi
 
 
