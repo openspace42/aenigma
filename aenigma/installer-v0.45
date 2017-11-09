@@ -892,6 +892,9 @@ clear
 
 
 
+echo "${b}Aenigma makes daily backups of this server's ejabberd database and files.${x}"
+echo
+
 if [ -f $configdir/backuptype ]
 then
 	prevbackuptype="$(cat $configdir/backuptype)"
@@ -1081,6 +1084,28 @@ then
 		echo
 		exit
 	fi
+	clear
+
+	if [ ! -f $configdir/backupspw ]
+	then
+		touch $configdir/backupspw
+		chmod 700 $configdir/backupspw
+		generatedpw="$(pwgen 42 1)"
+		echo $generatedpw > $configdir/backupspw
+	else
+		backupspw="$(cat $configdir/backupspw)"
+		chmod 700 $configdir/backupspw # In case someone accidentally modified permissions on $configdir
+	fi
+
+	echo "${b}Your S3 backups encryption passphrase is:${x}"
+	echo
+	echo "${b} | $backupspw |${x}"
+	echo
+	echo "${b}Make sure you keep it saved in a safe location OUTSIDE of this machine and NOT on the S3 file storage server.${x}"
+	echo
+	echo "${b}You will NOT be able to restore ANY backup without this passphrase.${x}"
+	echo
+	read -p "${b}[press enter to continue reading...]${x}"
 	clear
 
 fi
@@ -1531,20 +1556,6 @@ cp -r $sourcedir/tools/* $toolsdir/
 echo "${b}Finished copying tools directory.${x}"
 echo
 
-echo "${b}Now checking / generating duplicity backups encryption passphrase...${x}"
-echo
-if [ ! -f $configdir/backupspw ]
-then
-	touch $configdir/backupspw
-	chmod 700 $configdir/backupspw
-	generatedpw="$(pwgen 42 1)"
-	echo $generatedpw > $configdir/backupspw
-else
-	chmod 700 $configdir/backupspw # In case someone accidentally modified permissions on $configdir
-fi
-echo "${b}Finished checking / generating duplicity backups encryption passphrase.${x}"
-echo
-
 echo "${b}Now adding backup script to daily crontab...${x}"
 echo
 touch /etc/cron.daily/aenigma-backup
@@ -1688,7 +1699,7 @@ else
 	echo
 fi
 
-read -p "[press enter to continue reading...]"
+read -p "${b}[press enter to continue reading...]${x}"
 clear
 
 if [ -f $tlsdir/dh.pem ]
