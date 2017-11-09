@@ -780,6 +780,11 @@ then
 		fi
 	done
 
+	awsaki="$(cat $configdir/s3/awsaki)"
+	awssak="$(cat $configdir/s3/awssak)"
+	s3endpoint="$(cat $configdir/s3/s3endpoint)"
+	s3bucketname="$(cat $configdir/s3/s3bucketname)"
+
 	echo "----------------"
 	echo
 	echo "${b}To make sure everything is correct:${x}"
