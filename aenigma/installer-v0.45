@@ -631,201 +631,6 @@ clear
 
 
 
-if [ -f $configdir/backuptype ]
-then
-	prevbackuptype="$(cat $configdir/backuptype)"
-	case "$prevbackuptype" in
-	    local|s3)
-		validprevbackuptype=y
-		;;
-	    *)
-		validprevbackuptype=n
-		;;
-	esac
-else
-	touch $configdir/backuptype
-	validprevbackuptype=n
-fi
-
-if [ $validprevbackuptype = "y" ]
-then
-	echo "${g}${b}You previously chose backup type | $prevbackuptype |${x}"
-	echo
-	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
-		echo "${b}Ok, keeping | $prevbackuptype | as your backup type${x}"
-		echo
-		backuptype=$prevbackuptype
-	else
-		echo
-		backuptype=notyetset
-	fi
-else
-	backuptype=notyetset
-fi
-
-if [ $backuptype = "notyetset" ]
-then
-	read -p "${b}Do you want your aenigma backups to be uploaded to an S3 file storage server? (Y/n): ${x}" -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
-		echo "${b}Ok, using S3 as backup type.${x}"
-		echo
-		backuptype=s3
-		echo "s3" > $configdir/backuptype
-		read -p "${b}Do you have an S3 file storage server already set up? (Y/n): ${x}" -n 1 -r
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
-		then
-			echo "${b}Ok, so let's set up your S3 file storage server settings now.${x}"
-			echo
-		else
-			echo "${b}No problem, follow this guide [link will be published here when ready] to configure your S3 file storage server.${x}"
-			echo
-		fi
-	else
-		echo "${b}Ok, keeping backups local. Remember to periodically copy your backups from $backupsdir over to another machine!${x}"
-		echo
-	fi
-fi
-
-if [ $backuptype = "s3" ]
-then
-	mkdir -p $configdir/s3/
-
-	declare -A s3array=(
-		[awsaki]="AWS Access Key ID"
-		[awssak]="AWS Secret Access Key"
-		[s3endpoint]="S3 Endpoint URL"
-		[s3bucketname]="S3 Bucket Name"
-	)
-
-	for i in "${!s3array[@]}"
-	do
-		if [ -f $configdir/s3/$i ]
-		then
-			prevs3var="$(cat $configdir/s3/$i)"
-			echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var |${x}"
-			echo
-			read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
-			echo
-			if [[ ! $REPLY =~ ^[Nn]$ ]]
-			then
-				echo "${b}Ok, keeping | $prevs3var | as your ${s3array[$i]}${x}"
-				echo
-				news3var=$prevs3var
-			else
-				echo
-				news3var=notyetset
-			fi
-		else
-			news3var=notyetset
-		fi
-
-		if [ $news3var = "notyetset" ]
-		then
-			defined=n
-			until [ $defined = "y" ]
-			do
-				news3var=""
-				until [ ! $news3var = "" ]
-				do
-					read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
-					echo
-				done
-				valid=n
-				until [ $valid = "y" ]
-				do
-					read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
-					case $answer in
-					"")
-						echo
-						valid=y
-						defined=y
-						;;
-					y)
-						echo -e "\n"
-						valid=y
-						defined=y
-						;;
-					n)
-						echo -e "\n"
-						echo "${b}Ok, then please try again...${x}"
-						echo
-						valid=y
-						defined=n
-						;;
-					e)
-						echo -e "\n"
-						echo "${b}Exiting...${x}"
-						echo
-						exit
-						;;
-					*)
-						echo -e "\n"
-						echo "${r}${b}Invalid option. Retry...${x}"
-						echo
-						valid=n
-						defined=n
-						;;
-					esac
-				done
-			done
-			echo "${b}${s3array[$i]} set to | $news3var |${x}"
-			echo
-			echo $news3var > $configdir/s3/$i
-		fi
-	done
-
-	awsaki="$(cat $configdir/s3/awsaki)"
-	awssak="$(cat $configdir/s3/awssak)"
-	s3endpoint="$(cat $configdir/s3/s3endpoint)"
-	s3bucketname="$(cat $configdir/s3/s3bucketname)"
-
-	echo "----------------"
-	echo
-	echo "${b}To make sure everything is correct:${x}"
-	echo
-	echo "1] Your ${b}AWS Access Key ID${x} will be:"
-	echo
-	echo "${b} | $awsaki | ${x}"
-	echo
-	echo "2] Your ${b}AWS Secret Access Key${x} will be:"
-	echo
-	echo "${b} | $awssak | ${x}"
-	echo
-	echo "3] Your ${b}S3 Endpoint URL${x} will be:"
-	echo
-	echo "${b} | $s3endpoint | ${x}"
-	echo
-	echo "4] Your ${b}S3 Bucket Name${x} will be:"
-	echo
-	echo "${b} | $s3bucketname | ${x}"
-	echo
-	echo "----------------"
-	echo
-
-	read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
-		echo "${b}Ok, continuing.${x}"
-		echo
-	else
-		echo
-		echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
-		echo
-		exit
-	fi
-	clear
-
-fi
-
-
-
 addTLSmode="notset"
 
 if [ $configoption = 1 ]
@@ -1084,6 +889,203 @@ then
 fi
 sleep 1
 clear
+
+
+
+if [ -f $configdir/backuptype ]
+then
+	prevbackuptype="$(cat $configdir/backuptype)"
+	case "$prevbackuptype" in
+	    local|s3)
+		validprevbackuptype=y
+		;;
+	    *)
+		validprevbackuptype=n
+		;;
+	esac
+else
+	touch $configdir/backuptype
+	validprevbackuptype=n
+fi
+
+if [ $validprevbackuptype = "y" ]
+then
+	echo "${g}${b}You previously chose backup type | $prevbackuptype |${x}"
+	echo
+	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, keeping | $prevbackuptype | as your backup type${x}"
+		echo
+		backuptype=$prevbackuptype
+	else
+		echo
+		backuptype=notyetset
+	fi
+else
+	backuptype=notyetset
+fi
+
+if [ $backuptype = "notyetset" ]
+then
+	read -p "${b}Do you want your aenigma backups to be uploaded to an S3 file storage server? (Y/n): ${x}" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, using S3 as backup type.${x}"
+		echo
+		backuptype=s3
+		echo "s3" > $configdir/backuptype
+		read -p "${b}Do you have an S3 file storage server already set up? (Y/n): ${x}" -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			echo "${b}Ok, so let's set up your S3 file storage server settings now.${x}"
+			echo
+		else
+			echo "${b}No problem, follow this guide [link will be published here when ready] to configure your S3 file storage server.${x}"
+			echo
+		fi
+	else
+		echo "${b}Ok, keeping backups local. Remember to periodically copy your backups from $backupsdir over to another machine!${x}"
+		echo
+	fi
+fi
+
+if [ $backuptype = "s3" ]
+then
+	mkdir -p $configdir/s3/
+
+	declare -A s3array=(
+		[awsaki]="AWS Access Key ID"
+		[awssak]="AWS Secret Access Key"
+		[s3endpoint]="S3 Endpoint URL"
+		[s3bucketname]="S3 Bucket Name"
+	)
+
+	for i in "${!s3array[@]}"
+	do
+		if [ -f $configdir/s3/$i ]
+		then
+			prevs3var="$(cat $configdir/s3/$i)"
+			echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var |${x}"
+			echo
+			read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Nn]$ ]]
+			then
+				echo "${b}Ok, keeping | $prevs3var | as your ${s3array[$i]}${x}"
+				echo
+				news3var=$prevs3var
+			else
+				echo
+				news3var=notyetset
+			fi
+		else
+			news3var=notyetset
+		fi
+
+		if [ $news3var = "notyetset" ]
+		then
+			defined=n
+			until [ $defined = "y" ]
+			do
+				news3var=""
+				until [ ! $news3var = "" ]
+				do
+					read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
+					echo
+				done
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						defined=y
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						defined=y
+						;;
+					n)
+						echo -e "\n"
+						echo "${b}Ok, then please try again...${x}"
+						echo
+						valid=y
+						defined=n
+						;;
+					e)
+						echo -e "\n"
+						echo "${b}Exiting...${x}"
+						echo
+						exit
+						;;
+					*)
+						echo -e "\n"
+						echo "${r}${b}Invalid option. Retry...${x}"
+						echo
+						valid=n
+						defined=n
+						;;
+					esac
+				done
+			done
+			echo "${b}${s3array[$i]} set to | $news3var |${x}"
+			echo
+			echo $news3var > $configdir/s3/$i
+		fi
+	done
+
+	awsaki="$(cat $configdir/s3/awsaki)"
+	awssak="$(cat $configdir/s3/awssak)"
+	s3endpoint="$(cat $configdir/s3/s3endpoint)"
+	s3bucketname="$(cat $configdir/s3/s3bucketname)"
+
+	echo "----------------"
+	echo
+	echo "${b}To make sure everything is correct:${x}"
+	echo
+	echo "1] Your ${b}AWS Access Key ID${x} will be:"
+	echo
+	echo "${b} | $awsaki | ${x}"
+	echo
+	echo "2] Your ${b}AWS Secret Access Key${x} will be:"
+	echo
+	echo "${b} | $awssak | ${x}"
+	echo
+	echo "3] Your ${b}S3 Endpoint URL${x} will be:"
+	echo
+	echo "${b} | $s3endpoint | ${x}"
+	echo
+	echo "4] Your ${b}S3 Bucket Name${x} will be:"
+	echo
+	echo "${b} | $s3bucketname | ${x}"
+	echo
+	echo "----------------"
+	echo
+
+	read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, continuing.${x}"
+		echo
+	else
+		echo
+		echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
+		echo
+		exit
+	fi
+	clear
+
+fi
+
+
 
 if [ $addTLSmode = "here" ]
 then
