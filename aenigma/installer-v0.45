@@ -5,7 +5,7 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-echo "${g}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
+echo "${g}${b}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
 
 filename=`basename "$0"`
@@ -686,56 +686,79 @@ then
 
 			for i in "${!s3array[@]}"
 			do
-				defined=n
-				until [ $defined = "y" ]
-				do
-					news3var=""
-					until [ ! $news3var = "" ]
-					do
-						read -p "${b}Now set your ${s3array[$i]}${x}" news3var
+				if [ -f $configdir/s3/$i ]
+				then
+					prevs3var="$(cat $configdir/s3/$i)"
+					echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var |${x}"
+					echo
+					read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
+					echo
+					if [[ ! $REPLY =~ ^[Nn]$ ]]
+					then
+						echo "${b}Ok, keeping | $prevs3var | as your ${s3array[$i]}${x}"
 						echo
-					done
-					valid=n
-					until [ $valid = "y" ]
+						news3var=$prevs3var
+					else
+						echo
+						news3var=notyetset
+					fi
+				else
+					news3var=notyetset
+				fi
+
+				if [ $news3var = "notyetset" ]
+				then
+					defined=n
+					until [ $defined = "y" ]
 					do
-						read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
-						case $answer in
-						"")
+						news3var=""
+						until [ ! $news3var = "" ]
+						do
+							read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
 							echo
-							valid=y
-							defined=y
-							;;
-						y)
-							echo -e "\n"
-							valid=y
-							defined=y
-							;;
-						n)
-							echo -e "\n"
-							echo "${b}Ok, then please try again...${x}"
-							echo
-							valid=y
-							defined=n
-							;;
-						e)
-							echo -e "\n"
-		        				echo "${b}Exiting...${x}"
-		        				echo
-		        				exit
-		        				;;
-						*)
-							echo -e "\n"
-							echo "${r}${b}Invalid option. Retry...${x}"
-		        				echo
-							valid=n
-							defined=n
-			        			;;
-						esac
+						done
+						valid=n
+						until [ $valid = "y" ]
+						do
+							read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
+							case $answer in
+							"")
+								echo
+								valid=y
+								defined=y
+								;;
+							y)
+								echo -e "\n"
+								valid=y
+								defined=y
+								;;
+							n)
+								echo -e "\n"
+								echo "${b}Ok, then please try again...${x}"
+								echo
+								valid=y
+								defined=n
+								;;
+							e)
+								echo -e "\n"
+		        					echo "${b}Exiting...${x}"
+		        					echo
+		        					exit
+		        					;;
+							*)
+								echo -e "\n"
+								echo "${r}${b}Invalid option. Retry...${x}"
+		        					echo
+								valid=n
+								defined=n
+			        				;;
+							esac
+						done
 					done
-				done
-				echo $news3var > $configdir/s3/$i
-				echo "${b}${s3array[$i]} set to | $news3var |${x}"
-				echo
+					echo "${b}${s3array[$i]} set to | $news3var |${x}"
+					echo
+					echo $news3var > $configdir/s3/$i
+				fi
 			done
 		fi
 	fi
