@@ -78,6 +78,8 @@ fi
 
 ### Alert for previous incomplete install [only from v0.46 onward, since the complete installation signaling was implemented in v0.45]
 
+incompleteinstall=n
+
 if [ -n $prevvers ]
 then
 	if (( $(echo "$prevvers > 0.45" | bc -l) ))
@@ -90,13 +92,9 @@ then
 			if [ $lastcompleteinstallvers != $prevvers ]
 			then
 				incompleteinstall=y
-			else
-				incompleteinstall=n
 			fi
 		fi
 	fi
-else
-	incompleteinstall=n
 fi
 
 if [ $incompleteinstall = "y" ]
