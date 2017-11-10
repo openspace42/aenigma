@@ -28,6 +28,8 @@ mkdir -p $basedir
 mkdir -p $tlsdir
 mkdir -p $tmpdir
 
+
+
 if [ -d $configdir ]
 then
 	previnstall=y
@@ -50,6 +52,8 @@ else
 	skipintro=n
 fi
 
+
+
 if [ -f $configdir/installedvers ]
 then
 	prevvers="$(cat $configdir/installedvers)"
@@ -69,6 +73,45 @@ else
 	touch $configdir/installedvers
 	echo $currvers > $configdir/installedvers
 fi
+
+
+
+### Alert for previous incomplete install [only from version 0.45, which signals for a complete installation at the end of this script]
+
+if [ -n $prevvers ]
+then
+	if (( $(echo "$prevvers > 0.44" | bc -l) ))
+	then
+		if [ ! -f $configdir/installcomplete ]
+		then
+			incompleteinstall=y
+		else
+			lastcompleteinstallvers="$(cat $configdir/installcomplete)"
+			if [ $lastcompleteinstallvers -ne $prevvers ]
+			then
+				incompleteinstall=y
+			else
+				incompleteinstall=n
+			fi
+		fi
+	fi
+fi
+
+if [ $incompleteinstall = "y" ]
+then
+	echo "${r}${b}It appears you have a previous incomplete installation of aenigma.${x}"
+	echo
+	echo "${b}Either you intentionally aborted the install or the script got somehow terminated before it finished.${x}"
+	echo
+	echo "${b}It is possible something unforseen might go wrong during this install. If so, simply file an issue report at:${x}"
+	echo
+	echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+	echo
+	echo "${b}Thank you in advance!${x}"
+	echo
+fi
+
+
 
 if [ $skipintro = "n" ]
 then
@@ -1859,6 +1902,8 @@ echo "${b}Finished removing installer directory...${x}"
 echo
 
 rm -r aenigma/
+touch $configdir/installcomplete
+echo $currvers > $configdir/installcomplete
 
 echo "${g}${b}aenigma installation complete!${x}"
 echo
