@@ -134,6 +134,8 @@ then
 
 fi
 
+
+
 if [ -f $configdir/configoption ]
 then
 	prevconfigoption="$(cat $configdir/configoption)"
@@ -202,6 +204,8 @@ then
 	    esac
 	done
 fi
+
+
 
 if [ -f $configdir/domain ]
 then
@@ -340,6 +344,8 @@ else
 	echo
 
 fi
+
+
 
 currhostname="$(cat /etc/hostname)"
 
@@ -490,6 +496,8 @@ else
 fi
 clear
 
+
+
 echo "----------------"
 echo
 echo "${b}To make sure everything is correct:${x}"
@@ -528,6 +536,100 @@ else
 	exit
 fi
 clear
+
+
+
+echo "${b}Aenigma send you email notifications for any runtime errors or failures.${x}"
+echo
+
+if [ -f $configdir/adminmail ]
+then
+	prevadminmail="$(cat $configdir/adminmail)"
+
+	### Perform any future email address validation here and return validprevadminmail=[y/n].
+	### Now defaulting to y.
+
+	validprevadminmail=y
+else
+	touch $configdir/adminmail
+	validprevadminmail=n
+fi
+
+if [ $validprevadminmail = "y" ]
+then
+	echo "${g}${b}You previously set your admin email address to be: | $prevadminmail |${x}"
+	echo
+	read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, keeping | $prevadminmail | as your admin email address.${x}"
+		echo
+		adminmail=$prevadminmail
+	else
+		echo
+		adminmail=notyetset
+	fi
+else
+	adminmail=notyetset
+fi
+
+if [ $adminmail = "notyetset" ]
+then
+	defined=n
+	until [ $defined = "y" ]
+	do
+		newadminmail=""
+		until [ ! $newadminmail = "" ]
+		do
+			read -p "${b}Now set your admin email address: ${x}" newadminmail
+			echo
+		done
+		valid=n
+		until [ $valid = "y" ]
+		do
+			read -n 1 -p "${b}Is | $newadminmail | correct? (Y/n/e[xit]) ${x}" answer;
+			case $answer in
+			"")
+				echo
+				valid=y
+				defined=y
+				;;
+			y)
+				echo -e "\n"
+				valid=y
+				defined=y
+				;;
+			n)
+				echo -e "\n"
+				echo "${b}Ok, then please try again...${x}"
+				echo
+				valid=y
+				defined=n
+				;;
+			e)
+				echo -e "\n"
+				echo "${b}Exiting...${x}"
+				echo
+				exit
+				;;
+			*)
+				echo -e "\n"
+				echo "${r}${b}Invalid option. Retry...${x}"
+				echo
+				valid=n
+				defined=n
+				;;
+			esac
+		done
+	done
+	echo $newadminmail > $configdir/adminmail
+	echo "${b}New admin email address set to | $newadminmail |${x}"
+	echo
+	adminmail="$(cat $configdir/adminmail)"
+fi
+
+
 
 echo "${b}Is this server reachable [or intended to be reachable] from the public internet?${x}"
 echo
