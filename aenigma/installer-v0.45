@@ -76,11 +76,11 @@ fi
 
 
 
-### Alert for previous incomplete install [only from version 0.45, which signals for a complete installation at the end of this script]
+### Alert for previous incomplete install [only from v0.46 onward, since the complete installation signaling was implemented in v0.45]
 
 if [ -n $prevvers ]
 then
-	if (( $(echo "$prevvers > 0.44" | bc -l) ))
+	if (( $(echo "$prevvers > 0.45" | bc -l) ))
 	then
 		if [ ! -f $configdir/installcomplete ]
 		then
