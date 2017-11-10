@@ -95,6 +95,8 @@ then
 			fi
 		fi
 	fi
+else
+	incompleteinstall=n
 fi
 
 if [ $incompleteinstall = "y" ]
