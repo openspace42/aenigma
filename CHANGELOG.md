@@ -7,4 +7,6 @@
 3. Added c2s listener on port 5223
 4. Added LetsEncrypt TLS certificate generation for xu.$domain
 5. Tunneled HTTP Uploads via SSLH on port 443 [at least until a better solution]
-6. New "tools" directory with ejabberd backup/restore script
+6. New "tools" directory with automated ejabberd backup/restore script with S3 options
+7. Added admin email address setting for error notifications [backup failures, etc...]
+8. Added incomplete install checker

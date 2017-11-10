@@ -87,7 +87,7 @@ then
 			incompleteinstall=y
 		else
 			lastcompleteinstallvers="$(cat $configdir/installcomplete)"
-			if [ $lastcompleteinstallvers -ne $prevvers ]
+			if [ $lastcompleteinstallvers != $prevvers ]
 			then
 				incompleteinstall=y
 			else
@@ -99,16 +99,19 @@ fi
 
 if [ $incompleteinstall = "y" ]
 then
+	clear
 	echo "${r}${b}It appears you have a previous incomplete installation of aenigma.${x}"
 	echo
 	echo "${b}Either you intentionally aborted the install or the script got somehow terminated before it finished.${x}"
 	echo
-	echo "${b}It is possible something unforseen might go wrong during this install. If so, simply file an issue report at:${x}"
+	echo "${b}In the latter case, it is possible something unforseen might go wrong during this install. If so, simply file an issue report at:${x}"
 	echo
 	echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
 	echo
 	echo "${b}Thank you in advance!${x}"
 	echo
+	read -p "${b}[press enter to continue reading...]${x}"
+	clear
 fi
 
 
@@ -582,7 +585,7 @@ clear
 
 
 
-echo "${b}Aenigma send you email notifications for any runtime errors or failures.${x}"
+echo "${b}Aenigma sends you email notifications for any runtime errors or failures.${x}"
 echo
 
 if [ -f $configdir/adminmail ]
