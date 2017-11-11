@@ -34,10 +34,11 @@ then
         echo
 fi
 
+backuptype="$(cat $configdir/backuptype)"
+
 if [ $backuptype = "s3" ]
 then
 
-        echo
         echo "Now restoring from S3 to /root/aenigma-restore/ ..."
         echo
 
@@ -60,9 +61,9 @@ then
         duplicitylogdir=/root/logs/aenigma-duplicity
 
         # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/duplicity/restore.log"
-        DAILYLOGFILE="$duplicitylogdir/duplicity/restore.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/duplicity/restore.full.log"
+        LOGFILE="$duplicitylogdir/restore.log"
+        DAILYLOGFILE="$duplicitylogdir/restore.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/restore.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"
@@ -70,9 +71,9 @@ then
 
         is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
 
-        if [ ! -d $logdir/duplicity ]
+        if [ ! -d $duplicitylogdir ]
         then
-                mkdir -p $logdir/duplicity
+                mkdir -p $duplicitylogdir
         fi
 
         if [ ! -f $FULLBACKLOGFILE ]
@@ -112,14 +113,15 @@ then
 
                 trace "... backing up filesystem"
 
-                duplicity ${DEST} /root/aenigma-restore/
+                duplicity ${DEST} /root/aenigma-restore-$stamp/
 
                 trace "Backup for local filesystem complete"
                 trace "------------------------------------"
 
                 # Send the daily log file by email
                 #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
+                #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
+                BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
                 if [ "$BACKUPSTATUS" != "0" ]
                 then
             	   cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR

@@ -24,6 +24,7 @@ backupsdir=$installdir/backups # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
+rm -r $tmpdir/* 2> /dev/null
 mkdir -p $backupsdir
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
@@ -33,7 +34,6 @@ mkdir -p $tmpbackupdir
 # Purge backups older than the latest 42
 ( cd $backupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
 
-rm -r $tmpdir/*
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
 cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
@@ -70,9 +70,9 @@ then
         duplicitylogdir=/root/logs/aenigma-duplicity
 
         # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/duplicity/backup.log"
-        DAILYLOGFILE="$duplicitylogdir/duplicity/backup.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/duplicity/backup.full.log"
+        LOGFILE="$duplicitylogdir/backup.log"
+        DAILYLOGFILE="$duplicitylogdir/backup.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/backup.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"
@@ -80,9 +80,9 @@ then
 
         is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
 
-        if [ ! -d $logdir/duplicity ]
+        if [ ! -d $duplicitylogdir ]
         then
-                mkdir -p $logdir/duplicity
+                mkdir -p $duplicitylogdir
         fi
 
         if [ ! -f $FULLBACKLOGFILE ]
@@ -139,7 +139,8 @@ then
 
                 # Send the daily log file by email
                 #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
+                #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
+                BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
                 if [ "$BACKUPSTATUS" != "0" ]
                 then
                         cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
