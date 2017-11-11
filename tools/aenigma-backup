@@ -15,6 +15,8 @@ exec >  >(tee -ia $logfile)                                  # Log one output to
 exec 2> >(tee -ia $logfile >&2)                              # Log the other output to logfile
 echo && echo "Starting $logname script on $now..." && echo   # Write heading to logfile
 
+set -e
+
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 basedir=/root/openspace42 # Don't change! | No trailing slash!
 installdir=$basedir/aenigma # Don't change! | No trailing slash!
@@ -74,9 +76,9 @@ then
 
         is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
 
-        if [ ! -d /var/log/duplicity ]
+        if [ ! -d $logdir/duplicity ]
         then
-                mkdir -p /var/log/duplicity
+                mkdir -p $logdir/duplicity
         fi
 
         if [ ! -f $FULLBACKLOGFILE ]
