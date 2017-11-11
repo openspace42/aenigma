@@ -24,6 +24,7 @@ toolsdir=$installdir/tools # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
+
 mkdir -p $basedir
 mkdir -p $tlsdir
 mkdir -p $tmpdir
