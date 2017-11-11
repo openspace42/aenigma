@@ -97,8 +97,14 @@ fi
 
 echo "${b}Now installing dependencies...${x}"
 echo
+apt-add-repository ppa:duplicity-team/ppa -y
 apt-get update
-apt-get -y install dnsutils ufw bc
+apt-get -y install dnsutils ufw bc duplicity python-pip pwgen
+pip install --upgrade pip
+pip install boto
+debconf-set-selections <<< "postfix postfix/mailname string $hostname"
+debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
+apt-get install -y mailutils
 echo
 echo "${b}Finished installing dependencies.${x}"
 echo

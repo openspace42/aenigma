@@ -22,7 +22,6 @@ tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
 if [ ! -f $configdir/installcomplete ]
 then
-        clear
         echo "It appears aenigma is not currently installed or there is an incomplete installation on this machine."
         echo
         echo "This restore script only works on a fully installed aenigma instance."

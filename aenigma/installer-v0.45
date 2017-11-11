@@ -1103,6 +1103,7 @@ then
 			echo "local" > $configdir/backuptype
 		fi
 	else
+		echo
 		echo "${b}Ok, keeping backups local. Remember to periodically copy your backups from $backupsdir over to another machine!${x}"
 		echo
 		backuptype=local
@@ -1248,9 +1249,10 @@ then
 		generatedpw="$(pwgen 42 1)"
 		echo $generatedpw > $configdir/backupspw
 	else
-		backupspw="$(cat $configdir/backupspw)"
 		chmod 700 $configdir/backupspw # In case someone accidentally modified permissions on $configdir
 	fi
+
+	backupspw="$(cat $configdir/backupspw)"
 
 	echo "${b}Your S3 backups encryption passphrase is:${x}"
 	echo
