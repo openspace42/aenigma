@@ -33,6 +33,7 @@ mkdir -p $tmpbackupdir
 # Purge backups older than the latest 42
 ( cd $backupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
 
+rm -r $tmpdir/*
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
 cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
@@ -66,10 +67,12 @@ then
         # The S3 destination followed by bucket name
         DEST="s3://$s3endpoint/$s3bucketname/"
 
+        duplicitylogdir=/root/logs/aenigma-duplicity
+
         # Set up some variables for logging
-        LOGFILE="$logdir/duplicity/backup.log"
-        DAILYLOGFILE="$logdir/duplicity/backup.daily.log"
-        FULLBACKLOGFILE="$logdir/duplicity/backup.full.log"
+        LOGFILE="$duplicitylogdir/duplicity/backup.log"
+        DAILYLOGFILE="$duplicitylogdir/duplicity/backup.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/duplicity/backup.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"

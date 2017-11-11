@@ -57,10 +57,12 @@ then
         # The S3 destination followed by bucket name
         DEST="s3://$s3endpoint/$s3bucketname/"
 
+        duplicitylogdir=/root/logs/aenigma-duplicity
+
         # Set up some variables for logging
-        LOGFILE="$logdir/duplicity/restore.log"
-        DAILYLOGFILE="$logdir/duplicity/restore.daily.log"
-        FULLBACKLOGFILE="$logdir/duplicity/restore.full.log"
+        LOGFILE="$duplicitylogdir/duplicity/restore.log"
+        DAILYLOGFILE="$duplicitylogdir/duplicity/restore.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/duplicity/restore.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"
