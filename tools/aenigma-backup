@@ -30,6 +30,9 @@ backupname=aenigma-backup-$now
 tmpbackupdir=$tmpdir/$backupname
 mkdir -p $tmpbackupdir
 
+# Purge backups older than the latest 42
+( cd $backupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
 cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
