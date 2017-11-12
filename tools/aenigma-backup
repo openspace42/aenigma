@@ -143,7 +143,7 @@ then
                 BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
                 if [ "$BACKUPSTATUS" != "0" ]
                 then
-                        cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
+                        cat "$DAILYLOGFILE" | mail -aFrom:"aenigma@$HOST" -s "ERROR in aenigma backup for $HOST on $DATE" $MAILADDR
                 elif [ "$FULL" = "full" ]
                 then
                         echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
