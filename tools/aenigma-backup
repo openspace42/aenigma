@@ -21,6 +21,7 @@ installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 toolsdir=$installdir/tools # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
+restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
@@ -70,9 +71,9 @@ then
         duplicitylogdir=/root/logs/aenigma-duplicity
 
         # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/backup.log"
-        DAILYLOGFILE="$duplicitylogdir/backup.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/backup.full.log"
+        LOGFILE="$duplicitylogdir/backup/backup.log"
+        DAILYLOGFILE="$duplicitylogdir/backup/backup.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/backup/backup.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"

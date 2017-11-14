@@ -21,6 +21,7 @@ installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 toolsdir=$installdir/tools # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
+restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
@@ -33,6 +34,37 @@ then
         echo "If you're trying to restore your previous machine's backup to this one, please first install aenigma as a brand new instance, then re-run this script."
         echo
 fi
+
+
+
+echo "Now backing up this machine's current aenigma install just in case..."
+echo
+
+rm -r $tmpdir/* 2> /dev/null
+mkdir -p $backupsdir
+mkdir -p $tmpdir
+backupname=aenigma-backup-$now
+tmpbackupdir=$tmpdir/$backupname
+mkdir -p $tmpbackupdir
+
+# Purge backups older than the latest 42
+( cd $backupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+
+/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
+mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
+cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
+cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
+cd $tmpdir
+tar -cvjSf $backupsdir/$backupname.tar.bz2 $backupname
+rm -r $tmpbackupdir
+
+mv $backupsdir $backupsdir-old-before-$now-restore
+mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
+
+echo "Backed up current install to $backupsdir-old-before-$now-restore..."
+echo
+
+
 
 backuptype="$(cat $configdir/backuptype)"
 
@@ -61,9 +93,9 @@ then
         duplicitylogdir=/root/logs/aenigma-duplicity
 
         # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/restore.log"
-        DAILYLOGFILE="$duplicitylogdir/restore.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/restore.full.log"
+        LOGFILE="$duplicitylogdir/restore/restore.log"
+        DAILYLOGFILE="$duplicitylogdir/restore/restore.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/restore/restore.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"
@@ -113,7 +145,7 @@ then
 
                 trace "... backing up filesystem"
 
-                duplicity ${DEST} /root/aenigma-restore-$stamp/
+                duplicity ${DEST} $restoresdir/$stamp/
 
                 trace "Backup for local filesystem complete"
                 trace "------------------------------------"
@@ -140,6 +172,13 @@ then
 
         fi
 
+        echo "Now restoring aenigma to last made backup on the old machine."
+        echo
+
+        # tar $restoresdir/$stamp/
+
 fi
+
+
 
 echo end
