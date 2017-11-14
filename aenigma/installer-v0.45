@@ -22,6 +22,8 @@ installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 toolsdir=$installdir/tools # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
+localbackupsdir=$backupsdir/local # Don't change! | No trailing slash!
+s3backupsdir=$backupsdir/s3 # Don't change! | No trailing slash!
 restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
@@ -219,7 +221,7 @@ fi
 
 if [ $configoption = "notyetset" ]
 then
-	choice='${b}Please select your desired configuration option: ${x}'
+	choice="${b}Please select your desired configuration option: ${x}"
 	echo $choice
 	options=("configuration 1" "configuration 2" "configuration 3" "exit")
 	select opt in "${options[@]}"
@@ -1082,7 +1084,11 @@ fi
 
 if [ $backuptype = "notyetset" ]
 then
-	read -p "${b}Do you want your aenigma backups to be uploaded to an S3 file storage server? (Y/n): ${x}" -n 1 -r
+	echo "${b}Aenigma can perform backups to an S3 file storage server.${x}"
+	echo
+	echo "${b}You must choose to set up S3 now if you're restoring a previous aenigma installation.${x}"
+	echo
+	read -p "${b}Do you want to set up S3 now? (Y/n): ${x}" -n 1 -r
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then

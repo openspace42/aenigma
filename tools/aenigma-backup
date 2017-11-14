@@ -1,5 +1,10 @@
 #!/bin/bash
 
+r=`tput setaf 1`
+g=`tput setaf 2`
+x=`tput sgr0`
+b=`tput bold`
+
 # All in One Bash Logger | v0.46 | 20171018 | 20171107 | Nk
 
 logname=`basename "$0"`                                      # The name of this script
@@ -21,35 +26,48 @@ installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 toolsdir=$installdir/tools # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
+localbackupsdir=$backupsdir/local # Don't change! | No trailing slash!
+s3backupsdir=$backupsdir/s3 # Don't change! | No trailing slash!
 restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
 rm -r $tmpdir/* 2> /dev/null
-mkdir -p $backupsdir
+mkdir -p $localbackupsdir
+mkdir -p $s3backupsdir
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
 tmpbackupdir=$tmpdir/$backupname
 mkdir -p $tmpbackupdir
 
+echo "Now backing up locally..."
+echo
+
 # Purge backups older than the latest 42
-( cd $backupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
 cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
 cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
 cd $tmpdir
-tar -cvjSf $backupsdir/$backupname.tar.bz2 $backupname
-rm -r $tmpbackupdir
+tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+
+echo
+echo "Backed up to $localbackupsdir/."
+echo
+
+
 
 backuptype="$(cat $configdir/backuptype)"
 
 if [ $backuptype = "s3" ]
 then
 
+        echo "Now backing up to S3..."
         echo
-        echo "Now uploading to S3..."
+
+        rsync -aAXxv $tmpbackupdir/* $s3backupsdir/
         echo
 
         awsaki="$(cat $configdir/s3/awsaki)"
@@ -68,12 +86,12 @@ then
         # The S3 destination followed by bucket name
         DEST="s3://$s3endpoint/$s3bucketname/"
 
-        duplicitylogdir=/root/logs/aenigma-duplicity
+        duplicitylogdir=/root/logs/aenigma-duplicity/backups
 
         # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/backup/backup.log"
-        DAILYLOGFILE="$duplicitylogdir/backup/backup.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/backup/backup.full.log"
+        LOGFILE="$duplicitylogdir/backup.log"
+        DAILYLOGFILE="$duplicitylogdir/backup.daily.log"
+        FULLBACKLOGFILE="$duplicitylogdir/backup.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"
@@ -106,7 +124,7 @@ then
                 OLDER_THAN="1M"
 
                 # The source of your backup
-                SOURCE=$backupsdir/ # Use / for full system backup
+                SOURCE=$s3backupsdir/ # Use / for full system backup [not the case for aenigma]
 
                 FULL=
                 tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null
@@ -161,5 +179,8 @@ then
         fi
 
 fi
+
+rm -r $tmpbackupdir
+rm -r $tmpdir/* 2> /dev/null
 
 echo end

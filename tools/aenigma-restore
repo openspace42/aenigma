@@ -1,19 +1,13 @@
 #!/bin/bash
 
-# All in One Bash Logger | v0.46 | 20171018 | 20171107 | Nk
+r=`tput setaf 1`
+g=`tput setaf 2`
+x=`tput sgr0`
+b=`tput bold`
 
-logname=`basename "$0"`                                      # The name of this script
-now="$(date +"%Y-%m-%d_%H-%M-%S")"                           # The current timestamp
-logdir="/root/logs/$logname"                                 # Don't store anything else than logs in here!
-logfile="$logdir/$now"                                       # The new logfile
-mkdir -p $logdir                                             # Touch the dir
-touch $logfile                                               # Touch the file
-rm $logdir/latest-log 2> /dev/null                           # Remove the old latest-log symlink
-ln -s $logfile $logdir/latest-log                            # Recreate the symlink
-( cd $logdir && rm `ls -t | awk 'NR>43'` ) 2> /dev/null      # Delete all logs older than the newest 42
-exec >  >(tee -ia $logfile)                                  # Log one output to logfile
-exec 2> >(tee -ia $logfile >&2)                              # Log the other output to logfile
-echo && echo "Starting $logname script on $now..." && echo   # Write heading to logfile
+logname=`basename "$0"`
+now="$(date +"%Y-%m-%d_%H-%M-%S")"
+echo && echo "Starting $logname script on $now..." && echo
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 basedir=/root/openspace42 # Don't change! | No trailing slash!
@@ -21,9 +15,13 @@ installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
 toolsdir=$installdir/tools # Don't change! | No trailing slash!
 backupsdir=$installdir/backups # Don't change! | No trailing slash!
+localbackupsdir=$backupsdir/local # Don't change! | No trailing slash!
+s3backupsdir=$backupsdir/s3 # Don't change! | No trailing slash!
 restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
+
+
 
 if [ ! -f $configdir/installcomplete ]
 then
@@ -37,138 +35,305 @@ fi
 
 
 
-echo "Now backing up this machine's current aenigma install just in case..."
+choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state from this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"
+echo $choice
 echo
+options=("backup file stored locally" "backup file stored elsewhere" "exit")
+select opt in "${options[@]}"
+do
+    echo
+    case $opt in
+        "backup file stored locally")
+            restoresource=here
+            break
+            ;;
+        "backup file stored elsewhere")
+            restoresource=elsewhere
+            break
+            ;;
+        "exit")
+            echo "${b}Exiting...${x}"
+            echo
+            exit
+            ;;
+        *)
+            echo "${r}${b}Invalid option. Retry...${x}"
+            echo
+            ;;
+    esac
+done
 
-rm -r $tmpdir/* 2> /dev/null
-mkdir -p $backupsdir
-mkdir -p $tmpdir
-backupname=aenigma-backup-$now
-tmpbackupdir=$tmpdir/$backupname
-mkdir -p $tmpbackupdir
-
-# Purge backups older than the latest 42
-( cd $backupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
-
-/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
-mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
-cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
-cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
-cd $tmpdir
-tar -cvjSf $backupsdir/$backupname.tar.bz2 $backupname
-rm -r $tmpbackupdir
-
-mv $backupsdir $backupsdir-old-before-$now-restore
-mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
-
-echo "Backed up current install to $backupsdir-old-before-$now-restore..."
-echo
-
-
-
-backuptype="$(cat $configdir/backuptype)"
-
-if [ $backuptype = "s3" ]
+if [ $restoresource = "here" ]
 then
+        if [ ! -d $localbackupsdir ]
+        then
+                echo "${r}${b}Local backups directory [$localbackupsdir] not found.${x}"
+                echo
+                echo "${b}It's possible you've already partially run this restore script choosing the | elsewhere | option, or that this machine never successfully ran a backup.${x}"
+                echo
+                echo "${b}Check your $installdir for a directory called | backups-[something] | and if you find something rename the latest directory to | backups | ."
+                echo
+        fi
 
-        echo "Now restoring from S3 to /root/aenigma-restore/ ..."
+        echo "${b}These are the backup dates available for restore:${x}"
+        echo
+        ls -1 $localbackupsdir | sed -e 's/aenigma-backup-//g' | sed -e 's/.tar.bz2//g'
+        echo
+        read -p "[press enter to continue...]"
+        clear
+
+        choice="${b}Now choose the file you'd like to restore: ${x}"
+        echo $choice
         echo
 
-        awsaki="$(cat $configdir/s3/awsaki)"
-        awssak="$(cat $configdir/s3/awssak)"
-        s3endpoint="$(cat $configdir/s3/s3endpoint)"
-        s3bucketname="$(cat $configdir/s3/s3bucketname)"
+        cd $localbackupsdir
+        unset options i
+        while IFS= read -r -d $'\0' f; do
+                options[i++]="$f"
+        done < <(find ./ -maxdepth 1 -type f -name "*.tar.bz2" -print0 )
 
-        # Export some ENV variables so you don't have to type anything
-        export AWS_ACCESS_KEY_ID=$awsaki
-        export AWS_SECRET_ACCESS_KEY=$awssak
-        export PASSPHRASE=$configdir/backupspw
+        accept=n
+        until [ $accept = "y" ]
+        do
 
-        # Your GPG key
-        #GPG_KEY= # Insert GPG key here if using GPG
+                select selbackupfile in "${options[@]}" "exit"
+                do
+                        echo
+                        case $selbackupfile in
+                                *.tar.bz2)
+                                        echo "${b}Backup file $selbackupfile selected.${x}"
+                                        break
+                                        ;;
+                                "exit")
+                                        echo "${b}Exiting...${x}"
+                                        echo
+                                        exit
+                                        ;;
+                                *)
+                                        echo "${r}${b}Invalid option. Retry...${x}"
+                                        echo
+                                        ;;
+                        esac
+                done
+                echo
 
-        # The S3 destination followed by bucket name
-        DEST="s3://$s3endpoint/$s3bucketname/"
+                valid=n
+                until [ $valid = "y" ]
+                do
+                        read -n 1 -p "${b}Is this the correct file?${x} (${b}Y${x}[es]/${b}n${x}[o]/${b}e${x}[xit]) " answer;
+                        case $answer in
+                        "")
+                                echo
+                                valid=y
+                                accept=y
+                                ;;
+                        y)
+                                echo -e "\n"
+                                valid=y
+                                accept=y
+                                ;;
+                        n)
+                                echo -e "\n"
+                                echo "${b}No problem, please select your desired file again now...${x}"
+                                echo
+                                valid=y
+                                accept=n
+                                ;;
+                        e)
+                                echo -e "\n"
+                                echo "${b}Exiting...${x}"
+                                echo
+                                exit
+                                ;;
+                        *)
+                                echo -e "\n"
+                                echo "${b}Invalid option. Retry...${x}"
+                                echo
+                                valid=n
+                                accept=n
+                                ;;
+                        esac
+                done
 
-        duplicitylogdir=/root/logs/aenigma-duplicity
+        done
 
-        # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/restore/restore.log"
-        DAILYLOGFILE="$duplicitylogdir/restore/restore.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/restore/restore.full.log"
-        HOST=`hostname`
-        DATE=`date +%Y-%m-%d`
-        MAILADDR="$(cat $configdir/adminmail)"
-        TODAY=$(date +%d%m%Y)
+        # Restore $selbackupfile
 
-        is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
+else
 
-        if [ ! -d $duplicitylogdir ]
+        backuptype="$(cat $configdir/backuptype)"
+
+        if [ $backuptype = "s3" ]
         then
-                mkdir -p $duplicitylogdir
+                echo "${b}You've previously set up S3 backups on this machine.${x}"
+                echo
+                choice="${b}Do you want to restore from S3 or from an aenigma backup file you have stored elsewhere? ${x}"
+                echo $choice
+                options=("S3" "elsewhere" "exit")
+                select opt in "${options[@]}"
+                do
+                    echo
+                    case $opt in
+                        "S3")
+                            restoretype=s3
+                            break
+                            ;;
+                        "elsewhere")
+                            restoretype=elsewhere
+                            break
+                            ;;
+                        "exit")
+                            echo "${b}Exiting...${x}"
+                            echo
+                            exit
+                            ;;
+                        *)  echo "${r}${b}Invalid option. Retry...${x}"
+                            echo
+                            ;;
+                    esac
+                done
+        else
+                restoretype=elsewhere
         fi
 
-        if [ ! -f $FULLBACKLOGFILE ]
+
+
+        echo "Now backing up this machine's current aenigma installation just in case..."
+        echo
+
+        rm -r $tmpdir/* 2> /dev/null
+        mkdir -p $localbackupsdir
+        mkdir -p $tmpdir
+        backupname=aenigma-backup-$now
+        tmpbackupdir=$tmpdir/$backupname
+        mkdir -p $tmpbackupdir
+
+        # Purge backups older than the latest 42
+        ( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+
+        /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
+        mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
+        cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
+        cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
+        cd $tmpdir
+        tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+
+        mv $localbackupsdir $localbackupsdir-old-before-$now-restore
+        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
+
+        echo
+        echo "Backed up current installation to $localbackupsdir-old-before-$now-restore."
+        echo
+
+
+
+        if [ $restoretype = "s3" ]
         then
-                touch $FULLBACKLOGFILE
-        fi
 
-        if [ $is_running -eq 0 ]
-        then
-                # Clear the old daily log file
-                cat /dev/null > ${DAILYLOGFILE}
+                echo "Now restoring from S3 to $restoresdir ..."
+                echo
 
-                # Trace function for logging, don't change this
-                trace () {
-                        stamp=`date +%Y-%m-%d_%H:%M:%S`
-                        echo "$stamp: $*" >> ${DAILYLOGFILE}
-                }
+                awsaki="$(cat $configdir/s3/awsaki)"
+                awssak="$(cat $configdir/s3/awssak)"
+                s3endpoint="$(cat $configdir/s3/s3endpoint)"
+                s3bucketname="$(cat $configdir/s3/s3bucketname)"
 
-                # How long to keep backups for
-                OLDER_THAN="1M"
+                # Export some ENV variables so you don't have to type anything
+                export AWS_ACCESS_KEY_ID=$awsaki
+                export AWS_SECRET_ACCESS_KEY=$awssak
+                export PASSPHRASE=$configdir/backupspw
 
-                # The source of your backup
-                SOURCE=$backupsdir/ # Use / for full system backup
+                # Your GPG key
+                #GPG_KEY= # Insert GPG key here if using GPG
 
-                FULL=
-                tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null
-                if [ $? -ne 0 -a $(date +%d) -eq 1 ]
+                # The S3 destination followed by bucket name
+                DEST="s3://$s3endpoint/$s3bucketname/"
+
+                duplicitylogdir=/root/logs/aenigma-duplicity/restore
+
+                # Set up some variables for logging
+                LOGFILE="$duplicitylogdir/restore.log"
+                DAILYLOGFILE="$duplicitylogdir/restore.daily.log"
+                FULLBACKLOGFILE="$duplicitylogdir/restore.full.log"
+                HOST=`hostname`
+                DATE=`date +%Y-%m-%d`
+                MAILADDR="$(cat $configdir/adminmail)"
+                TODAY=$(date +%d%m%Y)
+
+                is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
+
+                if [ ! -d $duplicitylogdir ]
                 then
-                        FULL=full
-                fi;
-
-                trace "Backup for local filesystem started"
-
-                trace "... removing old backups"
-
-                duplicity remove-older-than ${OLDER_THAN} ${DEST} >> ${DAILYLOGFILE} 2>&1
-
-                trace "... backing up filesystem"
-
-                duplicity ${DEST} $restoresdir/$stamp/
-
-                trace "Backup for local filesystem complete"
-                trace "------------------------------------"
-
-                # Send the daily log file by email
-                #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
-                BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
-                if [ "$BACKUPSTATUS" != "0" ]
-                then
-            	   cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                elif [ "$FULL" = "full" ]
-                then
-                    echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
+                        mkdir -p $duplicitylogdir
                 fi
 
-                # Append the daily log file to the main log file
-                cat "$DAILYLOGFILE" >> $LOGFILE
+                if [ ! -f $FULLBACKLOGFILE ]
+                then
+                        touch $FULLBACKLOGFILE
+                fi
 
-                # Reset the ENV variables. Don't need them sitting around
-                unset AWS_ACCESS_KEY_ID
-                unset AWS_SECRET_ACCESS_KEY
-                unset PASSPHRASE
+                if [ $is_running -eq 0 ]
+                then
+                        # Clear the old daily log file
+                        cat /dev/null > ${DAILYLOGFILE}
+
+                        # Trace function for logging, don't change this
+                        trace () {
+                                stamp=`date +%Y-%m-%d_%H:%M:%S`
+                                echo "$stamp: $*" >> ${DAILYLOGFILE}
+                        }
+
+                        # How long to keep backups for
+                        OLDER_THAN="1M"
+
+                        # The source of your backup
+                        SOURCE=$backupsdir/ # Use / for full system backup
+
+                        FULL=
+                        tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null
+                        if [ $? -ne 0 -a $(date +%d) -eq 1 ]
+                        then
+                                FULL=full
+                        fi;
+
+                        trace "Backup for local filesystem started"
+
+                        trace "... removing old backups"
+
+                        duplicity remove-older-than ${OLDER_THAN} ${DEST} >> ${DAILYLOGFILE} 2>&1
+
+                        trace "... backing up filesystem"
+
+                        duplicity ${DEST} $restoresdir/$stamp/
+
+                        trace "Backup for local filesystem complete"
+                        trace "------------------------------------"
+
+                        # Send the daily log file by email
+                        #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
+                        #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
+                        BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
+                        if [ "$BACKUPSTATUS" != "0" ]
+                        then
+                    	   cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
+                        elif [ "$FULL" = "full" ]
+                        then
+                            echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
+                        fi
+
+                        # Append the daily log file to the main log file
+                        cat "$DAILYLOGFILE" >> $LOGFILE
+
+                        # Reset the ENV variables. Don't need them sitting around
+                        unset AWS_ACCESS_KEY_ID
+                        unset AWS_SECRET_ACCESS_KEY
+                        unset PASSPHRASE
+
+                fi
+
+        else
+
+                # Specify elsewhere restore file
 
         fi
 
@@ -178,7 +343,5 @@ then
         # tar $restoresdir/$stamp/
 
 fi
-
-
 
 echo end
