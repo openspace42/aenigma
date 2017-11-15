@@ -63,6 +63,46 @@ do
     esac
 done
 
+
+
+# Perform a [last] backup of this currently running installation just in case
+
+echo "Now backing up this machine's currently running aenigma installation just in case..."
+echo
+
+rm -r $tmpdir/* 2> /dev/null
+mkdir -p $localbackupsdir
+mkdir -p $tmpdir
+backupname=aenigma-backup-$now
+tmpbackupdir=$tmpdir/$backupname
+mkdir -p $tmpbackupdir
+
+# Purge backups older than the latest 42
+( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+
+/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
+mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
+cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
+cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
+cd $tmpdir
+tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+echo
+
+# If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
+
+if [ $restoresource = "here" ]
+then
+        echo "Backed up current installation to $localbackupsdir."
+        echo
+else
+        mv $localbackupsdir $localbackupsdir-old-before-$now-restore
+        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
+        echo "Backed up current installation to $localbackupsdir-old-before-$now-restore."
+        echo
+fi
+
+
+
 if [ $restoresource = "here" ]
 then
         if [ ! -d $localbackupsdir ]
@@ -71,7 +111,7 @@ then
                 echo
                 echo "${b}It's possible you've already partially run this restore script choosing the | elsewhere | option, or that this machine never successfully ran a backup.${x}"
                 echo
-                echo "${b}Check your $installdir for a directory called | backups-[something] | and if you find something rename the latest directory to | backups | ."
+                echo "${b}Check your $installdir for a directory called | backups(-[something]) | and if you find something rename the most recently datestamped directory to | backups | ."
                 echo
         fi
 
@@ -88,9 +128,9 @@ then
 
         cd $localbackupsdir
         unset options i
-        while IFS= read -r -d $'\0' f; do
+        while IFS= read -r -d $'\n' f; do
                 options[i++]="$f"
-        done < <(find ./ -maxdepth 1 -type f -name "*.tar.bz2" -print0 )
+        done < <(find ./ -maxdepth 1 -type f -name "*.tar.bz2" | sort -r )
 
         accept=n
         until [ $accept = "y" ]
@@ -157,7 +197,8 @@ then
 
         done
 
-        # Restore $selbackupfile
+        mkdir -p $restoresdir/local/
+        tar -xvjf $selbackupfile -C $restoresdir/local/
 
 else
 
@@ -165,9 +206,9 @@ else
 
         if [ $backuptype = "s3" ]
         then
-                echo "${b}You've previously set up S3 backups on this machine.${x}"
+                echo "${b}You've previously set up an S3 file storage server connection on this machine.${x}"
                 echo
-                choice="${b}Do you want to restore from S3 or from an aenigma backup file you have stored elsewhere? ${x}"
+                choice="${b}Do you want to restore from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
                 echo $choice
                 options=("S3" "elsewhere" "exit")
                 select opt in "${options[@]}"
@@ -195,35 +236,6 @@ else
         else
                 restoretype=elsewhere
         fi
-
-
-
-        echo "Now backing up this machine's current aenigma installation just in case..."
-        echo
-
-        rm -r $tmpdir/* 2> /dev/null
-        mkdir -p $localbackupsdir
-        mkdir -p $tmpdir
-        backupname=aenigma-backup-$now
-        tmpbackupdir=$tmpdir/$backupname
-        mkdir -p $tmpbackupdir
-
-        # Purge backups older than the latest 42
-        ( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
-
-        /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
-        mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
-        cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
-        cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
-        cd $tmpdir
-        tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
-
-        mv $localbackupsdir $localbackupsdir-old-before-$now-restore
-        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
-
-        echo
-        echo "Backed up current installation to $localbackupsdir-old-before-$now-restore."
-        echo
 
 
 
@@ -287,7 +299,7 @@ else
                         OLDER_THAN="1M"
 
                         # The source of your backup
-                        SOURCE=$backupsdir/ # Use / for full system backup
+                        # SOURCE=$backupsdir/ # Use / for full system backup
 
                         FULL=
                         tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null
@@ -304,7 +316,8 @@ else
 
                         trace "... backing up filesystem"
 
-                        duplicity ${DEST} $restoresdir/$stamp/
+                        rm -r $restoresdir/s3/* 2> /dev/null
+                        duplicity ${DEST} $restoresdir/s3/
 
                         trace "Backup for local filesystem complete"
                         trace "------------------------------------"
@@ -333,7 +346,7 @@ else
 
         else
 
-                # Specify elsewhere restore file
+                echo # Specify elsewhere restore file
 
         fi
 
