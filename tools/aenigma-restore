@@ -65,44 +65,6 @@ done
 
 
 
-# Perform a [last] backup of this currently running installation just in case
-
-echo "Now backing up this machine's currently running aenigma installation just in case..."
-echo
-
-rm -r $tmpdir/* 2> /dev/null
-mkdir -p $localbackupsdir
-mkdir -p $tmpdir
-backupname=aenigma-backup-$now
-tmpbackupdir=$tmpdir/$backupname
-mkdir -p $tmpbackupdir
-
-# Purge backups older than the latest 42
-( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
-
-/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
-mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
-cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
-cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
-cd $tmpdir
-tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
-echo
-
-# If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
-
-if [ $restoresource = "here" ]
-then
-        echo "Backed up current installation to $localbackupsdir."
-        echo
-else
-        mv $localbackupsdir $localbackupsdir-old-before-$now-restore
-        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
-        echo "Backed up current installation to $localbackupsdir-old-before-$now-restore."
-        echo
-fi
-
-
-
 if [ $restoresource = "here" ]
 then
         if [ ! -d $localbackupsdir ]
@@ -242,7 +204,7 @@ else
         if [ $restoretype = "s3" ]
         then
 
-                echo "Now restoring from S3 to $restoresdir ..."
+                echo "Now restoring from S3 to $restoresdir/s3/ ..."
                 echo
 
                 awsaki="$(cat $configdir/s3/awsaki)"
@@ -350,13 +312,157 @@ else
 
         fi
 
-        echo "Now restoring aenigma to last made backup on the old machine."
+fi
+echo
+
+
+# Perform a [last] backup of this currently running installation just in case
+
+echo "Now backing up this machine's currently running aenigma installation just in case..."
+echo
+
+rm -r $tmpdir/* 2> /dev/null
+mkdir -p $localbackupsdir
+mkdir -p $tmpdir
+backupname=aenigma-backup-$now
+tmpbackupdir=$tmpdir/$backupname
+mkdir -p $tmpbackupdir
+
+# Purge backups older than the latest 42
+( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+
+/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
+mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
+cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
+cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
+cd $tmpdir
+tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+echo
+
+# If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
+
+if [ $restoresource = "here" ]
+then
+        echo "Backed up current installation to $localbackupsdir."
         echo
-
-        # tar $restoresdir/$stamp/
-
+else
+        mv $localbackupsdir $localbackupsdir-old-before-$now-restore
+        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
+        echo "Backed up current installation to $localbackupsdir-old-before-$now-restore."
+        echo
 fi
 
-# Remove $configdir/blocks3backups file if restore is successful
 
-echo end
+
+echo "${b}Now restoring aenigma from backup...${x}"
+echo
+
+if [ $restoresource = "here" ]
+then
+        restorefilename="$(echo $selbackupfile | sed 's|./||g' | sed 's/.tar.bz2//g')"
+        restorefileloc=$restoresdir/local/$restorefilename/
+else
+        if [ $restoretype = "s3" ]
+        then
+                restorefileloc=$restoresdir/s3/
+        else
+                restorefileloc=/root/aenigma-restore/
+        fi
+fi
+
+echo "${b}1] Now restoring ejabberd database...${x}"
+echo
+
+if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+then
+        echo "${g}${b}ejabberd is already running. Continuing...${x}"
+        echo
+else
+        echo "${r}${b}ejabberd NOT running. Starting it now...${x}"
+        echo
+        echo "${b}Now starting ejabberd ...${x}"
+        /usr/sbin/ejabberdctl start
+        echo
+        sleep 8
+        /usr/sbin/ejabberdctl status
+        echo
+        sleep 1
+fi
+
+if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+then
+        cd $restorefileloc
+        /usr/sbin/ejabberdctl restore ejabberd-mnesia-backup
+else
+        error=1
+        echo "${r}${b}ERROR: ejabberd still NOT running. Unable to restore database from backup.${x}"
+        echo
+        echo "${b}Exiting...${x}"
+        echo
+        exit
+fi
+
+echo "${b}Now restoring ejabberd directories...${x}"
+echo
+
+echo "${b}Now stopping ejabberd for directory restore...${x}"
+echo
+/usr/sbin/ejabberdctl stop
+sleep 8
+
+rsync -aAXx --delete $restorefileloc/etc-ejabberd/ /etc/ejabberd/
+rsync -aAXx --delete $restorefileloc/var-lib-ejabberd/ /var/lib/ejabberd/
+
+chown -R ejabberd:ejabberd /etc/ejabberd/
+chown -R ejabberd:ejabberd /var/lib/ejabberd/
+
+echo "${b}Now starting ejabberd...${x}"
+/usr/sbin/ejabberdctl start
+echo
+sleep 8
+/usr/sbin/ejabberdctl status
+echo
+sleep 1
+
+if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+then
+
+        echo "${g}${b}Restore complete!${x}"
+        echo
+        echo "${b}Now please verify "
+
+        read -p "${b}Has your previous instance of aenigma been restored correctly? (Y/n): ${x}" -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Nn]$ ]]
+        then
+                echo "${g}${b}Ok, all done!${x}"
+                echo
+                if [ -f $configdir/blocks3backups ]
+                then
+                        echo "${b}Removing S3 backups lock since your restore has been successful.${x}"
+                        echo
+                        echo "${r}${b}This machine will now pick up where the old one left off and start backing up again to S3 and will overwrite all previous data stored on S3.${x}"
+                        echo
+                        echo "${b}If you've changed your mind and are NOT yet sure this restore was completely successful, simply:${x}"
+                        echo
+                        echo "${b} | touch $configdir/blocks3backups |"
+                        echo
+                        echo "${b}And remember to remove it as soon as you're done verifying this restore to resume backups to S3!${x}"
+                        echo
+                        echo "${g}${b}All done for now.${x}"
+                        echo
+                fi
+        else
+                echo
+                echo "${b}${x}" # Indications in case of suspected failed restore
+
+else
+
+        error=1
+        echo "${r}${b}ERROR: ejabberd not running after restore. Please check ejabberd directories.${x}"
+        echo
+        echo "${b}Exiting...${x}"
+        echo
+        exit
+
+fi
