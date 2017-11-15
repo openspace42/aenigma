@@ -357,4 +357,6 @@ else
 
 fi
 
+# Remove $configdir/blocks3backups file if restore is successful
+
 echo end

@@ -1102,6 +1102,23 @@ then
 			echo
 			backuptype=s3
 			echo "s3" > $configdir/backuptype
+			echo  "${r}${b}If you're setting up this machine to restore a previous aenigma installation from another machine, you must specify so now.${x}"
+			echo
+			echo "${b}Selecting yes at the next prompt will block ALL backups to S3 to avoid overwriting previous valid backups on S3 and give you a chance to restore them on this machine.${x}"
+			echo
+			echo "${r}${b}If you choose yes, make sure NOT to use this instance as it is [as it will NOT be backed up on S3] but rather remember to perform the restore right after you're finished running this install script.${x}"
+			echo
+			read -p "${b}Are you setting up this machine to restore a previous aenigma installation from another machine?: ${x}" -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Nn]$ ]]
+			then
+				echo "${r}${b}Ok, blocking ALL backups to S3 until a restore is performed. Do so right after you're finished running this install script.${x}"
+				echo
+				touch $configdir/blocks3backups
+			else
+				echo "${b}NOT selected restore mode, will allow S3 backups..."
+				echo
+			fi
 		else
 			echo "${b}No problem, follow this guide [link will be published here when ready] to configure your S3 file storage server.${x}"
 			echo
@@ -1122,6 +1139,7 @@ fi
 
 if [ $backuptype = "s3" ]
 then
+
 	mkdir -p $configdir/s3/
 
 	declare -A s3array=(
