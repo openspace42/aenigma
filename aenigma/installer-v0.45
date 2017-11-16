@@ -1801,17 +1801,17 @@ sleep 1
 
 echo "${b}Now stopping ejabberd...${x}"
 echo
-/usr/sbin/ejabberdctl stop
+/usr/sbin/service ejabberd stop
 sleep 8
 echo "${b}Finished stopping ejabberd.${x}"
 echo
 sleep 1
 
 echo "${b}Now starting ejabberd...${x}"
-/usr/sbin/ejabberdctl start
+/usr/sbin/service ejabberd start
 echo
 sleep 8
-/usr/sbin/ejabberdctl status
+/usr/sbin/service ejabberd status
 echo
 sleep 1
 echo "${b}Finished starting ejabberd.${x}"
@@ -1917,7 +1917,7 @@ else
 		echo
 		echo "${b}mv $tlsdir/dh.pem.incomplete $tlsdir/dh.pem${x}"
 		echo
-		/usr/sbin/ejabberdctl restart
+		/usr/sbin/service ejabberd restart
 	fi
 	echo "${b}Finished generating DHparams.${x}"
 	echo

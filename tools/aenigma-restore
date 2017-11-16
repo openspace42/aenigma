@@ -333,7 +333,7 @@ echo
 
 # Perform a [last] backup of this currently running installation just in case
 
-echo "${b}Now backing up [locally - no S3] this machine's currently running aenigma installation just in case...${x}"
+echo "${b}Now backing up [locally - no S3 of course] this machine's currently running aenigma installation just in case...${x}"
 echo
 
 rm -r $tmpdir/* 2> /dev/null
@@ -397,10 +397,10 @@ else
         echo "${r}${b}ejabberd NOT running. Starting it now...${x}"
         echo
         echo "${b}Now starting ejabberd ...${x}"
-        /usr/sbin/ejabberdctl start
+        /usr/sbin/service ejabberd start
         echo
         sleep 8
-        /usr/sbin/ejabberdctl status
+        /usr/sbin/service ejabberd status
         echo
         sleep 1
 fi
@@ -409,6 +409,9 @@ if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 then
         cd $restorefileloc
         /usr/sbin/ejabberdctl restore ejabberd-mnesia-backup
+        echo "${b}Successfully restored ejabberd database...${x}"
+        echo
+        sleep 8
 else
         echo "${r}${b}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x}"
         echo
@@ -422,7 +425,7 @@ echo
 
 echo "${b}Now stopping ejabberd for directory restore...${x}"
 echo
-/usr/sbin/ejabberdctl stop
+/usr/sbin/service ejabberd stop
 sleep 8
 
 rsync -aAXx --delete $restorefileloc/etc-ejabberd/ /etc/ejabberd/
@@ -435,10 +438,10 @@ chown -R ejabberd:ejabberd /etc/ejabberd/
 chown -R ejabberd:ejabberd /var/lib/ejabberd/
 
 echo "${b}Now starting ejabberd...${x}"
-/usr/sbin/ejabberdctl start
+/usr/sbin/service ejabberd start
 echo
-sleep 8
-/usr/sbin/ejabberdctl status
+sleep 16
+/usr/sbin/service ejabberd status
 echo
 sleep 1
 
@@ -479,6 +482,7 @@ then
         	echo
         	echo "${b}Thank you in advance!${x}"
                 echo
+        fi
 
 else
 
