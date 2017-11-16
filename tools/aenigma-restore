@@ -400,7 +400,7 @@ else
         /usr/sbin/service ejabberd start
         echo
         sleep 8
-        /usr/sbin/service ejabberd status
+        /usr/sbin/ejabberdctl
         echo
         sleep 1
 fi
@@ -441,7 +441,7 @@ echo "${b}Now starting ejabberd...${x}"
 /usr/sbin/service ejabberd start
 echo
 sleep 16
-/usr/sbin/service ejabberd status
+/usr/sbin/ejabberdctl status
 echo
 sleep 1
 

@@ -1811,7 +1811,7 @@ echo "${b}Now starting ejabberd...${x}"
 /usr/sbin/service ejabberd start
 echo
 sleep 8
-/usr/sbin/service ejabberd status
+/usr/sbin/ejabberdctl status
 echo
 sleep 1
 echo "${b}Finished starting ejabberd.${x}"
