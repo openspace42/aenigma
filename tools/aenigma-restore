@@ -21,7 +21,16 @@ restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
-
+if [[ $EUID -ne 0 ]]
+then
+	echo "${r}${b}This script must be run as root. Run it as:${x}"
+	echo
+	echo "sudo bash aenigma/install.sh"
+	echo
+        echo "${b}Exiting...${x}"
+        echo
+        exit
+fi
 
 if [ ! -f $configdir/installcomplete ]
 then
@@ -31,6 +40,9 @@ then
         echo
         echo "If you're trying to restore your previous machine's backup to this one, please first install aenigma as a brand new instance, then re-run this script."
         echo
+        echo "${b}Exiting...${x}"
+        echo
+        exit
 fi
 
 
@@ -75,6 +87,9 @@ then
                 echo
                 echo "${b}Check your $installdir for a directory called | backups(-[something]) | and if you find something rename the most recently datestamped directory to | backups | ."
                 echo
+                echo "${b}Exiting...${x}"
+                echo
+                exit
         fi
 
         echo "${b}These are the backup dates available for restore:${x}"
@@ -318,25 +333,26 @@ echo
 
 # Perform a [last] backup of this currently running installation just in case
 
-echo "Now backing up this machine's currently running aenigma installation just in case..."
+echo "${b}Now backing up [locally - no S3] this machine's currently running aenigma installation just in case...${x}"
 echo
 
 rm -r $tmpdir/* 2> /dev/null
 mkdir -p $localbackupsdir
+# No need to create S3 dir as we're only backing up locally
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
 tmpbackupdir=$tmpdir/$backupname
 mkdir -p $tmpbackupdir
 
-# Purge backups older than the latest 42
-( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+# Don't purge backups as this is an extra backup we're doing without specifically asking the user
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
 cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
 cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
 cd $tmpdir
-tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+# Give local backup a custom name so that it's clear it's the last one before a rollback in time
+tar -cvjSf $localbackupsdir/$backupname-last-backup-before-$now-restore.tar.bz2 $backupname
 echo
 
 # If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
@@ -348,7 +364,7 @@ then
 else
         mv $localbackupsdir $localbackupsdir-old-before-$now-restore
         mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
-        echo "Backed up current installation to $localbackupsdir-old-before-$now-restore."
+        echo "Backed up current installation to local backups directory and moved the latter to $localbackupsdir-old-before-$now-restore."
         echo
 fi
 
@@ -394,8 +410,7 @@ then
         cd $restorefileloc
         /usr/sbin/ejabberdctl restore ejabberd-mnesia-backup
 else
-        error=1
-        echo "${r}${b}ERROR: ejabberd still NOT running. Unable to restore database from backup.${x}"
+        echo "${r}${b}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x}"
         echo
         echo "${b}Exiting...${x}"
         echo
@@ -413,6 +428,9 @@ sleep 8
 rsync -aAXx --delete $restorefileloc/etc-ejabberd/ /etc/ejabberd/
 rsync -aAXx --delete $restorefileloc/var-lib-ejabberd/ /var/lib/ejabberd/
 
+echo "${b}Now setting permissions on ejabberd directories...${x}"
+echo
+
 chown -R ejabberd:ejabberd /etc/ejabberd/
 chown -R ejabberd:ejabberd /var/lib/ejabberd/
 
@@ -429,7 +447,8 @@ then
 
         echo "${g}${b}Restore complete!${x}"
         echo
-        echo "${b}Now please verify "
+        echo "${b}Now please verify your aenigma instance is running correctly and has everything you except it to.${x}"
+        echo
 
         read -p "${b}Has your previous instance of aenigma been restored correctly? (Y/n): ${x}" -n 1 -r
         echo
@@ -447,19 +466,29 @@ then
                         echo
                         echo "${b} | touch $configdir/blocks3backups |"
                         echo
-                        echo "${b}And remember to remove it as soon as you're done verifying this restore to resume backups to S3!${x}"
+                        echo "${b}And remember to remove it as soon as you're done verifying this restored instance to then resume backups to S3!${x}"
                         echo
                         echo "${g}${b}All done for now.${x}"
                         echo
                 fi
         else
                 echo
-                echo "${b}${x}" # Indications in case of suspected failed restore
+                echo "${b}Sorry about that, please collect all evidence you can find so and simply file an issue report at:${x}"
+        	echo
+        	echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+        	echo
+        	echo "${b}Thank you in advance!${x}"
+                echo
 
 else
 
-        error=1
         echo "${r}${b}ERROR: ejabberd not running after restore. Please check ejabberd directories.${x}"
+        echo
+        echo "${b}Please collect all evidence you can find so and simply file an issue report at:${x}"
+        echo
+        echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+        echo
+        echo "${b}Thank you in advance!${x}"
         echo
         echo "${b}Exiting...${x}"
         echo

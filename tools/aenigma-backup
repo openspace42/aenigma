@@ -32,13 +32,31 @@ restoresdir=$installdir/restores # Don't change! | No trailing slash!
 tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
 tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
 
-rm -r $tmpdir/* 2> /dev/null
-mkdir -p $localbackupsdir
-mkdir -p $s3backupsdir
-mkdir -p $tmpdir
-backupname=aenigma-backup-$now
-tmpbackupdir=$tmpdir/$backupname
-mkdir -p $tmpbackupdir
+if [[ $EUID -ne 0 ]]
+then
+	echo "${r}${b}This script must be run as root. Run it as:${x}"
+	echo
+	echo "sudo bash aenigma/install.sh"
+	echo
+        # Send email indicating backup aborted
+        echo "${b}Exiting...${x}"
+        echo
+        exit
+fi
+
+if [ ! -f $configdir/installcomplete ]
+then
+        echo "It appears aenigma is not currently installed or there is an incomplete installation on this machine."
+        echo
+        echo "This backup script only works on a fully installed aenigma instance."
+        echo
+        echo "Please finish installing aenigma before running this script."
+        echo
+        # Send email indicating backup aborted
+        echo "${b}Exiting...${x}"
+        echo
+        exit
+fi
 
 if [ -f $configdir/blocks3backups ]
 then
@@ -51,7 +69,22 @@ then
         echo "${r}${b}NO backups will run on this instance until you perform the restore script or remove the file to specify your intent to use this machine as it is for a new installation${x}."
         echo
         # Send email indicating backup aborted
+        echo "${b}Exiting...${x}"
+        echo
+        exit
 fi
+
+
+
+rm -r $tmpdir/* 2> /dev/null
+mkdir -p $localbackupsdir
+mkdir -p $s3backupsdir
+mkdir -p $tmpdir
+backupname=aenigma-backup-$now
+tmpbackupdir=$tmpdir/$backupname
+mkdir -p $tmpbackupdir
+
+
 
 echo "Now backing up locally..."
 echo
@@ -65,6 +98,7 @@ cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
 cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
 cd $tmpdir
 tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+echo
 
 echo
 echo "Backed up to $localbackupsdir/."
