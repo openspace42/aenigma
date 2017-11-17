@@ -75,6 +75,7 @@ then
 		echo $currvers > $configdir/installedvers
 	fi
 else
+	prevvers=null
 	touch $configdir/installedvers
 	echo $currvers > $configdir/installedvers
 fi
@@ -85,7 +86,7 @@ fi
 
 incompleteinstall=n
 
-if [ -n $prevvers ]
+if [ ! $prevvers = "null" ]
 then
 	if (( $(echo "$prevvers > 0.45" | bc -l) ))
 	then
@@ -1109,7 +1110,7 @@ then
 			echo
 			echo "${r}${b}If you choose yes, make sure NOT to use this instance as it is [as it will NOT be backed up on S3] but rather remember to perform the restore right after you're finished running this install script.${x}"
 			echo
-			read -p "${b}Are you setting up this machine to restore a previous aenigma installation from another machine?: ${x}" -n 1 -r
+			read -p "${b}Are you setting up this machine to restore a previous aenigma installation from another machine? (Y/n): ${x}" -n 1 -r
 			echo
 			if [[ ! $REPLY =~ ^[Nn]$ ]]
 			then
