@@ -10,8 +10,8 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## Features
 
-* **State of the art configuration** [work in progress ;]
-* **Secure by default** [see [non-features](#non-features) for backwards compatibility exceptions]
+* **State of the art configuration**
+* **Secure by default** [see [non-features](#non-features) for the one and only backwards compatibility exception]
 * **One touch deployment**: install it in three minutes with two commands!
 * Has a guided, **step-by-step install** that makes sure you get everything perfect on the first run
 * Always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server
