@@ -335,7 +335,9 @@ else
 
         else
 
-                echo # Specify elsewhere restore file
+                echo "${r}${b}Restoring from a custom file is not yet supported. It will be implemented by v0.45's full release.${x}"
+		echo
+		exit
 
         fi
 
@@ -440,7 +442,7 @@ echo
 /usr/sbin/service ejabberd stop
 sleep 8
 
-echo "${b}Now syncing ejabberd directories...${x}"
+echo "${b}2] Now syncing ejabberd directories...${x}"
 echo
 
 rsync -aAXx --delete $restorefileloc/etc-ejabberd/ /etc/ejabberd/
