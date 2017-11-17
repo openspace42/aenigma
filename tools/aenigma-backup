@@ -66,7 +66,7 @@ then
         echo
         echo "${b}If this is the case, simply run the restore script right away. If it is not, and you want to use this machine for a new installation and OVERWRITE all backups currently on S3, erase this file: $configdir/blocks3backups.${x}"
         echo
-        echo "${r}${b}NO backups will run on this instance until you perform the restore script or remove the file to specify your intent to use this machine as it is for a new installation${x}."
+        echo "${r}${b}NO backups will run on this instance until you perform the restore script or remove the file to specify your intent to use this machine as it is for a new installation.${x}"
         echo
         # Send email indicating backup aborted
         echo "${b}Exiting...${x}"

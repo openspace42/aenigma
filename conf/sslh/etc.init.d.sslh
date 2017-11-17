@@ -1,0 +1,59 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:		sslh
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:	2 3 4 5
+# Default-Stop:		1
+# Short-Description:	sslh proxy ssl & ssh connections
+### END INIT INFO
+
+set -e
+tag=sslh
+facility=user.info
+
+# /etc/init.d/sslh: start and stop the sslh proxy daemon
+
+if test -f /etc/default/sslh; then
+    . /etc/default/sslh
+fi
+
+# The prefix is normally filled by make install. If
+# installing by hand, fill it in yourself!
+PREFIX=/usr/local
+DAEMON=$PREFIX/sbin/sslh
+
+start()
+{
+        echo "Start services: sslh"
+        $DAEMON -F/etc/sslh/sslh.cfg
+        logger -t ${tag} -p ${facility} -i 'Started sslh'
+}
+
+stop()
+{
+        echo "Stop services: sslh"
+	killall $DAEMON
+      	logger -t ${tag} -p ${facility} -i 'Stopped sslh'
+}
+
+
+case "$1" in
+	  start)
+		    start
+		    ;;
+	  stop)
+		    stop
+		    ;;
+    restart)
+		    stop
+		    sleep 5
+		    start
+		    ;;
+	  *)
+		    echo "Usage: /etc/init.d/sslh {start|stop|restart}" >&2
+		    ;;
+esac
+
+exit 0

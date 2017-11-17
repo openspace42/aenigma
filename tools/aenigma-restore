@@ -422,7 +422,9 @@ fi
 if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 then
         cd $restorefileloc
+	cp ./ejabberd-mnesia-backup /var/lib/ejabberd/
         /usr/sbin/ejabberdctl restore ejabberd-mnesia-backup
+	rm /var/lib/ejabberd/ejabberd-mnesia-backup
         echo "${b}Successfully restored ejabberd database...${x}"
         echo
         sleep 8
