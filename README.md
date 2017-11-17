@@ -25,9 +25,10 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 * Provisions **free and fully valid TLS [SSL] certificates** for everything [ejabberd and web] thanks to LetsEncrypt
 * Installs nginx and makes the ejabberd **web admin interface securely available** at https://[hostname]
 * Easily allows for the website for your top level domain to be hosted on the same server as well
-* Listens for **XMPP c2s [aka client to server] and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
+* Listens for **XMPP c2s [aka client to server], HTTP_upload, and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
 * Natively supports **Signal-level encrypted conversations** with all the required modules for **OMEMO E2EE**
 * Configures ejabberd **Shared Roster Groups** to easily allow the desired users to see eachother on their own rosters
+* Automaticaly **backups up** all ejabberd files and database **locally and to S3** and includes a script for a **guided, three step restore process**.
 
 ##### 01
 
