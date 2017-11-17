@@ -377,7 +377,7 @@ then
         echo
 else
         mv $localbackupsdir $localbackupsdir-old-before-$now-restore
-        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore
+        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null || true
         echo "Backed up current installation to local backups directory and moved the latter to $localbackupsdir-old-before-$now-restore."
         echo
 fi
@@ -480,6 +480,7 @@ then
                 echo
                 if [ -f $configdir/blocks3backups ]
                 then
+			rm $configdir/blocks3backups
                         echo "${b}Removing S3 backups lock since your restore has been successful.${x}"
                         echo
                         echo "${r}${b}This machine will now pick up where the old one left off and start backing up again to S3 and will overwrite all previous data stored on S3.${x}"
