@@ -5,6 +5,9 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
+set -e
+set -u
+
 logname=`basename "$0"`
 now="$(date +"%Y-%m-%d_%H-%M-%S")"
 echo && echo "Starting $logname script on $now..." && echo
@@ -219,6 +222,8 @@ else
         if [ $restoretype = "s3" ]
         then
 
+		set +e
+
                 echo "Now restoring from S3 to $restoresdir/s3/ ..."
                 echo
 
@@ -238,12 +243,13 @@ else
                 # The S3 destination followed by bucket name
                 DEST="s3://$s3endpoint/$s3bucketname/"
 
-                duplicitylogdir=/root/logs/aenigma-duplicity/restore
+                duplicitylogdir=/root/logs/aenigma-duplicity
+		duplicityrestlogdir=$duplicitylogdir/restore
 
                 # Set up some variables for logging
-                LOGFILE="$duplicitylogdir/restore.log"
-                DAILYLOGFILE="$duplicitylogdir/restore.daily.log"
-                FULLBACKLOGFILE="$duplicitylogdir/restore.full.log"
+                LOGFILE="$duplicityrestlogdir/restore.log"
+                DAILYLOGFILE="$duplicityrestlogdir/restore.daily.log"
+                FULLBACKLOGFILE="$duplicityrestlogdir/restore.full.log"
                 HOST=`hostname`
                 DATE=`date +%Y-%m-%d`
                 MAILADDR="$(cat $configdir/adminmail)"
@@ -251,9 +257,9 @@ else
 
                 is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
 
-                if [ ! -d $duplicitylogdir ]
+                if [ ! -d $duplicityrestlogdir ]
                 then
-                        mkdir -p $duplicitylogdir
+                        mkdir -p $duplicityrestlogdir
                 fi
 
                 if [ ! -f $FULLBACKLOGFILE ]
@@ -279,7 +285,7 @@ else
                         # SOURCE=$backupsdir/ # Use / for full system backup
 
                         FULL=
-                        tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null
+                        tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null || true
                         if [ $? -ne 0 -a $(date +%d) -eq 1 ]
                         then
                                 FULL=full
@@ -293,7 +299,7 @@ else
 
                         trace "... backing up filesystem"
 
-                        rm -r $restoresdir/s3/* 2> /dev/null
+                        rm -r $restoresdir/s3/* 2> /dev/null || true
                         duplicity ${DEST} $restoresdir/s3/
 
                         trace "Backup for local filesystem complete"
@@ -321,6 +327,8 @@ else
 
                 fi
 
+		set -e
+
         else
 
                 echo # Specify elsewhere restore file
@@ -336,7 +344,7 @@ echo
 echo "${b}Now backing up [locally - no S3 of course] this machine's currently running aenigma installation just in case...${x}"
 echo
 
-rm -r $tmpdir/* 2> /dev/null
+rm -r $tmpdir/* 2> /dev/null || true
 mkdir -p $localbackupsdir
 # No need to create S3 dir as we're only backing up locally
 mkdir -p $tmpdir
@@ -363,7 +371,7 @@ then
         echo
 else
         mv $localbackupsdir $localbackupsdir-old-before-$now-restore
-        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null
+        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore
         echo "Backed up current installation to local backups directory and moved the latter to $localbackupsdir-old-before-$now-restore."
         echo
 fi
@@ -427,6 +435,9 @@ echo "${b}Now stopping ejabberd for directory restore...${x}"
 echo
 /usr/sbin/service ejabberd stop
 sleep 8
+
+echo "${b}Now syncing ejabberd directories...${x}"
+echo
 
 rsync -aAXx --delete $restorefileloc/etc-ejabberd/ /etc/ejabberd/
 rsync -aAXx --delete $restorefileloc/var-lib-ejabberd/ /var/lib/ejabberd/

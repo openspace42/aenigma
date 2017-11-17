@@ -5,20 +5,20 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-# All in One Bash Logger | v0.46 | 20171018 | 20171107 | Nk
+# All in One Bash Logger | v0.47 | 20171018 | 20171117 | Nk
 
-logname=`basename "$0"`                                      # The name of this script
-now="$(date +"%Y-%m-%d_%H-%M-%S")"                           # The current timestamp
-logdir="/root/logs/$logname"                                 # Don't store anything else than logs in here!
-logfile="$logdir/$now"                                       # The new logfile
-mkdir -p $logdir                                             # Touch the dir
-touch $logfile                                               # Touch the file
-rm $logdir/latest-log 2> /dev/null                           # Remove the old latest-log symlink
-ln -s $logfile $logdir/latest-log                            # Recreate the symlink
-( cd $logdir && rm `ls -t | awk 'NR>43'` ) 2> /dev/null      # Delete all logs older than the newest 42
-exec >  >(tee -ia $logfile)                                  # Log one output to logfile
-exec 2> >(tee -ia $logfile >&2)                              # Log the other output to logfile
-echo && echo "Starting $logname script on $now..." && echo   # Write heading to logfile
+logname=`basename "$0"`                                           # The name of this script
+now="$(date +"%Y-%m-%d_%H-%M-%S")"                                # The current timestamp
+logdir="/root/logs/$logname"                                      # Don't store anything else than logs in here!
+logfile="$logdir/$now"                                            # The new logfile
+mkdir -p $logdir                                                  # Touch the dir
+touch $logfile                                                    # Touch the file
+rm $logdir/latest-log 2> /dev/null                                # Remove the old latest-log symlink
+ln -s $logfile $logdir/latest-log                                 # Recreate the symlink
+( cd $logdir && rm `ls -t | awk 'NR>43'` ) 2> /dev/null || true   # Delete all logs older than the newest 42
+exec >  >(tee -ia $logfile)                                       # Log one output to logfile
+exec 2> >(tee -ia $logfile >&2)                                   # Log the other output to logfile
+echo && echo "Starting $logname script on $now..." && echo        # Write heading to logfile
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 basedir=/root/openspace42 # Don't change! | No trailing slash!
@@ -90,7 +90,7 @@ echo "Now backing up locally..."
 echo
 
 # Purge backups older than the latest 42
-( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null
+( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null || true
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
@@ -133,12 +133,13 @@ then
         # The S3 destination followed by bucket name
         DEST="s3://$s3endpoint/$s3bucketname/"
 
-        duplicitylogdir=/root/logs/aenigma-duplicity/backups
+	duplicitylogdir=/root/logs/aenigma-duplicity
+	duplicitybckplogdir=$duplicitylogdir/backup
 
         # Set up some variables for logging
-        LOGFILE="$duplicitylogdir/backup.log"
-        DAILYLOGFILE="$duplicitylogdir/backup.daily.log"
-        FULLBACKLOGFILE="$duplicitylogdir/backup.full.log"
+        LOGFILE="$duplicitybckplogdir/backup.log"
+        DAILYLOGFILE="$duplicitybckplogdir/backup.daily.log"
+        FULLBACKLOGFILE="$duplicitybckplogdir/backup.full.log"
         HOST=`hostname`
         DATE=`date +%Y-%m-%d`
         MAILADDR="$(cat $configdir/adminmail)"
@@ -146,9 +147,9 @@ then
 
         is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
 
-        if [ ! -d $duplicitylogdir ]
+        if [ ! -d $duplicitybckplogdir ]
         then
-                mkdir -p $duplicitylogdir
+                mkdir -p $duplicitybckplogdir
         fi
 
         if [ ! -f $FULLBACKLOGFILE ]
@@ -174,7 +175,7 @@ then
                 SOURCE=$s3backupsdir/ # Use / for full system backup [not the case for aenigma]
 
                 FULL=
-                tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null
+                tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null || true
                 if [ $? -ne 0 -a $(date +%d) -eq 1 ]
                 then
                         FULL=full
@@ -228,6 +229,6 @@ then
 fi
 
 rm -r $tmpbackupdir
-rm -r $tmpdir/* 2> /dev/null
+rm -r $tmpdir/* 2> /dev/null || true
 
 echo end

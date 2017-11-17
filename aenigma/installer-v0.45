@@ -5,6 +5,9 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
+set -e
+set -u
+
 echo "${g}${b}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
 
@@ -13,8 +16,6 @@ currvers="$(echo $filename | tr -d 'installer\-v')"
 
 echo "${b}aenigma v$currvers${x}"
 echo
-
-set -e
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 basedir=/root/openspace42 # Don't change! | No trailing slash!
