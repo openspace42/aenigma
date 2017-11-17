@@ -375,7 +375,7 @@ echo
 
 if [ $restoresource = "here" ]
 then
-        restorefilename="$(echo $selbackupfile | sed 's|./||g' | sed 's/.tar.bz2//g')"
+        restorefilename="$(echo $selbackupfile | sed 's|./||g' | sed 's/-last-backup.*-restore//' | sed 's/.tar.bz2//g')"
         restorefileloc=$restoresdir/local/$restorefilename/
 else
         if [ $restoretype = "s3" ]
