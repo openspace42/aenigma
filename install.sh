@@ -155,6 +155,7 @@ pip install boto
 debconf-set-selections <<< "postfix postfix/mailname string $hostname"
 debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
 apt-get install -y mailutils
+/etc/init.d/postfix reload
 echo
 echo "${b}Finished installing dependencies.${x}"
 echo

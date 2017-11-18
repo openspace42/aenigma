@@ -1345,6 +1345,8 @@ then
 			echo "${b}If you've lost your encryption passphrase, your S3 backups are also lost. Look for a local backup you might have from your old machine to restore your previous instance.${x}"
 			echo
 			touch $configdir/blocks3restores
+			read -p "${b}[press enter to continue reading...]${x}"
+			clear
 
 		fi
 
@@ -1449,6 +1451,7 @@ do
 			[xc]="xc."
 			[xe]="xe."
 			[xi]="xi."
+			[xm]="xm."
 			[xp]="xp."
 			[xu]="xu."
 			[wu]="www.xu."
@@ -1831,11 +1834,15 @@ mkdir -p /etc/ejabberd/uploads/
 echo "${b}Finished creating uploads directory.${x}"
 echo
 
+
+
 echo "${b}Now creating HTTP fileserver directory...${x}"
 echo
 mkdir -p /var/www/ejabberd/
 echo "${b}Finished creating HTTP fileserver directory.${x}"
 echo
+
+
 
 echo "${b}Now creating logfile...${x}"
 echo
@@ -1844,12 +1851,16 @@ touch /var/log/ejabberd/www_access.log
 echo "${b}Finished creating logfile.${x}"
 echo
 
+
+
 echo "${b}Now copying tools directory...${x}"
 echo
 mkdir -p $toolsdir
 cp -r $sourcedir/tools/* $toolsdir/
 echo "${b}Finished copying tools directory.${x}"
 echo
+
+
 
 echo "${b}Now adding backup script to daily crontab...${x}"
 echo
@@ -1860,6 +1871,8 @@ echo >> /etc/cron.daily/aenigma-backup
 echo "bash /root/openspace42/aenigma/tools/aenigma-backup" >> /etc/cron.daily/aenigma-backup
 echo "${b}Finished adding backup script to daily crontab...${x}"
 echo
+
+
 
 echo "${b}Now installing SSLH...${x}"
 echo
@@ -1887,6 +1900,8 @@ echo
 echo "${b}Finished installing SSLH.${x}"
 echo
 
+
+
 echo "${b}Now installing ejabberd...${x}"
 echo
 currdistro="$(lsb_release --codename | cut -f2)"
@@ -1898,7 +1913,8 @@ export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="-
 echo
 echo "${b}Finished installing ejabberd.${x}"
 echo
-sleep 1
+
+
 
 echo "${b}Now securing permissions...${x}"
 echo
@@ -1914,7 +1930,8 @@ chmod -R 755 /var/www/ejabberd/
 
 echo "${b}Finished securing permissions.${x}"
 echo
-sleep 1
+
+
 
 echo "${b}Now stopping ejabberd...${x}"
 echo
@@ -1922,7 +1939,6 @@ echo
 sleep 8
 echo "${b}Finished stopping ejabberd.${x}"
 echo
-sleep 1
 
 echo "${b}Now starting ejabberd...${x}"
 /usr/sbin/service ejabberd start
@@ -1930,10 +1946,10 @@ echo
 sleep 8
 /usr/sbin/ejabberdctl status
 echo
-sleep 1
 echo "${b}Finished starting ejabberd.${x}"
 echo
-sleep 1
+
+
 
 echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
 echo
@@ -1941,7 +1957,6 @@ ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
 /usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null || true
 echo "${b}Finished registering ejabberd admin user.${x}"
 echo
-sleep 1
 clear
 
 if [ -f $configdir/ejabberdadminpwset ]
@@ -1965,12 +1980,15 @@ else
 	ejbdadminpwreset=y
 fi
 
+
+
 echo "${b}Now updating ejabberd's module repo...${x}"
 echo
 /usr/sbin/ejabberdctl modules_update_specs
 echo "${b}Finished updating ejabberd's module repo...${x}"
 echo
-sleep 1
+
+
 
 echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
 echo
@@ -1982,8 +2000,9 @@ echo
 /usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
 echo "${b}Finished creating shared roster groups.${x}"
 echo
-sleep 1
 clear
+
+
 
 echo "${g}${b}You can finally log in:${x}"
 echo
@@ -2003,6 +2022,13 @@ fi
 
 read -p "${b}[press enter to continue reading...]${x}"
 clear
+
+
+
+touch $configdir/installcomplete
+echo $currvers > $configdir/installcomplete
+
+
 
 if [ -f $tlsdir/dh.pem ]
 then
@@ -2050,8 +2076,6 @@ echo "${b}Finished removing installer directory...${x}"
 echo
 
 rm -r aenigma/
-touch $configdir/installcomplete
-echo $currvers > $configdir/installcomplete
 
 echo "${g}${b}aenigma installation complete!${x}"
 echo

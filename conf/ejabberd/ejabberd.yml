@@ -402,7 +402,8 @@ modules:
   mod_http_upload_quota:
     max_days: 30
   mod_last: {}
-  mod_mix: {}
+  mod_mix:
+    host: "xm.@HOST@"
   mod_muc:
     host: "xc.@HOST@"
     access:

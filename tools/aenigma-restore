@@ -28,7 +28,7 @@ if [[ $EUID -ne 0 ]]
 then
 	echo "${r}${b}This script must be run as root. Run it as:${x}"
 	echo
-	echo "sudo bash aenigma/install.sh"
+	echo "${b}sudo bash aenigma/install.sh${x}"
 	echo
         echo "${b}Exiting...${x}"
         echo
@@ -37,11 +37,11 @@ fi
 
 if [ ! -f $configdir/installcomplete ]
 then
-        echo "It appears aenigma is not currently installed or there is an incomplete installation on this machine."
+        echo "${r}${b}It appears aenigma is not currently installed or there is an incomplete installation on this machine.${x}"
         echo
-        echo "This restore script only works on a fully installed aenigma instance."
+        echo "${b}This restore script only works on a fully installed aenigma instance.${x}"
         echo
-        echo "If you're trying to restore your previous machine's backup to this one, please first install aenigma as a brand new instance, then re-run this script."
+        echo "${b}If you're trying to restore your previous machine's backup to this one, please first install aenigma as a brand new instance, then re-run this script.${x}"
         echo
         echo "${b}Exiting...${x}"
         echo
