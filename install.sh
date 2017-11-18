@@ -20,7 +20,7 @@ then
 	echo "${b}Detected old installation directory '/root/os-aenigma/'. Moving to new location: | $installdir/ |${x}"
 	echo
 	mkdir -p $configdir
-	mv /root/os-aenigma/* $configdir/
+	mv /root/os-aenigma/* $configdir/ &> /dev/null || true
 	mv $configdir/beta $installdir/  &> /dev/null || true
 	rm -r /root/os-aenigma/
 fi

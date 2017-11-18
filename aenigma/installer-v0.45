@@ -680,6 +680,7 @@ then
 	echo
 	adminmail="$(cat $configdir/adminmail)"
 fi
+clear
 
 
 
@@ -727,6 +728,7 @@ then
 fi
 echo "${b}Finished testing IPv6 connectivity.${x}"
 echo
+clear
 
 
 
@@ -1086,6 +1088,9 @@ then
 		sleep 3
 	fi
 fi
+clear
+
+
 
 if [ $backuptype = "s3" ]
 then
