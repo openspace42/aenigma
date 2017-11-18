@@ -1520,6 +1520,7 @@ do
 						if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 						then
 							if [ $ipversion = "v4" ]
+							then
 								echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
 								echo
 								echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
@@ -1552,6 +1553,7 @@ do
 							if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 							then
 								if [ $ipversion = "v4" ]
+								then
 									echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
 									echo
 									echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
