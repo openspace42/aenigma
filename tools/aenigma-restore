@@ -48,6 +48,29 @@ then
         exit
 fi
 
+if [ -f $configdir/blocks3restores ]
+then
+        echo "${r}${b}NOT performing restore as $configdir/blocks3restores file found.${x}"
+        echo
+        echo "${b}This should indicate that during the initial installation script you specified your intent to use this machine as a restore for a previous backup on S3, but did NOT have your S3 backups encryption passphrase ready to specify.${x}"
+        echo
+        echo "${b}If you've since found your passphrase, simply set it in this file:${x}"
+	echo
+	echo "${b} | $configdir/backupspw | and remove the $configdir/blocks3restores file to restore the S3 backup / restore functionality.${x}"
+	echo
+	echo "${r}${b}NO restores will run on this instance until you've set your existing S3 backups encryption passphrase.${x}"
+	echo
+	echo "${b}If you've lost your encryption passphrase, your S3 backups are also lost. Look for a local backup you might have from your old machine to restore your previous instance and, if you find one, re-run this script selecting the | custom | file option.${x}"
+	echo
+	echo "${b}Otherwise simply re-run the installation without speficying your intent to restore from a previous instance and specify a new S3 bucket in the process.${x}"
+	echo
+	echo "${b}Also remember to remove the $configdir/blocks3restores file to restore the S3 backup / restore functionality.${x}"
+        echo
+        echo "${b}Exiting...${x}"
+        echo
+        exit
+fi
+
 
 
 choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state from this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"

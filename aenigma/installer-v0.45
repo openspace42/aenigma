@@ -112,7 +112,7 @@ then
 	echo
 	echo "${b}In the latter case, it is possible something unforseen might go wrong during this install. If so, simply file an issue report at:${x}"
 	echo
-	echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+	echo "${b} | https://github.com/openspace42/aenigma/issues | ${x}"
 	echo
 	echo "${b}Thank you in advance!${x}"
 	echo
@@ -206,7 +206,7 @@ fi
 
 if [ $validprevconfigoption = "y" ]
 then
-	echo "${g}${b}You previously chose configuration option | $prevconfigoption |${x}"
+	echo "${g}${b}You previously chose configuration option | $prevconfigoption | ${x}"
 	echo
 	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
 	echo
@@ -283,7 +283,7 @@ then
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-			echo "${b}Ok, using previous domain: | $prevdomain |${x}"
+			echo "${b}Ok, using previous domain: | $prevdomain | ${x}"
 			echo
 			domain=$prevdomain
 			changedomain=n
@@ -377,12 +377,12 @@ then
 				done
 			done
 			echo $newdomain > $configdir/domain
-			echo "${b}New domain set to | $newdomain |${x}"
+			echo "${b}New domain set to | $newdomain | ${x}"
 			echo
 			domain="$(cat $configdir/domain)"
 		else
 			domain=$prevdomain
-			echo "${b}Aborting domain change. Keeping old domain | $domain |${x}"
+			echo "${b}Aborting domain change. Keeping old domain | $domain | ${x}"
 			echo
 		fi
 
@@ -429,7 +429,7 @@ then
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "${b}Ok, leaving hostname set to | $currhostname |${x}"
+		echo "${b}Ok, leaving hostname set to | $currhostname | ${x}"
 		echo
 		changehostname=n
 		hostname=$currhostname
@@ -499,7 +499,7 @@ then
 			done
 		done
 	echo $newhostname > /etc/hostname
-	echo "${b}New hostname set to | $newhostname |${x}"
+	echo "${b}New hostname set to | $newhostname | ${x}"
 	echo
 	hostname="$(cat /etc/hostname)"
 	fi
@@ -533,7 +533,7 @@ else
 			echo "${b}Ok, setting hostname to match domain.${x}"
 			echo
 			echo $domain > /etc/hostname
-			echo "${b}New hostname set to | $domain |${x}"
+			echo "${b}New hostname set to | $domain | ${x}"
 			echo
 		else
 			echo
@@ -609,7 +609,7 @@ fi
 
 if [ $validprevadminmail = "y" ]
 then
-	echo "${g}${b}You previously set your admin email address to be: | $prevadminmail |${x}"
+	echo "${g}${b}You previously set your admin email address to be: | $prevadminmail | ${x}"
 	echo
 	read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
 	echo
@@ -676,7 +676,7 @@ then
 		done
 	done
 	echo $newadminmail > $configdir/adminmail
-	echo "${b}New admin email address set to | $newadminmail |${x}"
+	echo "${b}New admin email address set to | $newadminmail | ${x}"
 	echo
 	adminmail="$(cat $configdir/adminmail)"
 fi
@@ -751,7 +751,7 @@ then
 	if [ $ipv6avail = "y" ]
 	then
 		thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
-		echo "${b}Your IPv6 global [public] address appears to be: | $thisipv6 |${x}"
+		echo "${b}Your IPv6 global [public] address appears to be: | $thisipv6 | ${x}"
 		echo
 	fi
 	echo "${b}Finished testing IPv6 connectivity.${x}"
@@ -759,7 +759,7 @@ then
 else
 	ipv6avail=n
 	thisipv4="$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')"
-	echo "${b}Your machine's primary interface's IPv4 address appears to be: | $thisipv4 |${x}"
+	echo "${b}Your machine's primary interface's IPv4 address appears to be: | $thisipv4 | ${x}"
 	echo
 	echo "${b}If this is not your machine's correct primary interface's IPv4 address [i.e. with a private subnet address like 10., 192.168, 172.16, etc...] you must set it correctly now.${x}"
 	echo
@@ -767,7 +767,7 @@ else
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
-		echo "${b}Ok, basing install on local IPv4 address: | $thisipv4 |${x}"
+		echo "${b}Ok, basing install on local IPv4 address: | $thisipv4 | ${x}"
 		echo
 	else
 		echo
@@ -776,7 +776,7 @@ else
 		read -p "${b}Is | $newthisipv4 | correct? (y/N): ${x}" confirm && [[ $confirm == [yY] ]] || exit 1
 		echo
 		thisipv4=$newthisipv4
-		echo "${b}Ok, basing install on newly set local IPv4 address: | $thisipv4 |${x}"
+		echo "${b}Ok, basing install on newly set local IPv4 address: | $thisipv4 | ${x}"
 		echo
 	fi
 fi
@@ -811,7 +811,7 @@ then
 
 	if [ $validprevaddTLSmode = "y" ]
 	then
-		echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode |${x}"
+		echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode | ${x}"
 		echo
 		read -p "${b}Is this still true? (Y/n): ${x}" -n 1 -r
 		echo
@@ -955,7 +955,7 @@ then
 
 		if [ $validprevdomtlscertloc = "y" ]
 		then
-			echo "${g}${b}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc |${x}"
+			echo "${g}${b}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc | ${x}"
 			echo
 			read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
 			echo
@@ -1033,7 +1033,7 @@ then
 				done
 			done
 		echo $newdomtlscertloc > $configdir/domtlscertloc
-		echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc |${x}"
+		echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc | ${x}"
 		echo
 		domtlscertloc="$(cat $configdir/domtlscertloc)"
 		fi
@@ -1067,7 +1067,7 @@ fi
 
 if [ $validprevbackuptype = "y" ]
 then
-	echo "${g}${b}You previously chose backup type | $prevbackuptype |${x}"
+	echo "${g}${b}You previously chose backup type | $prevbackuptype | ${x}"
 	echo
 	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
 	echo
@@ -1083,6 +1083,8 @@ then
 else
 	backuptype=notyetset
 fi
+
+restoreintent=n
 
 if [ $backuptype = "notyetset" ]
 then
@@ -1116,6 +1118,7 @@ then
 			then
 				echo "${r}${b}Ok, blocking ALL backups to S3 until a restore is performed. Do so right after you're finished running this install script.${x}"
 				echo
+				restoreintent=y
 				touch $configdir/blocks3backups
 			else
 				echo "${b}NOT selected restore mode, will allow S3 backups..."
@@ -1156,7 +1159,7 @@ then
 		if [ -f $configdir/s3/$i ]
 		then
 			prevs3var="$(cat $configdir/s3/$i)"
-			echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var |${x}"
+			echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var | ${x}"
 			echo
 			read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
 			echo
@@ -1222,7 +1225,7 @@ then
 					esac
 				done
 			done
-			echo "${b}${s3array[$i]} set to | $news3var |${x}"
+			echo "${b}${s3array[$i]} set to | $news3var | ${x}"
 			echo
 			echo $news3var > $configdir/s3/$i
 		fi
@@ -1270,30 +1273,109 @@ then
 	fi
 	clear
 
-	if [ ! -f $configdir/backupspw ]
+	if [ $restoreintent = "y" ]
 	then
-		touch $configdir/backupspw
-		chmod 700 $configdir/backupspw
-		generatedpw="$(pwgen 42 1)"
-		echo $generatedpw > $configdir/backupspw
+		echo "${b}You previously set up S3 and also specified that you're setting up this machine to restore a previous aenigma installation from another machine.${x}"
+		echo
+		echo "${b}If you intend to restore from S3 you must have your encryption passphrase handy now as you were reminded upon initial installation on your old machine.${x}"
+		echo
+		read -p "${b}Do you have your S3 encryption passphrase ready to specify now? (Y/n): ${x}" -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+
+			defined=n
+			until [ $defined = "y" ]
+			do
+				newbackupspw=""
+				until [ ! $newbackupspw = "" ]
+				do
+					read -p "${b}Ok, paste your S3 encryption passphrase here: " newbackupspw
+					echo
+				done
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "${b}Is | $newbackupspw | correct? (Y/n/e[xit]) ${x}" answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						defined=y
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						defined=y
+						;;
+					n)
+						echo -e "\n"
+						echo "${b}Ok, then please try again...${x}"
+						echo
+						valid=y
+						defined=n
+						;;
+					e)
+						echo -e "\n"
+						echo "${b}Exiting...${x}"
+						echo
+						exit
+						;;
+					*)
+						echo -e "\n"
+						echo "${r}${b}Invalid option. Retry...${x}"
+						echo
+						valid=n
+						defined=n
+						;;
+					esac
+				done
+			done
+			echo "${b}Ok, using | $newbackupspw | as your S3 backups encryption passphrase.${x}"
+			echo
+			echo $newbackupspw > $configdir/backupspw
+			backupspw=$newbackupspw
+
+		else
+
+			echo "${b}Ok, blocking S3 restores until you manually specify your old S3 backups encryption passphrase here:${x}"
+			echo
+			echo "${b} | $configdir/backupspw | ${x}"
+			echo
+			echo "${b}If you've lost your encryption passphrase, your S3 backups are also lost. Look for a local backup you might have from your old machine to restore your previous instance.${x}"
+			echo
+			touch $configdir/blocks3restores
+
+		fi
+
 	else
-		chmod 700 $configdir/backupspw # In case someone accidentally modified permissions on $configdir
+
+		if [ ! -f $configdir/backupspw ]
+		then
+			touch $configdir/backupspw
+			chmod 700 $configdir/backupspw
+			generatedpw="$(pwgen 42 1)"
+			echo $generatedpw > $configdir/backupspw
+		else
+			chmod 700 $configdir/backupspw # In case someone accidentally modified permissions on $configdir
+		fi
+
+		backupspw="$(cat $configdir/backupspw)"
+
+		echo "${b}Your S3 backups encryption passphrase is:${x}"
+		echo
+		echo "${g}${b} | $backupspw | ${x}"
+		echo
+		echo "${b}Make sure you keep it saved in a safe location OUTSIDE of this machine and NOT on the S3 file storage server.${x}"
+		echo
+		echo "${r}${b}You will NOT be able to restore ANY backup without this passphrase.${x}"
+		echo
+		echo "${b}This is your only chance to save this passphrase. If you don't do it now and this machine's data is lost, so will be your backups.${x}"
+		echo
+		read -p "${b}[press enter to continue reading...]${x}"
+		clear
+
 	fi
-
-	backupspw="$(cat $configdir/backupspw)"
-
-	echo "${b}Your S3 backups encryption passphrase is:${x}"
-	echo
-	echo "${g}${b} | $backupspw |${x}"
-	echo
-	echo "${b}Make sure you keep it saved in a safe location OUTSIDE of this machine and NOT on the S3 file storage server.${x}"
-	echo
-	echo "${r}${b}You will NOT be able to restore ANY backup without this passphrase.${x}"
-	echo
-	echo "${b}This is your only chance to save this passphrase. If you don't do it now and this machine's data is lost, so will be your backups.${x}"
-	echo
-	read -p "${b}[press enter to continue reading...]${x}"
-	clear
 
 fi
 
@@ -1847,7 +1929,7 @@ then
 		ejbdadminpwreset=n
 	else
 		echo
-		echo "${b}Ok, resetting ejabberd admin user password to: | $ejbdadminpw |${x}"
+		echo "${b}Ok, resetting ejabberd admin user password to: | $ejbdadminpw | ${x}"
 		echo
 		/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
 		ejbdadminpwreset=y

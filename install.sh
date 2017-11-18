@@ -44,14 +44,52 @@ then
 	echo
 fi
 
+
+
+SESSION_TYPE=local
+
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  SESSION_TYPE=ssh
+else
+  case $(ps -o comm= -p $PPID) in
+    sshd|*/sshd) SESSION_TYPE=ssh;;
+  esac
+fi
+
+if [ $SESSION_TYPE = "ssh" ]
+then
+
+	sshconnectionstatus="$(echo "$SSH_CLIENT" | grep "::1" | wc -l)"
+
+	if [ ! $sshconnectionstatus = 0 ]
+	then
+	        echo "${r}${b}You appear to be connected via SSH on port 443 thanks to SSLH.${x}"
+		echo
+		echo "${b}This is usually perfectly fine, but not during installation, as we will be terminating SSLH during one of the steps.${x}"
+		echo
+		echo "${b}Please connect via your normal SSH port until you're finished re-installing aenigma${x}"
+		echo
+		echo "${b}Exiting...${x}"
+		echo
+		exit
+	fi
+
+fi
+
+
+
 if [[ $EUID -ne 0 ]]
 then
 	echo "${r}${b}This script must be run as root. Run it as:${x}"
 	echo
 	echo "sudo bash aenigma/install.sh"
 	echo
+	echo "${b}Exiting...${x}"
+	echo
 	exit
 fi
+
+
 
 if [ "`lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/' `" != "Ubuntu 16.04 LTS" ]
 then
@@ -61,6 +99,8 @@ then
 	echo
 	exit
 fi
+
+
 
 if [ -f /root/os-dfbs/run-ok ]
 then
@@ -95,6 +135,8 @@ else
 	fi
 fi
 
+
+
 echo "${b}Now installing dependencies...${x}"
 echo
 apt-add-repository ppa:duplicity-team/ppa -y
@@ -109,6 +151,8 @@ echo
 echo "${b}Finished installing dependencies.${x}"
 echo
 
+
+
 echo "${g}${b}Preflight check complete.${x}"
 echo
 echo "${b}Now proceeding with aenigma installation...${x}"
@@ -118,5 +162,7 @@ sudo bash aenigma/aenigma/installer-v"$installvers"
 
 echo "${b}Exiting installer.${x}"
 echo
+
+
 
 exit
