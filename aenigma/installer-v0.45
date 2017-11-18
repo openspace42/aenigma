@@ -1761,16 +1761,17 @@ apt-get -y install libwrap0-dev libconfig8-dev
 rm -r $tmpdir/sslh &> /dev/null || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
 ( cd $tmpdir/sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
-cp $sourcedir/conf/sslh/etc.init.d.sslh /etc/init.d/sslh
-update-rc.d sslh defaults
-systemctl daemon-reload
-cp $sourcedir/conf/sslh/etc-default-sslh-v1.18 /etc/default/sslh
-rm -r $tmpdir/sslh
-mkdir -p /etc/sslh/
+#mkdir -p /etc/sslh/
 sed -i "s|hostname-var|${hostname}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 sed -i "s|domain-var|${domain}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 sed -i "s|sshport-var|${sshport}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
-cp $sourcedir/conf/sslh/etc-sslh-v1.18 /etc/sslh/sslh.cfg
+cp $sourcedir/conf/sslh/etc-sslh-v1.18 /etc/sslh.cfg
+cp $sourcedir/conf/sslh/etc.init.d.sslh /etc/init.d/sslh
+chmod +x /etc/init.d/sslh
+update-rc.d sslh defaults
+systemctl daemon-reload
+#cp $sourcedir/conf/sslh/etc-default-sslh-v1.18 /etc/default/sslh
+rm -r $tmpdir/sslh
 mkdir -p /var/run/sslh
 touch /var/run/sslh/sslh.pid
 service sslh restart
