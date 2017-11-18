@@ -121,6 +121,10 @@ else
 		echo "${b}After you're done running DFBS [make sure you reboot this machine at the end], simply run the aenigma installer again.${x}"
 		echo
 		sleep 3
+		if [ -d "/root/Debian-First-Boot-Setup" ]
+		then
+			rm -r "/root/Debian-First-Boot-Setup"
+		fi
 		git clone https://github.com/openspace42/Debian-First-Boot-Setup
 		clear
 		bash Debian-First-Boot-Setup/script.sh
