@@ -683,105 +683,50 @@ fi
 
 
 
-echo "${b}Is this server reachable [or intended to be reachable] from the public internet?${x}"
+thisipv4="$(dig +short myip.opendns.com @resolver1.opendns.com)"
+echo "${b}Now testing IPv6 connectivity...${x}"
 echo
-echo "[Answer no if it is only intended for local network usage (i.e. NOT reachable from outside)]"
-echo
-read -p "Set up the server for ${b}public internet access${x}? (Y/n): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Nn]$ ]]
+ipv6pingaddr="2001:4860:4860::8888"
+if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null
 then
-  echo "${b}Ok, continuing in public internet accessibilty mode...${x}"
-  echo
-  deptype=internet
-  sleep 1
-else
-  echo
-  echo "${b}Ok, continuing in local network accessibility mode...${x}"
-  echo
-  echo "${b}You will need to ensure you have a local DNS server that serves all clients AND this machine as well.${x}"
-  echo
-  echo "${b}Open a shell to this machine and make sure it's using your local DNS server now before continuing.${x}"
-  echo
-  echo "${b}The DNS checks we'll be running shortly WILL FAIL if this machine's DNS settings don't point it to your local DNS server.${x}"
-  echo
-  deptype=local
-  read -p "[press enter to continue...]"
-fi
-clear
-
-if [ $deptype = "internet" ]
-then
-	thisipv4="$(dig +short myip.opendns.com @resolver1.opendns.com)"
-	echo "${b}Now testing IPv6 connectivity...${x}"
+	echo "${g}${b}IPv6 connectivity good.${x}"
 	echo
-	ipv6pingaddr="2001:4860:4860::8888"
-	if ping6 -q -c 1 -W 1 $ipv6pingaddr >/dev/null
+	ipv6avail=y
+else
+	counter=4
+	pingacquired=y
+	echo
+	until ping6 -c1 $ipv6pingaddr &>/dev/null
+	do
+	echo "${b}Waiting $counter more seconds for IPv6 connectivity...${x}"
+	echo
+	if [ $counter = 0 ]
 	then
-		echo "${g}${b}IPv6 connectivity good.${x}"
+		pingacquired=n
+		break
+	fi
+	counter=$(($counter - 1))
+	sleep 1
+	done
+	if [ $pingacquired = "y" ]
+	then
+		echo "${g}${b}IPv6 connectivity acquired.${x}"
 		echo
 		ipv6avail=y
 	else
-		counter=4
-		pingacquired=y
+		echo "${r}${b}IPv6 connectivity not found.${x}"
 		echo
-		until ping6 -c1 $ipv6pingaddr &>/dev/null
-		do
-		echo "${b}Waiting $counter more seconds for IPv6 connectivity...${x}"
-		echo
-		if [ $counter = 0 ]
-		then
-			pingacquired=n
-			break
-		fi
-		counter=$(($counter - 1))
-		sleep 1
-		done
-		if [ $pingacquired = "y" ]
-		then
-			echo "${g}${b}IPv6 connectivity acquired.${x}"
-			echo
-			ipv6avail=y
-		else
-			echo "${r}${b}IPv6 connectivity not found.${x}"
-			echo
-			ipv6avail=n
-		fi
-	fi
-	if [ $ipv6avail = "y" ]
-	then
-		thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
-		echo "${b}Your IPv6 global [public] address appears to be: | $thisipv6 | ${x}"
-		echo
-	fi
-	echo "${b}Finished testing IPv6 connectivity.${x}"
-	echo
-else
-	ipv6avail=n
-	thisipv4="$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')"
-	echo "${b}Your machine's primary interface's IPv4 address appears to be: | $thisipv4 | ${x}"
-	echo
-	echo "${b}If this is not your machine's correct primary interface's IPv4 address [i.e. with a private subnet address like 10., 192.168, 172.16, etc...] you must set it correctly now.${x}"
-	echo
-	read -p "${b}That said, is this your machine's correct primary interface's IPv4 address? (Y/n): ${x}" -n 1 -r
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
-		echo "${b}Ok, basing install on local IPv4 address: | $thisipv4 | ${x}"
-		echo
-	else
-		echo
-		read -p "${b}Ok, then specify now your machine's correct primary interface's IPv4 address: ${x}" newthisipv4
-		echo
-		read -p "${b}Is | $newthisipv4 | correct? (y/N): ${x}" confirm && [[ $confirm == [yY] ]] || exit 1
-		echo
-		thisipv4=$newthisipv4
-		echo "${b}Ok, basing install on newly set local IPv4 address: | $thisipv4 | ${x}"
-		echo
+		ipv6avail=n
 	fi
 fi
-sleep 1
-clear
+if [ $ipv6avail = "y" ]
+then
+	thisipv6="$(dig +short -6 myip.opendns.com aaaa @resolver1.ipv6-sandbox.opendns.com)"
+	echo "${b}Your IPv6 global [public] address appears to be: | $thisipv6 | ${x}"
+	echo
+fi
+echo "${b}Finished testing IPv6 connectivity.${x}"
+echo
 
 
 
