@@ -146,6 +146,7 @@ fi
 
 echo "${b}Now installing dependencies...${x}"
 echo
+hostname="$(cat /etc/hostname)"
 apt-add-repository ppa:duplicity-team/ppa -y
 apt-get update
 apt-get -y install dnsutils ufw bc duplicity python-pip pwgen
