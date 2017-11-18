@@ -9,6 +9,9 @@ g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
+set -e
+set -u
+
 echo
 
 # Detect old installation dir and move to new location

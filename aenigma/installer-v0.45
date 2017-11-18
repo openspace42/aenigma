@@ -1515,6 +1515,13 @@ do
 					echo
 					echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 					echo
+					if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+					then
+						echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
+						echo
+						echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
+						echo
+					fi
 					result=notset
 				else
 					if [ "$digresult" = "$thisip" ]
@@ -1535,6 +1542,13 @@ do
 						echo
 						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 						echo
+						if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+						then
+							echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
+							echo
+							echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
+							echo
+						fi
 						result=incorrect
 					fi
 				fi
