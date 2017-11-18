@@ -1519,10 +1519,12 @@ do
 					then
 						if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 						then
-							echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
-							echo
-							echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
-							echo
+							if [ $ipversion = "v4" ]
+								echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
+								echo
+								echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
+								echo
+							fi
 						fi
 					fi
 					result=notset
@@ -1549,10 +1551,12 @@ do
 						then
 							if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 							then
-								echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
-								echo
-								echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
-								echo
+								if [ $ipversion = "v4" ]
+									echo "${b}You can also set this record as a CNAME [suggested choice]:${x}"
+									echo
+									echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
+									echo
+								fi
 							fi
 						fi
 						result=incorrect
