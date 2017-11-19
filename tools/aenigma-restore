@@ -40,7 +40,7 @@ then
 	bootstrapmode=on
         echo "${r}${b}It appears aenigma is not currently installed or there is an incomplete installation on this machine.${x}"
         echo
-        echo "${b}Now running this restore script in bootstrap mode, therefore we'll be restoring your previous instance's files and settings and then re-running the install script${x}"
+        echo "${b}Now running this restore script in bootstrap mode, therefore we'll be restoring your previous instance's files and settings BEFORE aenigma is actually installed on this machine, and only then will we run the install script.${x}"
 	echo
 	echo "${b}If you're not trying to restore a previous instance from another machine, please exit this script now and run [or finish running] the install script first.${x}"
 	echo
@@ -446,7 +446,6 @@ else
                 FULLBACKLOGFILE="$duplicityrestlogdir/restore.full.log"
                 HOST=`hostname`
                 DATE=`date +%Y-%m-%d`
-                MAILADDR="$(cat $configdir/adminmail)"
                 TODAY=$(date +%d%m%Y)
 
                 is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
@@ -498,18 +497,6 @@ else
 
                         trace "Backup for local filesystem complete"
                         trace "------------------------------------"
-
-                        # Send the daily log file by email
-                        #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                        #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
-                        BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
-                        if [ "$BACKUPSTATUS" != "0" ]
-                        then
-                    	   cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                        elif [ "$FULL" = "full" ]
-                        then
-                            echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
-                        fi
 
                         # Append the daily log file to the main log file
                         cat "$DAILYLOGFILE" >> $LOGFILE
