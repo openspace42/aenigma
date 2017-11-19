@@ -96,6 +96,7 @@ echo
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
 cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
 cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
+cp -r $configfir $tmpbackupdir/config/
 cd $tmpdir
 tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
 echo

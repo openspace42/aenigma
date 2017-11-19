@@ -37,15 +37,15 @@ fi
 
 if [ ! -f $configdir/installcomplete ]
 then
+	bootstrapmode=on
         echo "${r}${b}It appears aenigma is not currently installed or there is an incomplete installation on this machine.${x}"
         echo
-        echo "${b}This restore script only works on a fully installed aenigma instance.${x}"
-        echo
-        echo "${b}If you're trying to restore your previous machine's backup to this one, please first install aenigma as a brand new instance, then re-run this script.${x}"
-        echo
-        echo "${b}Exiting...${x}"
-        echo
-        exit
+        echo "${b}Now running this restore script in bootstrap mode, therefore we'll be restoring your previous instance's files and settings and then re-running the install script${x}"
+	echo
+	echo "${b}If you're not trying to restore a previous instance from another machine, please exit this script now and run [or finish running] the install script first.${x}"
+	echo
+else
+	bootstrapmode=off
 fi
 
 if [ -f $configdir/blocks3restores ]
@@ -72,34 +72,38 @@ then
 fi
 
 
-
-choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state from this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"
-echo $choice
-echo
-options=("backup file stored locally" "backup file stored elsewhere" "exit")
-select opt in "${options[@]}"
-do
-    echo
-    case $opt in
-        "backup file stored locally")
-            restoresource=here
-            break
-            ;;
-        "backup file stored elsewhere")
-            restoresource=elsewhere
-            break
-            ;;
-        "exit")
-            echo "${b}Exiting...${x}"
-            echo
-            exit
-            ;;
-        *)
-            echo "${r}${b}Invalid option. Retry...${x}"
-            echo
-            ;;
-    esac
-done
+if [ $bootstrapmode = "off" ]
+then
+	choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state from this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"
+	echo $choice
+	echo
+	options=("backup file stored locally" "backup file stored elsewhere" "exit")
+	select opt in "${options[@]}"
+	do
+	    echo
+	    case $opt in
+	        "backup file stored locally")
+	            restoresource=here
+	            break
+	            ;;
+	        "backup file stored elsewhere")
+	            restoresource=elsewhere
+	            break
+	            ;;
+	        "exit")
+	            echo "${b}Exiting...${x}"
+	            echo
+	            exit
+	            ;;
+	        *)
+	            echo "${r}${b}Invalid option. Retry...${x}"
+	            echo
+	            ;;
+	    esac
+	done
+else
+	restoresource=elsewhere
+fi
 
 
 
@@ -209,13 +213,9 @@ then
 
 else
 
-        backuptype="$(cat $configdir/backuptype)"
-
-        if [ $backuptype = "s3" ]
-        then
-                echo "${b}You've previously set up an S3 file storage server connection on this machine.${x}"
-                echo
-                choice="${b}Do you want to restore from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
+	if [ $bootstrapmode = "on" ]
+	then
+		choice="${b}Do you want to restore your previous instance from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
                 echo $choice
                 options=("S3" "elsewhere" "exit")
                 select opt in "${options[@]}"
@@ -240,14 +240,181 @@ else
                             ;;
                     esac
                 done
-        else
-                restoretype=elsewhere
-        fi
+	else
+		backuptype="$(cat $configdir/backuptype)"
+	        if [ $backuptype = "s3" ]
+	        then
+	                echo "${b}You've previously set up an S3 file storage server connection on this machine.${x}"
+	                echo
+	                choice="${b}Do you want to restore from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
+	                echo $choice
+	                options=("S3" "elsewhere" "exit")
+	                select opt in "${options[@]}"
+	                do
+	                    echo
+	                    case $opt in
+	                        "S3")
+	                            restoretype=s3
+	                            break
+	                            ;;
+	                        "elsewhere")
+	                            restoretype=elsewhere
+	                            break
+	                            ;;
+	                        "exit")
+	                            echo "${b}Exiting...${x}"
+	                            echo
+	                            exit
+	                            ;;
+	                        *)  echo "${r}${b}Invalid option. Retry...${x}"
+	                            echo
+	                            ;;
+	                    esac
+	                done
+	        else
+	                restoretype=elsewhere
+	        fi
+	fi
 
 
 
         if [ $restoretype = "s3" ]
         then
+
+		if [ $bootstrapmode = "on" ]
+		then
+
+			echo "${b}We now need to set up our S3 file storage server parameters${x}"
+			echo
+
+			mkdir -p $configdir/s3/
+
+			declare -A s3array=(
+				[awsaki]="AWS Access Key ID"
+				[awssak]="AWS Secret Access Key"
+				[s3endpoint]="S3 Endpoint URL"
+				[s3bucketname]="S3 Bucket Name"
+			)
+
+			for i in "${!s3array[@]}"
+			do
+				if [ -f $configdir/s3/$i ]
+				then
+					prevs3var="$(cat $configdir/s3/$i)"
+					echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var | ${x}"
+					echo
+					read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
+					echo
+					if [[ ! $REPLY =~ ^[Nn]$ ]]
+					then
+						echo "${b}Ok, keeping | $prevs3var | as your ${s3array[$i]}${x}"
+						echo
+						news3var=$prevs3var
+					else
+						echo
+						news3var=notyetset
+					fi
+				else
+					news3var=notyetset
+				fi
+
+				if [ $news3var = "notyetset" ]
+				then
+					defined=n
+					until [ $defined = "y" ]
+					do
+						news3var=""
+						until [ ! $news3var = "" ]
+						do
+							read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
+							echo
+						done
+						valid=n
+						until [ $valid = "y" ]
+						do
+							read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
+							case $answer in
+							"")
+								echo
+								valid=y
+								defined=y
+								;;
+							y)
+								echo -e "\n"
+								valid=y
+								defined=y
+								;;
+							n)
+								echo -e "\n"
+								echo "${b}Ok, then please try again...${x}"
+								echo
+								valid=y
+								defined=n
+								;;
+							e)
+								echo -e "\n"
+								echo "${b}Exiting...${x}"
+								echo
+								exit
+								;;
+							*)
+								echo -e "\n"
+								echo "${r}${b}Invalid option. Retry...${x}"
+								echo
+								valid=n
+								defined=n
+								;;
+							esac
+						done
+					done
+					echo "${b}${s3array[$i]} set to | $news3var | ${x}"
+					echo
+					echo $news3var > $configdir/s3/$i
+				fi
+			done
+
+			awsaki="$(cat $configdir/s3/awsaki)"
+			awssak="$(cat $configdir/s3/awssak)"
+			s3endpoint="$(cat $configdir/s3/s3endpoint)"
+			s3bucketname="$(cat $configdir/s3/s3bucketname)"
+
+			echo "----------------"
+			echo
+			echo "${b}To make sure everything is correct:${x}"
+			echo
+			echo "1] Your ${b}AWS Access Key ID${x} will be:"
+			echo
+			echo "${b} | $awsaki | ${x}"
+			echo
+			echo "2] Your ${b}AWS Secret Access Key${x} will be:"
+			echo
+			echo "${b} | $awssak | ${x}"
+			echo
+			echo "3] Your ${b}S3 Endpoint URL${x} will be:"
+			echo
+			echo "${b} | $s3endpoint | ${x}"
+			echo
+			echo "4] Your ${b}S3 Bucket Name${x} will be:"
+			echo
+			echo "${b} | $s3bucketname | ${x}"
+			echo
+			echo "----------------"
+			echo
+
+			read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
+			echo
+			if [[ ! $REPLY =~ ^[Nn]$ ]]
+			then
+				echo "${b}Ok, continuing.${x}"
+				echo
+			else
+				echo
+				echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
+				echo
+				exit
+			fi
+			clear
+		fi
 
 		set +e
 
@@ -423,7 +590,12 @@ else
         fi
 fi
 
-echo "${b}1] Now restoring ejabberd database...${x}"
+echo "${b}1] Now restoring aenigma config directory...${x}"
+echo
+
+rsync -aAXx --delete $restorefileloc/config/ $configdir/
+
+echo "${b}2] Now restoring ejabberd database...${x}"
 echo
 
 if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
@@ -467,7 +639,7 @@ echo
 /usr/sbin/service ejabberd stop
 sleep 8
 
-echo "${b}2] Now syncing ejabberd directories...${x}"
+echo "${b}3] Now syncing ejabberd directories...${x}"
 echo
 
 rsync -aAXx --delete $restorefileloc/etc-ejabberd/ /etc/ejabberd/
@@ -541,4 +713,16 @@ else
         echo
         exit
 
+fi
+
+if [ $bootstrapmode = "on" ]
+then
+	echo "${b}Now that we're finished with the initial restore, it's time to re-run the install script and get this machine up and running with your old instance's files and settings${x}"
+	echo
+	echo "${b}Running install script now.${x}"
+	echo
+	echo "${r}${b}Should you exit the install script during it runtime, you can re-run it manually with:${x}"
+	echo
+	echo "${b} | bash $sourcedir/install.sh | ${x}"
+	bash $sourcedir/install.sh
 fi
