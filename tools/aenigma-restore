@@ -107,6 +107,8 @@ fi
 
 
 
+duplicitylogdir="null"
+
 if [ $restoresource = "here" ]
 then
         if [ ! -d $localbackupsdir ]
@@ -512,9 +514,98 @@ else
 
         else
 
-                echo "${r}${b}Restoring from a custom file is not yet supported. It will be implemented by v0.45's full release.${x}"
+		echo "${b}Ok, restoring from a standalone aenigma backup file.${x}"
 		echo
-		exit
+		if [ -d /root/aenigma-restore/ ]
+		then
+			rm -r /root/aenigma-restore/
+		fi
+		mkdir -p /root/aenigma-restore/
+		read -p "${b}Do you have a file called | aenigma-backup-[date].tar.bz2 | [or similar]? (Y/n): ${x}" -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+			defined=n
+			until [ $defined = "y" ]
+			do
+				exists=n
+				until [ $exists = "y" ]
+				do
+					standalonebackupfile=""
+					until [ ! $standalonebackupfile = "" ]
+					do
+						read -p "${b}Ok, specify the path to that file now: ${x}" standalonebackupfile
+						echo
+					done
+					if [ -f $standalonebackupfile ]
+					then
+						exists=y
+					else
+						echo "${r}${b}The specified file does not exists. Please retry...${x}"
+						echo
+						exists=n
+					fi
+				done
+				valid=n
+				until [ $valid = "y" ]
+				do
+					read -n 1 -p "${b}Is | $standalonebackupfile | correct? (Y/n/e[xit]) ${x}" answer;
+					case $answer in
+					"")
+						echo
+						valid=y
+						defined=y
+						;;
+					y)
+						echo -e "\n"
+						valid=y
+						defined=y
+						;;
+					n)
+						echo -e "\n"
+						echo "${b}Ok, then please try again...${x}"
+						echo
+						valid=y
+						defined=n
+						;;
+					e)
+						echo -e "\n"
+			        		echo "${b}Exiting...${x}"
+			        		echo
+			        		exit
+			        		;;
+					*)
+						echo -e "\n"
+						echo "${r}${b}Invalid option. Retry...${x}"
+			        		echo
+						valid=n
+					defined=n
+				        ;;
+					esac
+				done
+			done
+			echo "${b}Backup file $standalonebackupfile selected.${x}"
+			echo
+			tar -xvjf $standalonebackupfile -C /root/aenigma-restore/
+			subdir=(/root/aenigma-restore/*/)
+			restoresubdir="$(echo $subdir | sed 's|/root/aenigma-restore/||' | tr -d '/')"
+			mv /root/aenigma-restore/$restoresubdir/* /root/aenigma-restore/
+			rm -r /root/aenigma-restore/$restoresubdir
+		else
+			echo "${b}Ok, no problem. Make sure you populate the | /root/aenigma-restore/ | directory with these 4 files/directories from your standalone backup:${x}"
+			echo
+			echo "${b}1] /root/aenigma-restore/config${x}"
+			echo "${b}2] /root/aenigma-restore/ejabberd-mnesia-backup${x}"
+			echo "${b}3] /root/aenigma-restore/etc-ejabberd${x}"
+			echo "${b}4] /root/aenigma-restore/var-lib-ejabberd${x}"
+			echo
+			echo "${r}${b}If you don't correctly place all 4 files/directories, the restore will not work correctly [you will be alerted if something is wrong further along this script]${x}"
+			echo
+			echo "${b}As soon as you're done moving these items into place...${x}"
+			echo
+			read -p "${b}[press enter to continue...]${x}"
+			clear
+		fi
 
         fi
 
@@ -554,7 +645,10 @@ then
         echo
 else
         mv $localbackupsdir $localbackupsdir-old-before-$now-restore
-        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null || true
+	if [ ! $duplicitylogdir = "null" ]
+	then
+	        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null || true
+	fi
         echo "Backed up current installation to local backups directory and moved the latter to $localbackupsdir-old-before-$now-restore."
         echo
 fi
@@ -745,6 +839,11 @@ else
         echo
         exit
 
+fi
+
+if [ -d /root/aenigma-restore/ ]
+then
+	rm -r /root/aenigma-restore/
 fi
 
 if [ $bootstrapmode = "on" ]
