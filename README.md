@@ -61,7 +61,7 @@ sudo bash ./aenigma/install.sh
 ```
 
 ## Restore a previous install on a fresh new machine:
-## [either from S3 or another standalone backup from your old instance]
+### [either from S3 or another standalone backup from your old instance]
 
 ```
 apt update
