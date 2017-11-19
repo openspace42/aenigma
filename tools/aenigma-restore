@@ -303,7 +303,7 @@ else
 					prevs3var="$(cat $configdir/s3/$i)"
 					echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var | ${x}"
 					echo
-					read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
+					read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
 					echo
 					if [[ ! $REPLY =~ ^[Nn]$ ]]
 					then
@@ -522,20 +522,20 @@ fi
 echo
 
 
-# Perform a [last] backup of this currently running installation just in case
+### Perform a [last] backup of this currently running installation just in case
 
 echo "${b}Now backing up [locally - no S3 of course] this machine's currently running aenigma installation just in case...${x}"
 echo
 
 rm -r $tmpdir/* 2> /dev/null || true
 mkdir -p $localbackupsdir
-# No need to create S3 dir as we're only backing up locally
+### No need to create S3 dir as we're only backing up locally
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
 tmpbackupdir=$tmpdir/$backupname
 mkdir -p $tmpbackupdir
 
-# Don't purge backups as this is an extra backup we're doing without specifically asking the user
+### Don't purge backups as this is an extra backup we're doing without specifically asking the user
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
@@ -546,7 +546,7 @@ cd $tmpdir
 tar -cvjSf $localbackupsdir/$backupname-last-backup-before-$now-restore.tar.bz2 $backupname
 echo
 
-# If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
+### If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
 
 if [ $restoresource = "here" ]
 then
@@ -564,10 +564,12 @@ fi
 echo "${b}Now restoring aenigma from backup...${x}"
 echo
 
+
+
 if [ $restoresource = "here" ]
 then
         restorefilename="$(echo $selbackupfile | sed 's|./||g' | sed 's/-last-backup.*-restore//' | sed 's/.tar.bz2//g')"
-        restorefileloc=$restoresdir/local/$restorefilename/
+        restorefileloc=$restoresdir/local/$restorefilename
 else
         if [ $restoretype = "s3" ]
         then
@@ -576,6 +578,49 @@ else
                 restorefileloc=/root/aenigma-restore/
         fi
 fi
+
+
+
+### Validate backup file
+
+declare -A restorevalidationarray=(
+	[config]="config"
+	[mnesia]="ejabberd-mnesia-backup"
+	[etc]="etc-ejabberd"
+	[var]="var-lib-ejabberd"
+)
+
+for i in "${!restorevalidationarray[@]}"
+do
+
+	overrideerrors=n
+
+	if [ ! -e $restorefileloc/${restorevalidationarray[$i]} ]
+	then
+		echo "${r}${b}${restorevalidationarray[$i]} file/directory NOT found. If you continue, your restore will NOT be complete.${x}"
+		echo
+		read -p "${b}Do you still wish to continue? (y/N): ${x}" -n 1 -r
+		echo
+		if [[ $REPLY =~ ^[Yy]$ ]]
+		then
+			echo "${b}Ok, continuing...${x}"
+			echo
+			overrideerrors=y
+		else
+			echo "${b}Ok, exiting...${x}"
+			echo
+			exit
+		fi
+	fi
+
+done
+
+if [ $overrideerrors = "y" ]
+then
+	set +e
+fi
+
+
 
 echo "${b}1] Now restoring aenigma config directory...${x}"
 echo
