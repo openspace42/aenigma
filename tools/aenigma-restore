@@ -708,8 +708,9 @@ then
 	echo
 	echo "${b}Running install script now.${x}"
 	echo
-	echo "${r}${b}Should you exit the install script during it runtime, you can re-run it manually with:${x}"
+	echo "${r}${b}Should you exit the install script during its runtime, you can re-run it manually with:${x}"
 	echo
 	echo "${b} | bash $sourcedir/install.sh | ${x}"
+	cd
 	bash $sourcedir/install.sh
 fi
