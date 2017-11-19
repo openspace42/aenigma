@@ -60,6 +60,19 @@ git clone https://github.com/openspace42/aenigma.git
 sudo bash ./aenigma/install.sh
 ```
 
+## Restore a previous install on a fresh new machine:
+## [either from S3 or another standalone backup from your old instance]
+
+```
+apt update
+apt install git
+```
+
+```
+git clone https://github.com/openspace42/aenigma.git
+sudo bash ./aenigma/restore.sh
+```
+
 ## Recommended clients:
 
 ### For Android:
