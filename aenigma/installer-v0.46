@@ -1691,6 +1691,16 @@ echo
 echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
 ee site update $hostname  --le --experimental || true
+if [ ! -f /etc/letsencrypt/live/$hostname/fullchain.pem ]
+then
+	echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
+	echo
+	echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+	echo
+	echo "${b}Exiting...${x}"
+	echo
+	exit
+fi
 echo
 echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
@@ -1729,6 +1739,16 @@ echo
 echo "${b}Now updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
 echo
 ee site update xu.$domain  --le --experimental || true
+if [ ! -f /etc/letsencrypt/live/xu.$domain/fullchain.pem ]
+then
+	echo "${r}${b}There was an issue provisioning the TLS certificate for xu.$domain with LetsEncrypt.${x}"
+	echo
+	echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+	echo
+	echo "${b}Exiting...${x}"
+	echo
+	exit
+fi
 echo
 echo "${b}Finished updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
 echo
@@ -1767,6 +1787,16 @@ then
 	echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
 	ee site update $domain  --le --experimental || true
+	if [ ! -f /etc/letsencrypt/live/$domain/fullchain.pem ]
+	then
+		echo "${r}${b}There was an issue provisioning the TLS certificate for $domain with LetsEncrypt.${x}"
+		echo
+		echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+		echo
+		echo "${b}Exiting...${x}"
+		echo
+		exit
+	fi
 	echo
 	echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo

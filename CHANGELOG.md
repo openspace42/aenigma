@@ -1,6 +1,15 @@
 # aenigma changelog
 
-## v0.45
+## v0.46
+
+1. Validate S3 connection details
+2. Allow "bootstrap mode" to restore aenigma [and therefore source all previous settings] before running the installation on a new machine
+3. Alert in case of reinstall and prompt for backup
+4. Suggest adding CNAMES instead of A/AAAA records
+5. Added error in case of LetsEncrypt failure
+
+
+## v0.45 [2017-11-18]
 
 1. Changed installation directory to /root/openspace42/aenigma/
 2. Build SSLH from source to use v1.18 [for ALPN functionality]
