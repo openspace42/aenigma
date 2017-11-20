@@ -1131,6 +1131,8 @@ clear
 if [ $backuptype = "s3" ]
 then
 
+	s3accepted=n
+
 	until [ $s3accepted = "y" ]
 	do
 
@@ -1266,6 +1268,7 @@ then
 				echo "${g}${b}S3 connection details appear to be valid.${x}"
 				echo
 				s3accepted=y
+				sleep 1
 			else
 				echo "${r}${b}S3 connection details do NOT appear to be valid.${x}"
 				echo
@@ -1278,16 +1281,20 @@ then
 					echo
 				else
 					s3accepted=y
+					echo
 					echo "${b}Ok, skipping S3 setup and REMOVING s3 setting from aenigma...${x}"
 					echo
 					backuptype=local
 					echo "local" > $configdir/backuptype
+					read -p "${b}[press enter to continue reading...]${x}"
+					clear
 				fi
 			fi
 			set -e
 
 		else
 			s3accepted=n
+			echo
 			echo "${b}Ok, repeating S3 setup...${x}"
 			echo
 		fi
