@@ -148,7 +148,7 @@ echo
 hostname="$(cat /etc/hostname)"
 apt-add-repository ppa:duplicity-team/ppa -y
 apt-get update
-apt-get -y install dnsutils ufw bc duplicity python-pip pwgen
+apt-get -y install dnsutils ufw bc duplicity python-pip pwgen s3cmd
 pip install --upgrade pip
 pip install boto
 debconf-set-selections <<< "postfix postfix/mailname string $hostname"
