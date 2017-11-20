@@ -122,6 +122,43 @@ fi
 
 
 
+### Alert in case of reinstall
+
+if [ ! $prevvers = "null" ]
+then
+
+	echo "${b}You're now re-running the aenigma installer."
+	echo
+	echo "${r}${b}Keep in mind that all customizations external to aenigma you might have made will be permanently deleted.${x}"
+	echo
+	echo "${b}This is because the installation script goes through every configuration and sets the default values, with no regard to any anomaly it finds.${x}"
+	echo
+	echo "${r}${b}If you want to save any customizations you have made, exit this script and do so now.${x}"
+	echo
+	read -p "[press enter to continue reading...]"
+	clear
+
+	echo "${b}It's highly recommended to run one last, fully automated backup before you proceed with the aenigma installer re-run.${x}"
+	echo
+	read -p "${b}Do you want to run the backup now [without exiting this script] (Y/n): ${x}" -n 1 -r
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+		echo "${b}Ok, proceeding with backup...${x}"
+		echo
+		bash $sourcedir/tools/aenigma-backup
+		echo
+		echo "${b}Backup complete. Continuing installtion...${x}"
+		echo
+	else
+		echo "${b}Ok, skipping backup...${x}"
+		echo
+	fi
+
+fi
+
+
+
 if [ $skipintro = "n" ]
 then
 
