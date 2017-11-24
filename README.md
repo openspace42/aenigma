@@ -1,6 +1,6 @@
 # aenigma
 
-![aenigma logo](aenigma_logo.png?raw=true)
+![aenigma logo](logo/aenigma_logo.png?raw=true)
 
 **aenigma** provisions a **fully functional** and **secure** out of the box **XMPP server** you can get running today.
 
