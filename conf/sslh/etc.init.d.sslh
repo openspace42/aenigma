@@ -27,6 +27,8 @@ DAEMON=$PREFIX/sbin/sslh
 start()
 {
         echo "Start services: sslh"
+        mkdir -p /var/run/sslh/
+        touch /var/run/sslh/sslh.pid
         $DAEMON -F/etc/sslh.cfg
         logger -t ${tag} -p ${facility} -i 'Started sslh'
 }
