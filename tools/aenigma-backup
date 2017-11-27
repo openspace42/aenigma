@@ -186,7 +186,7 @@ then
 
                 trace "... removing old backups"
 
-                duplicity remove-older-than ${OLDER_THAN} ${DEST} >> ${DAILYLOGFILE} 2>&1
+                duplicity remove-older-than ${OLDER_THAN} ${DEST} >> ${DAILYLOGFILE} 2>&1  || true
 
                 trace "... backing up filesystem"
 
