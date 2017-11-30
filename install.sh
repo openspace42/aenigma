@@ -48,34 +48,28 @@ fi
 
 
 
-SESSION_TYPE=local
+# Determine if user is connected via SSH on SSLH port 443
 
-if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
-  SESSION_TYPE=ssh
+printenvssh443="$(printenv | grep SSH | grep "::1" | wc -l)"
+
+if [ ! $printenvssh443 = 0 ]
+then
+        sessiontype=SSLH
 else
-  case $(ps -o comm= -p $PPID) in
-    sshd|*/sshd) SESSION_TYPE=ssh;;
-  esac
+        sessiontype=other
 fi
 
-if [ $SESSION_TYPE = "ssh" ]
+if [ $sessiontype = "SSLH" ]
 then
-
-	sshconnectionstatus="$(echo "$SSH_CLIENT" | grep "::1" | wc -l)"
-
-	if [ ! $sshconnectionstatus = 0 ]
-	then
-	        echo "${r}${b}You appear to be connected via SSH on port 443 thanks to SSLH.${x}"
-		echo
-		echo "${b}This is usually perfectly fine, but not during installation, as we will be terminating SSLH during one of the steps.${x}"
-		echo
-		echo "${b}Please connect via your normal SSH port until you're finished re-installing aenigma${x}"
-		echo
-		echo "${b}Exiting...${x}"
-		echo
-		exit
-	fi
-
+        echo "${r}${b}You appear to be connected via SSH on port 443 thanks to SSLH.${x}"
+	echo
+	echo "${b}This is usually perfectly fine, but not during installation, as we will be terminating SSLH during one of the steps.${x}"
+	echo
+	echo "${b}Please connect via your normal SSH port until you're finished re-installing aenigma${x}"
+	echo
+	echo "${b}Exiting...${x}"
+	echo
+	exit
 fi
 
 
