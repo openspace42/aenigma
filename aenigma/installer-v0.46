@@ -127,9 +127,11 @@ fi
 if [ ! $prevvers = "null" ]
 then
 
-	echo "${b}You're now re-running the aenigma installer."
+	echo "${b}You're now re-running the aenigma installer.${x}"
 	echo
-	echo "${r}${b}Keep in mind that all customizations external to aenigma you might have made will be permanently deleted.${x}"
+	echo "${g}${b}This is perfectly fine as aenigma is meant to be re-installed as many times as you'd like [also to update your current installation].${x}"
+	echo
+	echo "${r}${b}Keep in mind though that all customizations external to aenigma you might have made will be permanently deleted.${x}"
 	echo
 	echo "${b}This is because the installation script goes through every configuration and sets the default values, with no regard to any anomaly it finds.${x}"
 	echo
