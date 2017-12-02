@@ -7,6 +7,7 @@
 3. Alert in case of reinstall and prompt for backup
 4. Suggest adding CNAMES instead of A/AAAA records
 5. Added error in case of LetsEncrypt failure
+6. Added DPKG lock detection / waiting
 
 
 ## v0.45 [2017-11-18]
