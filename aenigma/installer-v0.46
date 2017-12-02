@@ -1942,7 +1942,16 @@ rm -r $tmpdir/sslh &> /dev/null || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
 ( cd $tmpdir/sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
 #mkdir -p /etc/sslh/
-sed -i "s|hostname-var|${hostname}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+sed -i "s|thisipv4-var|${thisipv4}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+if [ $ipv6avail = "y" ]
+then
+	sed -i "s|#ipv6_comma|,|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+	sed -i "s|#ipv6_line||g" $sourcedir/conf/sslh/etc-sslh-v1.18
+	sed -i "s|thisipv6-var|${thisipv6}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+else
+	sed -i "s|#ipv6_comma||g" $sourcedir/conf/sslh/etc-sslh-v1.18
+	sed -i "s|#ipv6_line|#|g" $sourcedir/conf/sslh/etc-sslh-v1.18
+fi
 sed -i "s|domain-var|${domain}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 sed -i "s|sshport-var|${sshport}|g" $sourcedir/conf/sslh/etc-sslh-v1.18
 cp $sourcedir/conf/sslh/etc-sslh-v1.18 /etc/sslh.cfg
