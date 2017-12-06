@@ -536,10 +536,10 @@ then
 				esac
 			done
 		done
-	echo $newhostname > /etc/hostname
-	echo "${b}New hostname set to | $newhostname | ${x}"
-	echo
-	hostname="$(cat /etc/hostname)"
+		echo $newhostname > /etc/hostname
+		echo "${b}New hostname set to | $newhostname | ${x}"
+		echo
+		hostname="$(cat /etc/hostname)"
 	fi
 
 	if [ $configoption = "3" ]
@@ -1017,10 +1017,10 @@ then
 					esac
 				done
 			done
-		echo $newdomtlscertloc > $configdir/domtlscertloc
-		echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc | ${x}"
-		echo
-		domtlscertloc="$(cat $configdir/domtlscertloc)"
+			echo $newdomtlscertloc > $configdir/domtlscertloc
+			echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc | ${x}"
+			echo
+			domtlscertloc="$(cat $configdir/domtlscertloc)"
 		fi
 
 	fi

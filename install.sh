@@ -98,7 +98,7 @@ fi
 
 
 
-if [ -f /root/os-dfbs/run-ok ]
+if [ -f $basedir/DFBS/run-ok ]
 then
         echo "${g}${b}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
