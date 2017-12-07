@@ -1,12 +1,12 @@
 #!/bin/bash
 
+set -e
+set -u
+
 r=`tput setaf 1`
 g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
-
-set -e
-set -u
 
 echo "${g}${b}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo

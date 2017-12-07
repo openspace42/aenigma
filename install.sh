@@ -1,16 +1,16 @@
 #!/bin/bash
 
-basedir=/root/openspace42 # Don't change! | No trailing slash!
-installdir=$basedir/aenigma # Don't change! | No trailing slash!
-configdir=$installdir/config # Don't change! | No trailing slash!
+set -e
+set -u
 
 r=`tput setaf 1`
 g=`tput setaf 2`
 x=`tput sgr0`
 b=`tput bold`
 
-set -e
-set -u
+basedir=/root/openspace42 # Don't change! | No trailing slash!
+installdir=$basedir/aenigma # Don't change! | No trailing slash!
+configdir=$installdir/config # Don't change! | No trailing slash!
 
 echo
 
