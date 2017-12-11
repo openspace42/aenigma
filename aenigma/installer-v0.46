@@ -1669,7 +1669,9 @@ echo
 
 echo "${b}Now installing easyengine...${x}"
 echo
-wget -qO ee rt.cx/ee && sudo bash ee && rm ee || true
+wget -qO ee rt.cx/ee
+bash ee || true
+rm ee
 source /etc/bash_completion.d/ee_auto.rc
 echo
 echo "${b}Finished installing easyengine.${x}"
