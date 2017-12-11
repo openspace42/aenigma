@@ -12,8 +12,8 @@ log_rotate_date: ""
 log_rotate_count: 1
 log_rate_limit: 100
 
-watchdog_admins:
-  - "admin@example.im"
+# watchdog_admins:
+#  - "admin@example.im"
 
 ## net_ticktime: 60
 
