@@ -1,5 +1,6 @@
 # aenigma changelog
 
+
 ## v0.46
 
 1. Validate S3 connection details
@@ -8,6 +9,7 @@
 4. Suggest adding CNAMES instead of A/AAAA records
 5. Added error in case of LetsEncrypt failure
 6. Added DPKG lock detection / waiting
+7. Fixed and improved SRV records DNS checks
 
 
 ## v0.45 [2017-11-18]
