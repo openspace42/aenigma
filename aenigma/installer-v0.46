@@ -1523,8 +1523,15 @@ do
 			do
 
 				digarrayiter=$(($digarrayiter + 1))
-				echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
-				echo
+
+				if [ ! $dnstype = "SRV" ]
+				then
+					echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+					echo
+				else
+					echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype SRV record...${x}"
+					echo
+				fi
 
 				accept=n
 				until [ $accept = "y" ]
@@ -1555,8 +1562,16 @@ do
 
 					if [ -z "$digresult" ]
 					then
-						echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to be at all set.${x}"
-						echo
+
+						if [ ! $dnstype = "SRV" ]
+						then
+							echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
+							echo
+						else
+							echo "${r}${b}The ${digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
+							echo
+						fi
+
 						echo "${b}Please ensure you set your DNS record as follows:${x}"
 						echo
 						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
@@ -1578,14 +1593,30 @@ do
 					else
 						if [ "$digresult" = "$thisip" ]
 						then
-							echo "${g}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record appears to resolve correctly to this server.${x}"
-							echo
+
+							if [ ! $dnstype = "SRV" ]
+							then
+								echo "${g}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
+								echo
+							else
+								echo "${g}${b}The ${digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
+								echo
+							fi
+
 							echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
 							echo
 							result=ok
 						else
-							echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion record does NOT appear to correctly resolve to this server.${x}"
-							echo
+
+							if [ ! $dnstype = "SRV" ]
+							then
+								echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
+								echo
+							else
+								echo "${r}${b}The ${digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
+								echo
+							fi
+
 							echo "${b}This is the result of a DNS query for ${digarray[$i]}$dnschecktype:${x}"
 							echo
 							echo "$digresult"
