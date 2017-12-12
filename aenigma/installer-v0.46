@@ -1461,85 +1461,85 @@ do
 	for ipversion in "${iparray[@]}"
 	do
 
-	echo "${b}Now let's make sure your $dnstype's IP$ipversion DNS settings are correct.${x}"
-	echo
-
-	if [ $dnstype = "hostname" ]
-	then
-		declare -A digarray=(
-			[HN]=""
-			[www]="www."
-		)
-	elif [ $dnstype = "domain" ]
-	then
-		declare -A digarray=(
-			[HN]=""
-			[www]="www."
-		)
-	elif [ $dnstype = "XMPP" ]
-	then
-		declare -A digarray=(
-			[xc]="xc."
-			[xe]="xe."
-			[xi]="xi."
-			[xm]="xm."
-			[xp]="xp."
-			[xu]="xu."
-			[wu]="www.xu."
-		)
-	elif [ $dnstype = "SRV" ]
-	then
-		declare -A digarray=(
-			[sj]="_jabber._tcp."
-			[ss]="_xmpp-server._tcp."
-			[sc]="_xmpp-client._tcp."
-		)
-	fi
-
-	# [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
-	# [xu]="XMPP HTTP uploads."
-	# [xe]="the ejabberd MOD_ECHO module."
-	# [xp]="the ejabberd MOD_PUBSUB module."
-	# [xi]="join channels on IRC servers."
-
-	# Since you've chosen option 1, your domain is different from your hostname.
-	# Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server.
-
-	digarrayiter=0
-
-	for i in "${!digarray[@]}"
-	do
-
-		digarrayiter=$(($digarrayiter + 1))
-		echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+		echo "${b}Now let's make sure your $dnstype's IP$ipversion DNS settings are correct.${x}"
 		echo
 
-		accept=n
-		until [ $accept = "y" ]
+		if [ $dnstype = "hostname" ]
+		then
+			declare -A digarray=(
+				[HN]=""
+				[www]="www."
+			)
+		elif [ $dnstype = "domain" ]
+		then
+			declare -A digarray=(
+				[HN]=""
+				[www]="www."
+			)
+		elif [ $dnstype = "XMPP" ]
+		then
+			declare -A digarray=(
+				[xc]="xc."
+				[xe]="xe."
+				[xi]="xi."
+				[xm]="xm."
+				[xp]="xp."
+				[xu]="xu."
+				[wu]="www.xu."
+			)
+		elif [ $dnstype = "SRV" ]
+		then
+			declare -A digarray=(
+				[sj]="_jabber._tcp."
+				[ss]="_xmpp-server._tcp."
+				[sc]="_xmpp-client._tcp."
+			)
+		fi
+
+		# [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
+		# [xu]="XMPP HTTP uploads."
+		# [xe]="the ejabberd MOD_ECHO module."
+		# [xp]="the ejabberd MOD_PUBSUB module."
+		# [xi]="join channels on IRC servers."
+
+		# Since you've chosen option 1, your domain is different from your hostname.
+		# Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain accounts to this server.
+
+		digarrayiter=0
+
+		for i in "${!digarray[@]}"
 		do
 
-		if [ ! $dnstype = "SRV" ]
-		then
-			if [ $ipversion = "v4" ]
-			then
-	                	thisip=$thisipv4
-				digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
-	                	rectype="A"
-			else
-	                	thisip=$thisipv6
-	                	digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
-	                	rectype="AAAA"
-			fi
-		else
-			if [ ! ${digarray[$i]} = "_xmpp-client._tcp." ]
-			then
-				thisip="0 0 5269 $hostname."
-			else
-				thisip="0 0 5222 $hostname."
-			fi
-			digresult="$(dig +short -t srv ${digarray[$i]}$domain)"
-			rectype="SRV"
-		fi
+			digarrayiter=$(($digarrayiter + 1))
+			echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+			echo
+
+			accept=n
+			until [ $accept = "y" ]
+			do
+
+				if [ ! $dnstype = "SRV" ]
+				then
+					if [ $ipversion = "v4" ]
+					then
+			                	thisip=$thisipv4
+						digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
+			                	rectype="A"
+					else
+			                	thisip=$thisipv6
+			                	digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+			                	rectype="AAAA"
+					fi
+				else
+					if [ ! ${digarray[$i]} = "_xmpp-client._tcp." ]
+					then
+						thisip="0 0 5269 $hostname."
+					else
+						thisip="0 0 5222 $hostname."
+					fi
+					digresult="$(dig +short -t srv ${digarray[$i]}$domain)"
+					rectype="SRV"
+				fi
 
 				if [ -z "$digresult" ]
 				then
@@ -1642,7 +1642,9 @@ do
 					accept=y
 				fi
 				clear
+
 			done
+
 		done
 
 		echo "${b}Finished checking your $dnstype's IP$ipversion DNS settings.${x}"
