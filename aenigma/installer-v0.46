@@ -1470,7 +1470,6 @@ do
 			then
 				echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
 				echo
-				sleep 1 #debug
 			else
 				echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
 				echo
@@ -1478,7 +1477,6 @@ do
 				echo
 				echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
 				echo
-				sleep 1 #debug
 			fi
 
 			if [ $dnstype = "hostname" ]
@@ -1527,7 +1525,6 @@ do
 				digarrayiter=$(($digarrayiter + 1))
 				echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
 				echo
-				sleep 1 #debug
 
 				accept=n
 				until [ $accept = "y" ]
@@ -1666,12 +1663,10 @@ do
 			then
 				echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
 				echo
-				sleep 1 #debug
 			else
 				echo "${b}Finished checking your XMPP SRV records.${x}"
 				echo
 				srvdone=y
-				sleep 1 #debug
 			fi
 
 		fi
