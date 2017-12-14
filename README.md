@@ -58,7 +58,7 @@ apt install git
 ```
 
 ```
-git clone https://github.com/openspace42/aenigma.git
+git clone https://github.com/openspace42/aenigma
 sudo bash ./aenigma/install.sh
 ```
 
@@ -71,7 +71,7 @@ apt install git
 ```
 
 ```
-git clone https://github.com/openspace42/aenigma.git
+git clone https://github.com/openspace42/aenigma
 sudo bash ./aenigma/restore.sh
 ```
 
