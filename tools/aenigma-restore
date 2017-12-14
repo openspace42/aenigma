@@ -1,14 +1,16 @@
 #!/bin/bash
 
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
+r=$(tput setaf 1)
+g=$(tput setaf 2)
+l=$(tput setaf 4)
+m=$(tput setaf 5)
+x=$(tput sgr0)
+b=$(tput bold)
 
 set -e
 set -u
 
-logname=`basename "$0"`
+logname=$(basename "$0")
 now="$(date +"%Y-%m-%d_%H-%M-%S")"
 echo && echo "Starting $logname script on $now..." && echo
 
@@ -75,7 +77,7 @@ fi
 if [ $bootstrapmode = "off" ]
 then
 	choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state from this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"
-	echo $choice
+	echo "$choice"
 	echo
 	options=("backup file stored locally" "backup file stored elsewhere" "exit")
 	select opt in "${options[@]}"
@@ -126,13 +128,13 @@ then
 
         echo "${b}These are the backup dates available for restore:${x}"
         echo
-        ls -1 $localbackupsdir | sed -e 's/aenigma-backup-//g' | sed -e 's/.tar.bz2//g'
+        ls -1 "$localbackupsdir" | sed -e 's/aenigma-backup-//g' | sed -e 's/.tar.bz2//g'
         echo
-        read -p "[press enter to continue...]"
+        read -rp "${b}[press enter to continue...]${x}"
         clear
 
         choice="${b}Now choose the file you'd like to restore: ${x}"
-        echo $choice
+        echo "$choice"
         echo
 
 	set +u
@@ -173,7 +175,7 @@ then
                 valid=n
                 until [ $valid = "y" ]
                 do
-                        read -n 1 -p "${b}Is this the correct file?${x} (${b}Y${x}[es]/${b}n${x}[o]/${b}e${x}[xit]) " answer;
+                        read -n 1 -rp "${b}Is this the correct file?${x} (${b}Y${x}[es]/${b}n${x}[o]/${b}e${x}[xit]) " answer;
                         case $answer in
                         "")
                                 echo
@@ -181,25 +183,25 @@ then
                                 accept=y
                                 ;;
                         y)
-                                echo -e "\n"
+                                echo -e "\\n"
                                 valid=y
                                 accept=y
                                 ;;
                         n)
-                                echo -e "\n"
+                                echo -e "\\n"
                                 echo "${b}No problem, please select your desired file again now...${x}"
                                 echo
                                 valid=y
                                 accept=n
                                 ;;
                         e)
-                                echo -e "\n"
+                                echo -e "\\n"
                                 echo "${b}Exiting...${x}"
                                 echo
                                 exit
                                 ;;
                         *)
-                                echo -e "\n"
+                                echo -e "\\n"
                                 echo "${b}Invalid option. Retry...${x}"
                                 echo
                                 valid=n
@@ -211,14 +213,14 @@ then
         done
 
         mkdir -p $restoresdir/local/
-        tar -xvjf $selbackupfile -C $restoresdir/local/
+        tar -xvjf "$selbackupfile" -C "$restoresdir"/local/
 
 else
 
 	if [ $bootstrapmode = "on" ]
 	then
 		choice="${b}Do you want to restore your previous instance from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
-                echo $choice
+                echo "$choice"
                 options=("S3" "elsewhere" "exit")
                 select opt in "${options[@]}"
                 do
@@ -244,12 +246,12 @@ else
                 done
 	else
 		backuptype="$(cat $configdir/backuptype)"
-	        if [ $backuptype = "s3" ]
+	        if [ "$backuptype" = "s3" ]
 	        then
 	                echo "${b}You've previously set up an S3 file storage server connection on this machine.${x}"
 	                echo
 	                choice="${b}Do you want to restore from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
-	                echo $choice
+	                echo "$choice"
 	                options=("S3" "elsewhere" "exit")
 	                select opt in "${options[@]}"
 	                do
@@ -300,9 +302,9 @@ else
 
 			for i in "${!s3array[@]}"
 			do
-				if [ -f $configdir/s3/$i ]
+				if [ -f "$configdir"/s3/"$i" ]
 				then
-					prevs3var="$(cat $configdir/s3/$i)"
+					prevs3var="$(cat "$configdir"/s3/"$i")"
 					echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var | ${x}"
 					echo
 					read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
@@ -328,13 +330,13 @@ else
 						news3var=""
 						until [ ! $news3var = "" ]
 						do
-							read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
+							read -rp "${b}Now set your ${s3array[$i]}${x}: " news3var
 							echo
 						done
 						valid=n
 						until [ $valid = "y" ]
 						do
-							read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
+							read -n 1 -rp "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
 							case $answer in
 							"")
 								echo
@@ -342,25 +344,25 @@ else
 								defined=y
 								;;
 							y)
-								echo -e "\n"
+								echo -e "\\n"
 								valid=y
 								defined=y
 								;;
 							n)
-								echo -e "\n"
+								echo -e "\\n"
 								echo "${b}Ok, then please try again...${x}"
 								echo
 								valid=y
 								defined=n
 								;;
 							e)
-								echo -e "\n"
+								echo -e "\\n"
 								echo "${b}Exiting...${x}"
 								echo
 								exit
 								;;
 							*)
-								echo -e "\n"
+								echo -e "\\n"
 								echo "${r}${b}Invalid option. Retry...${x}"
 								echo
 								valid=n
@@ -371,7 +373,7 @@ else
 					done
 					echo "${b}${s3array[$i]} set to | $news3var | ${x}"
 					echo
-					echo $news3var > $configdir/s3/$i
+					echo "$news3var" > "$configdir"/s3/"$i"
 				fi
 			done
 
@@ -446,8 +448,8 @@ else
                 LOGFILE="$duplicityrestlogdir/restore.log"
                 DAILYLOGFILE="$duplicityrestlogdir/restore.daily.log"
                 FULLBACKLOGFILE="$duplicityrestlogdir/restore.full.log"
-                HOST=`hostname`
-                DATE=`date +%Y-%m-%d`
+                HOST=$(hostname)
+                DATE=$(date +%Y-%m-%d)
                 TODAY=$(date +%d%m%Y)
 
                 is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
@@ -462,14 +464,14 @@ else
                         touch $FULLBACKLOGFILE
                 fi
 
-                if [ $is_running -eq 0 ]
+                if [ "$is_running" -eq 0 ]
                 then
                         # Clear the old daily log file
                         cat /dev/null > ${DAILYLOGFILE}
 
                         # Trace function for logging, don't change this
                         trace () {
-                                stamp=`date +%Y-%m-%d_%H:%M:%S`
+                                stamp=$(date +%Y-%m-%d_%H:%M:%S)
                                 echo "$stamp: $*" >> ${DAILYLOGFILE}
                         }
 
@@ -480,8 +482,8 @@ else
                         # SOURCE=$backupsdir/ # Use / for full system backup
 
                         FULL=
-                        tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null || true
-                        if [ $? -ne 0 -a $(date +%d) -eq 1 ]
+                        tail -1 "${FULLBACKLOGFILE}" | grep "${TODAY}" > /dev/null || true
+                        if [ $? -ne 0 -a "$(date +%d)" -eq 1 ]
                         then
                                 FULL=full
                         fi;
@@ -490,12 +492,12 @@ else
 
                         trace "... removing old backups"
 
-                        duplicity remove-older-than ${OLDER_THAN} ${DEST} >> ${DAILYLOGFILE} 2>&1  || true
+                        duplicity remove-older-than "${OLDER_THAN}" "${DEST}" >> "${DAILYLOGFILE}" 2>&1  || true
 
                         trace "... backing up filesystem"
 
                         rm -r $restoresdir/s3/* 2> /dev/null || true
-                        duplicity ${DEST} $restoresdir/s3/
+                        duplicity "${DEST}" "$restoresdir"/s3/
 
                         trace "Backup for local filesystem complete"
                         trace "------------------------------------"
@@ -534,10 +536,10 @@ else
 					standalonebackupfile=""
 					until [ ! $standalonebackupfile = "" ]
 					do
-						read -p "${b}Ok, specify the path to that file now: ${x}" standalonebackupfile
+						read -rp "${b}Ok, specify the path to that file now: ${x}" standalonebackupfile
 						echo
 					done
-					if [ -f $standalonebackupfile ]
+					if [ -f "$standalonebackupfile" ]
 					then
 						exists=y
 					else
@@ -549,7 +551,7 @@ else
 				valid=n
 				until [ $valid = "y" ]
 				do
-					read -n 1 -p "${b}Is | $standalonebackupfile | correct? (Y/n/e[xit]) ${x}" answer;
+					read -n 1 -rp "${b}Is | $standalonebackupfile | correct? (Y/n/e[xit]) ${x}" answer;
 					case $answer in
 					"")
 						echo
@@ -557,25 +559,25 @@ else
 						defined=y
 						;;
 					y)
-						echo -e "\n"
+						echo -e "\\n"
 						valid=y
 						defined=y
 						;;
 					n)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${b}Ok, then please try again...${x}"
 						echo
 						valid=y
 						defined=n
 						;;
 					e)
-						echo -e "\n"
+						echo -e "\\n"
 			        		echo "${b}Exiting...${x}"
 			        		echo
 			        		exit
 			        		;;
 					*)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${r}${b}Invalid option. Retry...${x}"
 			        		echo
 						valid=n
@@ -586,11 +588,11 @@ else
 			done
 			echo "${b}Backup file $standalonebackupfile selected.${x}"
 			echo
-			tar -xvjf $standalonebackupfile -C /root/aenigma-restore/
+			tar -xvjf "$standalonebackupfile" -C /root/aenigma-restore/
 			subdir=(/root/aenigma-restore/*/)
-			restoresubdir="$(echo $subdir | sed 's|/root/aenigma-restore/||' | tr -d '/')"
-			mv /root/aenigma-restore/$restoresubdir/* /root/aenigma-restore/
-			rm -r /root/aenigma-restore/$restoresubdir
+			restoresubdir="$(echo "$subdir" | sed 's|/root/aenigma-restore/||' | tr -d '/')"
+			mv /root/aenigma-restore/"$restoresubdir"/* /root/aenigma-restore/
+			rm -r /root/aenigma-restore/"$restoresubdir"
 		else
 			echo "${b}Ok, no problem. Make sure you populate the | /root/aenigma-restore/ | directory with these 4 files/directories from your standalone backup:${x}"
 			echo
@@ -603,7 +605,7 @@ else
 			echo
 			echo "${b}As soon as you're done moving these items into place...${x}"
 			echo
-			read -p "${b}[press enter to continue...]${x}"
+			read -rp "${b}[press enter to continue...]${x}"
 			clear
 		fi
 
@@ -618,23 +620,23 @@ echo
 echo "${b}Now backing up [locally - no S3 of course] this machine's currently running aenigma installation just in case...${x}"
 echo
 
-rm -r $tmpdir/* 2> /dev/null || true
+rm -r "${tmpdir:?}"/* 2> /dev/null || true
 mkdir -p $localbackupsdir
 ### No need to create S3 dir as we're only backing up locally
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
 tmpbackupdir=$tmpdir/$backupname
-mkdir -p $tmpbackupdir
+mkdir -p "$tmpbackupdir"
 
 ### Don't purge backups as this is an extra backup we're doing without specifically asking the user
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
-mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
-cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
-cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
-cd $tmpdir
+mv /tmp/ejabberd-mnesia-backup "$tmpbackupdir"/ejabberd-mnesia-backup
+cp -r /etc/ejabberd/ "$tmpbackupdir"/etc-ejabberd/
+cp -r /var/lib/ejabberd/ "$tmpbackupdir"/var-lib-ejabberd/
+cd $tmpdir || exit
 # Give local backup a custom name so that it's clear it's the last one before a rollback in time
-tar -cvjSf $localbackupsdir/$backupname-last-backup-before-$now-restore.tar.bz2 $backupname
+tar -cvjSf "$localbackupsdir"/"$backupname"-last-backup-before-"$now"-restore.tar.bz2 "$backupname"
 echo
 
 ### If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
@@ -644,10 +646,10 @@ then
         echo "Backed up current installation to $localbackupsdir."
         echo
 else
-        mv $localbackupsdir $localbackupsdir-old-before-$now-restore
+        mv "$localbackupsdir" "$localbackupsdir"-old-before-"$now"-restore
 	if [ ! $duplicitylogdir = "null" ]
 	then
-	        mv $duplicitylogdir/backup/ $duplicitylogdir/backup-old-before-$now-restore 2> /dev/null || true
+	        mv "$duplicitylogdir"/backup/ "$duplicitylogdir"/backup-old-before-"$now"-restore 2> /dev/null || true
 	fi
         echo "Backed up current installation to local backups directory and moved the latter to $localbackupsdir-old-before-$now-restore."
         echo
@@ -662,7 +664,7 @@ echo
 
 if [ $restoresource = "here" ]
 then
-        restorefilename="$(echo $selbackupfile | sed 's|./||g' | sed 's/-last-backup.*-restore//' | sed 's/.tar.bz2//g')"
+        restorefilename="$(echo "$selbackupfile" | sed 's|./||g' | sed 's/-last-backup.*-restore//' | sed 's/.tar.bz2//g')"
         restorefileloc=$restoresdir/local/$restorefilename
 else
         if [ $restoretype = "s3" ]
@@ -689,7 +691,7 @@ do
 
 	overrideerrors=n
 
-	if [ ! -e $restorefileloc/${restorevalidationarray[$i]} ]
+	if [ ! -e "$restorefileloc"/"${restorevalidationarray[$i]}" ]
 	then
 		echo "${r}${b}${restorevalidationarray[$i]} file/directory NOT found. If you continue, your restore will NOT be complete.${x}"
 		echo

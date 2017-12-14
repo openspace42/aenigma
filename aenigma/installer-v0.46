@@ -3,16 +3,18 @@
 set -e
 set -u
 
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
+r=$(tput setaf 1)
+g=$(tput setaf 2)
+l=$(tput setaf 4)
+m=$(tput setaf 5)
+x=$(tput sgr0)
+b=$(tput bold)
 
 echo "${g}${b}aenigma.xyz ejabberd installer by openspace [https://github.com/openspace42/aenigma]${x}"
 echo
 
-filename=`basename "$0"`
-currvers="$(echo $filename | tr -d 'installer\-v')"
+filename=$(basename "$0")
+currvers="$(echo "${filename//installer-v/}")"
 
 echo "${b}aenigma v$currvers${x}"
 echo
@@ -40,7 +42,7 @@ then
 	previnstall=y
 	echo "${g}${b}Found a previous install of aenigma.${x}"
 	echo
-	read -p "${b}Skip the introduction on XMPP basics? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Skip the introduction on XMPP basics? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -72,12 +74,12 @@ then
 		echo
 		exit
 	else
-		echo $currvers > $configdir/installedvers
+		echo "$currvers" > "$configdir"/installedvers
 	fi
 else
 	prevvers=null
 	touch $configdir/installedvers
-	echo $currvers > $configdir/installedvers
+	echo "$currvers" > $configdir/installedvers
 fi
 
 
@@ -95,7 +97,7 @@ then
 			incompleteinstall=y
 		else
 			lastcompleteinstallvers="$(cat $configdir/installcomplete)"
-			if [ $lastcompleteinstallvers != $prevvers ]
+			if [ "$lastcompleteinstallvers" != "$prevvers" ]
 			then
 				incompleteinstall=y
 			fi
@@ -116,7 +118,7 @@ then
 	echo
 	echo "${b}Thank you in advance!${x}"
 	echo
-	read -p "${b}[press enter to continue reading...]${x}"
+	read -rp "${b}[press enter to continue reading...]${x}"
 	clear
 fi
 
@@ -137,12 +139,12 @@ then
 	echo
 	echo "${r}${b}If you want to save any customizations you have made, exit this script and do so now.${x}"
 	echo
-	read -p "[press enter to continue reading...]"
+	read -rp "${b}[press enter to continue reading...]${x}"
 	clear
 
 	echo "${b}It's highly recommended to run one last, fully automated backup before you proceed with the aenigma installer re-run.${x}"
 	echo
-	read -p "${b}Do you want to run the backup now [without exiting this script] (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Do you want to run the backup now [without exiting this script] (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -165,11 +167,11 @@ then
 
 	echo "0] First of all, a little introduction on how XMPP actually works"
 	echo
-	echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS "MX" record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
+	echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS MX record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
 	echo
-	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS "SRV" record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
+	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS SRV record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
 	echo
-	read -p "[press enter to continue reading...]"
+	read -rp "${b}[press enter to continue reading...]${x}"
 	clear
 
 	echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
@@ -186,7 +188,7 @@ then
 	echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
 	echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
 	echo
-	read -p "[press enter to continue reading...]"
+	read -rp "${b}[press enter to continue reading...]${x}"
 	clear
 
 	echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
@@ -201,7 +203,7 @@ then
 	echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
 	echo "                          and not to a wider project."
 	echo
-	read -p "[press enter to continue reading...]"
+	read -rp "${b}[press enter to continue reading...]${x}"
 	clear
 
 	echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
@@ -214,7 +216,7 @@ then
 	echo "CONs:                  a] longer and more complex addresses"
 	echo "                       b] not logically 'clean'."
 	echo
-	read -p "[press enter to continue reading...]"
+	read -rp "${b}[press enter to continue reading...]${x}"
 	clear
 
 	echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
@@ -246,7 +248,7 @@ if [ $validprevconfigoption = "y" ]
 then
 	echo "${g}${b}You previously chose configuration option | $prevconfigoption | ${x}"
 	echo
-	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -262,7 +264,7 @@ fi
 if [ $configoption = "notyetset" ]
 then
 	choice="${b}Please select your desired configuration option: ${x}"
-	echo $choice
+	echo "$choice"
 	options=("configuration 1" "configuration 2" "configuration 3" "exit")
 	select opt in "${options[@]}"
 	do
@@ -317,7 +319,7 @@ then
 		echo
 		echo " | $prevdomain |"
 		echo
-		read -p "${b}Keep this domain for this installation as well? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}Keep this domain for this installation as well? (Y/n): ${x}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -352,7 +354,7 @@ then
 			echo
 			echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
 			echo
-			read -p "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1 -r
+			read -rp "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1
 			echo
 			if [[ $REPLY =~ ^[Yy]$ ]]
 			then
@@ -373,13 +375,13 @@ then
 				newdomain=""
 				until [ ! $newdomain = "" ]
 				do
-					read -p "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: ${x}" newdomain
+					read -rp "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses: ${x}" newdomain
 					echo
 				done
 				valid=n
 				until [ $valid = "y" ]
 				do
-					read -n 1 -p "${b}Is | $newdomain | correct? (Y/n/e[xit]) ${x}" answer;
+					read -n 1 -rp "${b}Is | $newdomain | correct? (Y/n/e[xit]) ${x}" answer;
 					case $answer in
 					"")
 						echo
@@ -387,25 +389,25 @@ then
 						defined=y
 						;;
 					y)
-						echo -e "\n"
+						echo -e "\\n"
 						valid=y
 						defined=y
 						;;
 					n)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${b}Ok, then please try again...${x}"
 						echo
 						valid=y
 						defined=n
 						;;
 					e)
-						echo -e "\n"
+						echo -e "\\n"
 		        			echo "${b}Exiting...${x}"
 		        			echo
 		        			exit
 		        			;;
 					*)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${r}${b}Invalid option. Retry...${x}"
 		        			echo
 						valid=n
@@ -414,7 +416,7 @@ then
 					esac
 				done
 			done
-			echo $newdomain > $configdir/domain
+			echo "$newdomain" > "$configdir"/domain
 			echo "${b}New domain set to | $newdomain | ${x}"
 			echo
 			domain="$(cat $configdir/domain)"
@@ -463,7 +465,7 @@ then
 		echo
 	fi
 
-	read -p "${b}Keep this hostname? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Keep this hostname? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -488,20 +490,20 @@ then
 			do
 				if [ $configoption = "1" ]
 				then
-					read -p "${b}Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: ${x}" newhostname
+					read -rp "${b}Now set your hostname, which must be a third level domain [subdomain] of either $domain or another domain: ${x}" newhostname
 					echo
 				elif [ $configoption = "3" ]
 				then
 					echo "${b}Keep in mind that your hostname will also become your domain [the part after the @ in your XMPP account addresses].${x}"
 					echo
-					read -p "${b}Now set your hostname, which must be a third level domain [subdomain] of your main domain: ${x}" newhostname
+					read -rp "${b}Now set your hostname, which must be a third level domain [subdomain] of your main domain: ${x}" newhostname
 					echo
 				fi
 			done
 			valid=n
 			until [ $valid = "y" ]
 			do
-				read -n 1 -p "${b}Is | $newhostname | correct? (Y/n/e[xit]) ${x}" answer;
+				read -n 1 -rp "${b}Is | $newhostname | correct? (Y/n/e[xit]) ${x}" answer;
 				case $answer in
 				"")
 					echo
@@ -509,25 +511,25 @@ then
 					defined=y
 					;;
 				y)
-					echo -e "\n"
+					echo -e "\\n"
 					valid=y
 					defined=y
 					;;
 				n)
-					echo -e "\n"
+					echo -e "\\n"
 					echo "${b}Ok, then please try again...${x}"
 					echo
 					valid=y
 					defined=n
 					;;
 				e)
-					echo -e "\n"
+					echo -e "\\n"
 		        		echo "${b}Exiting...${x}"
 		        		echo
 		        		exit
 		        		;;
 				*)
-					echo -e "\n"
+					echo -e "\\n"
 					echo "${r}${b}Invalid option. Retry...${x}"
 		        		echo
 					valid=n
@@ -536,7 +538,7 @@ then
 				esac
 			done
 		done
-		echo $newhostname > /etc/hostname
+		echo "$newhostname" > /etc/hostname
 		echo "${b}New hostname set to | $newhostname | ${x}"
 		echo
 		hostname="$(cat /etc/hostname)"
@@ -555,7 +557,7 @@ else
 	echo
 	echo " | $currhostname |"
 	echo
-	if [ $currhostname = $domain ]
+	if [ "$currhostname" = "$domain" ]
 	then
 		echo "${g}${b}Your hostname matches your domain, all good!${x}"
 		echo
@@ -564,13 +566,13 @@ else
 		echo
 		echo "${b}Having chosen option 2, they must be identical.${x}"
 		echo
-		read -p "${b}Do you want to set your hostname to match your domain? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}Do you want to set your hostname to match your domain? (Y/n): ${x}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
 			echo "${b}Ok, setting hostname to match domain.${x}"
 			echo
-			echo $domain > /etc/hostname
+			echo "$domain" > /etc/hostname
 			echo "${b}New hostname set to | $domain | ${x}"
 			echo
 		else
@@ -611,7 +613,7 @@ echo
 echo "----------------"
 echo
 
-read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
+read -rp "${b}Does everything look all right? (Y/n): ${x}" -n 1
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]
 then
@@ -649,7 +651,7 @@ if [ $validprevadminmail = "y" ]
 then
 	echo "${g}${b}You previously set your admin email address to be: | $prevadminmail | ${x}"
 	echo
-	read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Is this still correct? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -672,13 +674,13 @@ then
 		newadminmail=""
 		until [ ! $newadminmail = "" ]
 		do
-			read -p "${b}Now set your admin email address: ${x}" newadminmail
+			read -rp "${b}Now set your admin email address: ${x}" newadminmail
 			echo
 		done
 		valid=n
 		until [ $valid = "y" ]
 		do
-			read -n 1 -p "${b}Is | $newadminmail | correct? (Y/n/e[xit]) ${x}" answer;
+			read -n 1 -rp "${b}Is | $newadminmail | correct? (Y/n/e[xit]) ${x}" answer;
 			case $answer in
 			"")
 				echo
@@ -686,25 +688,25 @@ then
 				defined=y
 				;;
 			y)
-				echo -e "\n"
+				echo -e "\\n"
 				valid=y
 				defined=y
 				;;
 			n)
-				echo -e "\n"
+				echo -e "\\n"
 				echo "${b}Ok, then please try again...${x}"
 				echo
 				valid=y
 				defined=n
 				;;
 			e)
-				echo -e "\n"
+				echo -e "\\n"
 				echo "${b}Exiting...${x}"
 				echo
 				exit
 				;;
 			*)
-				echo -e "\n"
+				echo -e "\\n"
 				echo "${r}${b}Invalid option. Retry...${x}"
 				echo
 				valid=n
@@ -713,7 +715,7 @@ then
 			esac
 		done
 	done
-	echo $newadminmail > $configdir/adminmail
+	echo "$newadminmail" > "$configdir"/adminmail
 	echo "${b}New admin email address set to | $newadminmail | ${x}"
 	echo
 	adminmail="$(cat $configdir/adminmail)"
@@ -744,7 +746,7 @@ else
 		pingacquired=n
 		break
 	fi
-	counter=$(($counter - 1))
+	counter=$((counter - 1))
 	sleep 1
 	done
 	if [ $pingacquired = "y" ]
@@ -798,7 +800,7 @@ then
 	then
 		echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prevaddTLSmode | ${x}"
 		echo
-		read -p "${b}Is this still true? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}Is this still true? (Y/n): ${x}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -820,7 +822,7 @@ then
 		echo
 		echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
 		echo
-		read -p "[press enter to continue reading...]"
+		read -rp "${b}[press enter to continue reading...]${x}"
 		clear
 
 		echo "This certificate, if it already exists, resides on the server responding to $domain"
@@ -829,26 +831,26 @@ then
 		echo
 		echo "This is the IP to which your bare domain $domain is pointing to:"
 		echo
-		dig +noall +answer $domain
+		dig +noall +answer "$domain"
 		echo
 		echo "[If you see no output, then it might be misconfigured or not configured at all.]"
 		echo
-		read -p "[press enter to continue reading...]"
+		read -rp "${b}[press enter to continue reading...]${x}"
 		clear
 
-		read -p "${b}That said, is there ANOTHER [running] server that responds to $domain? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}That said, is there ANOTHER [running] server that responds to $domain? (Y/n): ${x}" -n 1
         	echo
         	if [[ ! $REPLY =~ ^[Nn]$ ]]
         	then
-			read -p "${b}Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): ${x}" -n 1 -r
+			read -rp "${b}Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): ${x}" -n 1
 	        	echo
 	        	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	        	then
-				read -p "${b}Ok, is this a Linux server? (Y/n): ${x}" -n 1 -r
+				read -rp "${b}Ok, is this a Linux server? (Y/n): ${x}" -n 1
                         	echo
                         	if [[ ! $REPLY =~ ^[Nn]$ ]]
                         	then
-					read -p "${b}Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): ${x}" -n 1 -r
+					read -rp "${b}Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): ${x}" -n 1
 	                		echo
 	                		if [[ ! $REPLY =~ ^[Nn]$ ]]
 	                		then
@@ -874,7 +876,7 @@ then
 					echo
 				fi
 			else
-				read -p "${b}Ok, no problem. Is this server a linux server? (Y/n): ${x}" -n 1 -r
+				read -rp "${b}Ok, no problem. Is this server a linux server? (Y/n): ${x}" -n 1
                         	echo
                         	if [[ ! $REPLY =~ ^[Nn]$ ]]
                         	then
@@ -904,7 +906,7 @@ then
 			echo
 			echo "For now, no need to worry about that."
 			echo
-			read -p "[press enter to continue reading...]"
+			read -rp "${b}[press enter to continue reading...]${x}"
 			clear
 
 			echo "${b}Let's point $domain and www.$domain to this server for the time being.${x}"
@@ -942,7 +944,7 @@ then
 		then
 			echo "${g}${b}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc | ${x}"
 			echo
-			read -p "${b}Is this still correct? (Y/n): ${x}" -n 1 -r
+			read -rp "${b}Is this still correct? (Y/n): ${x}" -n 1
 			echo
 			if [[ ! $REPLY =~ ^[Nn]$ ]]
 			then
@@ -967,10 +969,10 @@ then
 					newdomtlscertloc=""
 					until [ ! $newdomtlscertloc = "" ]
 					do
-						read -p "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: ${x}" newdomtlscertloc
+						read -rp "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: ${x}" newdomtlscertloc
 						echo
 					done
-					if [ -f $newdomtlscertloc ]
+					if [ -f "$newdomtlscertloc" ]
 					then
 						exists=y
 					else
@@ -982,7 +984,7 @@ then
 				valid=n
 				until [ $valid = "y" ]
 				do
-					read -n 1 -p "${b}Is | $newdomtlscertloc | correct? (Y/n/e[xit]) ${x}" answer;
+					read -n 1 -rp "${b}Is | $newdomtlscertloc | correct? (Y/n/e[xit]) ${x}" answer;
 					case $answer in
 					"")
 						echo
@@ -990,25 +992,25 @@ then
 						defined=y
 						;;
 					y)
-						echo -e "\n"
+						echo -e "\\n"
 						valid=y
 						defined=y
 						;;
 					n)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${b}Ok, then please try again...${x}"
 						echo
 						valid=y
 						defined=n
 						;;
 					e)
-						echo -e "\n"
+						echo -e "\\n"
 			        		echo "${b}Exiting...${x}"
 			        		echo
 			        		exit
 			        		;;
 					*)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${r}${b}Invalid option. Retry...${x}"
 			        		echo
 						valid=n
@@ -1017,7 +1019,7 @@ then
 					esac
 				done
 			done
-			echo $newdomtlscertloc > $configdir/domtlscertloc
+			echo "$newdomtlscertloc" > "$configdir"/domtlscertloc
 			echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc | ${x}"
 			echo
 			domtlscertloc="$(cat $configdir/domtlscertloc)"
@@ -1054,7 +1056,7 @@ if [ $validprevbackuptype = "y" ]
 then
 	echo "${g}${b}You previously chose backup type | $prevbackuptype | ${x}"
 	echo
-	read -p "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Keep this option for this installation as well? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -1077,13 +1079,13 @@ then
 	echo
 	echo "${b}You must choose to set up S3 now if you're restoring a previous aenigma installation.${x}"
 	echo
-	read -p "${b}Do you want to set up S3 now? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Do you want to set up S3 now? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
 		echo "${b}Ok, using S3 as backup type.${x}"
 		echo
-		read -p "${b}Do you have an S3 file storage server already set up? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}Do you have an S3 file storage server already set up? (Y/n): ${x}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -1097,7 +1099,7 @@ then
 			echo
 			echo "${r}${b}If you choose yes, make sure NOT to use this instance as it is [as it will NOT be backed up on S3] but rather remember to perform the restore right after you're finished running this install script.${x}"
 			echo
-			read -p "${b}Are you setting up this machine to restore a previous aenigma installation from another machine? (Y/n): ${x}" -n 1 -r
+			read -rp "${b}Are you setting up this machine to restore a previous aenigma installation from another machine? (Y/n): ${x}" -n 1
 			echo
 			if [[ ! $REPLY =~ ^[Nn]$ ]]
 			then
@@ -1149,12 +1151,12 @@ then
 
 		for i in "${!s3array[@]}"
 		do
-			if [ -f $configdir/s3/$i ]
+			if [ -f "$configdir"/s3/"$i" ]
 			then
-				prevs3var="$(cat $configdir/s3/$i)"
+				prevs3var="$(cat "$configdir"/s3/"$i")"
 				echo "${g}${b}You previously set your ${s3array[$i]} to be: | $prevs3var | ${x}"
 				echo
-				read -p "${b}is this still correct? (Y/n): ${x}" -n 1 -r
+				read -rp "${b}is this still correct? (Y/n): ${x}" -n 1
 				echo
 				if [[ ! $REPLY =~ ^[Nn]$ ]]
 				then
@@ -1177,13 +1179,13 @@ then
 					news3var=""
 					until [ ! $news3var = "" ]
 					do
-						read -p "${b}Now set your ${s3array[$i]}${x}: " news3var
+						read -rp "${b}Now set your ${s3array[$i]}${x}: " news3var
 						echo
 					done
 					valid=n
 					until [ $valid = "y" ]
 					do
-						read -n 1 -p "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
+						read -n 1 -rp "${b}Is | $news3var | correct? (Y/n/e[xit]) ${x}" answer;
 						case $answer in
 						"")
 							echo
@@ -1191,25 +1193,25 @@ then
 							defined=y
 							;;
 						y)
-							echo -e "\n"
+							echo -e "\\n"
 							valid=y
 							defined=y
 							;;
 						n)
-							echo -e "\n"
+							echo -e "\\n"
 							echo "${b}Ok, then please try again...${x}"
 							echo
 							valid=y
 							defined=n
 							;;
 						e)
-							echo -e "\n"
+							echo -e "\\n"
 							echo "${b}Exiting...${x}"
 							echo
 							exit
 							;;
 						*)
-							echo -e "\n"
+							echo -e "\\n"
 							echo "${r}${b}Invalid option. Retry...${x}"
 							echo
 							valid=n
@@ -1220,7 +1222,7 @@ then
 				done
 				echo "${b}${s3array[$i]} set to | $news3var | ${x}"
 				echo
-				echo $news3var > $configdir/s3/$i
+				echo "$news3var" > "$configdir"/s3/"$i"
 			fi
 		done
 
@@ -1252,7 +1254,7 @@ then
 		echo "----------------"
 		echo
 
-		read -p "${b}Does everything look all right? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}Does everything look all right? (Y/n): ${x}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -1264,7 +1266,7 @@ then
 
 			s3cmd --configure --access_key="$awsaki" --secret_key="$awssak" --host="$s3endpoint" -s --no-encrypt --dump-config 2>&1 | tee /root/.s3cfg &> /dev/null
 			set +e
-			s3cmd info s3://$s3bucketname >/dev/null 2>&1
+			s3cmd info s3://"$s3bucketname" >/dev/null 2>&1
 
 			if [[ $? -eq 0 ]]; then
 				echo "${g}${b}S3 connection details appear to be valid.${x}"
@@ -1274,7 +1276,7 @@ then
 			else
 				echo "${r}${b}S3 connection details do NOT appear to be valid.${x}"
 				echo
-				read -p "${b}Would you like to try setting it up again? (Y/n): ${x}" -n 1 -r
+				read -rp "${b}Would you like to try setting it up again? (Y/n): ${x}" -n 1
 			    	echo
 			    	if [[ ! $REPLY =~ ^[Nn]$ ]]
 			    	then
@@ -1288,7 +1290,7 @@ then
 					echo
 					backuptype=local
 					echo "local" > $configdir/backuptype
-					read -p "${b}[press enter to continue reading...]${x}"
+					read -rp "${b}[press enter to continue reading...]${x}"
 					clear
 				fi
 			fi
@@ -1310,7 +1312,7 @@ then
 		echo
 		echo "${b}If you intend to restore from S3 you must have your encryption passphrase handy now as you were reminded upon initial installation on your old machine.${x}"
 		echo
-		read -p "${b}Do you have your S3 encryption passphrase ready to specify now? (Y/n): ${x}" -n 1 -r
+		read -rp "${b}Do you have your S3 encryption passphrase ready to specify now? (Y/n): ${x}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -1321,13 +1323,13 @@ then
 				newbackupspw=""
 				until [ ! $newbackupspw = "" ]
 				do
-					read -p "${b}Ok, paste your S3 encryption passphrase here: " newbackupspw
+					read -rp "${b}Ok, paste your S3 encryption passphrase here: " newbackupspw
 					echo
 				done
 				valid=n
 				until [ $valid = "y" ]
 				do
-					read -n 1 -p "${b}Is | $newbackupspw | correct? (Y/n/e[xit]) ${x}" answer;
+					read -n 1 -rp "${b}Is | $newbackupspw | correct? (Y/n/e[xit]) ${x}" answer;
 					case $answer in
 					"")
 						echo
@@ -1335,25 +1337,25 @@ then
 						defined=y
 						;;
 					y)
-						echo -e "\n"
+						echo -e "\\n"
 						valid=y
 						defined=y
 						;;
 					n)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${b}Ok, then please try again...${x}"
 						echo
 						valid=y
 						defined=n
 						;;
 					e)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${b}Exiting...${x}"
 						echo
 						exit
 						;;
 					*)
-						echo -e "\n"
+						echo -e "\\n"
 						echo "${r}${b}Invalid option. Retry...${x}"
 						echo
 						valid=n
@@ -1364,7 +1366,7 @@ then
 			done
 			echo "${b}Ok, using | $newbackupspw | as your S3 backups encryption passphrase.${x}"
 			echo
-			echo $newbackupspw > $configdir/backupspw
+			echo "$newbackupspw" > "$configdir"/backupspw
 			backupspw=$newbackupspw
 
 		else
@@ -1376,7 +1378,7 @@ then
 			echo "${b}If you've lost your encryption passphrase, your S3 backups are also lost. Look for a local backup you might have from your old machine to restore your previous instance.${x}"
 			echo
 			touch $configdir/blocks3restores
-			read -p "${b}[press enter to continue reading...]${x}"
+			read -rp "${b}[press enter to continue reading...]${x}"
 			clear
 
 		fi
@@ -1388,7 +1390,7 @@ then
 			touch $configdir/backupspw
 			chmod 700 $configdir/backupspw
 			generatedpw="$(pwgen 42 1)"
-			echo $generatedpw > $configdir/backupspw
+			echo "$generatedpw" > "$configdir"/backupspw
 		else
 			chmod 700 $configdir/backupspw # In case someone accidentally modified permissions on $configdir
 		fi
@@ -1405,7 +1407,7 @@ then
 		echo
 		echo "${b}This is your only chance to save this passphrase. If you don't do it now and this machine's data is lost, so will be your backups.${x}"
 		echo
-		read -p "${b}[press enter to continue reading...]${x}"
+		read -rp "${b}[press enter to continue reading...]${x}"
 		clear
 
 	fi
@@ -1451,7 +1453,7 @@ fi
 for dnstype in "${dnsarray[@]}"
 do
 
-	if [ $dnstype = "hostname" ]
+	if [ "$dnstype" = "hostname" ]
 	then
 		dnschecktype=$hostname
 	else
@@ -1466,7 +1468,7 @@ do
 		if [ $srvdone = n ]
 		then
 
-			if [ ! $dnstype = "SRV" ]
+			if [ ! "$dnstype" = "SRV" ]
 			then
 				echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
 				echo
@@ -1479,19 +1481,19 @@ do
 				echo
 			fi
 
-			if [ $dnstype = "hostname" ]
+			if [ "$dnstype" = "hostname" ]
 			then
 				declare -A digarray=(
 					[HN]=""
 					[www]="www."
 				)
-			elif [ $dnstype = "domain" ]
+			elif [ "$dnstype" = "domain" ]
 			then
 				declare -A digarray=(
 					[HN]=""
 					[www]="www."
 				)
-			elif [ $dnstype = "XMPP" ]
+			elif [ "$dnstype" = "XMPP" ]
 			then
 				declare -A digarray=(
 					[xc]="xc."
@@ -1502,7 +1504,7 @@ do
 					[xu]="xu."
 					[wu]="www.xu."
 				)
-			elif [ $dnstype = "SRV" ]
+			elif [ "$dnstype" = "SRV" ]
 			then
 				declare -A digarray=(
 					[sj]="_jabber._tcp."
@@ -1522,9 +1524,9 @@ do
 			for i in "${!digarray[@]}"
 			do
 
-				digarrayiter=$(($digarrayiter + 1))
+				digarrayiter=$((digarrayiter + 1))
 
-				if [ ! $dnstype = "SRV" ]
+				if [ ! "$dnstype" = "SRV" ]
 				then
 					echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
 					echo
@@ -1537,33 +1539,33 @@ do
 				until [ $accept = "y" ]
 				do
 
-					if [ ! $dnstype = "SRV" ]
+					if [ ! "$dnstype" = "SRV" ]
 					then
-						if [ $ipversion = "v4" ]
+						if [ "$ipversion" = "v4" ]
 						then
 				                	thisip=$thisipv4
-							digresult="$(getent ahostsv4 ${digarray[$i]}$dnschecktype. | head -1 |sed 's/ .*//')"
+							digresult="$(getent ahostsv4 "${digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
 				                	rectype="A"
 						else
 				                	thisip=$thisipv6
-				                	digresult="$(getent ahostsv6 ${digarray[$i]}$dnschecktype. | grep -v $thisipv4 | head -1 | sed 's/ .*//')"
+				                	digresult="$(getent ahostsv6 "${digarray[$i]}""$dnschecktype". | grep -v "$thisipv4" | head -1 | sed 's/ .*//')"
 				                	rectype="AAAA"
 						fi
 					else
-						if [ ! ${digarray[$i]} = "_xmpp-client._tcp." ]
+						if [ ! "${digarray[$i]}" = "_xmpp-client._tcp." ]
 						then
 							thisip="0 0 5269 $hostname."
 						else
 							thisip="0 0 5222 $hostname."
 						fi
-						digresult="$(dig +short -t srv ${digarray[$i]}$domain)"
+						digresult="$(dig +short -t srv "${digarray[$i]}""$domain")"
 						rectype="SRV"
 					fi
 
 					if [ -z "$digresult" ]
 					then
 
-						if [ ! $dnstype = "SRV" ]
+						if [ ! "$dnstype" = "SRV" ]
 						then
 							echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
 							echo
@@ -1574,17 +1576,17 @@ do
 
 						echo "${b}Please ensure you set your DNS record as follows:${x}"
 						echo
-						echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
+						echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
 						echo
 						if [ ! "${digarray[$i]}$dnschecktype" = "$hostname" ]
 						then
 							if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 							then
-								if [ $ipversion = "v4" ]
+								if [ "$ipversion" = "v4" ]
 								then
 									echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
 									echo
-									echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
+									echo -e "| ${digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
 									echo
 								fi
 							fi
@@ -1594,7 +1596,7 @@ do
 						if [ "$digresult" = "$thisip" ]
 						then
 
-							if [ ! $dnstype = "SRV" ]
+							if [ ! "$dnstype" = "SRV" ]
 							then
 								echo "${g}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
 								echo
@@ -1603,12 +1605,12 @@ do
 								echo
 							fi
 
-							echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
+							echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
 							echo
 							result=ok
 						else
 
-							if [ ! $dnstype = "SRV" ]
+							if [ ! "$dnstype" = "SRV" ]
 							then
 								echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
 								echo
@@ -1623,17 +1625,17 @@ do
 							echo
 							echo "${b}Please set it instead to:${x}"
 							echo
-							echo -e "| ${digarray[$i]}$dnschecktype\t\t$rectype\t$thisip |"
+							echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
 							echo
 							if [ ! "${digarray[$i]}$dnschecktype" = "$hostname" ]
 							then
 								if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 								then
-									if [ $ipversion = "v4" ]
+									if [ "$ipversion" = "v4" ]
 									then
 										echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
 										echo
-										echo -e "| ${digarray[$i]}$dnschecktype\t\tCNAME\t$hostname |"
+										echo -e "| ${digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
 										echo
 									fi
 								fi
@@ -1647,7 +1649,7 @@ do
 						valid=n
 						until [ $valid = "y" ]
 						do
-							read -n 1 -p "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+							read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
 							case $answer in
 							"")
 								echo
@@ -1655,25 +1657,25 @@ do
 								accept=n
 								;;
 							y)
-								echo -e "\n"
+								echo -e "\\n"
 								valid=y
 								accept=n
 								;;
 							s)
-								echo -e "\n"
+								echo -e "\\n"
 								echo "${b}Skipping DNS check for this record...${x}"
 								echo
 								valid=y
 								accept=y
 								;;
 							e)
-								echo -e "\n"
+								echo -e "\\n"
 		        					echo "${b}Exiting...${x}"
 		        					echo
 		        					exit
 		        					;;
 							*)
-								echo -e "\n"
+								echo -e "\\n"
 								echo "${b}Invalid option. Retry...${x}"
 		        					echo
 								valid=n
@@ -1690,7 +1692,7 @@ do
 
 			done
 
-			if [ ! $dnstype = "SRV" ]
+			if [ ! "$dnstype" = "SRV" ]
 			then
 				echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
 				echo
@@ -1733,7 +1735,7 @@ echo
 
 echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
 echo
-ee site create $hostname || true
+ee site create "$hostname" || true
 echo
 echo "${b}Finished creating easyengine site for $hostname.${x}"
 echo
@@ -1741,15 +1743,15 @@ echo
 echo "${b}Now setting custom nginx config for $hostname...${x}"
 echo
 sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/hostname.conf
-cp $sourcedir/conf/nginx/hostname.conf /etc/nginx/sites-available/$hostname
+cp "$sourcedir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
 service nginx reload
 echo "${b}Finished setting custom nginx config for $hostname.${x}"
 echo
 
 echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 echo
-ee site update $hostname  --le --experimental || true
-if [ ! -f /etc/letsencrypt/live/$hostname/fullchain.pem ]
+ee site update "$hostname"  --le --experimental || true
+if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
 then
 	echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
 	echo
@@ -1766,14 +1768,14 @@ echo
 echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
 echo
 touch $tlsdir/hostname.pem
-cat /etc/letsencrypt/live/$hostname/privkey.pem > $tlsdir/hostname.pem
-cat /etc/letsencrypt/live/$hostname/fullchain.pem >> $tlsdir/hostname.pem
+cat /etc/letsencrypt/live/"$hostname"/privkey.pem > "$tlsdir"/hostname.pem
+cat /etc/letsencrypt/live/"$hostname"/fullchain.pem >> "$tlsdir"/hostname.pem
 echo "${b}Finished creating all-in-one TLS file for $hostname for ejabberd.${x}"
 echo
 
 echo "${b}Now setting index.html in docroot for $hostname...${x}"
 echo
-cp $sourcedir/conf/web/hostname/index.html /var/www/$hostname/htdocs/
+cp "$sourcedir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
 echo "${b}Finished setting index.html in docroot for $hostname.${x}"
 echo
 
@@ -1781,7 +1783,7 @@ echo
 
 echo "${b}Now creating easyengine site for xu.$domain, generating its TLS certificate, and installing it...${x}"
 echo
-ee site create xu.$domain || true
+ee site create xu."$domain" || true
 echo
 echo "${b}Finished creating easyengine site for xu.$domain.${x}"
 echo
@@ -1789,15 +1791,15 @@ echo
 echo "${b}Now setting custom nginx config for xu.$domain...${x}"
 echo
 sed -i "s/example.im/xu.${domain}/g" $sourcedir/conf/nginx/xu.conf
-cp $sourcedir/conf/nginx/xu.conf /etc/nginx/sites-available/xu.$domain
+cp "$sourcedir"/conf/nginx/xu.conf /etc/nginx/sites-available/xu."$domain"
 service nginx reload
 echo "${b}Finished setting custom nginx config for xu.$domain.${x}"
 echo
 
 echo "${b}Now updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
 echo
-ee site update xu.$domain  --le --experimental || true
-if [ ! -f /etc/letsencrypt/live/xu.$domain/fullchain.pem ]
+ee site update xu."$domain"  --le --experimental || true
+if [ ! -f /etc/letsencrypt/live/xu."$domain"/fullchain.pem ]
 then
 	echo "${r}${b}There was an issue provisioning the TLS certificate for xu.$domain with LetsEncrypt.${x}"
 	echo
@@ -1814,8 +1816,8 @@ echo
 echo "${b}Now creating all-in-one TLS file for xu.$domain for ejabberd...${x}"
 echo
 touch $tlsdir/xu.pem
-cat /etc/letsencrypt/live/xu.$domain/privkey.pem > $tlsdir/xu.pem
-cat /etc/letsencrypt/live/xu.$domain/fullchain.pem >> $tlsdir/xu.pem
+cat /etc/letsencrypt/live/xu."$domain"/privkey.pem > "$tlsdir"/xu.pem
+cat /etc/letsencrypt/live/xu."$domain"/fullchain.pem >> "$tlsdir"/xu.pem
 echo "${b}Finished creating all-in-one TLS file for xu.$domain for ejabberd.${x}"
 echo
 
@@ -1829,7 +1831,7 @@ then
 
 	echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it...${x}"
 	echo
-	ee site create $domain || true
+	ee site create "$domain" || true
 	echo
 	echo "${b}Finished creating easyengine site for $domain.${x}"
 	echo
@@ -1837,15 +1839,15 @@ then
 	echo "${b}Now setting custom nginx config for $domain...${x}"
 	echo
 	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/domain.conf
-	cp $sourcedir/conf/nginx/domain.conf /etc/nginx/sites-available/$domain
+	cp "$sourcedir"/conf/nginx/domain.conf /etc/nginx/sites-available/"$domain"
 	service nginx reload
 	echo "${b}Finished setting custom nginx config for $domain.${x}"
 	echo
 
 	echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	echo
-	ee site update $domain  --le --experimental || true
-	if [ ! -f /etc/letsencrypt/live/$domain/fullchain.pem ]
+	ee site update "$domain"  --le --experimental || true
+	if [ ! -f /etc/letsencrypt/live/"$domain"/fullchain.pem ]
 	then
 		echo "${r}${b}There was an issue provisioning the TLS certificate for $domain with LetsEncrypt.${x}"
 		echo
@@ -1862,29 +1864,29 @@ then
 	echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
 	echo
 	touch $tlsdir/domain.pem
-	cat /etc/letsencrypt/live/$domain/privkey.pem > $tlsdir/domain.pem
-	cat /etc/letsencrypt/live/$domain/fullchain.pem >> $tlsdir/domain.pem
+	cat /etc/letsencrypt/live/"$domain"/privkey.pem > "$tlsdir"/domain.pem
+	cat /etc/letsencrypt/live/"$domain"/fullchain.pem >> "$tlsdir"/domain.pem
 	domtlscertloc=$tlsdir/domain.pem
 	echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
 	echo
 
 	echo "${b}Now setting index.html in docroot for $domain...${x}"
 	echo
-	cp $sourcedir/conf/web/domain/index.html /var/www/$domain/htdocs/
+	cp "$sourcedir"/conf/web/domain/index.html /var/www/"$domain"/htdocs/
 	echo "${b}Finished setting index.html in docroot for $domain.${x}"
 	echo
 
 	echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site...${x}"
 	echo
 	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/ssl-domain.conf
-	cp $sourcedir/conf/nginx/ssl-domain.conf /var/www/$domain/conf/nginx/ssl.conf
+	cp "$sourcedir"/conf/nginx/ssl-domain.conf /var/www/"$domain"/conf/nginx/ssl.conf
 	echo "${b}Finished adding IPv6 support to the HTTPS version of the $domain site...${x}"
 	echo
 
 	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
 	echo
 	sed -i "s/example.im/${domain}/g" $sourcedir/conf/nginx/force-ssl-domain.conf
-	cp $sourcedir/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-$domain.conf
+	cp "$sourcedir"/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-"$domain".conf
 	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
 	echo
 
@@ -1895,28 +1897,28 @@ fi
 echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 echo
 sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/ssl-hostname.conf
-cp $sourcedir/conf/nginx/ssl-hostname.conf /var/www/$hostname/conf/nginx/ssl.conf
+cp "$sourcedir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
 echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 echo
 
 echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
 echo
 sed -i "s/example.im/${hostname}/g" $sourcedir/conf/nginx/force-ssl-hostname.conf
-cp $sourcedir/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-$hostname.conf
+cp "$sourcedir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
 echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
 echo
 
 echo "${b}Now adding IPv6 support to the HTTPS version of the xu.$domain site...${x}"
 echo
 sed -i "s/example.im/xu.${domain}/g" $sourcedir/conf/nginx/ssl-xu.conf
-cp $sourcedir/conf/nginx/ssl-xu.conf /var/www/xu.$domain/conf/nginx/ssl.conf
+cp "$sourcedir"/conf/nginx/ssl-xu.conf /var/www/xu."$domain"/conf/nginx/ssl.conf
 echo "${b}Finished adding IPv6 support to the HTTPS version of the xu.$domain site...${x}"
 echo
 
 echo "${b}Now adding IPv6 support to the HTTPS redirect for the xu.$domain site...${x}"
 echo
 sed -i "s/example.im/xu.${domain}/g" $sourcedir/conf/nginx/force-ssl-xu.conf
-cp $sourcedir/conf/nginx/force-ssl-xu.conf /etc/nginx/conf.d/force-ssl-xu.$domain.conf
+cp "$sourcedir"/conf/nginx/force-ssl-xu.conf /etc/nginx/conf.d/force-ssl-xu."$domain".conf
 echo "${b}Finished adding IPv6 support to the HTTPS redirect for the xu.$domain site...${x}"
 echo
 
@@ -2033,14 +2035,14 @@ echo
 i=0
 tput sc
 while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
-	case $(($i % 4)) in
+	case $((i % 4)) in
 	0 ) j="-" ;;
 	1 ) j="\\" ;;
 	2 ) j="|" ;;
 	3 ) j="/" ;;
 	esac
 	tput rc
-	echo -en "\r[$j] ${b}Waiting for other software managers to finish...${x}"
+	echo -en "\\r[$j] ${b}Waiting for other software managers to finish...${x}"
 	echo
 	sleep 0.5
 	((i=i+1))
@@ -2102,14 +2104,14 @@ echo
 echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
 echo
 ejbdadminpw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
-/usr/sbin/ejabberdctl register admin $domain $ejbdadminpw &> /dev/null || true
+/usr/sbin/ejabberdctl register admin "$domain" "$ejbdadminpw" &> /dev/null || true
 echo "${b}Finished registering ejabberd admin user.${x}"
 echo
 clear
 
 if [ -f $configdir/ejabberdadminpwset ]
 then
-	read -p "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then
@@ -2120,7 +2122,7 @@ then
 		echo
 		echo "${b}Ok, resetting ejabberd admin user password to: | $ejbdadminpw | ${x}"
 		echo
-		/usr/sbin/ejabberdctl change_password admin $domain $ejbdadminpw
+		/usr/sbin/ejabberdctl change_password admin "$domain" "$ejbdadminpw"
 		ejbdadminpwreset=y
 	fi
 else
@@ -2140,12 +2142,12 @@ echo
 
 echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
 echo
-/usr/sbin/ejabberdctl srg_create everybody $domain "everybody [$domain]" "This aenigma group includes every user on this domain" ""
-/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody $domain
-/usr/sbin/ejabberdctl srg_create online $domain "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
-/usr/sbin/ejabberdctl srg-user-add @online@ localhost online $domain
-/usr/sbin/ejabberdctl srg_create admin $domain admin "This is a shared roster group set by aenigma" "everybody\\nonline"
-/usr/sbin/ejabberdctl srg-user-add admin $domain admin $domain
+/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
+/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody "$domain"
+/usr/sbin/ejabberdctl srg_create online "$domain" "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
+/usr/sbin/ejabberdctl srg-user-add @online@ localhost online "$domain"
+/usr/sbin/ejabberdctl srg_create admin "$domain" admin "This is a shared roster group set by aenigma" "everybody\\nonline"
+/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
 echo "${b}Finished creating shared roster groups.${x}"
 echo
 clear
@@ -2168,13 +2170,13 @@ else
 	echo
 fi
 
-read -p "${b}[press enter to continue reading...]${x}"
+read -rp "${b}[press enter to continue reading...]${x}"
 clear
 
 
 
 touch $configdir/installcomplete
-echo $currvers > $configdir/installcomplete
+echo "$currvers" > "$configdir"/installcomplete
 
 
 
@@ -2187,7 +2189,7 @@ else
 	echo
 	echo "${b}To do so, simply answer yes, but be aware that this is a very time consuming cryptographic operation, although it must only be performed once.${x}"
 	echo
-	read -p "${b}Generate openssl DHparams file? (Y/n): ${x}" -n 1 -r
+	read -rp "${b}Generate openssl DHparams file? (Y/n): ${x}" -n 1
 	echo
 	if [[ ! $REPLY =~ ^[Nn]$ ]]
 	then

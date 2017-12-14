@@ -3,10 +3,12 @@
 set -e
 set -u
 
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
+r=$(tput setaf 1)
+g=$(tput setaf 2)
+l=$(tput setaf 4)
+m=$(tput setaf 5)
+x=$(tput sgr0)
+b=$(tput bold)
 
 basedir=/root/openspace42 # Don't change! | No trailing slash!
 installdir=$basedir/aenigma # Don't change! | No trailing slash!
@@ -52,7 +54,7 @@ fi
 
 printenvssh443="$(printenv | grep SSH | grep "::1" | wc -l)"
 
-if [ ! $printenvssh443 = 0 ]
+if [ ! "$printenvssh443" = 0 ]
 then
         sessiontype=SSLH
 else
@@ -87,7 +89,7 @@ fi
 
 
 
-if [ "`lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/' `" != "Ubuntu 16.04 LTS" ]
+if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/')" != "Ubuntu 16.04 LTS" ]
 then
 	echo "${r}${b}aenigma only runs on Ubuntu 16.04. You are running:${x}"
 	echo

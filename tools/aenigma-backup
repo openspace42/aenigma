@@ -1,24 +1,28 @@
 #!/bin/bash
 
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
+r=$(tput setaf 1)
+g=$(tput setaf 2)
+l=$(tput setaf 4)
+m=$(tput setaf 5)
+x=$(tput sgr0)
+b=$(tput bold)
 
-# All in One Bash Logger | v0.47 | 20171018 | 20171117 | Nk
+# All in One Bash Logger | v0.51 | 20171018 | 20171214 | Nk
 
-logname=`basename "$0"`                                           # The name of this script
-now="$(date +"%Y-%m-%d_%H-%M-%S")"                                # The current timestamp
-logdir="/root/logs/$logname"                                      # Don't store anything else than logs in here!
-logfile="$logdir/$now"                                            # The new logfile
-mkdir -p $logdir                                                  # Touch the dir
-touch $logfile                                                    # Touch the file
-rm $logdir/latest-log 2> /dev/null                                # Remove the old latest-log symlink
-ln -s $logfile $logdir/latest-log                                 # Recreate the symlink
-( cd $logdir && rm `ls -t | awk 'NR>43'` ) 2> /dev/null || true   # Delete all logs older than the newest 42
-exec >  >(tee -ia $logfile)                                       # Log one output to logfile
-exec 2> >(tee -ia $logfile >&2)                                   # Log the other output to logfile
-echo && echo "Starting $logname script on $now..." && echo        # Write heading to logfile
+scriptname=$(basename "$0")                                             # The name of this script
+now="$(date +"%Y-%m-%d_%H-%M-%S")"                                      # The current timestamp
+logdir="$HOME/logs/$scriptname"                                         # Don't store anything else than logs in here!
+logfile="$logdir/$now"                                                  # The new logfile
+if [[ -t 1 ]]; then interactive=y; else interactive=n; fi               # Determine if this is an interactive shell
+mkdir -p "$logdir"                                                      # Touch the dir
+touch "$logfile"                                                        # Touch the file
+if [ -f "$logdir"/latest-log ]; then rm "$logdir"/latest-log; fi        # Remove the old latest-log symlink
+ln -s "$logfile" "$logdir"/latest-log                                   # Recreate the symlink
+( cd "$logdir" && rm "$(ls -t | awk 'NR>43')" ) 2> /dev/null || true    # Delete all logs older than the newest 42
+exec >  >(tee -ia "$logfile")                                           # Log stdout to logfile
+if [ $interactive = "n" ]; then exec 2> >(tee -ia "$logfile" >&2); fi   # Log stderr to logfile if non-interactive
+echo && echo "Starting $scriptname script on $now..." && echo           # Write heading to logfile
+chmod -R 700 "$logdir"                                                  # Secure logs directory
 
 sourcedir=/root/aenigma # Don't change! | No trailing slash!
 basedir=/root/openspace42 # Don't change! | No trailing slash!
@@ -76,13 +80,13 @@ fi
 
 
 
-rm -r $tmpdir/* 2> /dev/null
+rm -r ${tmpdir:?}/* 2> /dev/null
 mkdir -p $localbackupsdir
 mkdir -p $s3backupsdir
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
 tmpbackupdir=$tmpdir/$backupname
-mkdir -p $tmpbackupdir
+mkdir -p "$tmpbackupdir"
 
 
 
@@ -90,15 +94,15 @@ echo "Now backing up locally..."
 echo
 
 # Purge backups older than the latest 42
-( cd $localbackupsdir && rm `ls -t | awk 'NR>42'` ) 2> /dev/null || true
+( cd $localbackupsdir && rm "$(ls -t | awk 'NR>42')" ) 2> /dev/null || true
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
-mv /tmp/ejabberd-mnesia-backup $tmpbackupdir/ejabberd-mnesia-backup
-cp -r /etc/ejabberd/ $tmpbackupdir/etc-ejabberd/
-cp -r /var/lib/ejabberd/ $tmpbackupdir/var-lib-ejabberd/
-cp -r $configdir $tmpbackupdir/config/
-cd $tmpdir
-tar -cvjSf $localbackupsdir/$backupname.tar.bz2 $backupname
+mv /tmp/ejabberd-mnesia-backup "$tmpbackupdir"/ejabberd-mnesia-backup
+cp -r /etc/ejabberd/ "$tmpbackupdir"/etc-ejabberd/
+cp -r /var/lib/ejabberd/ "$tmpbackupdir"/var-lib-ejabberd/
+cp -r "$configdir" "$tmpbackupdir"/config/
+cd $tmpdir || exit
+tar -cvjSf "$localbackupsdir"/"$backupname".tar.bz2 "$backupname"
 echo
 
 echo
@@ -109,13 +113,13 @@ echo
 
 backuptype="$(cat $configdir/backuptype)"
 
-if [ $backuptype = "s3" ]
+if [ "$backuptype" = "s3" ]
 then
 
         echo "Now backing up to S3..."
         echo
 
-        rsync -aAXxv $tmpbackupdir/* $s3backupsdir/
+        rsync -aAXxv "$tmpbackupdir"/* "$s3backupsdir"/
         echo
 
         awsaki="$(cat $configdir/s3/awsaki)"
@@ -141,8 +145,8 @@ then
         LOGFILE="$duplicitybckplogdir/backup.log"
         DAILYLOGFILE="$duplicitybckplogdir/backup.daily.log"
         FULLBACKLOGFILE="$duplicitybckplogdir/backup.full.log"
-        HOST=`hostname`
-        DATE=`date +%Y-%m-%d`
+        HOST=$(hostname)
+        DATE=$(date +%Y-%m-%d)
         MAILADDR="$(cat $configdir/adminmail)"
         TODAY=$(date +%d%m%Y)
 
@@ -158,14 +162,14 @@ then
                 touch $FULLBACKLOGFILE
         fi
 
-        if [ $is_running -eq 0 ]
+        if [ "$is_running" -eq 0 ]
         then
                 # Clear the old daily log file
                 cat /dev/null > ${DAILYLOGFILE}
 
                 # Trace function for logging, don't change this
                 trace () {
-                        stamp=`date +%Y-%m-%d_%H:%M:%S`
+                        stamp=$(date +%Y-%m-%d_%H:%M:%S)
                         echo "$stamp: $*" >> ${DAILYLOGFILE}
                 }
 
@@ -176,8 +180,8 @@ then
                 SOURCE=$s3backupsdir/ # Use / for full system backup [not the case for aenigma]
 
                 FULL=
-                tail -1 ${FULLBACKLOGFILE} | grep ${TODAY} > /dev/null || true
-                if [ $? -ne 0 -a $(date +%d) -eq 1 ]
+                tail -1 "${FULLBACKLOGFILE}" | grep "${TODAY}" > /dev/null || true
+                if [ $? -ne 0 -a "$(date +%d)" -eq 1 ]
                 then
                         FULL=full
                 fi;
@@ -186,7 +190,7 @@ then
 
                 trace "... removing old backups"
 
-                duplicity remove-older-than ${OLDER_THAN} ${DEST} >> ${DAILYLOGFILE} 2>&1  || true
+                duplicity remove-older-than "${OLDER_THAN}" "${DEST}" >> "${DAILYLOGFILE}" 2>&1  || true
 
                 trace "... backing up filesystem"
 
@@ -200,7 +204,7 @@ then
                 #        --exclude=/** \
                 #        ${SOURCE} ${DEST} >> ${DAILYLOGFILE} 2>&1
 
-                duplicity ${FULL} ${SOURCE} ${DEST} # Insert --encrypt-key and --sign-key after ${FULL} if using GPG
+                duplicity "${FULL}" "${SOURCE}" "${DEST}" # Insert --encrypt-key and --sign-key after ${FULL} if using GPG
 
                 trace "Backup for local filesystem complete"
                 trace "------------------------------------"
@@ -208,10 +212,10 @@ then
                 # Send the daily log file by email
                 #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
                 #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
-                BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep -i error | wc -l`
+                BACKUPSTATUS=$(cat "$DAILYLOGFILE" | grep -i error | wc -l)
                 if [ "$BACKUPSTATUS" != "0" ]
                 then
-                        cat "$DAILYLOGFILE" | mail -aFrom:"aenigma@$HOST" -s "ERROR in aenigma backup for $HOST on $DATE" $MAILADDR
+                        cat "$DAILYLOGFILE" | mail -aFrom:"aenigma@$HOST" -s "ERROR in aenigma backup for $HOST on $DATE" "$MAILADDR"
                 elif [ "$FULL" = "full" ]
                 then
                         echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
@@ -229,7 +233,7 @@ then
 
 fi
 
-rm -r $tmpbackupdir
-rm -r $tmpdir/* 2> /dev/null || true
+rm -r "$tmpbackupdir"
+rm -r ${tmpdir:?}/* 2> /dev/null || true
 
 echo end
