@@ -151,7 +151,7 @@ then
 		echo "${b}Ok, proceeding with backup...${x}"
 		bash $sourcedir/tools/aenigma-backup
 		echo
-		echo "${b}Backup complete. Continuing installtion...${x}"
+		echo "${b}Backup complete. Continuing installation...${x}"
 		echo
 	else
 		echo "${b}Ok, skipping backup...${x}"
@@ -2037,7 +2037,7 @@ tput sc
 while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
 	case $((i % 4)) in
 	0 ) j="-" ;;
-	1 ) j="\" ;;
+	1 ) j="\\" ;;
 	2 ) j="|" ;;
 	3 ) j="/" ;;
 	esac
