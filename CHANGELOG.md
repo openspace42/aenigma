@@ -10,6 +10,7 @@
 5. Added error in case of LetsEncrypt failure
 6. Added DPKG lock detection / waiting
 7. Fixed and improved SRV records DNS checks
+8. All bash code audited with ShellCheck
 
 
 ## v0.45 [2017-11-18]

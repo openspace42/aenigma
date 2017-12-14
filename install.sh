@@ -157,6 +157,15 @@ echo
 
 
 
+echo "${b}Now performing APT upgrade, dist-upgrade, and autoremove...${x}"
+echo
+apt-get -y upgrade && apt-get -y dist-upgrade && apt-get -y autoremove
+echo
+echo "${b}Finished performing APT upgrade, dist-upgrade, and autoremove.${x}"
+echo
+
+
+
 echo "${g}${b}Preflight check complete.${x}"
 echo
 echo "${b}Now proceeding with aenigma installation...${x}"
