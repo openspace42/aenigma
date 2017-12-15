@@ -50,7 +50,7 @@ if [[ $EUID -ne 0 ]]
 then
 	echo "${r}${b}This script must be run as root. Run it as:${x}"
 	echo
-	echo "sudo bash aenigma/install.sh"
+	echo "${b}sudo bash aenigma/install.sh${x}"
 	echo
         # Send email indicating backup aborted
         echo "${b}Exiting...${x}"

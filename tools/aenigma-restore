@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -u
+
 r=$(tput setaf 1)
 g=$(tput setaf 2)
 l=$(tput setaf 4)
@@ -7,24 +10,28 @@ m=$(tput setaf 5)
 x=$(tput sgr0)
 b=$(tput bold)
 
-set -e
-set -u
-
-logname=$(basename "$0")
+scriptname=$(basename "$0")
 now="$(date +"%Y-%m-%d_%H-%M-%S")"
-echo && echo "Starting $logname script on $now..." && echo
+echo && echo "Starting $scriptname script on $now..." && echo
 
-sourcedir=/root/aenigma # Don't change! | No trailing slash!
-basedir=/root/openspace42 # Don't change! | No trailing slash!
-installdir=$basedir/aenigma # Don't change! | No trailing slash!
-configdir=$installdir/config # Don't change! | No trailing slash!
-toolsdir=$installdir/tools # Don't change! | No trailing slash!
-backupsdir=$installdir/backups # Don't change! | No trailing slash!
-localbackupsdir=$backupsdir/local # Don't change! | No trailing slash!
-s3backupsdir=$backupsdir/s3 # Don't change! | No trailing slash!
-restoresdir=$installdir/restores # Don't change! | No trailing slash!
-tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
-tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
+################################################################################
+
+# Don't change these! | No trailing slash!
+projname="aenigma"
+shortname=$projname
+sourcedir=/root/$projname
+basedir=/root/openspace42
+installdir=$basedir/$shortname
+backupsdir=$installdir/backups
+archivedir=$backupsdir/archive
+latestdir=$backupsdir/latest
+restoresdir=$installdir/restores
+tmpdir=/tmp/$shortname
+configdir=$installdir/config
+toolsdir=$installdir/tools
+tlsdir=/etc/ssl/$shortname
+etc_ejab_dir=/etc/ejabberd
+var_ejab_dir=/var/lib/ejabberd
 
 if [[ $EUID -ne 0 ]]
 then
@@ -113,9 +120,9 @@ duplicitylogdir="null"
 
 if [ $restoresource = "here" ]
 then
-        if [ ! -d $localbackupsdir ]
+        if [ ! -d $archivedir ]
         then
-                echo "${r}${b}Local backups directory [$localbackupsdir] not found.${x}"
+                echo "${r}${b}Local backups directory [$archivedir] not found.${x}"
                 echo
                 echo "${b}It's possible you've already partially run this restore script choosing the | elsewhere | option, or that this machine never successfully ran a backup.${x}"
                 echo
@@ -128,7 +135,7 @@ then
 
         echo "${b}These are the backup dates available for restore:${x}"
         echo
-        ls -1 "$localbackupsdir" | sed -e 's/aenigma-backup-//g' | sed -e 's/.tar.bz2//g'
+        ls -1 "$archivedir" | sed -e 's/aenigma-backup-//g' | sed -e 's/.tar.bz2//g'
         echo
         read -rp "${b}[press enter to continue...]${x}"
         clear
@@ -139,7 +146,7 @@ then
 
 	set +u
 
-        cd $localbackupsdir
+        cd $archivedir
         unset options i
         while IFS= read -r -d $'\n' f; do
                 options[i++]="$f"
@@ -622,7 +629,7 @@ echo "${b}Now backing up [locally - no S3 of course] this machine's currently ru
 echo
 
 rm -r "${tmpdir:?}"/* 2> /dev/null || true
-mkdir -p $localbackupsdir
+mkdir -p $archivedir
 ### No need to create S3 dir as we're only backing up locally
 mkdir -p $tmpdir
 backupname=aenigma-backup-$now
@@ -637,22 +644,22 @@ cp -r /etc/ejabberd/ "$tmpbackupdir"/etc-ejabberd/
 cp -r /var/lib/ejabberd/ "$tmpbackupdir"/var-lib-ejabberd/
 cd $tmpdir || exit
 # Give local backup a custom name so that it's clear it's the last one before a rollback in time
-tar -cvjSf "$localbackupsdir"/"$backupname"-last-backup-before-"$now"-restore.tar.bz2 "$backupname"
+tar -cvjSf "$archivedir"/"$backupname"-last-backup-before-"$now"-restore.tar.bz2 "$backupname"
 echo
 
 ### If not restoring a previous state of this same installation, then move the backups directory to an "old" named one.
 
 if [ $restoresource = "here" ]
 then
-        echo "${b}Backed up current installation to $localbackupsdir.${x}"
+        echo "${b}Backed up current installation to $archivedir.${x}"
         echo
 else
-        mv "$localbackupsdir" "$localbackupsdir"-old-before-"$now"-restore
+        mv "$archivedir" "$archivedir"-old-before-"$now"-restore
 	if [ ! $duplicitylogdir = "null" ]
 	then
 	        mv "$duplicitylogdir"/backup/ "$duplicitylogdir"/backup-old-before-"$now"-restore 2> /dev/null || true
 	fi
-        echo "Backed up current installation to local backups directory and moved the latter to $localbackupsdir-old-before-$now-restore."
+        echo "Backed up current installation to local backups directory and moved the latter to $archivedir-old-before-$now-restore."
         echo
 fi
 
