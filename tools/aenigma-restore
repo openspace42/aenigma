@@ -449,7 +449,7 @@ else
                 # The S3 destination followed by bucket name
                 DEST="s3://$s3endpoint/$s3bucketname/$shortname/latest/"
 
-                duplicitylogdir=/root/logs/aenigma-duplicity
+                duplicitylogdir=/root/logs/$shortname-duplicity
 		duplicityrestlogdir=$duplicitylogdir/restore
 
                 # Set up some variables for logging
@@ -654,10 +654,12 @@ then
         echo "${b}Backed up current installation to $archivedir.${x}"
         echo
 else
-        mv "$archivedir" "$archivedir"-old-before-"$now"-restore
+	mkdir -p "$archivedir"/old
+        mv "$archivedir" "$archivedir"/old/archive-old-before-"$now"-restore
 	if [ ! $duplicitylogdir = "null" ]
 	then
-	        mv "$duplicitylogdir"/backup/ "$duplicitylogdir"/backup-old-before-"$now"-restore 2> /dev/null || true
+		mkdir -p "$duplicitylogdir"/old
+	        mv "$duplicitylogdir"/backup/ "$duplicitylogdir"/old/backup-old-before-"$now"-restore 2> /dev/null || true
 	fi
         echo "Backed up current installation to local backups directory and moved the latter to $archivedir-old-before-$now-restore."
         echo

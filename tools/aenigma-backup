@@ -301,7 +301,7 @@ then
         # The S3 destination followed by bucket name
         DEST="s3://$s3endpoint/$s3bucketname/$shortname/latest/"
 
-	duplicitylogdir=/root/logs/$scriptname-duplicity
+	duplicitylogdir=/root/logs/$shortname-duplicity
 	duplicitybckplogdir=$duplicitylogdir/backup
 
         # Set up some variables for logging
