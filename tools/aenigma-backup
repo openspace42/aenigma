@@ -127,7 +127,7 @@ mkdir -p "$tmpbackupdir"
 update_storage_info () {
 
 	free_disk_space="$(df -m --output=avail / | xargs | sed -e 's/Avail //g')"
-	ref_dir_size="$(du -sm /var/www/ | xargs | sed -e "s|${var_ejab_dir}/||g")"
+	ref_dir_size="$(du -sm "$var_ejab_dir" | xargs | sed -e "s|"${var_ejab_dir}"||g" | xargs)"
 	est_backup_size=$(($ref_dir_size * 2))
 	local_archive_items="$(ls -1q $archivedir | wc -l)"
 	local_archive_size="$(du -sm $archivedir | xargs | sed "s|${archivedir}||g" | xargs)"
