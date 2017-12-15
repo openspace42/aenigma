@@ -274,7 +274,6 @@ cd $tmpdir || exit
 tar -cvjSf "$archivedir"/"$backupname".tar.bz2 "$backupname"
 echo
 
-echo
 echo "${b}Backed up to $archivedir/.${x}"
 echo
 
@@ -288,7 +287,6 @@ then
 	echo
 
         rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
-        echo
 
         # Export some ENV variables so you don't have to type anything
         export AWS_ACCESS_KEY_ID=$awsaki

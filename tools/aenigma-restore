@@ -654,14 +654,14 @@ then
         echo "${b}Backed up current installation to $archivedir.${x}"
         echo
 else
-	mkdir -p "$archivedir"/old
-        mv "$archivedir" "$archivedir"/old/archive-old-before-"$now"-restore
+	mkdir -p "$backupsdir"/old
+        mv "$archivedir" "$backupsdir"/old/archive-old-before-"$now"-restore
 	if [ ! $duplicitylogdir = "null" ]
 	then
 		mkdir -p "$duplicitylogdir"/old
 	        mv "$duplicitylogdir"/backup/ "$duplicitylogdir"/old/backup-old-before-"$now"-restore 2> /dev/null || true
 	fi
-        echo "Backed up current installation to local backups directory and moved the latter to $archivedir-old-before-$now-restore."
+        echo "Backed up current installation to local backups directory and moved the latter to $baclupsdir/old/archive-old-before-$now-restore."
         echo
 fi
 
