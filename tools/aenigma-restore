@@ -447,7 +447,7 @@ else
                 #GPG_KEY= # Insert GPG key here if using GPG
 
                 # The S3 destination followed by bucket name
-                DEST="s3://$s3endpoint/$s3bucketname/"
+                DEST="s3://$s3endpoint/$s3bucketname/$shortname/latest/"
 
                 duplicitylogdir=/root/logs/aenigma-duplicity
 		duplicityrestlogdir=$duplicitylogdir/restore
