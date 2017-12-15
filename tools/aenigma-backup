@@ -46,22 +46,6 @@ tlsdir=/etc/ssl/$shortname
 etc_ejab_dir=/etc/ejabberd
 var_ejab_dir=/var/lib/ejabberd
 
-### Minimum number of backups [days] to keep locally
-min_local_backups="7"
-
-### Maximum number of backups [days] to keep locally
-max_local_backups="42"
-
-### Maximum storage space for local backups in MB
-max_local_storage="8000"
-
-#### Minimum backup history to keep on S3.
-#### Indicate an interval, which is a number followed by one of the characters D, W, M, or Y (indicating days, weeks, months, or years respectively).
-dup_min_history="3M"
-
-### Also upload a full backup file to S3 on the first of the month?
-s3_monthly_uploads=y
-
 if [[ $EUID -ne 0 ]]
 then
 	echo "${r}${b}This script must be run as root. Run it as:${x}"
@@ -107,6 +91,39 @@ fi
 
 
 ################################################################################
+
+
+
+# Source vars from config dir
+
+backuptype="$(cat $configdir/backuptype)"
+backupspw="$(cat "$configdir"/backupspw)"
+adminmail="$(cat $configdir/adminmail)"
+
+awsaki="$(cat $configdir/s3/awsaki)"
+awssak="$(cat $configdir/s3/awssak)"
+s3endpoint="$(cat $configdir/s3/s3endpoint)"
+s3bucketname="$(cat $configdir/s3/s3bucketname)"
+
+# Hardcode the rest of options
+
+### Minimum number of backups [days] to keep locally
+min_local_backups="7"
+
+### Maximum number of backups [days] to keep locally
+max_local_backups="42"
+
+### Maximum storage space for local backups in MB
+max_local_storage="8000"
+
+#### Minimum backup history to keep on S3.
+#### Indicate an interval, which is a number followed by one of the characters D, W, M, or Y (indicating days, weeks, months, or years respectively).
+dup_min_history="3M"
+
+### Also upload a full backup file to S3 on the first of the month?
+s3_monthly_uploads=y
+
+
 
 # Purge temp and create directories
 
@@ -264,8 +281,6 @@ echo
 
 
 
-backuptype="$(cat $configdir/backuptype)"
-
 if [ "$backuptype" = "s3" ]
 then
 
@@ -275,16 +290,10 @@ then
         rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
         echo
 
-        awsaki="$(cat $configdir/s3/awsaki)"
-        awssak="$(cat $configdir/s3/awssak)"
-        s3endpoint="$(cat $configdir/s3/s3endpoint)"
-        s3bucketname="$(cat $configdir/s3/s3bucketname)"
-
         # Export some ENV variables so you don't have to type anything
         export AWS_ACCESS_KEY_ID=$awsaki
         export AWS_SECRET_ACCESS_KEY=$awssak
-        PASSPHRASE="$(cat "$configdir"/backupspw)"
-	export PASSPHRASE
+        export PASSPHRASE=$backupspw
 
         # Your GPG key
         #GPG_KEY= # Insert GPG key here if using GPG
@@ -301,7 +310,7 @@ then
         FULLBACKLOGFILE="$duplicitybckplogdir/backup.full.log"
 	HOST=$(hostname)
         DATE=$(date +%Y-%m-%d)
-        MAILADDR="$(cat $configdir/adminmail)"
+        MAILADDR="$adminmail"
         TODAY=$(date +%d%m%Y)
 
         is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
