@@ -106,7 +106,7 @@ tar -cvjSf "$localbackupsdir"/"$backupname".tar.bz2 "$backupname"
 echo
 
 echo
-echo "Backed up to $localbackupsdir/."
+echo "${b}Backed up to $localbackupsdir/.${x}"
 echo
 
 
@@ -130,7 +130,8 @@ then
         # Export some ENV variables so you don't have to type anything
         export AWS_ACCESS_KEY_ID=$awsaki
         export AWS_SECRET_ACCESS_KEY=$awssak
-        export PASSPHRASE=$configdir/backupspw
+        PASSPHRASE="$(cat "$configdir"/backupspw)"
+	export PASSPHRASE
 
         # Your GPG key
         #GPG_KEY= # Insert GPG key here if using GPG

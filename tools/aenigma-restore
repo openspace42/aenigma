@@ -433,7 +433,8 @@ else
                 # Export some ENV variables so you don't have to type anything
                 export AWS_ACCESS_KEY_ID=$awsaki
                 export AWS_SECRET_ACCESS_KEY=$awssak
-                export PASSPHRASE=$configdir/backupspw
+		PASSPHRASE="$(cat "$configdir"/backupspw)"
+		export PASSPHRASE
 
                 # Your GPG key
                 #GPG_KEY= # Insert GPG key here if using GPG
@@ -643,7 +644,7 @@ echo
 
 if [ $restoresource = "here" ]
 then
-        echo "Backed up current installation to $localbackupsdir."
+        echo "${b}Backed up current installation to $localbackupsdir.${x}"
         echo
 else
         mv "$localbackupsdir" "$localbackupsdir"-old-before-"$now"-restore

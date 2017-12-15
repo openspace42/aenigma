@@ -1,16 +1,18 @@
 #!/bin/bash
 
+set -e
+set -u
+
+r=$(tput setaf 1)
+g=$(tput setaf 2)
+l=$(tput setaf 4)
+m=$(tput setaf 5)
+x=$(tput sgr0)
+b=$(tput bold)
+
 basedir=/root/openspace42 # Don't change! | No trailing slash!
 installdir=$basedir/aenigma # Don't change! | No trailing slash!
 configdir=$installdir/config # Don't change! | No trailing slash!
-
-r=`tput setaf 1`
-g=`tput setaf 2`
-x=`tput sgr0`
-b=`tput bold`
-
-set -e
-set -u
 
 echo
 
@@ -75,7 +77,7 @@ fi
 
 
 
-if [ -f /root/os-dfbs/run-ok ]
+if [ -f $basedir/DFBS/run-ok ]
 then
         echo "${g}${b}Debian First Boot Setup was previously run successfully. Continuing...${x}"
         echo
