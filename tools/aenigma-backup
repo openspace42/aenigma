@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+set -u
+
 r=$(tput setaf 1)
 g=$(tput setaf 2)
 l=$(tput setaf 4)
@@ -24,17 +27,40 @@ if [ $interactive = "n" ]; then exec 2> >(tee -ia "$logfile" >&2); fi   # Log st
 echo && echo "Starting $scriptname script on $now..." && echo           # Write heading to logfile
 chmod -R 700 "$logdir"                                                  # Secure logs directory
 
-sourcedir=/root/aenigma # Don't change! | No trailing slash!
-basedir=/root/openspace42 # Don't change! | No trailing slash!
-installdir=$basedir/aenigma # Don't change! | No trailing slash!
-configdir=$installdir/config # Don't change! | No trailing slash!
-toolsdir=$installdir/tools # Don't change! | No trailing slash!
-backupsdir=$installdir/backups # Don't change! | No trailing slash!
-localbackupsdir=$backupsdir/local # Don't change! | No trailing slash!
-s3backupsdir=$backupsdir/s3 # Don't change! | No trailing slash!
-restoresdir=$installdir/restores # Don't change! | No trailing slash!
-tlsdir=/etc/ssl/aenigma # Don't change! | No trailing slash!
-tmpdir=/tmp/aenigma # Don't change! | No trailing slash!
+################################################################################
+
+# Don't change these! | No trailing slash!
+projname="aenigma"
+shortname=$projname
+sourcedir=/root/$projname
+basedir=/root/openspace42
+installdir=$basedir/$shortname
+backupsdir=$installdir/backups
+archivedir=$backupsdir/archive
+latestdir=$backupsdir/latest
+restoresdir=$installdir/restores
+tmpdir=/tmp/$shortname
+configdir=$installdir/config
+toolsdir=$installdir/tools
+tlsdir=/etc/ssl/$shortname
+etc_ejab_dir=/etc/ejabberd
+var_ejab_dir=/var/lib/ejabberd
+
+### Minimum number of backups [days] to keep locally
+min_local_backups="7"
+
+### Maximum number of backups [days] to keep locally
+max_local_backups="42"
+
+### Maximum storage space for local backups in MB
+max_local_storage="8000"
+
+#### Minimum backup history to keep on S3.
+#### Indicate an interval, which is a number followed by one of the characters D, W, M, or Y (indicating days, weeks, months, or years respectively).
+dup_min_history="3M"
+
+### Also upload a full backup file to S3 on the first of the month?
+s3_monthly_uploads=y
 
 if [[ $EUID -ne 0 ]]
 then
@@ -80,21 +106,147 @@ fi
 
 
 
-rm -r ${tmpdir:?}/* 2> /dev/null
-mkdir -p $localbackupsdir
-mkdir -p $s3backupsdir
+################################################################################
+
+# Purge temp and create directories
+
+if [ -d $tmpdir ]
+then
+	rm -r ${tmpdir:?}
+fi
+
+mkdir -p $archivedir
+mkdir -p $latestdir
 mkdir -p $tmpdir
-backupname=aenigma-backup-$now
+backupname=$scriptname-$now
 tmpbackupdir=$tmpdir/$backupname
 mkdir -p "$tmpbackupdir"
 
 
 
-echo "Now backing up locally..."
+update_storage_info () {
+
+	free_disk_space="$(df -m --output=avail / | xargs | sed -e 's/Avail //g')"
+	ref_dir_size="$(du -sm /var/www/ | xargs | sed -e "s|${var_ejab_dir}/||g")"
+	est_backup_size=$(($ref_dir_size * 2))
+	local_archive_items="$(ls -1q $archivedir | wc -l)"
+	local_archive_size="$(du -sm $archivedir | xargs | sed "s|${archivedir}||g" | xargs)"
+
+}
+
+
+
+purge_loop () {
+
+	if [ $local_archive_items -gt $min_local_backups ]
+	then
+
+		counter=$(($counter - 1))
+
+		# Prevent infinite loops in case of rm failure
+
+		if [ $counter = 0 ]
+		then
+			echo "${r}${b}Infinite loop error caught. Exiting...${b}"
+			exit
+		fi
+
+		if [ $local_archive_items -gt $counter ]
+		then
+			tailnumber=$(( $counter + 1 ))
+			( cd $archivedir && ls -t | tail -n +"$tailnumber" | xargs -d '\n' rm )
+		fi
+
+		update_storage_info
+
+	else
+
+		echo "${r}${b}The specified number of minimum backups to keep [$min_local_backups] is too high $errordescr.${x}"
+		echo
+		echo "${b}Lower this figure in the | config | file or make more space available on this machine.${x}"
+		echo
+		# Send email indicating backup aborted
+		echo "${b}Exiting...${x}"
+		echo
+		exit
+
+	fi
+
+}
+
+
+
+update_storage_info
+
+### Purge backups older than the latest $max_local_backups
+
+local_archive_items="$(ls -1q $archivedir | wc -l)"
+if [ $local_archive_items -gt $max_local_backups ]
+then
+        tailnumber=$(( $max_local_backups + 1 ))
+        ( cd $archivedir && ls -t | tail -n +"$tailnumber" | xargs -d '\n' rm )
+	update_storage_info
+fi
+
+echo "${b}You have $local_archive_items local backups occupying $local_archive_size MB of space.${x}"
 echo
 
-# Purge backups older than the latest 42
-( cd $localbackupsdir && rm "$(ls -t | awk 'NR>42')" ) 2> /dev/null || true
+if [ $local_archive_size -gt $max_local_storage ]
+then
+
+	echo "${r}${b}Local archive size [$local_archive_size MB] LARGER than | max_local_storage | setting [$max_local_storage MB].${x}"
+	echo
+	echo "${b}Now purging old backups while respecting your specified number of minimum backups to keep...${x}"
+	echo
+	errordescr="to stay below the | max_local_storage | setting you chose"
+
+	counter=$max_local_backups
+
+	while [ $local_archive_size -gt $max_local_storage ]
+	do
+		purge_loop
+	done
+
+	echo "${g}${b}Local archive size now low enough [$local_archive_size MB] to respect your settings.${x}"
+	echo
+	echo "${b}Purged all backups older than the most recent | $counter |.${x}"
+	echo
+	echo "${b}Continuing...${x}"
+	echo
+
+fi
+
+if [ $est_backup_size -gt $free_disk_space ]
+then
+
+	echo "${r}${b}Estimated backup size [$est_backup_size MB] LARGER than available disk space [$free_disk_space MB].${x}"
+	echo
+	echo "${b}Now purging old backups while respecting your specified number of minimum backups to keep...${x}"
+	echo
+	errordescr="to free enough disk space for the next backup"
+
+	counter=$max_local_backups
+
+	while [ $est_backup_size -gt $free_disk_space ]
+	do
+		purge_loop
+	done
+
+	echo "${g}${b}Enoguh free space [$free_disk_space MB] now available for new backup.${x}"
+	echo
+	echo "${b}Purged all backups older than the most recent | $counter |.${x}"
+	echo
+	echo "${b}Continuing...${x}"
+	echo
+
+fi
+
+
+
+echo "${b}Now backing up locally...${x}"
+echo
+
+
 
 /usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
 mv /tmp/ejabberd-mnesia-backup "$tmpbackupdir"/ejabberd-mnesia-backup
@@ -102,12 +254,13 @@ cp -r /etc/ejabberd/ "$tmpbackupdir"/etc-ejabberd/
 cp -r /var/lib/ejabberd/ "$tmpbackupdir"/var-lib-ejabberd/
 cp -r "$configdir" "$tmpbackupdir"/config/
 cd $tmpdir || exit
-tar -cvjSf "$localbackupsdir"/"$backupname".tar.bz2 "$backupname"
+tar -cvjSf "$archivedir"/"$backupname".tar.bz2 "$backupname"
 echo
 
 echo
-echo "${b}Backed up to $localbackupsdir/.${x}"
+echo "${b}Backed up to $archivedir/.${x}"
 echo
+
 
 
 
@@ -116,10 +269,10 @@ backuptype="$(cat $configdir/backuptype)"
 if [ "$backuptype" = "s3" ]
 then
 
-        echo "Now backing up to S3..."
-        echo
+        echo "${b}Now backing up to S3...${x}"
+	echo
 
-        rsync -aAXxv "$tmpbackupdir"/* "$s3backupsdir"/
+        rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
         echo
 
         awsaki="$(cat $configdir/s3/awsaki)"
@@ -137,16 +290,16 @@ then
         #GPG_KEY= # Insert GPG key here if using GPG
 
         # The S3 destination followed by bucket name
-        DEST="s3://$s3endpoint/$s3bucketname/"
+        DEST="s3://$s3endpoint/$s3bucketname/$shortname/latest/"
 
-	duplicitylogdir=/root/logs/aenigma-duplicity
+	duplicitylogdir=/root/logs/$scriptname-duplicity
 	duplicitybckplogdir=$duplicitylogdir/backup
 
         # Set up some variables for logging
         LOGFILE="$duplicitybckplogdir/backup.log"
         DAILYLOGFILE="$duplicitybckplogdir/backup.daily.log"
         FULLBACKLOGFILE="$duplicitybckplogdir/backup.full.log"
-        HOST=$(hostname)
+	HOST=$(hostname)
         DATE=$(date +%Y-%m-%d)
         MAILADDR="$(cat $configdir/adminmail)"
         TODAY=$(date +%d%m%Y)
@@ -175,10 +328,10 @@ then
                 }
 
                 # How long to keep backups for
-                OLDER_THAN="1M"
+                OLDER_THAN="$dup_min_history"
 
                 # The source of your backup
-                SOURCE=$s3backupsdir/ # Use / for full system backup [not the case for aenigma]
+                SOURCE=$latestdir/ # Use / for full system backup [not the case for $scriptname]
 
                 FULL=
                 tail -1 "${FULLBACKLOGFILE}" | grep "${TODAY}" > /dev/null || true
@@ -216,7 +369,7 @@ then
                 BACKUPSTATUS=$(cat "$DAILYLOGFILE" | grep -i error | wc -l)
                 if [ "$BACKUPSTATUS" != "0" ]
                 then
-                        cat "$DAILYLOGFILE" | mail -aFrom:"aenigma@$HOST" -s "ERROR in aenigma backup for $HOST on $DATE" "$MAILADDR"
+                        cat "$DAILYLOGFILE" | mail -aFrom:"$scriptname@$HOST" -s "ERROR in $scriptname backup for $HOST on $DATE" $MAILADDR
                 elif [ "$FULL" = "full" ]
                 then
                         echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
@@ -232,9 +385,54 @@ then
 
         fi
 
+	### Also upload today's full backup file to S3 if s3_monthly_uploads=y [only if this is NOT a manual run]
+
+	today_day_of_month="$(date +%-d)"
+
+	if [ $today_day_of_month = "1" ] && [ $interactive = "n" ]
+	then
+		echo "${b}Now copying $archivedir/$backupname.tar.bz2 to S3 as well."
+		echo
+
+		encrypt() {
+			gpg --output  /$tmpdir/$@ --passphrase "$backupspw" --symmetric -z 9 --require-secmem --cipher-algo AES256 --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-mode 3 --s2k-count 65000000 --compress-algo BZIP2 $@
+		}
+
+		decrypt() {
+			gpg $@
+		}
+
+		putS3 () {
+			path=$1
+			file=$2
+			aws_path=$3
+			bucket="$s3bucketname"
+			date=$(date +"%a, %d %b %Y %T %z")
+			acl="x-amz-acl:public-read"
+			content_type='application/x-compressed-tar'
+			string="PUT\n\n$content_type\n$date\n$acl\n/$bucket$aws_path$file"
+			signature=$(echo -en "${string}" | openssl sha1 -hmac "${awssak}" -binary | base64)
+			curl -X PUT -T "$path/$file" \
+			-H "Host: $bucket.s3.amazonaws.com" \
+			-H "Date: $date" \
+			-H "Content-Type: $content_type" \
+			-H "$acl" \
+			-H "Authorization: AWS ${awsaki}:$signature" \
+			"https://$bucket.s3.amazonaws.com$aws_path$file"
+		}
+
+		( cd $archivedir && encrypt $backupname.tar.bz2 )
+		putS3 /$tmpdir/ $backupname.tar.bz2 /ee-br/archive/
+
+	fi
+
 fi
 
 rm -r "$tmpbackupdir"
-rm -r ${tmpdir:?}/* 2> /dev/null || true
+if [ -d $tmpdir ]
+then
+	rm -r ${tmpdir:?}
+fi
 
-echo end
+echo "${g}${b}Backup complete!${x}"
+echo
