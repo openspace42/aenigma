@@ -283,9 +283,6 @@ echo
 if [ "$backuptype" = "s3" ]
 then
 
-        echo "${b}Now backing up to S3...${x}"
-	echo
-
         rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
 
         # Export some ENV variables so you don't have to type anything
@@ -299,6 +296,106 @@ then
         # The S3 destination followed by bucket name
         DEST="s3://$s3endpoint/$s3bucketname/$shortname/latest/"
 
+	HOST=$(hostname)
+	DATE=$(date +%Y-%m-%d)
+	MAILADDR="$adminmail"
+	TODAY=$(date +%d%m%Y)
+
+	########################################################################
+
+	set +e
+
+	echo "${b}Now testing restore from S3 to $restoresdir/s3/ to ensure existing backups integrity and passphrase match...${x}"
+	echo
+
+	duplicitylogdir=/root/logs/$shortname-duplicity
+	duplicityrestlogdir=$duplicitylogdir/restore
+
+	# Set up some variables for logging
+	LOGFILE="$duplicityrestlogdir/restore.log"
+	DAILYLOGFILE="$duplicityrestlogdir/restore.daily.log"
+	FULLBACKLOGFILE="$duplicityrestlogdir/restore.full.log"
+
+	is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
+
+	if [ ! -d $duplicityrestlogdir ]
+	then
+		mkdir -p $duplicityrestlogdir
+	fi
+
+	if [ ! -f $FULLBACKLOGFILE ]
+	then
+		touch $FULLBACKLOGFILE
+	fi
+
+	if [ "$is_running" -eq 0 ]
+	then
+		# Clear the old daily log file
+		cat /dev/null > ${DAILYLOGFILE}
+
+		# Trace function for logging, don't change this
+		trace () {
+			stamp=$(date +%Y-%m-%d_%H:%M:%S)
+			echo "$stamp: $*" >> ${DAILYLOGFILE}
+		}
+
+		# The source of your backup
+		# SOURCE=$backupsdir/ # Use / for full system backup
+
+		FULL=
+		tail -1 "${FULLBACKLOGFILE}" | grep "${TODAY}" > /dev/null || true
+		if [ $? -ne 0 -a "$(date +%d)" -eq 1 ]
+		then
+			FULL=full
+		fi;
+
+		trace "Backup for local filesystem started"
+
+		trace "... backing up filesystem"
+
+		if [ -d "$restoresdir"/s3/ ]
+		then
+			rm -r ${restoresdir:?}/s3/
+		fi
+		duplicity "${DEST}" "$restoresdir"/s3/
+
+		trace "Backup for local filesystem complete"
+		trace "------------------------------------"
+
+		# Append the daily log file to the main log file
+		cat "$DAILYLOGFILE" >> $LOGFILE
+
+		if [ ! -d "$restoresdir"/s3/ ]
+		then
+			echo "${r}${b}Testing restore from S3 failed.${x}"
+			echo
+			echo "${b}This is likely due to an incorrect passphrase [check the above error log for messages like: | ${r}gpg: decryption failed: bad key${x}${b} |].${x}"
+			echo
+			echo "${b}If this is the case, you've likely changed your backups encryption passphrase on this machine between your last backup and this one.${x}"
+			echo
+			echo "${r}${b}Aborting backup as proceeding would cause your S3 backups to be encrypted with two or more encryption keys at the same time.${x}"
+			echo
+			echo "${b}This would render them unusable in the future should you ever need them.${x}"
+			echo
+			echo "${b}Edit the file | openspace42/aenigma/config/backupspw | and set once again your previous encryption passphrase, then re-run this script.${x}"
+			echo
+			echo "${b}If you have lost your previous encryption passphrase, delete all your S3 backups and re-run this script to make an entirely new backup set encrypted solely with the currently specified passphrase.${x}"
+			echo
+			echo "${b}Exiting...${x}"
+			echo
+			exit
+		fi
+
+	fi
+
+	set -e
+	echo
+
+	########################################################################
+
+	echo "${b}Now backing up to S3...${x}"
+	echo
+
 	duplicitylogdir=/root/logs/$shortname-duplicity
 	duplicitybckplogdir=$duplicitylogdir/backup
 
@@ -306,10 +403,6 @@ then
         LOGFILE="$duplicitybckplogdir/backup.log"
         DAILYLOGFILE="$duplicitybckplogdir/backup.daily.log"
         FULLBACKLOGFILE="$duplicitybckplogdir/backup.full.log"
-	HOST=$(hostname)
-        DATE=$(date +%Y-%m-%d)
-        MAILADDR="$adminmail"
-        TODAY=$(date +%d%m%Y)
 
         is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
 
