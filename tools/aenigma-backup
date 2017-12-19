@@ -48,9 +48,7 @@ var_ejab_dir=/var/lib/ejabberd
 
 if [[ $EUID -ne 0 ]]
 then
-	echo "${r}${b}This script must be run as root. Run it as:${x}"
-	echo
-	echo "${b}sudo bash aenigma/install.sh${x}"
+	echo "${r}${b}This script must be run as root.${x}"
 	echo
         # Send email indicating backup aborted
         echo "${b}Exiting...${x}"
@@ -283,14 +281,14 @@ echo
 if [ "$backuptype" = "s3" ]
 then
 
-        rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
+	rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
 
-        # Export some ENV variables so you don't have to type anything
-        export AWS_ACCESS_KEY_ID=$awsaki
-        export AWS_SECRET_ACCESS_KEY=$awssak
-        export PASSPHRASE=$backupspw
+	# Export some ENV variables so you don't have to type anything
+	export AWS_ACCESS_KEY_ID=$awsaki
+	export AWS_SECRET_ACCESS_KEY=$awssak
+	export PASSPHRASE=$backupspw
 
-        # Your GPG key
+	# Your GPG key
         #GPG_KEY= # Insert GPG key here if using GPG
 
         # The S3 destination followed by bucket name
@@ -377,7 +375,7 @@ then
 			echo
 			echo "${b}This would render them unusable in the future should you ever need them.${x}"
 			echo
-			echo "${b}Edit the file | openspace42/aenigma/config/backupspw | and set once again your previous encryption passphrase, then re-run this script.${x}"
+			echo "${b}Edit the file | $configdir/backupspw | and set once again your previous encryption passphrase, then re-run this script.${x}"
 			echo
 			echo "${b}If you have lost your previous encryption passphrase, delete all your S3 backups and re-run this script to make an entirely new backup set encrypted solely with the currently specified passphrase.${x}"
 			echo

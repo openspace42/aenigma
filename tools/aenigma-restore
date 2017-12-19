@@ -35,10 +35,9 @@ var_ejab_dir=/var/lib/ejabberd
 
 if [[ $EUID -ne 0 ]]
 then
-	echo "${r}${b}This script must be run as root. Run it as:${x}"
+	echo "${r}${b}This script must be run as root.${x}"
 	echo
-	echo "${b}sudo bash aenigma/install.sh${x}"
-	echo
+        # Send email indicating backup aborted
         echo "${b}Exiting...${x}"
         echo
         exit
@@ -83,7 +82,7 @@ fi
 
 if [ $bootstrapmode = "off" ]
 then
-	choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state from this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"
+	choice="${b}Is the backup you're trying to restore stored locally on this machine [i.e. you're trying to restore a previous state of this running instance of aenigma] or is it stored elsewhere [i.e. you're changing machine or your previous machine's data was wiped or lost]? ${x}"
 	echo "$choice"
 	echo
 	options=("backup file stored locally" "backup file stored elsewhere" "exit")
@@ -226,7 +225,7 @@ else
 
 	if [ $bootstrapmode = "on" ]
 	then
-		choice="${b}Do you want to restore your previous instance from S3 or from a standalone aenigma backup file you have stored elsewhere? ${x}"
+		choice="${b}Do you want to restore your previous instance from S3 or from a standalone $shortname backup file you have stored elsewhere? ${x}"
                 echo "$choice"
                 options=("S3" "elsewhere" "exit")
                 select opt in "${options[@]}"
@@ -522,7 +521,7 @@ else
 				echo
 				echo "${b}If this is the case, you're likely trying to restore a previous aenigma install from another machine onto this one from S3, and have not chosen the option to do so during the initial aenigma install on this machine.${x}"
 				echo
-				echo "${b}Edit the file | openspace42/aenigma/config/backupspw | and replace the currently specified passphrase with the old one from your previous machine, then re-run this script.${x}"
+				echo "${b}Edit the file | $configdir/backupspw | and replace the currently specified passphrase with the old one from your previous machine, then re-run this script.${x}"
 				echo
 				echo "${b}If you have lost your previous encryption passphrase, you've also lost access to your backups, as you were alerted during initial install.${x}"
 				echo
@@ -537,14 +536,14 @@ else
 
         else
 
-		echo "${b}Ok, restoring from a standalone aenigma backup file.${x}"
+		echo "${b}Ok, restoring from a standalone $shortname backup file.${x}"
 		echo
-		if [ -d /root/aenigma-restore/ ]
+		if [ -d "/root/$shortname-restore/" ]
 		then
-			rm -r /root/aenigma-restore/
+			rm -r "/root/$shortname-restore/"
 		fi
-		mkdir -p /root/aenigma-restore/
-		read -p "${b}Do you have a file called | aenigma-backup-[date].tar.bz2 | [or similar]? (Y/n): ${x}" -n 1 -r
+		mkdir -p "/root/$shortname-restore/"
+		read -p "${b}Do you have a file called | $shortname-backup-[date].tar.bz2 | [or similar]? (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
@@ -609,18 +608,18 @@ else
 			done
 			echo "${b}Backup file $standalonebackupfile selected.${x}"
 			echo
-			tar -xvjf "$standalonebackupfile" -C /root/aenigma-restore/
-			subdir=(/root/aenigma-restore/*/)
-			restoresubdir="$(echo "$subdir" | sed 's|/root/aenigma-restore/||' | tr -d '/')"
-			mv /root/aenigma-restore/"$restoresubdir"/* /root/aenigma-restore/
-			rm -r /root/aenigma-restore/"$restoresubdir"
+			tar -xvjf "$standalonebackupfile" -C "/root/$shortname-restore/"
+			subdir=("/root/$shortname-restore/"*/)
+			restoresubdir="$(echo "$subdir" | sed "s|/root/${shortname}-restore/||" | tr -d '/')"
+			mv "/root/$shortname-restore/$restoresubdir"/* "/root/$shortname-restore/"
+			rm -r "/root/$shortname-restore/$restoresubdir"
 		else
-			echo "${b}Ok, no problem. Make sure you populate the | /root/aenigma-restore/ | directory with these 4 files/directories from your standalone backup:${x}"
+			echo "${b}Ok, no problem. Make sure you populate the | /root/$shortname-restore/ | directory with these 4 files/directories from your standalone backup:${x}"
 			echo
-			echo "${b}1] /root/aenigma-restore/config${x}"
-			echo "${b}2] /root/aenigma-restore/ejabberd-mnesia-backup${x}"
-			echo "${b}3] /root/aenigma-restore/etc-ejabberd${x}"
-			echo "${b}4] /root/aenigma-restore/var-lib-ejabberd${x}"
+			echo "${b}1] /root/$shortname-restore/config${x}"
+			echo "${b}2] /root/$shortname-restore/ejabberd-mnesia-backup${x}"
+			echo "${b}3] /root/$shortname-restore/etc-ejabberd${x}"
+			echo "${b}4] /root/$shortname-restore/var-lib-ejabberd${x}"
 			echo
 			echo "${r}${b}If you don't correctly place all 4 files/directories, the restore will not work correctly [you will be alerted if something is wrong further along this script]${x}"
 			echo
@@ -638,14 +637,17 @@ echo
 
 ### Perform a [last] backup of this currently running installation just in case
 
-echo "${b}Now backing up [locally - no S3 of course] this machine's currently running aenigma installation just in case...${x}"
+echo "${b}Now backing up [locally - no S3 of course] this machine's currently running $shortname installation just in case...${x}"
 echo
 
-rm -r "${tmpdir:?}"/* 2> /dev/null || true
+if [ -d $tmpdir ]
+then
+	rm -r ${tmpdir:?}
+fi
 mkdir -p $archivedir
 ### No need to create S3 dir as we're only backing up locally
 mkdir -p $tmpdir
-backupname=aenigma-backup-$now
+backupname=$shortname-backup-$now
 tmpbackupdir=$tmpdir/$backupname
 mkdir -p "$tmpbackupdir"
 
@@ -680,7 +682,7 @@ fi
 
 
 
-echo "${b}Now restoring aenigma from backup...${x}"
+echo "${b}Now restoring $shortname from backup...${x}"
 echo
 
 
