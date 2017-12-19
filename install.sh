@@ -27,11 +27,11 @@ then
 fi
 
 # specify version to be installed in the format "x.y"
-installvers=0.45
+installvers=0.46
 
 if [ -f $configdir/beta ]
 then
-	installvers=0.46
+	installvers=0.47
 	beta=y
 else
 	beta=n

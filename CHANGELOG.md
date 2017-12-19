@@ -1,7 +1,7 @@
 # aenigma changelog
 
 
-## v0.46
+## v0.46 [2017-12-19]
 
 1. Validate S3 connection details
 2. Allow "bootstrap mode" to restore aenigma [and therefore source all previous settings] before running the installation on a new machine
@@ -11,6 +11,7 @@
 6. Added DPKG lock detection / waiting
 7. Fixed and improved SRV records DNS checks
 8. All bash code audited with ShellCheck
+9. Improved backup / restore functionality by pulling the newest code from [easyengine-backup-restore](https://github.com/openspace42/easyengine-backup-restore)
 
 
 ## v0.45 [2017-11-18]
