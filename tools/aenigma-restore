@@ -218,7 +218,7 @@ then
 
         done
 
-        mkdir -p $restoresdir/local/
+        mkdir -p "$restoresdir/local/"
         tar -xvjf "$selbackupfile" -C "$restoresdir"/local/
 
 else
@@ -496,11 +496,7 @@ else
 
                         trace "... backing up filesystem"
 
-			if [ -d "$restoresdir"/s3/ ]
-			then
-				rm -r ${restoresdir:?}/s3/
-			fi
-                        duplicity "${DEST}" "$restoresdir"/s3/
+                        duplicity --force "${DEST}" "$restoresdir"/s3/
 
                         trace "Backup for local filesystem complete"
                         trace "------------------------------------"
@@ -635,6 +631,7 @@ fi
 echo
 
 
+
 ### Perform a [last] backup of this currently running installation just in case
 
 echo "${b}Now backing up [locally - no S3 of course] this machine's currently running $shortname installation just in case...${x}"
@@ -696,7 +693,7 @@ else
         then
                 restorefileloc=$restoresdir/s3/
         else
-                restorefileloc=/root/aenigma-restore/
+                restorefileloc="/root/$shortname-restore/"
         fi
 fi
 
@@ -868,9 +865,19 @@ else
 
 fi
 
-if [ -d /root/aenigma-restore/ ]
+if [ -d "$restoresdir/local/" ]
 then
-	rm -r /root/aenigma-restore/
+	rm -r "$restoresdir/local/"
+fi
+
+if [ -d "/root/$shortname-restore/" ]
+then
+	rm -r "/root/$shortname-restore/"
+fi
+
+if [ -d "$tmpdir" ]
+then
+	rm -r "${tmpdir:?}"
 fi
 
 if [ $bootstrapmode = "on" ]
