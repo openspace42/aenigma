@@ -91,28 +91,27 @@ fi
 
 if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/')" != "Ubuntu 16.04 LTS" ]
 then
-
 	if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/17\.04\.[0-9]/17.04/')" = "Ubuntu 17.04 LTS" ]
 	then
 		read -p "${b}Ubuntu 17.04 detected. Proceed in testing mode? [things could break] (Y/n): ${x}" -n 1 -r
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-		echo "${b}Ok, continuing anyway...${x}"
-		echo
+			echo "${b}Ok, continuing anyway...${x}"
+			echo
+		else
+			echo
+			echo "${b}Ok. Exiting...${x}"
+			echo
+			exit
+		fi
 	else
+		echo "${r}${b}aenigma only runs on Ubuntu 16.04. You are running:${x}"
 		echo
-		echo "${b}Ok. Exiting...${x}"
+		lsb_release -d | sed 's/.*:\s*//'
 		echo
 		exit
 	fi
-
-	echo "${r}${b}aenigma only runs on Ubuntu 16.04. You are running:${x}"
-	echo
-	lsb_release -d | sed 's/.*:\s*//'
-	echo
-	exit
-
 fi
 
 
