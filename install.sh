@@ -91,7 +91,7 @@ fi
 
 if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/')" != "Ubuntu 16.04 LTS" ]
 then
-	if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/17\.04\.[0-9]/17.04/')" = "Ubuntu 17.04 LTS" ]
+	if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/17\.04\.[0-9]/17.04/')" = "Ubuntu 17.04" ]
 	then
 		read -p "${b}Ubuntu 17.04 detected. Proceed in testing mode? [things could break] (Y/n): ${x}" -n 1 -r
 		echo

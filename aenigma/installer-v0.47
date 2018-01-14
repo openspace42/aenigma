@@ -159,6 +159,7 @@ then
 		echo "${b}Backup complete. Continuing installation...${x}"
 		echo
 	else
+		echo
 		echo "${b}Ok, skipping backup...${x}"
 		echo
 	fi
