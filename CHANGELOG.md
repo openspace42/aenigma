@@ -1,5 +1,16 @@
 # aenigma changelog
 
+## v0.47 [currently in beta]
+
+1. Added testing mode for Ubuntu 17.04 [and therefore - currently - ejabberd 17.12 as per the repo we use] to prepare for Ubuntu 18.04 and ejabberd 18.xx:
+1.1: Re-introduced per-ejabberd-version ejabberd.yml config files [falls back to v17.08 config file if ejabberd version being installed doesn't have a version-specific aenigma config file]
+1.2: Enabled mod_push in ejabberd.yml for versions 17.12 and later
+1.3: Requires user to place any external TLS certificate for $domain inside the aenigma /etc/ssl/aenigma TLS certificates folder as other arbitrary directories are blocked in newer versions.
+1.4: [under developement...]
+
+2. Allow APT to fail during installation up to the last step in the installation, where instead any errors are catched by the script.
+This way the installation can proceed until the end and possibly fix any errors causing APT to previously fail, and - if not - at least the user can attempt to fix things manually once the installation is actually complete, before running it again and making everything go back to normal.
+
 
 ## v0.46 [2017-12-19]
 

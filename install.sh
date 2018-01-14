@@ -91,11 +91,28 @@ fi
 
 if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/16\.04\.[0-9]/16.04/')" != "Ubuntu 16.04 LTS" ]
 then
+
+	if [ "$(lsb_release -d | sed 's/.*:\s*//' | sed 's/17\.04\.[0-9]/17.04/')" = "Ubuntu 17.04 LTS" ]
+	then
+		read -p "${b}Ubuntu 17.04 detected. Proceed in testing mode? [things could break] (Y/n): ${x}" -n 1 -r
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+		echo "${b}Ok, continuing anyway...${x}"
+		echo
+	else
+		echo
+		echo "${b}Ok. Exiting...${x}"
+		echo
+		exit
+	fi
+
 	echo "${r}${b}aenigma only runs on Ubuntu 16.04. You are running:${x}"
 	echo
 	lsb_release -d | sed 's/.*:\s*//'
 	echo
 	exit
+
 fi
 
 
@@ -144,12 +161,12 @@ echo
 hostname="$(cat /etc/hostname)"
 apt-add-repository ppa:duplicity-team/ppa -y
 apt-get update
-apt-get -y install dnsutils ufw bc duplicity python-pip pwgen s3cmd python-boto libpcre3-dev
+apt-get -y install dnsutils ufw bc duplicity python-pip pwgen s3cmd python-boto libpcre3-dev || true
 pip install --upgrade pip
 pip install boto
 debconf-set-selections <<< "postfix postfix/mailname string $hostname"
 debconf-set-selections <<< "postfix postfix/main_mailer_type string 'Internet Site'"
-apt-get install -y mailutils
+apt-get install -y mailutils || true
 /etc/init.d/postfix reload
 echo
 echo "${b}Finished installing dependencies.${x}"
@@ -159,7 +176,7 @@ echo
 
 echo "${b}Now performing APT upgrade, dist-upgrade, and autoremove...${x}"
 echo
-apt-get -y upgrade && apt-get -y dist-upgrade && apt-get -y autoremove
+apt-get -y upgrade && apt-get -y dist-upgrade && apt-get -y autoremove || true
 echo
 echo "${b}Finished performing APT upgrade, dist-upgrade, and autoremove.${x}"
 echo

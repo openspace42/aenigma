@@ -931,109 +931,44 @@ then
 	if [ $addTLSmode = "elsewhere" ]
 	then
 
-		if [ -f $configdir/domtlscertloc ]
+		if [ -f $tlsdir/$domain.pem ]
 		then
-			prevdomtlscertloc="$(cat $configdir/domtlscertloc)"
-			if [[ -f "$prevdomtlscertloc" && -s "$prevdomtlscertloc" ]]
-			then
-				validprevdomtlscertloc=y
-			else
-				validprevdomtlscertloc=n
-			fi
-		else
-			touch $configdir/domtlscertloc
-			validprevdomtlscertloc=n
-		fi
-
-		if [ $validprevdomtlscertloc = "y" ]
-		then
-			echo "${g}${b}You previously specified the all-in-one TLS certificate file for $domain to be | $prevdomtlscertloc | ${x}"
+			echo "${g}${b}External TLS certificate for $domain found in | $tlsdir/$domain.pem |."
 			echo
-			read -rp "${b}Is this still correct? (Y/n): ${x}" -n 1
-			echo
-			if [[ ! $REPLY =~ ^[Nn]$ ]]
-			then
-				domtlscertloc=$prevdomtlscertloc
-			else
-				echo
-				domtlscertloc=notyetset
-			fi
 		else
-			domtlscertloc=notyetset
-		fi
-
-		if [ $domtlscertloc = "notyetset" ]
-		then
-
-			defined=n
-			until [ $defined = "y" ]
+			echo "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, it's time to place it inside the  | $tlsdir | directory named as | $domain.pem |.${x}"
+			echo
+			echo "${b}Place it there now ensuring its full path is indeed | $tlsdir/$domain.pem |.${x}"
+			echo
+			read -rp "${b}[press enter when ready...]${x}"
+			clear
+			exists=n
+			until [ $exists = "y" ]
 			do
-				exists=n
-				until [ $exists = "y" ]
-				do
-					newdomtlscertloc=""
-					until [ ! $newdomtlscertloc = "" ]
-					do
-						read -rp "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, specify its absolute path [i.e. /home/username/domain.pem] on this server now: ${x}" newdomtlscertloc
-						echo
-					done
-					if [ -f "$newdomtlscertloc" ]
-					then
-						exists=y
-					else
-						echo "${r}${b}The specified file does not exists. Please retry...${x}"
-						echo
-						exists=n
-					fi
-				done
-				valid=n
-				until [ $valid = "y" ]
-				do
-					read -n 1 -rp "${b}Is | $newdomtlscertloc | correct? (Y/n/e[xit]) ${x}" answer;
-					case $answer in
-					"")
-						echo
-						valid=y
-						defined=y
-						;;
-					y)
-						echo -e "\\n"
-						valid=y
-						defined=y
-						;;
-					n)
-						echo -e "\\n"
-						echo "${b}Ok, then please try again...${x}"
-						echo
-						valid=y
-						defined=n
-						;;
-					e)
-						echo -e "\\n"
-			        		echo "${b}Exiting...${x}"
-			        		echo
-			        		exit
-			        		;;
-					*)
-						echo -e "\\n"
-						echo "${r}${b}Invalid option. Retry...${x}"
-			        		echo
-						valid=n
-					defined=n
-				        ;;
-					esac
-				done
+				if [ -f  $tlsdir/$domain.pem ]
+				then
+					echo "${g}${b}External TLS certificate for $domain found in | $tlsdir/$domain.pem |."
+					echo
+					exists=y
+				else
+					echo "${r}${b}External TLS certificate for $domain NOT found in | $tlsdir/$domain.pem |."
+					echo
+					echo "${b}Please ensure you've correctly copied the certificate inside the directory and named it as above.${x}"
+					echo
+					read -rp "${b}[press enter when ready to try again...]${x}"
+					clear
+					exists=n
+				fi
 			done
-			echo "$newdomtlscertloc" > "$configdir"/domtlscertloc
-			echo "${b}New location for all-in-one TLS cert file for $domain set to | $newdomtlscertloc | ${x}"
-			echo
-			domtlscertloc="$(cat $configdir/domtlscertloc)"
 		fi
+
+		chmod 700 "$tlsdir/$domain.pem"
+		domtlscertloc="$tlsdir/$domain.pem"
+		echo "$domtlscertloc" > "$configdir/domtlscertloc"
 
 	fi
 
 fi
-sleep 1
 clear
 
 
@@ -1931,26 +1866,11 @@ service nginx restart
 
 
 
-echo "${b}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x}"
-echo
-mkdir -p /etc/ejabberd/
-touch /etc/ejabberd/ejabberd.yml
-sed -i "s/example.im/${domain}/g" $sourcedir/conf/ejabberd/ejabberd.yml
-sed -i "s/hostname.im/${hostname}/g" $sourcedir/conf/ejabberd/ejabberd.yml
-if [ $configoption = 1 ]
-then
-sed -i "s|example.im|${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-sed -i "s|pathtofile|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
-sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $sourcedir/conf/ejabberd/ejabberd.yml
-fi
-#sed -i "s|example.im|xu.${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-#sed -i "s|pathtofile|${tlsdir}/xu.pem|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-#sed -i '/## aenigma_host_config_xu_placeholder_start:/,/## aenigma_host_config_xu_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
-#sed -i "/## aenigma_host_config_xu_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt" $sourcedir/conf/ejabberd/ejabberd.yml
-cp $sourcedir/conf/ejabberd/ejabberd.yml /etc/ejabberd/ejabberd.yml
-echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
-echo
+aenigma-add_ejabberd_repo
+
+aenigma-install_ejabberd_config
+
+
 
 echo "${b}Now creating uploads directory...${x}"
 echo
@@ -2002,7 +1922,7 @@ echo "${b}Now installing SSLH...${x}"
 echo
 /usr/sbin/service sslh stop &> /dev/null || true
 sshport="$(cat $basedir/DFBS/ssh-port)"
-apt-get -y install libwrap0-dev libconfig8-dev
+apt-get -y install libwrap0-dev libconfig8-dev || true
 rm -r $tmpdir/sslh &> /dev/null || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
 ( cd $tmpdir/sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
@@ -2060,12 +1980,7 @@ echo
 
 echo "${b}Now installing ejabberd...${x}"
 echo
-currdistro="$(lsb_release --codename | cut -f2)"
-apt-get -y install apt-transport-https
-echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
-wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
-apt-get update
-export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd
+export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
 echo
 echo "${b}Finished installing ejabberd.${x}"
 echo
@@ -2158,6 +2073,26 @@ echo "${b}Finished creating shared roster groups.${x}"
 echo
 clear
 
+
+
+echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
+echo
+set +e
+if apt-get -y upgrade
+then
+	echo "${g}${b}All APT package installations completed successfully...${x}"
+	echo
+else
+	echo "${r}${b}An error has occured during APT operations.${x}"
+	echo
+	echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	echo
+	echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	echo
+	read -rp "${b}[press enter to continue reading...]${x}"
+	clear
+fi
+set -e
 
 
 echo "${g}${b}You can finally log in:${x}"
