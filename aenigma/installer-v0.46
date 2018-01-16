@@ -2001,7 +2001,7 @@ echo
 echo "${b}Now installing SSLH...${x}"
 echo
 /usr/sbin/service sslh stop &> /dev/null || true
-sshport="$(cat $basedir/DFBS/ssh-port)"
+sshport="$(cat $basedir/dfbs/ssh-port)"
 apt-get -y install libwrap0-dev libconfig8-dev
 rm -r $tmpdir/sslh &> /dev/null || true
 git clone https://github.com/yrutschle/sslh $tmpdir/sslh
