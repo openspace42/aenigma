@@ -10,6 +10,10 @@ The installation takes you on a three-minute, clearly worded, step-by-step setup
 
 As soon as you're up and running join our conference at os@xc.os.vu !
 
+## News [last update 2018-03-07]
+
+* See [upcoming-features](#upcoming-features)
+
 ## Features
 
 * **State of the art configuration**
@@ -47,6 +51,12 @@ Not yet supported by ejabberd:
 ## Non-features
 
 * Keeps backwards compatibility with legacy XMPP servers by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by changing two lines in the config file.
+
+## Upcoming features / in developement [v0.50]
+
+* Full XEP-0375 thanks to ejabberd 18.0x
+* Ubuntu 18.04 [bionic beaver] support [and requirement]
+* Newly implemented openspace [bash_functions](https://github.com/openspace42/bash_functions)
 
 ## Install on Ubuntu 16
 
