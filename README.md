@@ -52,7 +52,9 @@ Not yet supported by ejabberd:
 
 * Keeps backwards compatibility with legacy XMPP servers by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by changing two lines in the config file.
 
-## Upcoming features / in developement [v0.50]
+## Upcoming features
+
+###  In developement for v0.50
 
 * Full XEP-0375 thanks to ejabberd 18.0x
 * Ubuntu 18.04 [bionic beaver] support [and requirement]
