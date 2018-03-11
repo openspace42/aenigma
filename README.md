@@ -24,7 +24,7 @@ You will notice some errors, namely with EasyEngine, which doesn't support 18.04
 
 Thanks in advance for your help!
 
-## News [last update 2018-03-07]
+## News [last update 2018-03-11]
 
 * See [upcoming-features](#upcoming-features)
 
