@@ -48,7 +48,7 @@ download_os_functions() {
 
 source_os_functions() {
 
-	for f in /root/openspace42/bash-functions/*
+	for f in /root/openspace42/bash-functions/functions/*
 	do
 		. $f
 	done
