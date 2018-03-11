@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### openspace bash-framework v0.1.1 [https://github.com/openspace42/bash-framework]
+### openspace bash-framework v0.1.2 [https://github.com/openspace42/bash-framework]
 
 os_bash_functions_version=0.1.4
 
