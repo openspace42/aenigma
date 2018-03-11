@@ -79,8 +79,8 @@ then
 	if [ ${bootstrap_mode-null} = "y" ]
 	then
 
-		os-setup_backup_restore_s3
-		os-br_launch_restore s3
+		os-setup_backup_restore_s3 -s
+		os-br_launch_restore -s
 		rsync -aAXx --delete "$restore_file_path/conf/" "$conf_dir/"
 
 		echo "${g-}${b-}Bootstrap-mode restore from S3 complete.${x-}"
