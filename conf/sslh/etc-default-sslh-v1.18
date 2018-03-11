@@ -1,5 +1,0 @@
-RUN=yes
-
-DAEMON=/usr/sbin/sslh
-
-DAEMON_OPTS="-F /etc/sslh/sslh.cfg"

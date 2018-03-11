@@ -1,551 +1,85 @@
 #!/bin/bash
 
+################################################################################
+
+### Set bash environment error management
+
 set -e
 set -u
 
-r=$(tput setaf 1)
-g=$(tput setaf 2)
-l=$(tput setaf 4)
-m=$(tput setaf 5)
-x=$(tput sgr0)
-b=$(tput bold)
+### Source local functions file
 
-# All in One Bash Logger | v0.51 | 20171018 | 20171214 | Nk
+echo
+source_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-scriptname=$(basename "$0")                                             # The name of this script
-now="$(date +"%Y-%m-%d_%H-%M-%S")"                                      # The current timestamp
-logdir="$HOME/logs/$scriptname"                                         # Don't store anything else than logs in here!
-logfile="$logdir/$now"                                                  # The new logfile
-if [[ -t 1 ]]; then interactive=y; else interactive=n; fi               # Determine if this is an interactive shell
-mkdir -p "$logdir"                                                      # Touch the dir
-touch "$logfile"                                                        # Touch the file
-if [ -f "$logdir"/latest-log ]; then rm "$logdir"/latest-log; fi        # Remove the old latest-log symlink
-ln -s "$logfile" "$logdir"/latest-log                                   # Recreate the symlink
-( cd "$logdir" && rm "$(ls -t | awk 'NR>43')" ) 2> /dev/null || true    # Delete all logs older than the newest 42
-exec >  >(tee -ia "$logfile")                                           # Log stdout to logfile
-if [ $interactive = "n" ]; then exec 2> >(tee -ia "$logfile" >&2); fi   # Log stderr to logfile if non-interactive
-echo && echo "Starting $scriptname script on $now..." && echo           # Write heading to logfile
-chmod -R 700 "$logdir"                                                  # Secure logs directory
+if [[ "$source_dir" == */tools ]]
+then
+        source_dir="${source_dir%/tools}"
+fi
+
+. $source_dir/functions
+
+### Source openspace functions file
+
+source_os_functions
+
+### Define formatting
+
+os-define_formatting
+
+### Define variables
+
+define_vars
 
 ################################################################################
 
-# Don't change these! | No trailing slash!
-projname="aenigma"
-shortname=$projname
-sourcedir=/root/$projname
-basedir=/root/openspace42
-installdir=$basedir/$shortname
-backupsdir=$installdir/backups
-archivedir=$backupsdir/archive
-latestdir=$backupsdir/latest
-restoresdir=$installdir/restores
-tmpdir=/tmp/$shortname
-configdir=$installdir/config
-toolsdir=$installdir/tools
-tlsdir=/etc/ssl/$shortname
-etc_ejab_dir=/etc/ejabberd
-var_ejab_dir=/var/lib/ejabberd
+check_root
 
-if [[ $EUID -ne 0 ]]
-then
-	echo "${r}${b}This script must be run as root.${x}"
-	echo
-        # Send email indicating backup aborted
-        echo "${b}Exiting...${x}"
-        echo
-        exit
-fi
+os-log_script
 
-if [ ! -f $configdir/installcomplete ]
-then
-        echo "It appears aenigma is not currently installed or there is an incomplete installation on this machine."
-        echo
-        echo "This backup script only works on a fully installed aenigma instance."
-        echo
-        echo "Please finish installing aenigma before running this script."
-        echo
-        # Send email indicating backup aborted
-        echo "${b}Exiting...${x}"
-        echo
-        exit
-fi
-
-if [ -f $configdir/blocks3backups ]
-then
-        echo "${r}${b}NOT performing backup as $configdir/blocks3backups file found.${x}"
-        echo
-        echo "${b}This should indicate that during the initial installation script you specified your intent to use this machine as a restore for a previous backup on S3.${x}"
-        echo
-        echo "${b}If this is the case, simply run the restore script right away. If it is not, and you want to use this machine for a new installation and OVERWRITE all backups currently on S3, erase this file: $configdir/blocks3backups.${x}"
-        echo
-        echo "${r}${b}NO backups will run on this instance until you perform the restore script or remove the file to specify your intent to use this machine as it is for a new installation.${x}"
-        echo
-        # Send email indicating backup aborted
-        echo "${b}Exiting...${x}"
-        echo
-        exit
-fi
-
-
+os-read_conf_settings
 
 ################################################################################
 
+os-br_purge_incomplete_archives
 
+os-br_purge_dirs
 
-# Source vars from config dir
+os-br_create_dirs backup
 
-backuptype="$(cat $configdir/backuptype)"
-backupspw="$(cat "$configdir"/backupspw)"
-adminmail="$(cat $configdir/adminmail)"
+os-br_update_storage_info
 
-awsaki="$(cat $configdir/s3/awsaki)"
-awssak="$(cat $configdir/s3/awssak)"
-s3endpoint="$(cat $configdir/s3/s3endpoint)"
-s3bucketname="$(cat $configdir/s3/s3bucketname)"
+os-br_purge_backups
 
-# Hardcode the rest of options
+os-br_backup_locally
 
-### Minimum number of backups [days] to keep locally
-min_local_backups="7"
+################################################################################
 
-### Maximum number of backups [days] to keep locally
-max_local_backups="42"
-
-### Maximum storage space for local backups in MB
-max_local_storage="8000"
-
-#### Minimum backup history to keep on S3.
-#### Indicate an interval, which is a number followed by one of the characters D, W, M, or Y (indicating days, weeks, months, or years respectively).
-dup_min_history="3M"
-
-### Also upload a full backup file to S3 on the first of the month?
-s3_monthly_uploads=y
-
-
-
-# Purge temp and create directories
-
-if [ -d $tmpdir ]
-then
-	rm -r ${tmpdir:?}
-fi
-
-mkdir -p $archivedir
-mkdir -p $latestdir
-mkdir -p $tmpdir
-backupname=$scriptname-$now
-tmpbackupdir=$tmpdir/$backupname
-mkdir -p "$tmpbackupdir"
-
-
-
-update_storage_info () {
-
-	free_disk_space="$(df -m --output=avail / | xargs | sed -e 's/Avail //g')"
-	ref_dir_size="$(du -sm "$var_ejab_dir" | xargs | sed -e "s|"${var_ejab_dir}"||g" | xargs)"
-	est_backup_size=$(($ref_dir_size * 2))
-	local_archive_items="$(ls -1q $archivedir | wc -l)"
-	local_archive_size="$(du -sm $archivedir | xargs | sed "s|${archivedir}||g" | xargs)"
-
-}
-
-
-
-purge_loop () {
-
-	if [ $local_archive_items -gt $min_local_backups ]
-	then
-
-		counter=$(($counter - 1))
-
-		# Prevent infinite loops in case of rm failure
-
-		if [ $counter = 0 ]
-		then
-			echo "${r}${b}Infinite loop error caught. Exiting...${b}"
-			exit
-		fi
-
-		if [ $local_archive_items -gt $counter ]
-		then
-			tailnumber=$(( $counter + 1 ))
-			( cd $archivedir && ls -t | tail -n +"$tailnumber" | xargs -d '\n' rm )
-		fi
-
-		update_storage_info
-
-	else
-
-		echo "${r}${b}The specified number of minimum backups to keep [$min_local_backups] is too high $errordescr.${x}"
-		echo
-		echo "${b}Lower this figure in the | config | file or make more space available on this machine.${x}"
-		echo
-		# Send email indicating backup aborted
-		echo "${b}Exiting...${x}"
-		echo
-		exit
-
-	fi
-
-}
-
-
-
-update_storage_info
-
-### Purge backups older than the latest $max_local_backups
-
-local_archive_items="$(ls -1q $archivedir | wc -l)"
-if [ $local_archive_items -gt $max_local_backups ]
-then
-        tailnumber=$(( $max_local_backups + 1 ))
-        ( cd $archivedir && ls -t | tail -n +"$tailnumber" | xargs -d '\n' rm )
-	update_storage_info
-fi
-
-echo "${b}You have $local_archive_items local backups occupying $local_archive_size MB of space.${x}"
-echo
-
-if [ $local_archive_size -gt $max_local_storage ]
+if [ "$backup_location" = "s3" ]
 then
 
-	echo "${r}${b}Local archive size [$local_archive_size MB] LARGER than | max_local_storage | setting [$max_local_storage MB].${x}"
-	echo
-	echo "${b}Now purging old backups while respecting your specified number of minimum backups to keep...${x}"
-	echo
-	errordescr="to stay below the | max_local_storage | setting you chose"
-
-	counter=$max_local_backups
-
-	while [ $local_archive_size -gt $max_local_storage ]
-	do
-		purge_loop
-	done
-
-	echo "${g}${b}Local archive size now low enough [$local_archive_size MB] to respect your settings.${x}"
-	echo
-	echo "${b}Purged all backups older than the most recent | $counter |.${x}"
-	echo
-	echo "${b}Continuing...${x}"
-	echo
-
-fi
-
-if [ $est_backup_size -gt $free_disk_space ]
-then
-
-	echo "${r}${b}Estimated backup size [$est_backup_size MB] LARGER than available disk space [$free_disk_space MB].${x}"
-	echo
-	echo "${b}Now purging old backups while respecting your specified number of minimum backups to keep...${x}"
-	echo
-	errordescr="to free enough disk space for the next backup"
-
-	counter=$max_local_backups
-
-	while [ $est_backup_size -gt $free_disk_space ]
-	do
-		purge_loop
-	done
-
-	echo "${g}${b}Enoguh free space [$free_disk_space MB] now available for new backup.${x}"
-	echo
-	echo "${b}Purged all backups older than the most recent | $counter |.${x}"
-	echo
-	echo "${b}Continuing...${x}"
-	echo
-
-fi
-
-
-
-echo "${b}Now backing up locally...${x}"
-echo
-
-
-
-/usr/sbin/ejabberdctl backup /tmp/ejabberd-mnesia-backup
-mv /tmp/ejabberd-mnesia-backup "$tmpbackupdir"/ejabberd-mnesia-backup
-cp -r /etc/ejabberd/ "$tmpbackupdir"/etc-ejabberd/
-cp -r /var/lib/ejabberd/ "$tmpbackupdir"/var-lib-ejabberd/
-cp -r "$configdir" "$tmpbackupdir"/config/
-cd $tmpdir || exit
-tar -cvjSf "$archivedir"/"$backupname".tar.bz2 "$backupname"
-echo
-
-echo "${b}Backed up to $archivedir/.${x}"
-echo
-
-
-
-
-if [ "$backuptype" = "s3" ]
-then
-
-	rsync -aAXx "$tmpbackupdir"/* "$latestdir"/
-
-	# Export some ENV variables so you don't have to type anything
-	export AWS_ACCESS_KEY_ID=$awsaki
-	export AWS_SECRET_ACCESS_KEY=$awssak
-	export PASSPHRASE=$backupspw
-
-	# Your GPG key
-        #GPG_KEY= # Insert GPG key here if using GPG
-
-        # The S3 destination followed by bucket name
-        DEST="s3://$s3endpoint/$s3bucketname/$shortname/latest/"
-
-	HOST=$(hostname)
-	DATE=$(date +%Y-%m-%d)
-	MAILADDR="$adminmail"
-	TODAY=$(date +%d%m%Y)
+	mv "$tmp_backup_dir"/* "$backups_latest_dir"
 
 	########################################################################
 
-	set +e
-
-	echo "${b}Now testing restore from S3 to $restoresdir/s3/ to ensure existing backups integrity and passphrase match...${x}"
-	echo
-
-	duplicitylogdir=/root/logs/$shortname-duplicity
-	duplicityrestlogdir=$duplicitylogdir/restore
-
-	# Set up some variables for logging
-	LOGFILE="$duplicityrestlogdir/restore.log"
-	DAILYLOGFILE="$duplicityrestlogdir/restore.daily.log"
-	FULLBACKLOGFILE="$duplicityrestlogdir/restore.full.log"
-
-	is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
-
-	if [ ! -d $duplicityrestlogdir ]
-	then
-		mkdir -p $duplicityrestlogdir
-	fi
-
-	if [ ! -f $FULLBACKLOGFILE ]
-	then
-		touch $FULLBACKLOGFILE
-	fi
-
-	if [ "$is_running" -eq 0 ]
-	then
-		# Clear the old daily log file
-		cat /dev/null > ${DAILYLOGFILE}
-
-		# Trace function for logging, don't change this
-		trace () {
-			stamp=$(date +%Y-%m-%d_%H:%M:%S)
-			echo "$stamp: $*" >> ${DAILYLOGFILE}
-		}
-
-		# The source of your backup
-		# SOURCE=$backupsdir/ # Use / for full system backup
-
-		FULL=
-		tail -1 "${FULLBACKLOGFILE}" | grep "${TODAY}" > /dev/null || true
-		if [ $? -ne 0 -a "$(date +%d)" -eq 1 ]
-		then
-			FULL=full
-		fi;
-
-		trace "Backup for local filesystem started"
-
-		trace "... backing up filesystem"
-
-		duplicity --force "${DEST}" "$restoresdir"/s3/ >$tmpdir/duplicity-log 2>&1
-
-		trace "Backup for local filesystem complete"
-		trace "------------------------------------"
-
-		# Append the daily log file to the main log file
-		cat "$DAILYLOGFILE" >> $LOGFILE
-
-		if grep -q "No backup chains found" $tmpdir/duplicity-log
-		then
-
-			# This is the first backup, all is good
-
-			echo "${b}First S3 backup detected...${x}"
-			echo
-
-		else
-
-			if grep -q "gpg: decryption failed: bad key" $tmpdir/duplicity-log || [ ! -d "$restoresdir"/s3/ ]
-			then
-
-				echo "${r}${b}Testing restore from S3 failed.${x}"
-				echo
-				echo "${b}This is likely due to an incorrect passphrase [check | $tmpdir/duplicity-log | for messages like: | ${r}gpg: decryption failed: bad key${x}${b} |].${x}"
-				echo
-				echo "${b}If this is the case, you've likely changed your backups encryption passphrase on this machine between your last backup and this one.${x}"
-				echo
-				echo "${r}${b}Aborting backup as proceeding would cause your S3 backups to be encrypted with two or more encryption keys at the same time.${x}"
-				echo
-				echo "${b}This would render them unusable in the future should you ever need them.${x}"
-				echo
-				echo "${b}Edit the file | $configdir/backupspw | and set once again your previous encryption passphrase, then re-run this script.${x}"
-				echo
-				echo "${b}If you have lost your previous encryption passphrase, delete all your S3 backups and re-run this script to make an entirely new backup set encrypted solely with the currently specified passphrase.${x}"
-				echo
-				echo "${b}Exiting...${x}"
-				echo
-				exit
-
-			else
-
-				echo "${g}${b}Restore test succeded. Proceeding...${x}"
-				echo
-
-			fi
-
-		fi
-
-	fi
-
-	set -e
-	echo
+	os-br_restore_from_S3 test
 
 	########################################################################
 
-	echo "${b}Now backing up to S3...${x}"
-	echo
+	os-br_backup_to_S3
 
-	duplicitylogdir=/root/logs/$shortname-duplicity
-	duplicitybckplogdir=$duplicitylogdir/backup
+else
 
-        # Set up some variables for logging
-        LOGFILE="$duplicitybckplogdir/backup.log"
-        DAILYLOGFILE="$duplicitybckplogdir/backup.daily.log"
-        FULLBACKLOGFILE="$duplicitybckplogdir/backup.full.log"
-
-        is_running=$(ps -ef | grep duplicity  | grep python | wc -l)
-
-        if [ ! -d $duplicitybckplogdir ]
-        then
-                mkdir -p $duplicitybckplogdir
-        fi
-
-        if [ ! -f $FULLBACKLOGFILE ]
-        then
-                touch $FULLBACKLOGFILE
-        fi
-
-        if [ "$is_running" -eq 0 ]
-        then
-                # Clear the old daily log file
-                cat /dev/null > ${DAILYLOGFILE}
-
-                # Trace function for logging, don't change this
-                trace () {
-                        stamp=$(date +%Y-%m-%d_%H:%M:%S)
-                        echo "$stamp: $*" >> ${DAILYLOGFILE}
-                }
-
-                # How long to keep backups for
-                OLDER_THAN="$dup_min_history"
-
-                # The source of your backup
-                SOURCE=$latestdir/ # Use / for full system backup [not the case for $scriptname]
-
-                FULL=
-                tail -1 "${FULLBACKLOGFILE}" | grep "${TODAY}" > /dev/null || true
-                if [ $? -ne 0 -a "$(date +%d)" -eq 1 ]
-                then
-                        FULL=full
-                fi;
-
-                trace "Backup for local filesystem started"
-
-                trace "... removing old backups"
-
-                duplicity remove-older-than "${OLDER_THAN}" "${DEST}" >> "${DAILYLOGFILE}" 2>&1  || true
-
-                trace "... backing up filesystem"
-
-                #    duplicity \
-                #        ${FULL} \
-                #        --encrypt-key=${GPG_KEY} \
-                #        --sign-key=${GPG_KEY} \
-                #        --include=/var/rsnap-mysql \
-                #        --include=/var/www \
-                #        --include=/etc \
-                #        --exclude=/** \
-                #        ${SOURCE} ${DEST} >> ${DAILYLOGFILE} 2>&1
-
-                duplicity ${FULL} "${SOURCE}" "${DEST}" # Insert --encrypt-key and --sign-key after ${FULL} if using GPG
-
-                trace "Backup for local filesystem complete"
-                trace "------------------------------------"
-
-                # Send the daily log file by email
-                #cat "$DAILYLOGFILE" | mail -s "Duplicity Backup Log for $HOST - $DATE" $MAILADDR
-                #BACKUPSTATUS=`cat "$DAILYLOGFILE" | grep Errors | awk '{ print $2 }'`
-                BACKUPSTATUS=$(cat "$DAILYLOGFILE" | grep -i error | wc -l)
-                if [ "$BACKUPSTATUS" != "0" ]
-                then
-                        cat "$DAILYLOGFILE" | mail -aFrom:"$scriptname@$HOST" -s "ERROR in $scriptname backup for $HOST on $DATE" $MAILADDR
-                elif [ "$FULL" = "full" ]
-                then
-                        echo "$(date +%d%m%Y_%T) Full Back Done" >> $FULLBACKLOGFILE
-                fi
-
-                # Append the daily log file to the main log file
-                cat "$DAILYLOGFILE" >> $LOGFILE
-
-                # Reset the ENV variables. Don't need them sitting around
-                unset AWS_ACCESS_KEY_ID
-                unset AWS_SECRET_ACCESS_KEY
-                unset PASSPHRASE
-
-        fi
-
-	### Also upload today's full backup file to S3 if s3_monthly_uploads=y [only if this is NOT a manual run]
-
-	today_day_of_month="$(date +%-d)"
-
-	if [ $today_day_of_month = "1" ] && [ $interactive = "n" ]
-	then
-		echo "${b}Now copying $archivedir/$backupname.tar.bz2 to S3 as well."
-		echo
-
-		encrypt() {
-			gpg --output  /$tmpdir/$@ --passphrase "$backupspw" --symmetric -z 9 --require-secmem --cipher-algo AES256 --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-mode 3 --s2k-count 65000000 --compress-algo BZIP2 $@
-		}
-
-		decrypt() {
-			gpg $@
-		}
-
-		putS3 () {
-			path=$1
-			file=$2
-			aws_path=$3
-			bucket="$s3bucketname"
-			date=$(date +"%a, %d %b %Y %T %z")
-			acl="x-amz-acl:public-read"
-			content_type='application/x-compressed-tar'
-			string="PUT\n\n$content_type\n$date\n$acl\n/$bucket$aws_path$file"
-			signature=$(echo -en "${string}" | openssl sha1 -hmac "${awssak}" -binary | base64)
-			curl -X PUT -T "$path/$file" \
-			-H "Host: $bucket.s3.amazonaws.com" \
-			-H "Date: $date" \
-			-H "Content-Type: $content_type" \
-			-H "$acl" \
-			-H "Authorization: AWS ${awsaki}:$signature" \
-			"https://$bucket.s3.amazonaws.com$aws_path$file"
-		}
-
-		( cd $archivedir && encrypt $backupname.tar.bz2 )
-		putS3 /$tmpdir/ $backupname.tar.bz2 /ee-br/archive/
-
-	fi
+	rm -r "$tmp_backup_dir"
 
 fi
 
-rm -r "$tmpbackupdir"
-if [ -d $tmpdir ]
+if [ -d $tmp_dir ]
 then
-	rm -r ${tmpdir:?}
+	rm -r ${tmp_dir:?}
 fi
+
+os-br_purge_dirs
 
 echo "${g}${b}Backup complete!${x}"
 echo

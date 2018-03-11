@@ -10,6 +10,20 @@ The installation takes you on a three-minute, clearly worded, step-by-step setup
 
 As soon as you're up and running join our conference at os@xc.os.vu !
 
+## Help us test out the upcoming version
+
+We'd love you to help us test aenigma on Ubuntu 18.04 [bionic beaver] beta and make sure we're ready for when the LTS release comes out on April 26th 2018.
+
+If you happen to have the time [and have a known-to-work aenigma backup in case you're an existing user], simply:
+
+1. Log in as root on your Ubuntu 16.04 server
+1. Upgrade to Ubuntu 18.04 beta with `do-release-upgrade -d` and confirm with `lsb_release -a` that you're indeed on 18.04
+2. Run [or re-run] the aenigma installer
+
+You will notice some errors, namely with EasyEngine, which doesn't support 18.04 yet, but everything other than the aenigma web interface [which relies on nginx] should work perfectly. If you require the use of the web interface, don't upgrade for now, or open up the correct port on your server's UFW and access the ejabberd web interface directly, keeping in mind that it's not secured in any way!
+
+Thanks in advance for your help!
+
 ## News [last update 2018-03-07]
 
 * See [upcoming-features](#upcoming-features)

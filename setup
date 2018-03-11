@@ -1,0 +1,62 @@
+#!/bin/bash
+
+################################################################################
+
+### Set bash environment error management
+
+set -e
+set -u
+
+### Source local functions file
+
+echo
+source_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [[ "$source_dir" == */tools ]]
+then
+        source_dir="${source_dir%/tools}"
+fi
+
+. $source_dir/functions
+
+### Check for root user runtime
+
+check_root
+
+### Download and source openspace functions file
+
+while getopts ":be" arguments; do
+    case $arguments in
+        b)	export bleeding_edge_bf="-b"
+        echo "Using bleeding-edge bash-functions as per | -b |."
+        echo
+        ;;
+        e)	export bleeding_edge_rc="-e"
+        echo "Using bleeding-edge repo code as per | -e |."
+        echo
+        ;;
+        \?)	echo "Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |."
+        echo
+        exit
+        ;;
+    esac
+done
+
+OPTIND=1
+
+download_os_functions ${bleeding_edge_bf-}
+source_os_functions
+
+### Define formatting
+
+os-define_formatting
+
+### Define variables
+
+define_vars
+
+################################################################################
+
+### Actually run the installer
+
+os-run_install

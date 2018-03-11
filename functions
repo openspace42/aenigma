@@ -1,45 +1,333 @@
+#!/bin/bash
+
+### openspace bash-framework v0.1.1 [https://github.com/openspace42/bash-framework]
+
+os_bash_functions_version=0.1.3
+
+################################################################################
+
+define_vars() {
+
+	proj_name="aenigma"
+	short_name="aenigma"
+	author_name="openspace42"
+
+	os-define_vars
+
+}
+
+################################################################################
+
+check_root() {
+
+	if [[ $EUID -ne 0 ]]
+	then
+		echo "${r}${b}This script must be run as root${x}"
+		echo
+		echo "${b}Exiting...${x}"
+		echo
+		exit 1
+	fi
+
+}
+
+download_os_functions() {
+
+	clone_author=openspace42
+	clone_name=bash-functions
+	base_dir=/root/$clone_author
+	clone_dir=$base_dir/$clone_name
+	if [ -d $clone_dir ]
+	then
+		rm -r ${clone_dir:?}
+	fi
+	mkdir -p $base_dir
+	( cd $base_dir && git clone https://github.com/$clone_author/$clone_name && cd $clone_name && if [ ! ${bleeding_edge_bf-null} = "-b" ]; then git checkout tags/v$os_bash_functions_version; fi &> /dev/null )
+
+}
+
+source_os_functions() {
+
+	for f in /root/openspace42/bash-functions/*
+	do
+		. $f
+	done
+
+}
+
+################################################################################
+
+aenigma_xmpp_intro() {
+
+	echo "0] First of all, a little introduction on how XMPP actually works"
+	echo
+	echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS MX record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
+	echo
+	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS SRV record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
+	echo
+	read -rp "${b}[press enter to continue reading...]${x}"
+	clear
+
+	echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
+	echo
+	echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
+	echo
+	echo "Main domain:          amsterdamhacklab.xyz."
+	echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
+	echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
+	echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
+	echo
+	echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
+	echo "                      b] more logical setup."
+	echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
+	echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
+	echo
+	read -rp "${b}[press enter to continue reading...]${x}"
+	clear
+
+	echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
+	echo
+	echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
+	echo
+	echo "Your server hostname:  aenigmapod42.im"
+	echo "Your addresses:        mark@aenigmapod42.im."
+	echo
+	echo "PROs:                  a] clean addresses"
+	echo "                       b] no separate TLS certificate needed."
+	echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
+	echo "                          and not to a wider project."
+	echo
+	read -rp "${b}[press enter to continue reading...]${x}"
+	clear
+
+	echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
+	echo
+	echo "Your server hostname:  subdomain.domain.tld"
+	echo "Your addresses:        mark@subdomain.domain.tld."
+	echo
+	echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
+	echo "                          with no separate TLS certificate needed."
+	echo "CONs:                  a] longer and more complex addresses"
+	echo "                       b] not logically 'clean'."
+	echo
+	read -rp "${b}[press enter to continue reading...]${x}"
+	clear
+
+	echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
+	echo
+	echo "----------------"
+	echo
+
+}
+
 aenigma-add_ejabberd_repo() {
 
-        currdistro="$(lsb_release --codename | cut -f2)"
-        apt-get -y install apt-transport-https || true
-        echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
-        wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
-        apt-get update
+	currdistro="$(lsb_release --codename | cut -f2)"
+	apt-get -y install apt-transport-https || true
+	echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
+	wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
+	apt-get update
 
 }
 
 aenigma-install_ejabberd_config() {
 
-        echo "${b}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x}"
-        echo
+	echo "${b}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x}"
+	echo
 
-        ejab_cand_vers="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+	ejab_cand_vers="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
 
-        source_ejab_conf_file="$sourcedir/conf/ejabberd/ejabberd-$ejab_cand_vers.yml"
+	source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-$ejab_cand_vers.yml"
 
-        if [ ! -f $source_ejab_conf_file ]
-        then
-                ### Fallback to ejabberd.yml for v17.08 in case the ejabberd candidate install version isn't among the ones we have config files for
-                source_ejab_conf_file="$sourcedir/conf/ejabberd/ejabberd-$ejab_cand_vers.yml"
-        fi
+	if [ ! -f $source_ejab_conf_file ]
+	then
+		### Fallback to ejabberd.yml for v17.08 in case the ejabberd candidate install version isn't among the ones we have config files for
+		source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-17.08.yml"
+	fi
 
-        mkdir -p /etc/ejabberd/
-        touch /etc/ejabberd/ejabberd.yml
-        sed -i "s/example.im/${domain}/g" "$source_ejab_conf_file"
-        sed -i "s/hostname.im/${hostname}/g" "$source_ejab_conf_file"
-        if [ $configoption = 1 ]
-        then
-        sed -i "s|example.im|${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-        sed -i "s|pathtofile|${domtlscertloc}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-        sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
-        sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $sourcedir/conf/ejabberd/ejabberd.yml
-        fi
-        #sed -i "s|example.im|xu.${domain}|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-        #sed -i "s|pathtofile|${tlsdir}/xu.pem|g" $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-        #sed -i '/## aenigma_host_config_xu_placeholder_start:/,/## aenigma_host_config_xu_placeholder_end:/{//!d}' $sourcedir/conf/ejabberd/ejabberd.yml
-        #sed -i "/## aenigma_host_config_xu_placeholder_start:/ r $sourcedir/conf/ejabberd/ejabberd-tlsaddition-xu.txt" $sourcedir/conf/ejabberd/ejabberd.yml
-        cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
-        echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
-        echo
+	mkdir -p /etc/ejabberd/
+	touch /etc/ejabberd/ejabberd.yml
+	sed -i "s/example.im/${domain}/g" "$source_ejab_conf_file"
+	sed -i "s/hostname.im/${hostname}/g" "$source_ejab_conf_file"
+	if [ $config_option = 1 ]
+	then
+		sed -i "s|example.im|${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
+		sed -i "s|pathtofile|${domtlscertloc}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
+		sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
+		sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
+	fi
+	#sed -i "s|example.im|xu.${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
+	#sed -i "s|pathtofile|${tlsdir}/xu.pem|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
+	#sed -i '/## aenigma_host_config_xu_placeholder_start:/,/## aenigma_host_config_xu_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
+	#sed -i "/## aenigma_host_config_xu_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-xu.txt" $source_dir/conf/ejabberd/ejabberd.yml
+	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
+	echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
+	echo
+
+}
+
+backup_locally_loop() {
+
+	cp -r "$conf_dir" "$tmp_backup_dir"/conf/
+	mkdir -p "$tmp_backup_dir"/data/
+	/usr/sbin/ejabberdctl backup ejabberd-mnesia-backup
+	mv /var/lib/ejabberd/ejabberd-mnesia-backup "$tmp_backup_dir"/data/ejabberd-mnesia-backup
+	cp -r /etc/ejabberd/ "$tmp_backup_dir"/data/etc-ejabberd/
+	cp -r /var/lib/ejabberd/ "$tmp_backup_dir"/data/var-lib-ejabberd/
+
+}
+
+restore_loop() {
+
+	echo "${b}1] Now restoring aenigma config directory...${x}"
+	echo
+
+	rsync -aAXx --delete $restore_file_path/conf/ $conf_dir/
+
+	echo "${b}2] Now restoring ejabberd database...${x}"
+	echo
+
+	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+	then
+	        echo "${g}${b}ejabberd is already running. Continuing...${x}"
+	        echo
+	else
+	        echo "${r}${b}ejabberd NOT running. Starting it now...${x}"
+	        echo
+	        echo "${b}Now starting ejabberd ...${x}"
+	        /usr/sbin/service ejabberd start
+	        echo
+	        sleep 8
+	        /usr/sbin/ejabberdctl
+	        echo
+	        sleep 1
+	fi
+
+	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+	then
+	        cd $restore_file_path/data/
+		cp ./ejabberd-mnesia-backup /var/lib/ejabberd/
+	        /usr/sbin/ejabberdctl restore ejabberd-mnesia-backup
+		rm /var/lib/ejabberd/ejabberd-mnesia-backup
+	        echo "${b}Successfully restored ejabberd database...${x}"
+	        echo
+	        sleep 8
+	else
+	        echo "${r}${b}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x}"
+	        echo
+	        os-exit_function
+	fi
+
+	echo "${b}Now restoring ejabberd directories...${x}"
+	echo
+
+	echo "${b}Now stopping ejabberd for directory restore...${x}"
+	echo
+	/usr/sbin/service ejabberd stop
+	sleep 8
+
+	echo "${b}3] Now syncing ejabberd directories...${x}"
+	echo
+
+	rsync -aAXx --delete $restore_file_path/data/etc-ejabberd/ /etc/ejabberd/
+	rsync -aAXx --delete $restore_file_path/data/var-lib-ejabberd/ /var/lib/ejabberd/
+
+	echo "${b}Now setting permissions on ejabberd directories...${x}"
+	echo
+
+	chown -R ejabberd:ejabberd /etc/ejabberd/
+	chown -R ejabberd:ejabberd /var/lib/ejabberd/
+
+	echo "${b}Now starting ejabberd...${x}"
+	/usr/sbin/service ejabberd start
+	echo
+	sleep 16
+	/usr/sbin/ejabberdctl status
+	echo
+	sleep 1
+
+	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+	then
+
+	        echo "${g}${b}Restore complete!${x}"
+	        echo
+	        echo "${b}Now please verify your aenigma instance is running correctly and has everything you except it to.${x}"
+	        echo
+
+	        read -p "${b}Has your previous instance of aenigma been restored correctly? (Y/n): ${x}" -n 1 -r
+	        echo
+	        if [[ ! $REPLY =~ ^[Nn]$ ]]
+	        then
+	                echo "${g}${b}Ok, all done!${x}"
+	                echo
+	                if [ -f $conf_dir/blocks3backups ]
+	                then
+				rm $conf_dir/blocks3backups
+	                        echo "${b}Removing S3 backups lock since your restore has been successful.${x}"
+	                        echo
+	                        echo "${r}${b}This machine will now pick up where the old one left off and start backing up again to S3 and will overwrite all previous data stored on S3.${x}"
+	                        echo
+	                        echo "${b}If you've changed your mind and are NOT yet sure this restore was completely successful, simply:${x}"
+	                        echo
+	                        echo "${b} | touch $conf_dir/blocks3backups |"
+	                        echo
+	                        echo "${b}And remember to remove it as soon as you're done verifying this restored instance to then resume backups to S3!${x}"
+	                        echo
+	                        echo "${g}${b}All done for now.${x}"
+	                        echo
+	                fi
+	        else
+	                echo
+	                echo "${b}Sorry about that, please collect all evidence you can find so and simply file an issue report at:${x}"
+	        	echo
+	        	echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+	        	echo
+	        	echo "${b}Thank you in advance!${x}"
+	                echo
+	        fi
+
+	else
+
+	        echo "${r}${b}ERROR: ejabberd not running after restore. Please check ejabberd directories.${x}"
+	        echo
+	        echo "${b}Please collect all evidence you can find so and simply file an issue report at:${x}"
+	        echo
+	        echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+	        echo
+	        echo "${b}Thank you in advance!${x}"
+	        echo
+	        echo "${b}Exiting...${x}"
+	        echo
+	        exit
+
+	fi
+
+	if [ -d "$restores_dir/local/" ]
+	then
+		rm -r "$restores_dir/local/"
+	fi
+
+	if [ -d "/root/$short_name-restore/" ]
+	then
+		rm -r "/root/$short_name-restore/"
+	fi
+
+	if [ -d "$tmpdir" ]
+	then
+		rm -r "${tmpdir:?}"
+	fi
+
+	if [ $bootstrapmode = "on" ]
+	then
+		echo "${b}Now that we're finished with the initial restore, it's time to re-run the install script and get this machine up and running with your old instance's files and settings${x}"
+		echo
+		echo "${b}Running install script now.${x}"
+		echo
+		echo "${r}${b}Should you exit the install script during its runtime, you can re-run it manually with:${x}"
+		echo
+		echo "${b} | bash $sourcedir/install.sh | ${x}"
+		cd
+		bash $sourcedir/install.sh
+	fi
 
 }
