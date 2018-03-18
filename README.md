@@ -6,7 +6,7 @@
 
 It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email, [Streisand](https://github.com/StreisandEffect/streisand) for VPNs, and [Easyengine](https://easyengine.io/) for wordpress.
 
-The installation takes you on a three-minute, clearly worded, step-by-step setup and takes care of everything automagically.
+The installation takes you on a four-minute, clearly worded, step-by-step setup and takes care of everything automagically.
 
 As soon as you're up and running join our conference at os@xc.os.vu !
 
