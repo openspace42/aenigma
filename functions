@@ -12,6 +12,8 @@ define_vars() {
 	short_name="aenigma"
 	author_name="openspace42"
 
+	backup_ref_dir="/var/lib/ejabberd"
+
 	os-define_vars
 
 }
