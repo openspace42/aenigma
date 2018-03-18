@@ -478,8 +478,6 @@ then
             done
         fi
 
-        chown ejabberd:ejabberd "$tls_dir/$domain.pem"
-        chmod 700 "$tls_dir/$domain.pem"
         domtlscertloc="$tls_dir/$domain.pem"
         echo "$domtlscertloc" > "$conf_dir/domtlscertloc"
 
