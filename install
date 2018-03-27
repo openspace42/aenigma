@@ -64,7 +64,7 @@ os-check_sslh_connection
 
 os-check_distro_ubuntu16
 
-os-check_dfbs_run
+os-check_inception_run
 
 ################################################################################
 
@@ -1048,7 +1048,7 @@ os-add_cron_job -n $short_name-backup -t "8 4 * * * " -c "bash /root/openspace42
 echo "${b}Now installing SSLH...${x}"
 echo
 /usr/sbin/service sslh stop &> /dev/null || true
-ssh_port="$(cat $os_base_dir/dfbs/ssh-port)"
+ssh_port="$(cat $os_base_dir/inception/ssh-port)"
 apt-get -y install libwrap0-dev libconfig8-dev || true
 rm -r $tmp_dir/sslh &> /dev/null || true
 git clone https://github.com/yrutschle/sslh $tmp_dir/sslh
