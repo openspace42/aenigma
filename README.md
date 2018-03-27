@@ -24,10 +24,6 @@ You will notice some errors, namely with EasyEngine, which doesn't support 18.04
 
 Thanks in advance for your help!
 
-## News [last update 2018-03-11]
-
-* See [upcoming-features](#upcoming-features)
-
 ## Features
 
 * **State of the art configuration**
@@ -35,8 +31,8 @@ Thanks in advance for your help!
 * **One touch deployment**: install it in three minutes with two commands!
 * Has a guided, **step-by-step install** that makes sure you get everything perfect on the first run
 * Always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server
-* Passes all of the **compliance checks** performed by the Conversations client <sup>[1](#01)
-* Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester) <sup>[2](#02)
+* Passes all of the **compliance checks** performed by the Conversations client
+* Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester)
 * Allows you to and guides you through using your **top level domain as the xmpp domain [@example.im]** while hosting the server on a subdomain [xmpp.example.im] as its hostname by using SRV records without any XMPP client UI/UX or TLS conflicts.
 * Works perfectly for both internet accessible and local network deployments
 * **Supports IPv6** out of the box
@@ -50,33 +46,19 @@ Thanks in advance for your help!
 * Configures ejabberd **Shared Roster Groups** to easily allow the desired users to see eachother on their own rosters
 * Automaticaly **backups up** all ejabberd files and database **locally and to S3** and includes a script for a **guided, three step restore process**.
 
-##### 01
-
-Although Conversations says PEP [Avatars / OMEMO] is *not* supported, it actually is, and both work perfectly
-
-##### 02
-
-Not yet supported by ejabberd:
-
-* XEP-0357: Push Notifications
-* XEP-0368: SRV records for XMPP over TLS [should start working soon thanks to ejabberd v17.09]
-* XEP-0384: OMEMO Encryption [even though OMEMO works perfectly]
-
 ## Non-features
 
 * Keeps backwards compatibility with legacy XMPP servers by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can enable the latest ciphers suggested by cipherli.st [although not recommended] by changing two lines in the config file.
 
-## Upcoming features
+## New features
 
-###  In developement for v0.50
+###  v0.5x
 
 * Full XEP-0375 thanks to ejabberd 18.0x
 * Ubuntu 18.04 [bionic beaver] support [and requirement]
 * Newly implemented openspace [bash_functions](https://github.com/openspace42/bash_functions)
 
-## Install on Ubuntu 16
-
-current version: v0.45 [2017-11-18]
+## Install on Ubuntu 16.04 LTS / Ubuntu 18.04 LTS beta
 
 ```
 apt update
@@ -85,7 +67,7 @@ apt install git
 
 ```
 git clone https://github.com/openspace42/aenigma
-sudo bash ./aenigma/install.sh
+sudo bash aenigma/setup
 ```
 
 ## Restore a previous install on a fresh new machine:
@@ -98,7 +80,7 @@ apt install git
 
 ```
 git clone https://github.com/openspace42/aenigma
-sudo bash ./aenigma/restore.sh
+sudo bash aenigma/tools/aenigma-restore
 ```
 
 ## Recommended clients:
