@@ -17,7 +17,7 @@ then
         source_dir="${source_dir%/tools}"
 fi
 
-. $source_dir/functions
+. "$source_dir/functions"
 
 ### Source openspace functions file
 
@@ -74,11 +74,11 @@ then
 
 	mv "$tmp_backup_dir"/* "$backups_latest_dir"
 
-	########################################################################
+	############################################################################
 
 	os-br_restore_from_S3 test
 
-	########################################################################
+	############################################################################
 
 	os-br_backup_to_S3
 
@@ -88,9 +88,9 @@ else
 
 fi
 
-if [ -d $tmp_dir ]
+if [ -d "$tmp_dir" ]
 then
-	rm -r ${tmp_dir:?}
+	rm -r "${tmp_dir:?}"
 fi
 
 os-br_purge_dirs

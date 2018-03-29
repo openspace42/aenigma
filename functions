@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### openspace bash-framework v0.1.2 [https://github.com/openspace42/bash-framework]
+### openspace bash-framework v0.1.3 [https://github.com/openspace42/bash-framework]
 
 os_bash_functions_version=0.1.6
 
@@ -8,11 +8,23 @@ os_bash_functions_version=0.1.6
 
 define_vars() {
 
+	############################################################################
+	######################## Insert your variables here ########################
+	############################################################################
+
 	proj_name="aenigma"
 	short_name="aenigma"
 	author_name="openspace42"
 
+	### Set this to `y` if your project stores no data on end users' machines that could go lost during a re-install or update
+	skip_install_time_backup=n
+
+	### Set this to the directory that has the most impactful size when performing a backup [such as `/var/www/` for nginx-related projects]
 	backup_ref_dir="/var/lib/ejabberd"
+
+	############################################################################
+	############################################################################
+	############################################################################
 
 	os-define_vars
 
@@ -57,6 +69,10 @@ source_os_functions() {
 
 }
 
+################################################################################
+
+################################################################################
+######################## Insert project functions here #########################
 ################################################################################
 
 aenigma_xmpp_intro() {
@@ -333,3 +349,1236 @@ restore_loop() {
 	fi
 
 }
+
+################################################################################
+################################################################################
+################################################################################
+
+perform_installation() {
+
+	############################################################################
+	################### Add your install-time functions here ###################
+	############################################################################
+
+	os-check_sslh_connection
+
+	os-check_distro_ubuntu16
+
+	os-check_inception_run
+
+	################################################################################
+
+	os-apt_full_upgrade -e
+
+	echo "${b}Now installing dependencies...${x}"
+	echo
+	hostname="$(cat /etc/hostname)"
+	apt-add-repository ppa:duplicity-team/ppa -y
+	apt-get update
+	apt-get -y install duplicity python-pip s3cmd python-boto libpcre3-dev || true
+	pip install --upgrade pip
+	pip install boto
+	echo
+	echo "${b}Finished installing dependencies.${x}"
+	echo
+
+	mkdir -p $tls_dir
+	mkdir -p $tmp_dir
+
+	################################################################################
+
+	### Copy files to destination
+
+	rsync -aAXx $source_dir/ $install_dir/ --include=tools*** --include=functions --exclude="*"
+
+	### Skip intro if requested by user
+
+	if [ $skip_intro = "n" ]
+	then
+	    aenigma_xmpp_intro
+	fi
+
+	### Set aenigma config option [described in intro]
+
+	validate_input() {
+
+	    case $input in
+	        1|2|3)	config_option=$input
+	        valid=y
+	        ;;
+	        *)	echo "${r}${b}Invalid setting for | config_option | in function | ${FUNCNAME[0]} |.${x}"
+	        echo
+	        valid=n
+	        ;;
+	    esac
+
+	}
+
+	os-set_option -o config_option -v y -d n -p xmpp
+
+	### Set xmpp domain [only one supported for now] if config_option != 3
+	### In the latter case the xmpp domain will match the machine hostname [see below]
+
+	if [ ! $config_option = "3" ]
+	then
+
+	    echo "${b}Ok, you've chosen option $config_option.${x}"
+	    echo
+
+	    describe_setting() {
+
+	        echo "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses:${x}"
+	        echo
+
+	    }
+
+	    os-set_option -o domain -v n -d y -p xmpp
+
+	    if [ $prev_val_outcome = "not-kept" ]
+	    then
+	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+	        echo
+	        echo "${r}${b}WARNING:${x}"
+	        echo
+	        echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
+	        echo
+	        echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet.${x}"
+	        echo
+	        echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
+	        echo
+	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+	        echo
+	        read -rp "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1
+	        echo
+	        if [[ $REPLY =~ ^[Yy]$ ]]
+	        then
+	            echo "${b}Ok, proceeding...${x}"
+	            echo
+	        else
+	            echo "${b}Ok, setting your domain back to the previous value | $prev_value |...${x}"
+	            echo
+	            domain="$prev_val"
+	            echo "$prev_val" > "$opt_path"
+	        fi
+	    fi
+
+	else
+
+	    echo "${b}Ok, you've chosen option 3.${x}"
+	    echo
+	    echo "${b}Your domain [the part after the @ in your XMPP account addresses] will match your server hostname.${x}"
+	    echo
+
+	fi
+
+	### Review and set machine hostname according to config_option
+
+	curr_host_name="$(cat /etc/hostname)"
+
+	if [ ! $config_option = "2" ]
+	then
+
+	    describe_setting() {
+
+	        if [ $config_option = "1" ]
+	        then
+	            echo "${b}Your hostname must be a third level domain [subdomain] of either $domain or another domain.${x}"
+	            echo
+	        elif [ $config_option = "3" ]
+	        then
+	            echo "${b}Your hostname must be a third level domain [subdomain] of your main domain.${x}"
+	            echo
+	            echo "${b}Keep in mind that your hostname will also become your domain [the part after the @ in your XMPP account addresses].${x}"
+	            echo
+	        fi
+
+	    }
+
+	    os-set_option -o hostname -v n -d y -p /etc
+
+	    if [ $config_option = "3" ]
+	    then
+	        domain=$hostname
+	    fi
+
+	else
+
+	    echo "${b}Your hostname must be identical to your domain: $domain.${x}"
+	    echo
+	    echo "${b}Your current hostname is:${x}"
+	    echo
+	    echo " | $curr_host_name |"
+	    echo
+	    if [ "$curr_host_name" = "$domain" ]
+	    then
+	        echo "${g}${b}Your hostname matches your domain, all good!${x}"
+	        echo
+	    else
+	        echo "${r}${b}Your hostname does NOT match the domain you've specified.${x}"
+	        echo
+	        echo "${b}Having chosen option 2, they must be identical.${x}"
+	        echo
+	        read -rp "${b}Do you want to set your hostname to match your domain? (Y/n): ${x}" -n 1
+	        echo
+	        if [[ ! $REPLY =~ ^[Nn]$ ]]
+	        then
+	            echo "${b}Ok, setting hostname to match domain.${x}"
+	            echo
+	            echo "$domain" > /etc/hostname
+	            echo "${b}New hostname set to | $domain | ${x}"
+	            echo
+	        else
+	            echo
+	            echo "${b}Not changing hostname. Exiting...${x}"
+	            echo
+	            exit
+	        fi
+	    fi
+
+	    hostname="$(cat /etc/hostname)"
+
+	fi
+	clear
+
+	### Review domain and hostname to see if the user approves
+
+	echo "----------------"
+	echo
+	echo "${b}To make sure everything is correct:${x}"
+	echo
+	echo "1] Your ${b}XMPP domain${x} [the part after the @ in your XMPP account addresses] will be:"
+	echo
+	echo "${b} | ${g}$domain${x}${b} | ${x}"
+	echo
+	echo "2] And therefore an ${b}XMPP account address${x} will look as follows:"
+	echo
+	echo "${b} | ${g}mark@$domain${x}${b} | ${x}"
+	echo
+	echo "3] Your ${b}hostname${x}, the location on the internet of this server, will be:"
+	echo
+	echo "${b} | ${g}$hostname${x}${b} | ${x}"
+	echo
+	echo "4] And therefore your ${b}aenigma admin panel${x} will be located at:"
+	echo
+	echo "${b} | ${g}https://$hostname${x}${b} | ${x}"
+	echo
+	echo "----------------"
+	echo
+
+	read -rp "${b}Does everything look all right? (Y/n): ${x}" -n 1
+	echo
+	if [[ ! $REPLY =~ ^[Nn]$ ]]
+	then
+	    echo "${b}Ok, continuing.${x}"
+	    echo
+	    touch $conf_dir/domain
+	    echo "$domain" > $conf_dir/domain
+	else
+	    echo
+	    echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
+	    echo
+	    exit
+	fi
+	clear
+
+	### Set admin email address
+
+	os-set_admin_email
+
+	### Check internet connectivity and get public IP addresses
+
+	os-get_public_ipv4
+
+	os-check_ipv6_connectivity
+
+	### Ask the user for the TLS cert for $domain or point it here to provision one locally
+
+	additional_tls_mode="notset"
+
+	if [ $config_option = 1 ]
+	then
+
+	    echo "${b}Having chosen config option 1, now it's time to set up the TLS [SSL] certificate that is valid for $domain on this machine.${x}"
+	    echo
+
+	    if [ -f $conf_dir/additional_tls_mode ]
+	    then
+	        prev_additional_tls_mode="$(cat $conf_dir/additional_tls_mode)"
+	        case "$prev_additional_tls_mode" in
+	            "elsewhere"|"here")
+	            valid_prev_additional_tls_mode=y
+	            ;;
+	            *)
+	            valid_prev_additional_tls_mode=n
+	            ;;
+	        esac
+	    else
+	        touch $conf_dir/additional_tls_mode
+	        valid_prev_additional_tls_mode=n
+	    fi
+
+	    if [ $valid_prev_additional_tls_mode = "y" ]
+	    then
+	        echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prev_additional_tls_mode | ${x}"
+	        echo
+	        read -rp "${b}Is this still true? (Y/n): ${x}" -n 1
+	        echo
+	        if [[ ! $REPLY =~ ^[Nn]$ ]]
+	        then
+	            additional_tls_mode=$prev_additional_tls_mode
+	        else
+	            echo
+	            additional_tls_mode=not-yet-set
+	        fi
+	    else
+	        additional_tls_mode=not-yet-set
+	    fi
+
+	    if [ $additional_tls_mode = "not-yet-set" ]
+	    then
+
+	        echo "The certificate file required for $short_name must be an all-in-one private key + certificate + chain file."
+	        echo
+	        echo "This means the file must include, in this order, the following:"
+	        echo
+	        echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
+	        echo
+	        read -rp "${b}[press enter to continue reading...]${x}"
+	        clear
+
+	        echo "This certificate, if it already exists, resides on the server responding to $domain"
+	        echo
+	        echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
+	        echo
+	        echo "This is the IP to which your bare domain $domain is pointing to:"
+	        echo
+	        dig +noall +answer "$domain"
+	        echo
+	        echo "[If you see no output, then it might be misconfigured or not configured at all.]"
+	        echo
+	        read -rp "${b}[press enter to continue reading...]${x}"
+	        clear
+
+	        read -rp "${b}That said, is there ANOTHER [running] server that responds to $domain? (Y/n): ${x}" -n 1
+	        echo
+	        if [[ ! $REPLY =~ ^[Nn]$ ]]
+	        then
+	            read -rp "${b}Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): ${x}" -n 1
+	            echo
+	            if [[ ! $REPLY =~ ^[Nn]$ ]]
+	            then
+	                read -rp "${b}Ok, is this a Linux server? (Y/n): ${x}" -n 1
+	                echo
+	                if [[ ! $REPLY =~ ^[Nn]$ ]]
+	                then
+	                    read -rp "${b}Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): ${x}" -n 1
+	                    echo
+	                    if [[ ! $REPLY =~ ^[Nn]$ ]]
+	                    then
+	                        echo "${b}Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:${x}"
+	                        echo
+	                        echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
+	                        echo
+	                        echo "${b}Now configure it to push its LE TLS cert to this server by following the instructions.${x}"
+	                        echo
+	                    else
+	                        echo
+	                        echo "${b}Ok, no problem, you can adapt this script:${x}"
+	                        echo
+	                        echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
+	                        echo
+	                        echo "${b}To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically.${x}"
+	                        echo
+	                        echo "${b}Follow the instructions and adapt the paths to the existing TLS certs and private key.${x}"
+	                        echo
+	                    fi
+	                else
+	                    echo "${b}Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!].${x}"
+	                    echo
+	                fi
+	            else
+	                read -rp "${b}Ok, no problem. Is this server a linux server? (Y/n): ${x}" -n 1
+	                echo
+	                if [[ ! $REPLY =~ ^[Nn]$ ]]
+	                then
+	                    echo "${b}Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:${x}"
+	                    echo
+	                    echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
+	                    echo
+	                else
+	                    echo "${b}Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!].${x}"
+	                    echo
+	                fi
+	            fi
+
+	            additional_tls_mode="elsewhere"
+	            echo "elsewhere" > $conf_dir/additional_tls_mode
+
+	        else
+
+	            echo
+	            echo "${b}Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server.${x}"
+	            echo
+	            echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
+	            echo
+	            echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
+	            echo
+	            echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
+	            echo
+	            echo "For now, no need to worry about that."
+	            echo
+	            read -rp "${b}[press enter to continue reading...]${x}"
+	            clear
+
+	            echo "${b}Let's point $domain and www.$domain to this server for the time being.${x}"
+	            echo
+	            echo "This is required for the TLS certificate we'll be generating shortly on this server."
+	            echo
+	            echo "The DNS checks we'll be running shortly will guide you through these settings as well."
+	            echo
+
+	            additional_tls_mode="here"
+	            echo "here" > $conf_dir/additional_tls_mode
+
+	        fi
+
+	    fi
+
+	    if [ $additional_tls_mode = "elsewhere" ]
+	    then
+
+	        if [ -f $tls_dir/$domain.pem ]
+	        then
+	            echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
+	            echo
+	        else
+	            echo "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, it's time to place it inside the  | $tls_dir | directory named as | $domain.pem |.${x}"
+	            echo
+	            echo "${b}Place it there now ensuring its full path is indeed | $tls_dir/$domain.pem |.${x}"
+	            echo
+	            read -rp "${b}[press enter when ready...]${x}"
+	            clear
+	            exists=n
+	            until [ $exists = "y" ]
+	            do
+	                if [ -f  $tls_dir/$domain.pem ]
+	                then
+	                    echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
+	                    echo
+	                    exists=y
+	                else
+	                    echo "${r}${b}External TLS certificate for $domain NOT found in | $tls_dir/$domain.pem |."
+	                    echo
+	                    echo "${b}Please ensure you've correctly copied the certificate inside the directory and named it as above.${x}"
+	                    echo
+	                    read -rp "${b}[press enter when ready to try again...]${x}"
+	                    clear
+	                    exists=n
+	                fi
+	            done
+	        fi
+
+	        domtlscertloc="$tls_dir/$domain.pem"
+	        echo "$domtlscertloc" > "$conf_dir/domtlscertloc"
+
+	    fi
+
+	fi
+	clear
+
+	### Setup backup restore
+
+	os-setup_backup_restore
+
+	### Perform DNS checks
+
+	if [ $additional_tls_mode = "here" ]
+	then
+	    declare -a dnsarray=(
+	    "hostname"
+	    "domain"
+	    "XMPP"
+	    "SRV"
+	    )
+	elif [ $additional_tls_mode = "elsewhere" ]
+	then
+	    declare -a dnsarray=(
+	    "hostname"
+	    "XMPP"
+	    "SRV"
+	    )
+	else
+	    declare -a dnsarray=(
+	    "hostname"
+	    "XMPP"
+	    )
+	fi
+
+	if [ $ipv6_avail = "y" ]
+	then
+	    declare -a iparray=(
+	    "v4"
+	    "v6"
+	    )
+	else
+	    declare -a iparray=(
+	    "v4"
+	    )
+	fi
+
+	for dnstype in "${dnsarray[@]}"
+	do
+
+	    if [ "$dnstype" = "hostname" ]
+	    then
+	        dnschecktype=$hostname
+	    else
+	        dnschecktype=$domain
+	    fi
+
+	    srvdone=n
+
+	    for ipversion in "${iparray[@]}"
+	    do
+
+	        if [ $srvdone = n ]
+	        then
+
+	            if [ ! "$dnstype" = "SRV" ]
+	            then
+	                echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
+	                echo
+	            else
+	                echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
+	                echo
+	                echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
+	                echo
+	                echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
+	                echo
+	            fi
+
+	            if [ "$dnstype" = "hostname" ]
+	            then
+	                declare -A digarray=(
+	                [HN]=""
+	                [www]="www."
+	                )
+	            elif [ "$dnstype" = "domain" ]
+	            then
+	                declare -A digarray=(
+	                [HN]=""
+	                [www]="www."
+	                )
+	            elif [ "$dnstype" = "XMPP" ]
+	            then
+	                declare -A digarray=(
+	                [xc]="xc."
+	                [xe]="xe."
+	                [xi]="xi."
+	                [xm]="xm."
+	                [xp]="xp."
+	                [xu]="xu."
+	                [wu]="www.xu."
+	                )
+	            elif [ "$dnstype" = "SRV" ]
+	            then
+	                declare -A digarray=(
+	                [sj]="_jabber._tcp."
+	                [ss]="_xmpp-server._tcp."
+	                [sc]="_xmpp-client._tcp."
+	                )
+	            fi
+
+	            # [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
+	            # [xu]="XMPP HTTP uploads."
+	            # [xe]="the ejabberd MOD_ECHO module."
+	            # [xp]="the ejabberd MOD_PUBSUB module."
+	            # [xi]="join channels on IRC servers."
+
+	            digarrayiter=0
+
+	            for i in "${!digarray[@]}"
+	            do
+
+	                digarrayiter=$((digarrayiter + 1))
+
+	                if [ ! "$dnstype" = "SRV" ]
+	                then
+	                    echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+	                    echo
+	                else
+	                    echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype SRV record...${x}"
+	                    echo
+	                fi
+
+	                accept=n
+	                until [ $accept = "y" ]
+	                do
+
+	                    if [ ! "$dnstype" = "SRV" ]
+	                    then
+	                        if [ "$ipversion" = "v4" ]
+	                        then
+	                            thisip=$this_ipv4
+	                            digresult="$(getent ahostsv4 "${digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
+	                            rectype="A"
+	                        else
+	                            thisip=$this_ipv6
+	                            digresult="$(getent ahostsv6 "${digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
+	                            rectype="AAAA"
+	                        fi
+	                    else
+	                        if [ ! "${digarray[$i]}" = "_xmpp-client._tcp." ]
+	                        then
+	                            thisip="0 0 5269 $hostname."
+	                        else
+	                            thisip="0 0 5222 $hostname."
+	                        fi
+	                        digresult="$(dig +short -t srv "${digarray[$i]}""$domain")"
+	                        rectype="SRV"
+	                    fi
+
+	                    if [ -z "$digresult" ]
+	                    then
+
+	                        if [ ! "$dnstype" = "SRV" ]
+	                        then
+	                            echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
+	                            echo
+	                        else
+	                            echo "${r}${b}The ${digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
+	                            echo
+	                        fi
+
+	                        echo "${b}Please ensure you set your DNS record as follows:${x}"
+	                        echo
+	                        echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+	                        echo
+	                        if [ ! "${digarray[$i]}$dnschecktype" = "$hostname" ]
+	                        then
+	                            if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+	                            then
+	                                if [ "$ipversion" = "v4" ]
+	                                then
+	                                    echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+	                                    echo
+	                                    echo -e "| ${digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+	                                    echo
+	                                fi
+	                            fi
+	                        fi
+	                        result=notset
+	                    else
+	                        if [ "$digresult" = "$thisip" ]
+	                        then
+
+	                            if [ ! "$dnstype" = "SRV" ]
+	                            then
+	                                echo "${g}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
+	                                echo
+	                            else
+	                                echo "${g}${b}The ${digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
+	                                echo
+	                            fi
+
+	                            echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+	                            echo
+	                            result=ok
+	                        else
+
+	                            if [ ! "$dnstype" = "SRV" ]
+	                            then
+	                                echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
+	                                echo
+	                            else
+	                                echo "${r}${b}The ${digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
+	                                echo
+	                            fi
+
+	                            echo "${b}This is the result of a DNS query for ${digarray[$i]}$dnschecktype:${x}"
+	                            echo
+	                            echo "$digresult"
+	                            echo
+	                            echo "${b}Please set it instead to:${x}"
+	                            echo
+	                            echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+	                            echo
+	                            if [ ! "${digarray[$i]}$dnschecktype" = "$hostname" ]
+	                            then
+	                                if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+	                                then
+	                                    if [ "$ipversion" = "v4" ]
+	                                    then
+	                                        echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+	                                        echo
+	                                        echo -e "| ${digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+	                                        echo
+	                                    fi
+	                                fi
+	                            fi
+	                            result=incorrect
+	                        fi
+	                    fi
+
+	                    if [ ! $result = "ok" ]
+	                    then
+	                        valid=n
+	                        until [ $valid = "y" ]
+	                        do
+	                            read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+	                            case $answer in
+	                                "")
+	                                echo
+	                                valid=y
+	                                accept=n
+	                                ;;
+	                                y)
+	                                echo -e "\\n"
+	                                valid=y
+	                                accept=n
+	                                ;;
+	                                s)
+	                                echo -e "\\n"
+	                                echo "${b}Skipping DNS check for this record...${x}"
+	                                echo
+	                                valid=y
+	                                accept=y
+	                                ;;
+	                                e)
+	                                echo -e "\\n"
+	                                echo "${b}Exiting...${x}"
+	                                echo
+	                                exit
+	                                ;;
+	                                *)
+	                                echo -e "\\n"
+	                                echo "${b}Invalid option. Retry...${x}"
+	                                echo
+	                                valid=n
+	                                accept=n
+	                                ;;
+	                            esac
+	                        done
+	                    else
+	                        accept=y
+	                    fi
+	                    clear
+
+	                done
+
+	            done
+
+	            if [ ! "$dnstype" = "SRV" ]
+	            then
+	                echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
+	                echo
+	            else
+	                echo "${b}Finished checking your XMPP SRV records.${x}"
+	                echo
+	                srvdone=y
+	            fi
+
+	        fi
+
+	    done
+
+	done
+	clear
+
+	### Set UFW rules
+
+	echo "${b}Now setting UFW rules...${x}"
+	echo
+
+	ufw allow 5222
+	ufw allow 5223
+	ufw allow 5269
+	ufw allow 5444
+	ufw allow 80
+	ufw allow 443
+
+	echo
+	echo "${b}Finished setting UFW rules.${x}"
+	echo
+
+	### Install and if necessary upgrade EasyEngine
+
+	echo "${b}Now installing easyengine...${x}"
+	echo
+	wget -qO ee rt.cx/ee
+	bash ee || true
+	rm ee
+	source /etc/bash_completion.d/ee_auto.rc
+	ee update || true
+	rm /tmp/eeupdate* || true
+	mkdir -p /var/www/
+	chown -R www-data:www-data /var/www/
+	echo
+	echo "${b}Finished installing easyengine.${x}"
+	echo
+
+	### Create and configure sites and TLS certificates via LetsEncrypt
+
+	echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
+	echo
+	ee site create "$hostname" || true
+	echo
+	echo "${b}Finished creating easyengine site for $hostname.${x}"
+	echo
+
+	echo "${b}Now setting custom nginx config for $hostname...${x}"
+	echo
+	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
+	cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
+	service nginx reload || true
+	echo "${b}Finished setting custom nginx config for $hostname.${x}"
+	echo
+
+	echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+	echo
+	ee site update "$hostname"  --le --experimental || true
+	if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
+	then
+	    echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
+	    echo
+	    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+	    echo
+	    echo "${b}Exiting...${x}"
+	    echo
+	    exit
+	fi
+	echo
+	echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+	echo
+
+	echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
+	echo
+	touch $tls_dir/hostname.pem
+	cat /etc/letsencrypt/live/"$hostname"/privkey.pem > "$tls_dir"/hostname.pem
+	cat /etc/letsencrypt/live/"$hostname"/fullchain.pem >> "$tls_dir"/hostname.pem
+	echo "${b}Finished creating all-in-one TLS file for $hostname for ejabberd.${x}"
+	echo
+
+	echo "${b}Now setting index.html in docroot for $hostname...${x}"
+	echo
+	cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
+	echo "${b}Finished setting index.html in docroot for $hostname.${x}"
+	echo
+
+	echo "${b}Now creating easyengine site for xu.$domain, generating its TLS certificate, and installing it...${x}"
+	echo
+	ee site create xu."$domain" || true
+	echo
+	echo "${b}Finished creating easyengine site for xu.$domain.${x}"
+	echo
+
+	echo "${b}Now setting custom nginx config for xu.$domain...${x}"
+	echo
+	sed -i "s/example.im/xu.${domain}/g" $source_dir/conf/nginx/xu.conf
+	cp "$source_dir"/conf/nginx/xu.conf /etc/nginx/sites-available/xu."$domain"
+	service nginx reload || true
+	echo "${b}Finished setting custom nginx config for xu.$domain.${x}"
+	echo
+
+	echo "${b}Now updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
+	echo
+	ee site update xu."$domain"  --le --experimental || true
+	if [ ! -f /etc/letsencrypt/live/xu."$domain"/fullchain.pem ]
+	then
+	    echo "${r}${b}There was an issue provisioning the TLS certificate for xu.$domain with LetsEncrypt.${x}"
+	    echo
+	    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+	    echo
+	    echo "${b}Exiting...${x}"
+	    echo
+	    exit
+	fi
+	echo
+	echo "${b}Finished updating easyengine site xu.$domain to TLS encrypted with LetsEncrypt...${x}"
+	echo
+
+	echo "${b}Now creating all-in-one TLS file for xu.$domain for ejabberd...${x}"
+	echo
+	touch $tls_dir/xu.pem
+	cat /etc/letsencrypt/live/xu."$domain"/privkey.pem > "$tls_dir"/xu.pem
+	cat /etc/letsencrypt/live/xu."$domain"/fullchain.pem >> "$tls_dir"/xu.pem
+	echo "${b}Finished creating all-in-one TLS file for xu.$domain for ejabberd.${x}"
+	echo
+
+	### Also provision a TLS certificate for $domain if during $config_option 1 or 2 specific configuration the user decided to point the domain here and let us automatically do the rest
+
+	if [ $additional_tls_mode = "here" ]
+	then
+
+	    echo "${b}Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so.${x}"
+	    echo
+
+	    echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it...${x}"
+	    echo
+	    ee site create "$domain" || true
+	    echo
+	    echo "${b}Finished creating easyengine site for $domain.${x}"
+	    echo
+
+	    echo "${b}Now setting custom nginx config for $domain...${x}"
+	    echo
+	    sed -i "s/example.im/${domain}/g" $source_dir/conf/nginx/domain.conf
+	    cp "$source_dir"/conf/nginx/domain.conf /etc/nginx/sites-available/"$domain"
+	    service nginx reload || true
+	    echo "${b}Finished setting custom nginx config for $domain.${x}"
+	    echo
+
+	    echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
+	    echo
+	    ee site update "$domain"  --le --experimental || true
+	    if [ ! -f /etc/letsencrypt/live/"$domain"/fullchain.pem ]
+	    then
+	        echo "${r}${b}There was an issue provisioning the TLS certificate for $domain with LetsEncrypt.${x}"
+	        echo
+	        echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+	        echo
+	        echo "${b}Exiting...${x}"
+	        echo
+	        exit
+	    fi
+	    echo
+	    echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
+	    echo
+
+	    echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
+	    echo
+	    touch $tls_dir/domain.pem
+	    cat /etc/letsencrypt/live/"$domain"/privkey.pem > "$tls_dir"/domain.pem
+	    cat /etc/letsencrypt/live/"$domain"/fullchain.pem >> "$tls_dir"/domain.pem
+	    domtlscertloc=$tls_dir/domain.pem
+	    echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
+	    echo
+
+	    echo "${b}Now setting index.html in docroot for $domain...${x}"
+	    echo
+	    cp "$source_dir"/conf/web/domain/index.html /var/www/"$domain"/htdocs/
+	    echo "${b}Finished setting index.html in docroot for $domain.${x}"
+	    echo
+
+	    echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site...${x}"
+	    echo
+	    sed -i "s/example.im/${domain}/g" $source_dir/conf/nginx/ssl-domain.conf
+	    cp "$source_dir"/conf/nginx/ssl-domain.conf /var/www/"$domain"/conf/nginx/ssl.conf
+	    echo "${b}Finished adding IPv6 support to the HTTPS version of the $domain site...${x}"
+	    echo
+
+	    echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
+	    echo
+	    sed -i "s/example.im/${domain}/g" $source_dir/conf/nginx/force-ssl-domain.conf
+	    cp "$source_dir"/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-"$domain".conf
+	    echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
+	    echo
+
+	fi
+
+	### only add IPv6 to hostname site after LE TLS cert has been provisioned for all sites otherwise .well-known check will fail due to wrong webroot
+
+	echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+	echo
+	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
+	cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
+	echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+	echo
+
+	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+	echo
+	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
+	cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
+	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+	echo
+
+	echo "${b}Now adding IPv6 support to the HTTPS version of the xu.$domain site...${x}"
+	echo
+	sed -i "s/example.im/xu.${domain}/g" $source_dir/conf/nginx/ssl-xu.conf
+	cp "$source_dir"/conf/nginx/ssl-xu.conf /var/www/xu."$domain"/conf/nginx/ssl.conf
+	echo "${b}Finished adding IPv6 support to the HTTPS version of the xu.$domain site...${x}"
+	echo
+
+	echo "${b}Now adding IPv6 support to the HTTPS redirect for the xu.$domain site...${x}"
+	echo
+	sed -i "s/example.im/xu.${domain}/g" $source_dir/conf/nginx/force-ssl-xu.conf
+	cp "$source_dir"/conf/nginx/force-ssl-xu.conf /etc/nginx/conf.d/force-ssl-xu."$domain".conf
+	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the xu.$domain site...${x}"
+	echo
+
+	service nginx restart || true
+
+	### Prepare APT for ejabberd installation
+
+	aenigma-add_ejabberd_repo
+
+	aenigma-install_ejabberd_config
+
+	### Create ejabberd uploads directory
+
+	echo "${b}Now creating uploads directory...${x}"
+	echo
+	mkdir -p /etc/ejabberd/uploads/
+	echo "${b}Finished creating uploads directory.${x}"
+	echo
+
+	### Create HTTP uploads directory
+
+	echo "${b}Now creating HTTP fileserver directory...${x}"
+	echo
+	mkdir -p /var/www/ejabberd/
+	echo "${b}Finished creating HTTP fileserver directory.${x}"
+	echo
+
+	### Create logfile
+
+	echo "${b}Now creating logfile...${x}"
+	echo
+	mkdir -p /var/log/ejabberd/
+	touch /var/log/ejabberd/www_access.log
+	echo "${b}Finished creating logfile.${x}"
+	echo
+
+	### Add backup script to crontab
+
+	os-add_cron_job -n $short_name-backup -t "8 4 * * * " -c "bash /root/openspace42/$short_name/tools/$short_name-backup"
+
+	### Install SSLH
+
+	echo "${b}Now installing SSLH...${x}"
+	echo
+	/usr/sbin/service sslh stop &> /dev/null || true
+	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
+	apt-get -y install libwrap0-dev libconfig8-dev || true
+	rm -r $tmp_dir/sslh &> /dev/null || true
+	git clone https://github.com/yrutschle/sslh $tmp_dir/sslh
+	( cd $tmp_dir/sslh && make install && make && cp sslh-select /usr/local/sbin/sslh )
+	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	if [ $ipv6_avail = "y" ]
+	then
+	    sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
+	    sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
+	    sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	else
+	    sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
+	    sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
+	fi
+	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
+	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
+	chmod +x /etc/init.d/sslh
+	update-rc.d sslh defaults
+	systemctl daemon-reload
+	rm -r $tmp_dir/sslh
+	mkdir -p /var/run/sslh
+	touch /var/run/sslh/sslh.pid
+	service sslh restart || true
+	echo
+	echo "${b}Finished installing SSLH.${x}"
+	echo
+
+	### Ensure DPKG is available before proceeding
+
+	os-check_dpkg_availability
+
+	### Actually install ejabberd
+
+	echo "${b}Now installing ejabberd...${x}"
+	echo
+	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
+	echo
+	echo "${b}Finished installing ejabberd.${x}"
+	echo
+
+	### Secure permissions
+
+	echo "${b}Now securing permissions...${x}"
+	echo
+
+	chown -R ejabberd:ejabberd $tls_dir
+	chmod -R 700 $tls_dir
+
+	chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
+	chmod -R 755 /etc/ejabberd/uploads/
+
+	chown -R ejabberd:ejabberd /var/www/ejabberd/
+	chmod -R 755 /var/www/ejabberd/
+
+	echo "${b}Finished securing permissions.${x}"
+	echo
+
+	### Restart ejabberd and ensure it correctly comes up
+
+	echo "${b}Now stopping ejabberd...${x}"
+	echo
+	/usr/sbin/service ejabberd stop
+	sleep 8
+	echo "${b}Finished stopping ejabberd.${x}"
+	echo
+
+	echo "${b}Now starting ejabberd...${x}"
+	/usr/sbin/service ejabberd start
+	echo
+	sleep 8
+	/usr/sbin/ejabberdctl status
+	echo
+	echo "${b}Finished starting ejabberd.${x}"
+	echo
+
+	### Register ejabberd admin user
+
+	echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
+	echo
+	ejab_admin_pw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
+	/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
+	echo "${b}Finished registering ejabberd admin user.${x}"
+	echo
+	clear
+
+	if [ -f $conf_dir/ejab_admin_pw_set ]
+	then
+	    read -rp "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1
+	    echo
+	    if [[ ! $REPLY =~ ^[Nn]$ ]]
+	    then
+	        echo "${b}Skipping ejabberd admin user password reset.${x}"
+	        echo
+	        ejab_admin_pwreset=n
+	    else
+	        echo
+	        echo "${b}Ok, resetting ejabberd admin user password to: | $ejab_admin_pw | ${x}"
+	        echo
+	        /usr/sbin/ejabberdctl change_password admin "$domain" "$ejab_admin_pw"
+	        ejab_admin_pwreset=y
+	    fi
+	else
+	    touch $conf_dir/ejab_admin_pw_set
+	    ejab_admin_pwreset=y
+	fi
+
+	### Update ejabberd's module repo
+
+	echo "${b}Now updating ejabberd's module repo...${x}"
+	echo
+	set +e
+	/usr/sbin/ejabberdctl modules_update_specs
+	set -e
+	echo "${b}Finished updating ejabberd's module repo...${x}"
+	echo
+
+	### Create shared roster groups
+
+	echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
+	echo
+	/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
+	/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody "$domain"
+	/usr/sbin/ejabberdctl srg_create online "$domain" "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
+	/usr/sbin/ejabberdctl srg-user-add @online@ localhost online "$domain"
+	/usr/sbin/ejabberdctl srg_create admin "$domain" admin "This is a shared roster group set by aenigma" "everybody\\nonline"
+	/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
+	echo "${b}Finished creating shared roster groups.${x}"
+	echo
+	clear
+
+	### Run a generic APT operation to catch its output and alert the user if something has gone wrong
+
+	echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
+	echo
+	set +e
+	if apt-get -y upgrade
+	then
+	    echo
+	    echo "${g}${b}All APT package installations completed successfully...${x}"
+	    echo
+	else
+	    echo
+	    echo "${r}${b}An error has occured during APT operations.${x}"
+	    echo
+	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo
+	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo
+	    read -rp "${b}[press enter to continue reading...]${x}"
+	fi
+	set -e
+	clear
+
+	### Run an nginx restart to catch its output and alert the user if something has gone wrong
+
+	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+	echo
+	set +e
+	if service nginx restart
+	then
+	    echo
+	    echo "${g}${b}All nginx installations completed successfully...${x}"
+	    echo
+	else
+	    echo
+	    echo "${r}${b}An error has occured during nginx operations.${x}"
+	    echo
+	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo
+	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo
+	    read -rp "${b}[press enter to continue reading...]${x}"
+	fi
+	set -e
+	clear
+
+	### Run an sslh restart to catch its output and alert the user if something has gone wrong
+
+	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+	echo
+	set +e
+	if service sslh restart
+	then
+	    echo
+	    echo "${g}${b}All sslh installations completed successfully...${x}"
+	    echo
+	else
+	    echo
+	    echo "${r}${b}An error has occured during sslh operations.${x}"
+	    echo
+	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo
+	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo
+	    read -rp "${b}[press enter to continue reading...]${x}"
+	fi
+	set -e
+	clear
+
+	### Pring login information and credentials
+
+	echo "${g}${b}You can finally log in:${x}"
+	echo
+	echo "${b}https://$hostname${x}"
+	echo
+	echo "${b}admin@$domain${x}"
+	echo
+
+	if [ $ejab_admin_pwreset = "y" ]
+	then
+	    echo "${b}$ejab_admin_pw${x}"
+	    echo
+	else
+	    echo "${b}[your previously set password]${x}"
+	    echo
+	fi
+
+	read -rp "${b}[press enter to continue reading...]${x}"
+	clear
+
+	### Generate aenigma-specific DHparam file
+
+	os-generate_project_specific_dhparam
+
+	############################################################################
+	############################################################################
+	############################################################################
+
+}
+
+################################################################################

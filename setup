@@ -17,7 +17,7 @@ then
         source_dir="${source_dir%/tools}"
 fi
 
-. $source_dir/functions
+. "$source_dir/functions"
 
 ### Check for root user runtime
 
@@ -44,7 +44,7 @@ done
 
 OPTIND=1
 
-download_os_functions ${bleeding_edge_bf-}
+download_os_functions "${bleeding_edge_bf-}"
 source_os_functions
 
 ### Define formatting
