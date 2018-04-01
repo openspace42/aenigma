@@ -34,7 +34,6 @@ Thanks in advance for your help!
 * Passes all of the **compliance checks** performed by the Conversations client
 * Passes all of the ejabberd-supported [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester)
 * Allows you to and guides you through using your **top level domain as the xmpp domain [@example.im]** while hosting the server on a subdomain [xmpp.example.im] as its hostname by using SRV records without any XMPP client UI/UX or TLS conflicts.
-* Works perfectly for both internet accessible and local network deployments
 * **Supports IPv6** out of the box
 * **Validates all required IPv4 and IPv6 DNS settings** [even those for specific modules such as `pubsub.`] and tells you exactly the correct values for every record
 * Sets up **UFW rules** for all configured services
