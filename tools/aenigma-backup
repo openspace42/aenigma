@@ -69,10 +69,10 @@ os-br_backup_locally "${skip_install_complete_check-}"
 
 ################################################################################
 
-if [ "$backup_location" = "s3" ]
+if [ "$backup_archival_location" = "s3" ]
 then
 
-	mv "$tmp_backup_dir"/* "$backups_latest_dir"
+	mv "$tmp_backup_dir"/* "$backup_local_storage_path/latest"
 
 	############################################################################
 
@@ -88,9 +88,9 @@ else
 
 fi
 
-if [ -d "$tmp_dir" ]
+if [ -d "$backup_local_storage_path/temp" ]
 then
-	rm -r "${tmp_dir:?}"
+	rm -r "${backup_local_storage_path:?}/temp"
 fi
 
 os-br_purge_dirs

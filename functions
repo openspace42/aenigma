@@ -2,7 +2,7 @@
 
 ### openspace bash-framework v0.1.3 [https://github.com/openspace42/bash-framework]
 
-os_bash_functions_version=0.1.7
+os_bash_functions_version=0.1.8
 
 ################################################################################
 
@@ -170,7 +170,7 @@ aenigma-install_ejabberd_config() {
 	if [ $config_option = 1 ]
 	then
 		sed -i "s|example.im|${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-		sed -i "s|pathtofile|${domtlscertloc}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
+		sed -i "s|pathtofile|${domain_tls_cert_location}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
 		sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
 		sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
 	fi
@@ -778,8 +778,8 @@ perform_installation() {
 	            done
 	        fi
 
-	        domtlscertloc="$tls_dir/$domain.pem"
-	        echo "$domtlscertloc" > "$conf_dir/domtlscertloc"
+	        domain_tls_cert_location="$tls_dir/$domain.pem"
+	        echo "$domain_tls_cert_location" > "$conf_dir/domain_tls_cert_location"
 
 	    fi
 
@@ -1250,7 +1250,7 @@ perform_installation() {
 	    touch $tls_dir/domain.pem
 	    cat /etc/letsencrypt/live/"$domain"/privkey.pem > "$tls_dir"/domain.pem
 	    cat /etc/letsencrypt/live/"$domain"/fullchain.pem >> "$tls_dir"/domain.pem
-	    domtlscertloc=$tls_dir/domain.pem
+	    domain_tls_cert_location=$tls_dir/domain.pem
 	    echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
 	    echo
 
