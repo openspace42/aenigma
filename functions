@@ -711,6 +711,9 @@ perform_installation() {
 	                fi
 	            fi
 
+				read -rp "${b}[press enter to continue reading...]${x}"
+				clear
+
 	            additional_tls_mode="elsewhere"
 	            echo "elsewhere" > $conf_dir/additional_tls_mode
 
@@ -751,6 +754,7 @@ perform_installation() {
 	        then
 	            echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
 	            echo
+				sleep 1
 	        else
 	            echo "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, it's time to place it inside the  | $tls_dir | directory named as | $domain.pem |.${x}"
 	            echo
