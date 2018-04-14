@@ -65,6 +65,17 @@ os-br_update_storage_info
 
 os-br_purge_backups
 
+if [ "$backup_archival_location" = "s3" ]
+then
+
+    os-br_restore_from_S3 test
+
+    os-br_purge_dirs
+
+    os-br_create_dirs backup
+
+fi
+
 os-br_backup_locally "${skip_install_complete_check-}"
 
 ################################################################################
@@ -73,10 +84,6 @@ if [ "$backup_archival_location" = "s3" ]
 then
 
 	mv "$tmp_backup_dir"/* "$backup_local_storage_path/latest"
-
-	############################################################################
-
-	os-br_restore_from_S3 test
 
 	############################################################################
 
