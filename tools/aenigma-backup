@@ -55,6 +55,49 @@ OPTIND=1
 
 ################################################################################
 
+### Check for lockfile to avoid multiple simultaneous backups
+
+if [ -f /tmp/$short_name-backup-running-lockfile ]
+then
+    echo "${r}${b}It appears a $short_name backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted.${x}"
+    echo
+    echo "${b}If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted.${x}"
+    echo
+    echo "${b}Running multiple simultaneous backups is absolutely not supported and will make both fail.${x}"
+    echo
+    if [ $interactive = "y" ]
+    then
+        ask_for_boolean_question="If you're certain that another backup is NOT running, would you like to clear the lockfile and continue?"
+        os-ask_for_boolean_def_no
+        if [ "$ask_for_boolean_output" = "y" ]
+        then
+            echo "${b}Ok, clearing lockfile and continuing...${x}"
+            echo
+            if [ -f "/tmp/$short_name-backup-running-lockfile" ]
+            then
+                rm /tmp/$short_name-backup-running-lockfile
+            fi
+        else
+            echo "${b}Ok, aborting...${x}"
+            echo
+            os-exit_function
+        fi
+    else
+        echo "${b}If you're certain that another backup is NOT running, run this script manually and select to clear the lockfile and continue when prompted.${x}"
+        echo
+        echo "${b}Alternatively, you can also log into this machine and | rm /tmp/$short_name-backup-running-lockfile |.${x}"
+        echo
+        echo "${r}${b}Aborting backup for now.${x}"
+        echo
+        os-exit_function
+    fi
+else
+    ### set lockfile
+    touch /tmp/$short_name-backup-running-lockfile
+fi
+
+################################################################################
+
 os-br_purge_incomplete_archives
 
 os-br_purge_dirs
@@ -113,6 +156,11 @@ then
 fi
 
 os-br_purge_dirs
+
+if [ -f "/tmp/$short_name-backup-running-lockfile" ]
+then
+    rm /tmp/$short_name-backup-running-lockfile
+fi
 
 if [ "${s3_restore_test_failed-null}" = "y" ]
 then
