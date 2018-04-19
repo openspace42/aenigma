@@ -6,7 +6,7 @@
 
 It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email, [Streisand](https://github.com/StreisandEffect/streisand) for VPNs, and [Easyengine](https://easyengine.io/) for wordpress.
 
-The installation takes you on a four-minute, clearly worded, step-by-step setup and takes care of everything automagically.
+The installation takes you on a 15 minute, clearly worded, step-by-step setup and takes care of everything automagically.
 
 As soon as you're up and running join our conference at os@xc.os.vu !
 
@@ -57,7 +57,7 @@ Thanks in advance for your help!
 * Ubuntu 18.04 [bionic beaver] support [and requirement]
 * Newly implemented openspace [bash_functions](https://github.com/openspace42/bash_functions)
 
-## Install on Ubuntu 16.04 LTS / Ubuntu 18.04 LTS beta
+## Install on Ubuntu [16.04 LTS and later]
 
 ```
 apt update
@@ -91,6 +91,10 @@ sudo bash aenigma/tools/aenigma-restore
 ### For iOS:
 
 **ChatSecure** [[github](https://github.com/chatsecure)] [[app store](https://itunes.apple.com/us/app/chatsecure/id464200063)] [[website](https://chatsecure.org/)]
+
+### For Linux:
+
+**Dino** [[github](https://github.com/dino/dino)]
 
 ## Credits
 
