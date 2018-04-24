@@ -10,20 +10,6 @@ The installation takes you on a 15 minute, clearly worded, step-by-step setup an
 
 As soon as you're up and running join our conference at os@xc.os.vu !
 
-## Help us test out the upcoming version
-
-We'd love you to help us test aenigma on Ubuntu 18.04 [bionic beaver] beta and make sure we're ready for when the LTS release comes out on April 26th 2018.
-
-If you happen to have the time [and have a known-to-work aenigma backup in case you're an existing user], simply:
-
-1. Log in as root on your Ubuntu 16.04 server
-1. Upgrade to Ubuntu 18.04 beta with `do-release-upgrade -d` and confirm with `lsb_release -a` that you're indeed on 18.04
-2. Run [or re-run] the aenigma installer
-
-You will notice some errors, namely with EasyEngine, which doesn't support 18.04 yet, but everything other than the aenigma web interface [which relies on nginx] should work perfectly. If you require the use of the web interface, don't upgrade for now, or open up the correct port on your server's UFW and access the ejabberd web interface directly, keeping in mind that it's not secured in any way!
-
-Thanks in advance for your help!
-
 ## Features
 
 * **State of the art configuration**
@@ -57,7 +43,15 @@ Thanks in advance for your help!
 * Ubuntu 18.04 [bionic beaver] support [and requirement]
 * Newly implemented openspace [bash_functions](https://github.com/openspace42/bash_functions)
 
-## Install on Ubuntu [16.04 LTS and later]
+## Install
+
+The only supported distro is **Ubuntu**.
+
+* Tested on: 16.04 and later
+* Preferable: LTS releases [16.04, 18.04, ...]
+* Recommended: **18.04**
+
+Want to test aenigma out on Debian? That would be great! Edit out the checks in the installer and please report back on how everything works! Thank you!
 
 ```
 apt update
@@ -94,7 +88,7 @@ sudo bash aenigma/tools/aenigma-restore
 
 ### For Linux:
 
-**Dino** [[github](https://github.com/dino/dino)]
+**Dino** [still in beta | OMEMO only partially working] [[github](https://github.com/dino/dino)]
 
 ## Credits
 
