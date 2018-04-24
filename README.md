@@ -47,9 +47,9 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 The only supported distro is **Ubuntu**.
 
-* Tested on: 16.04 and later
-* Preferable: LTS releases [16.04, 18.04, ...]
-* Recommended: **18.04**
+* Requirements: LTS release [because of EasyEngine]
+* Tested on: 16.04, 18.04 [but keep in mind EE doesn't support 18.04 for now]
+* Recommended: **16.04** [will make this 18.04 as soon as EE supports it]
 
 Want to test aenigma out on Debian? That would be great! Edit out the checks in the installer and please report back on how everything works! Thank you!
 
