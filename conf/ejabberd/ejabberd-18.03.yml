@@ -1,7 +1,18 @@
-### This is the configuration file for an instance of:
-### aenigma | an openspace project [openspace.xxx]
+################################################################################
+################################################################################
+################################################################################
+
+### This is the configuration file for an instance of
+### aenigma: The | state-of-the-art | secure-by-default | one-touch-deployed | XMPP server for everyone.
+### for ejabberd XMPP server v18.03
+
+### aenigma is an openspace project [openspace.xxx]
 ### initial commit by nz on 2017-09-23
-### aenigma.xyz
+### https://aenigma.xyz | https://github.com/openspace42/aenigma/
+
+################################################################################
+################################################################################
+################################################################################
 
 ###.  =======
 ###'  LOGGING
