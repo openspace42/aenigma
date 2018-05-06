@@ -45,12 +45,15 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## Donate to keep the project running
 
-**aenigma** takes a bunch of time to develop, maintain, and keep up to date with the latest features and possibilities offered by ejabberd, OMEMO, and the XMPP world at large.
-**Help make aenigma always stable and state-of-the-art by donating a small amount.**
+**aenigma** takes a bunch of time to research, develop, maintain, and keep up to date with the latest features offered by everything in the XMPP world [ejabberd, OMEMO, and so on].
+
 Let's not make this project fall into deprecation-land like so many other great ones out there!
+
+**Help make aenigma always stable and state-of-the-art by donating a small amount.**
+
 And don't forget to spread the word with your fellow friends, family, activists, and geeks!
 
-BTC: [3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU](bitcoin://3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU)
+**BTC:** [3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU](bitcoin:3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU)
 
 ## Install
 
