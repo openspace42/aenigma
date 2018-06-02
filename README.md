@@ -53,7 +53,7 @@ Let's not make this project fall into deprecation-land like so many other great 
 
 And don't forget to spread the word with your fellow friends, family, activists, and geeks!
 
-**BTC:** [3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU](bitcoin:3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU)
+**BTC:** [3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU](bitcoin:3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU) | **PayPal:** []
 
 ## Install
 

@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-### openspace bash-framework v0.1.4 [https://github.com/openspace42/bash-framework]
+### openspace bash-framework v0.1.5 [https://github.com/openspace42/bash-framework]
 
-os_bash_functions_version=0.2.1
+os_bash_functions_version=0.2.2
 
 ################################################################################
 
@@ -15,6 +15,7 @@ define_vars() {
 	proj_name="aenigma"
 	short_name="aenigma"
 	author_name="openspace42"
+	git_host="https://github.com/"
 
 	### Set this to `y` if your project stores no data on end users' machines that could go lost during a re-install or update
 	skip_install_time_backup=n
@@ -36,9 +37,9 @@ check_root() {
 
 	if [[ $EUID -ne 0 ]]
 	then
-		echo "${r}${b}This script must be run as root${x}"
+		echo "This script must be run as root."
 		echo
-		echo "${b}Exiting...${x}"
+		echo "Exiting..."
 		echo
 		exit 1
 	fi
@@ -47,16 +48,20 @@ check_root() {
 
 download_os_functions() {
 
-	clone_author=openspace42
-	clone_name=bash-functions
+	clone_host="https://github.com"
+	clone_author="openspace42"
+	clone_name="bash-functions"
+
 	base_dir=/root/$clone_author
 	clone_dir=$base_dir/$clone_name
+
 	if [ -d $clone_dir ]
 	then
 		rm -r ${clone_dir:?}
 	fi
+
 	mkdir -p $base_dir
-	( cd $base_dir && git clone https://github.com/$clone_author/$clone_name && cd $clone_name && if [ ! ${bleeding_edge_bf-null} = "-b" ]; then git checkout tags/v$os_bash_functions_version; fi &> /dev/null )
+	( cd "$base_dir" && git clone "$clone_host/$clone_author/$clone_name" && cd "$clone_name" && if [ ! "${bleeding_edge_bf-null}" = "-b" ]; then git checkout "tags/v$os_bash_functions_version"; fi &> /dev/null )
 
 }
 
