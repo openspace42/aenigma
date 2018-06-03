@@ -1198,27 +1198,27 @@ perform_installation() {
 	for i in "${!ee_array[@]}"
 	do
 
-		echo "${b}Now creating easyengine site for ${ee_array[$i]}.$domain, generating its TLS certificate, and installing it...${x}"
+		echo "${b}Now creating easyengine site for ${ee_array[$i]}$domain, generating its TLS certificate, and installing it...${x}"
 		echo
-		ee site create ${ee_array[$i]}."$domain" || true
+		ee site create ${ee_array[$i]}"$domain" || true
 		echo
-		echo "${b}Finished creating easyengine site for ${ee_array[$i]}.$domain.${x}"
+		echo "${b}Finished creating easyengine site for ${ee_array[$i]}$domain.${x}"
 		echo
 
-		echo "${b}Now setting custom nginx config for ${ee_array[$i]}.$domain...${x}"
+		echo "${b}Now setting custom nginx config for ${ee_array[$i]}$domain...${x}"
 		echo
-		sed -i "s/example.im/${ee_array[$i]}.${domain}/g" $source_dir/conf/nginx/${ee_array[$i]}.conf
-		cp "$source_dir"/conf/nginx/${ee_array[$i]}.conf /etc/nginx/sites-available/${ee_array[$i]}."$domain"
+		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/${ee_array[$i]}conf
+		cp "$source_dir"/conf/nginx/${ee_array[$i]}conf /etc/nginx/sites-available/${ee_array[$i]}"$domain"
 		service nginx reload || true
-		echo "${b}Finished setting custom nginx config for ${ee_array[$i]}.$domain.${x}"
+		echo "${b}Finished setting custom nginx config for ${ee_array[$i]}$domain.${x}"
 		echo
 
-		echo "${b}Now updating easyengine site ${ee_array[$i]}.$domain to TLS encrypted with LetsEncrypt...${x}"
+		echo "${b}Now updating easyengine site ${ee_array[$i]}$domain to TLS encrypted with LetsEncrypt...${x}"
 		echo
-		ee site update ${ee_array[$i]}."$domain"  --le --experimental || true
-		if [ ! -f /etc/letsencrypt/live/${ee_array[$i]}."$domain"/fullchain.pem ]
+		ee site update ${ee_array[$i]}"$domain"  --le --experimental || true
+		if [ ! -f /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem ]
 		then
-		    echo "${r}${b}There was an issue provisioning the TLS certificate for ${ee_array[$i]}.$domain with LetsEncrypt.${x}"
+		    echo "${r}${b}There was an issue provisioning the TLS certificate for ${ee_array[$i]}$domain with LetsEncrypt.${x}"
 		    echo
 		    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
 		    echo
@@ -1227,15 +1227,15 @@ perform_installation() {
 		    exit
 		fi
 		echo
-		echo "${b}Finished updating easyengine site ${ee_array[$i]}.$domain to TLS encrypted with LetsEncrypt...${x}"
+		echo "${b}Finished updating easyengine site ${ee_array[$i]}$domain to TLS encrypted with LetsEncrypt...${x}"
 		echo
 
-		echo "${b}Now creating all-in-one TLS file for ${ee_array[$i]}.$domain for ejabberd...${x}"
+		echo "${b}Now creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd...${x}"
 		echo
-		touch $tls_dir/${ee_array[$i]}.pem
-		cat /etc/letsencrypt/live/${ee_array[$i]}."$domain"/privkey.pem > "$tls_dir"/${ee_array[$i]}.pem
-		cat /etc/letsencrypt/live/${ee_array[$i]}."$domain"/fullchain.pem >> "$tls_dir"/${ee_array[$i]}.pem
-		echo "${b}Finished creating all-in-one TLS file for ${ee_array[$i]}.$domain for ejabberd.${x}"
+		touch $tls_dir/${ee_array[$i]}pem
+		cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/privkey.pem > "$tls_dir"/${ee_array[$i]}pem
+		cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem >> "$tls_dir"/${ee_array[$i]}pem
+		echo "${b}Finished creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd.${x}"
 		echo
 
 	done
@@ -1334,18 +1334,18 @@ perform_installation() {
 	for i in "${!ee_array[@]}"
 	do
 
-		echo "${b}Now adding IPv6 support to the HTTPS version of the ${ee_array[$i]}.$domain site...${x}"
+		echo "${b}Now adding IPv6 support to the HTTPS version of the ${ee_array[$i]}$domain site...${x}"
 		echo
-		sed -i "s/example.im/${ee_array[$i]}.${domain}/g" $source_dir/conf/nginx/ssl-${ee_array[$i]}.conf
-		cp "$source_dir"/conf/nginx/ssl-${ee_array[$i]}.conf /var/www/${ee_array[$i]}."$domain"/conf/nginx/ssl.conf
-		echo "${b}Finished adding IPv6 support to the HTTPS version of the ${ee_array[$i]}.$domain site...${x}"
+		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/ssl-${ee_array[$i]}conf
+		cp "$source_dir"/conf/nginx/ssl-${ee_array[$i]}conf /var/www/${ee_array[$i]}"$domain"/conf/nginx/ssl.conf
+		echo "${b}Finished adding IPv6 support to the HTTPS version of the ${ee_array[$i]}$domain site...${x}"
 		echo
 
-		echo "${b}Now adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}.$domain site...${x}"
+		echo "${b}Now adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}$domain site...${x}"
 		echo
-		sed -i "s/example.im/${ee_array[$i]}.${domain}/g" $source_dir/conf/nginx/force-ssl-${ee_array[$i]}.conf
-		cp "$source_dir"/conf/nginx/force-ssl-${ee_array[$i]}.conf /etc/nginx/conf.d/force-ssl-${ee_array[$i]}."$domain".conf
-		echo "${b}Finished adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}.$domain site...${x}"
+		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/force-ssl-${ee_array[$i]}conf
+		cp "$source_dir"/conf/nginx/force-ssl-${ee_array[$i]}conf /etc/nginx/conf.d/force-ssl-${ee_array[$i]}"$domain".conf
+		echo "${b}Finished adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}$domain site...${x}"
 		echo
 
 	done
