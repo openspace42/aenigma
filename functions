@@ -1136,6 +1136,10 @@ perform_installation() {
 	echo "${b}Finished installing easyengine.${x}"
 	echo
 
+	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
+
+	/usr/sbin/service sslh stop &> /dev/null || true
+
 	### Create and configure sites and TLS certificates via LetsEncrypt
 
 	echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
