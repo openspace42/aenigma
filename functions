@@ -1174,13 +1174,13 @@ perform_installation() {
 	echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 	echo
 
-	echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
-	echo
-	touch $tls_dir/hostname.pem
-	cat /etc/letsencrypt/live/"$hostname"/privkey.pem > "$tls_dir"/hostname.pem
-	cat /etc/letsencrypt/live/"$hostname"/fullchain.pem >> "$tls_dir"/hostname.pem
-	echo "${b}Finished creating all-in-one TLS file for $hostname for ejabberd.${x}"
-	echo
+	#echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
+	#echo
+	#touch $tls_dir/hostname.pem
+	#cat /etc/letsencrypt/live/"$hostname"/privkey.pem > "$tls_dir"/hostname.pem
+	#cat /etc/letsencrypt/live/"$hostname"/fullchain.pem >> "$tls_dir"/hostname.pem
+	#echo "${b}Finished creating all-in-one TLS file for $hostname for ejabberd.${x}"
+	#echo
 
 	echo "${b}Now setting index.html in docroot for $hostname...${x}"
 	echo
@@ -1235,13 +1235,13 @@ perform_installation() {
 		echo "${b}Finished updating easyengine site ${ee_array[$i]}$domain to TLS encrypted with LetsEncrypt...${x}"
 		echo
 
-		echo "${b}Now creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd...${x}"
-		echo
-		touch $tls_dir/${ee_array[$i]}pem
-		cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/privkey.pem > "$tls_dir"/${ee_array[$i]}pem
-		cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem >> "$tls_dir"/${ee_array[$i]}pem
-		echo "${b}Finished creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd.${x}"
-		echo
+		#echo "${b}Now creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd...${x}"
+		#echo
+		#touch $tls_dir/${ee_array[$i]}pem
+		#cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/privkey.pem > "$tls_dir"/${ee_array[$i]}pem
+		#cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem >> "$tls_dir"/${ee_array[$i]}pem
+		#echo "${b}Finished creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd.${x}"
+		#echo
 
 	done
 
@@ -1287,14 +1287,14 @@ perform_installation() {
 	    echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
 	    echo
 
-	    echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
-	    echo
-	    touch $tls_dir/domain.pem
-	    cat /etc/letsencrypt/live/"$domain"/privkey.pem > "$tls_dir"/domain.pem
-	    cat /etc/letsencrypt/live/"$domain"/fullchain.pem >> "$tls_dir"/domain.pem
-	    domain_tls_cert_location=$tls_dir/domain.pem
-	    echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
-	    echo
+	    #echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
+	    #echo
+	    #touch $tls_dir/domain.pem
+	    #cat /etc/letsencrypt/live/"$domain"/privkey.pem > "$tls_dir"/domain.pem
+	    #cat /etc/letsencrypt/live/"$domain"/fullchain.pem >> "$tls_dir"/domain.pem
+	    #domain_tls_cert_location=$tls_dir/domain.pem
+	    #echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
+	    #echo
 
 	    echo "${b}Now setting index.html in docroot for $domain...${x}"
 	    echo
@@ -1356,6 +1356,15 @@ perform_installation() {
 	done
 
 	############################################################################
+
+	### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+
+	cp "$source_dir/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
+
+	echo
+	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
+
+	### Restart nginx
 
 	service nginx restart || true
 
