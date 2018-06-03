@@ -1207,8 +1207,8 @@ perform_installation() {
 
 		echo "${b}Now setting custom nginx config for ${ee_array[$i]}$domain...${x}"
 		echo
-		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/${ee_array[$i]}conf
-		cp "$source_dir"/conf/nginx/${ee_array[$i]}conf /etc/nginx/sites-available/${ee_array[$i]}"$domain"
+		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/xx.conf
+		cp "$source_dir"/conf/nginx/xx.conf /etc/nginx/sites-available/${ee_array[$i]}"$domain"
 		service nginx reload || true
 		echo "${b}Finished setting custom nginx config for ${ee_array[$i]}$domain.${x}"
 		echo
