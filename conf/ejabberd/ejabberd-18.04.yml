@@ -470,7 +470,6 @@ modules:
   mod_irc:
     host: "xi.@HOST@"
   mod_bosh: {}
-  mod_http_bind: {}
   mod_http_fileserver:
     docroot: "/var/www/ejabberd/"
     accesslog: "/var/log/ejabberd/www_access.log"
@@ -525,7 +524,7 @@ modules:
       - "flat"
       - "hometree"
       - "pep" # pep requires mod_caps
-    mod_push:
+  mod_push:
       include_sender: true
       include_body: true
   mod_push_keepalive: {}
@@ -560,7 +559,8 @@ modules:
   mod_vcard_xupdate: {}
   mod_avatar: {}
   mod_version: {}
-  mod_stream_mgmt: {}
+  mod_stream_mgmt:
+    resend_on_timeout: true
   mod_mam:
     default: always
     cache_size: 1048576

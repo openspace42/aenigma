@@ -179,10 +179,6 @@ aenigma-install_ejabberd_config() {
 		sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
 		sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
 	fi
-	#sed -i "s|example.im|xu.${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-	#sed -i "s|pathtofile|${tlsdir}/xu.pem|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-xu.txt
-	#sed -i '/## aenigma_host_config_xu_placeholder_start:/,/## aenigma_host_config_xu_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
-	#sed -i "/## aenigma_host_config_xu_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-xu.txt" $source_dir/conf/ejabberd/ejabberd.yml
 	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
 	echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
 	echo
@@ -870,13 +866,11 @@ perform_installation() {
 	            then
 	                declare -A digarray=(
 	                [HN]=""
-	                [www]="www."
 	                )
 	            elif [ "$dnstype" = "domain" ]
 	            then
 	                declare -A digarray=(
 	                [HN]=""
-	                [www]="www."
 	                )
 	            elif [ "$dnstype" = "XMPP" ]
 	            then
@@ -887,7 +881,6 @@ perform_installation() {
 	                [xm]="xm."
 	                [xp]="xp."
 	                [xu]="xu."
-	                [wu]="www.xu."
 	                )
 	            elif [ "$dnstype" = "SRV" ]
 	            then
@@ -909,171 +902,188 @@ perform_installation() {
 	            for i in "${!digarray[@]}"
 	            do
 
-	                digarrayiter=$((digarrayiter + 1))
-
-	                if [ ! "$dnstype" = "SRV" ]
+					if [ ! "$dnstype" = "SRV" ]
 	                then
-	                    echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
-	                    echo
-	                else
-	                    echo "${b}$digarrayiter] Now checking the ${digarray[$i]}$dnschecktype SRV record...${x}"
-	                    echo
-	                fi
+						declare -A sub_digarray=(
+		                [tl]="${digarray[$i]}"
+		                [ww]="www.${digarray[$i]}"
+		                )
+					else
+						declare -A sub_digarray=(
+		                [tl]="${digarray[$i]}"
+		                )
+					fi
 
-	                accept=n
-	                until [ $accept = "y" ]
-	                do
+					for i in "${!sub_digarray[@]}"
+		            do
 
-	                    if [ ! "$dnstype" = "SRV" ]
-	                    then
-	                        if [ "$ipversion" = "v4" ]
-	                        then
-	                            thisip=$this_ipv4
-	                            digresult="$(getent ahostsv4 "${digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
-	                            rectype="A"
-	                        else
-	                            thisip=$this_ipv6
-	                            digresult="$(getent ahostsv6 "${digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
-	                            rectype="AAAA"
-	                        fi
-	                    else
-	                        if [ ! "${digarray[$i]}" = "_xmpp-client._tcp." ]
-	                        then
-	                            thisip="0 0 5269 $hostname."
-	                        else
-	                            thisip="0 0 5222 $hostname."
-	                        fi
-	                        digresult="$(dig +short -t srv "${digarray[$i]}""$domain")"
-	                        rectype="SRV"
-	                    fi
+		                digarrayiter=$((digarrayiter + 1))
 
-	                    if [ -z "$digresult" ]
-	                    then
+		                if [ ! "$dnstype" = "SRV" ]
+		                then
+		                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+		                    echo
+		                else
+		                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype SRV record...${x}"
+		                    echo
+		                fi
 
-	                        if [ ! "$dnstype" = "SRV" ]
-	                        then
-	                            echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
-	                            echo
-	                        else
-	                            echo "${r}${b}The ${digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
-	                            echo
-	                        fi
+		                accept=n
+		                until [ $accept = "y" ]
+		                do
 
-	                        echo "${b}Please ensure you set your DNS record as follows:${x}"
-	                        echo
-	                        echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-	                        echo
-	                        if [ ! "${digarray[$i]}$dnschecktype" = "$hostname" ]
-	                        then
-	                            if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-	                            then
-	                                if [ "$ipversion" = "v4" ]
-	                                then
-	                                    echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-	                                    echo
-	                                    echo -e "| ${digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
-	                                    echo
-	                                fi
-	                            fi
-	                        fi
-	                        result=notset
-	                    else
-	                        if [ "$digresult" = "$thisip" ]
-	                        then
+		                    if [ ! "$dnstype" = "SRV" ]
+		                    then
+		                        if [ "$ipversion" = "v4" ]
+		                        then
+		                            thisip=$this_ipv4
+		                            digresult="$(getent ahostsv4 "${sub_digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
+		                            rectype="A"
+		                        else
+		                            thisip=$this_ipv6
+		                            digresult="$(getent ahostsv6 "${sub_digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
+		                            rectype="AAAA"
+		                        fi
+		                    else
+		                        if [ ! "${sub_digarray[$i]}" = "_xmpp-client._tcp." ]
+		                        then
+		                            thisip="0 0 5269 $hostname."
+		                        else
+		                            thisip="0 0 5222 $hostname."
+		                        fi
+		                        digresult="$(dig +short -t srv "${sub_digarray[$i]}""$domain")"
+		                        rectype="SRV"
+		                    fi
 
-	                            if [ ! "$dnstype" = "SRV" ]
-	                            then
-	                                echo "${g}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
-	                                echo
-	                            else
-	                                echo "${g}${b}The ${digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
-	                                echo
-	                            fi
+		                    if [ -z "$digresult" ]
+		                    then
 
-	                            echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-	                            echo
-	                            result=ok
-	                        else
+		                        if [ ! "$dnstype" = "SRV" ]
+		                        then
+		                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
+		                            echo
+		                        else
+		                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
+		                            echo
+		                        fi
 
-	                            if [ ! "$dnstype" = "SRV" ]
-	                            then
-	                                echo "${r}${b}The ${digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
-	                                echo
-	                            else
-	                                echo "${r}${b}The ${digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
-	                                echo
-	                            fi
+		                        echo "${b}Please ensure you set your DNS record as follows:${x}"
+		                        echo
+		                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+		                        echo
+		                        if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+		                        then
+		                            if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+		                            then
+		                                if [ "$ipversion" = "v4" ]
+		                                then
+		                                    echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+		                                    echo
+		                                    echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+		                                    echo
+		                                fi
+		                            fi
+		                        fi
+		                        result=notset
+		                    else
+		                        if [ "$digresult" = "$thisip" ]
+		                        then
 
-	                            echo "${b}This is the result of a DNS query for ${digarray[$i]}$dnschecktype:${x}"
-	                            echo
-	                            echo "$digresult"
-	                            echo
-	                            echo "${b}Please set it instead to:${x}"
-	                            echo
-	                            echo -e "| ${digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-	                            echo
-	                            if [ ! "${digarray[$i]}$dnschecktype" = "$hostname" ]
-	                            then
-	                                if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-	                                then
-	                                    if [ "$ipversion" = "v4" ]
-	                                    then
-	                                        echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-	                                        echo
-	                                        echo -e "| ${digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
-	                                        echo
-	                                    fi
-	                                fi
-	                            fi
-	                            result=incorrect
-	                        fi
-	                    fi
+		                            if [ ! "$dnstype" = "SRV" ]
+		                            then
+		                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
+		                                echo
+		                            else
+		                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
+		                                echo
+		                            fi
 
-	                    if [ ! $result = "ok" ]
-	                    then
-	                        valid=n
-	                        until [ $valid = "y" ]
-	                        do
-	                            read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-	                            case $answer in
-	                                "")
-	                                echo
-	                                valid=y
-	                                accept=n
-	                                ;;
-	                                y)
-	                                echo -e "\\n"
-	                                valid=y
-	                                accept=n
-	                                ;;
-	                                s)
-	                                echo -e "\\n"
-	                                echo "${b}Skipping DNS check for this record...${x}"
-	                                echo
-	                                valid=y
-	                                accept=y
-	                                ;;
-	                                e)
-	                                echo -e "\\n"
-	                                echo "${b}Exiting...${x}"
-	                                echo
-	                                exit
-	                                ;;
-	                                *)
-	                                echo -e "\\n"
-	                                echo "${b}Invalid option. Retry...${x}"
-	                                echo
-	                                valid=n
-	                                accept=n
-	                                ;;
-	                            esac
-	                        done
-	                    else
-	                        accept=y
-	                    fi
-	                    clear
+		                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+		                            echo
+		                            result=ok
+		                        else
 
-	                done
+		                            if [ ! "$dnstype" = "SRV" ]
+		                            then
+		                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
+		                                echo
+		                            else
+		                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
+		                                echo
+		                            fi
+
+		                            echo "${b}This is the result of a DNS query for ${sub_digarray[$i]}$dnschecktype:${x}"
+		                            echo
+		                            echo "$digresult"
+		                            echo
+		                            echo "${b}Please set it instead to:${x}"
+		                            echo
+		                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+		                            echo
+		                            if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+		                            then
+		                                if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+		                                then
+		                                    if [ "$ipversion" = "v4" ]
+		                                    then
+		                                        echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+		                                        echo
+		                                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+		                                        echo
+		                                    fi
+		                                fi
+		                            fi
+		                            result=incorrect
+		                        fi
+		                    fi
+
+		                    if [ ! $result = "ok" ]
+		                    then
+		                        valid=n
+		                        until [ $valid = "y" ]
+		                        do
+		                            read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+		                            case $answer in
+		                                "")
+		                                echo
+		                                valid=y
+		                                accept=n
+		                                ;;
+		                                y)
+		                                echo -e "\\n"
+		                                valid=y
+		                                accept=n
+		                                ;;
+		                                s)
+		                                echo -e "\\n"
+		                                echo "${b}Skipping DNS check for this record...${x}"
+		                                echo
+		                                valid=y
+		                                accept=y
+		                                ;;
+		                                e)
+		                                echo -e "\\n"
+		                                echo "${b}Exiting...${x}"
+		                                echo
+		                                exit
+		                                ;;
+		                                *)
+		                                echo -e "\\n"
+		                                echo "${b}Invalid option. Retry...${x}"
+		                                echo
+		                                valid=n
+		                                accept=n
+		                                ;;
+		                            esac
+		                        done
+		                    else
+		                        accept=y
+		                    fi
+		                    clear
+
+		                done
+
+					done
 
 	            done
 
@@ -1174,6 +1184,8 @@ perform_installation() {
 	echo "${b}Finished setting index.html in docroot for $hostname.${x}"
 	echo
 
+	############################################################################
+
 	echo "${b}Now creating easyengine site for xu.$domain, generating its TLS certificate, and installing it...${x}"
 	echo
 	ee site create xu."$domain" || true
@@ -1213,6 +1225,8 @@ perform_installation() {
 	cat /etc/letsencrypt/live/xu."$domain"/fullchain.pem >> "$tls_dir"/xu.pem
 	echo "${b}Finished creating all-in-one TLS file for xu.$domain for ejabberd.${x}"
 	echo
+
+	############################################################################
 
 	### Also provision a TLS certificate for $domain if during $config_option 1 or 2 specific configuration the user decided to point the domain here and let us automatically do the rest
 
