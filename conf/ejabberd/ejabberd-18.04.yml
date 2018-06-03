@@ -50,14 +50,13 @@ certfiles:
 ### to enable state-of-the-art, NOT backwards-compatible TLS encryption
 ### [breaking all bridges with legacy servers and therefore the rest of XMPP community]
 ### simply set: | s2s_protocol_options: 'TLSOPTS' | and | s2s_ciphers: 'CIPHERS' |
+
 ###.  ===============
 ###'  LISTENING PORTS
 
 
 define_macro:
 
-  'CERTFILE': "/etc/ssl/aenigma/hostname.pem"
-  'XUCERTFILE': "/etc/ssl/aenigma/xu.pem"
   'DHFILE': "/etc/ssl/aenigma/dh.pem"
   'CIPHERS': "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH"
   'S2SCIPHERS': "HIGH:!MEDIUM:!LOW:!3DES:!CAMELLIA:!aNULL@STRENGTH"
@@ -78,7 +77,6 @@ listen:
     ip: "::"
     module: ejabberd_c2s
     starttls: true
-    certfile: 'CERTFILE'
     protocol_options: 'TLSOPTS'
     dhfile: 'DHFILE'
     ciphers: 'CIPHERS'
@@ -87,12 +85,10 @@ listen:
     max_stanza_size: 65536
     shaper: c2s_shaper
     access: c2s
-    resend_on_timeout: if_offline
   -
     port: 5223
     ip: "::"
     module: ejabberd_c2s
-    certfile: 'CERTFILE'
     protocol_options: 'TLSOPTS'
     dhfile: 'DHFILE'
     ciphers: 'CIPHERS'
@@ -101,7 +97,6 @@ listen:
     max_stanza_size: 65536
     shaper: c2s_shaper
     access: c2s
-    resend_on_timeout: if_offline
   -
     port: 5269
     ip: "::"
@@ -122,6 +117,7 @@ listen:
     http_bind: true
     ## register: true
     captcha: false
+
   ## -
   ##   port: 8888
   ##   ip: "::"
@@ -144,12 +140,10 @@ listen:
   ##     "sms.example.org":
   ##       password: "secret"
 
-
   ## -
   ##   port: 3478
   ##   transport: udp
   ##   module: ejabberd_stun
-
 
   ## -
   ##   port: 4560
@@ -162,7 +156,6 @@ listen:
   ##       commands: all
   ##       options: []
 
-
   -
    port: 5444
    ip: "::"
@@ -170,7 +163,6 @@ listen:
    request_handlers:
      "": mod_http_upload
    tls: true
-   certfile: 'XUCERTFILE'
    protocol_options: 'TLSOPTS'
    dhfile: 'DHFILE'
    ciphers: 'CIPHERS'
@@ -180,18 +172,10 @@ disable_sasl_mechanisms: "digest-md5"
 ###.  ==================
 ###'  S2S GLOBAL OPTIONS
 
-
 s2s_use_starttls: required
-s2s_certfile: 'CERTFILE'
 s2s_dhfile: 'DHFILE'
 s2s_protocol_options: 'S2STLSOPTS'
 s2s_ciphers: 'S2SCIPHERS'
-
-## host_config:
-##   "example.org":
-##     domain_certfile: "/path/to/example_org.pem"
-##   "example.com":
-##     domain_certfile: "/path/to/example_com.pem"
 
 ## aenigma_host_config_domain_placeholder_start:
 ## aenigma_host_config_domain_placeholder_end:
@@ -560,7 +544,7 @@ modules:
   mod_avatar: {}
   mod_version: {}
   mod_stream_mgmt:
-    resend_on_timeout: true
+    resend_on_timeout: if_offline
   mod_mam:
     default: always
     cache_size: 1048576

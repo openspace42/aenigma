@@ -19,14 +19,14 @@ do
 
     le_cert_domain="$(echo $le_cert_domain_full | sed 's:.*/::')"
 
-    echo "Now creating all-in-one TLS file for $le_cert_domain for ejabberd..."
+    echo "Now creating all-in-one TLS file for $le_cert_domain..."
     echo
 
     touch "$tls_dir/$le_cert_domain.pem"
     cat "$le_dir/$le_cert_domain/privkey.pem" > "$tls_dir/$le_cert_domain.pem"
     cat "$le_dir/$le_cert_domain/fullchain.pem" >> "$tls_dir/$le_cert_domain.pem"
 
-    echo "Finished creating all-in-one TLS file for $le_cert_domain for ejabberd."
+    echo "Finished creating all-in-one TLS file for $le_cert_domain."
     echo
 
 done
