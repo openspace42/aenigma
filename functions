@@ -1218,6 +1218,7 @@ perform_installation() {
 		ee site update ${ee_array[$i]}"$domain"  --le --experimental || true
 		if [ ! -f /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem ]
 		then
+			echo
 		    echo "${r}${b}There was an issue provisioning the TLS certificate for ${ee_array[$i]}$domain with LetsEncrypt.${x}"
 		    echo
 		    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
@@ -1336,15 +1337,15 @@ perform_installation() {
 
 		echo "${b}Now adding IPv6 support to the HTTPS version of the ${ee_array[$i]}$domain site...${x}"
 		echo
-		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/ssl-${ee_array[$i]}conf
-		cp "$source_dir"/conf/nginx/ssl-${ee_array[$i]}conf /var/www/${ee_array[$i]}"$domain"/conf/nginx/ssl.conf
+		cp "$source_dir/conf/nginx/ssl-xx.conf" "/var/www/${ee_array[$i]}$domain/conf/nginx/ssl.conf"
+		sed -i "s/example.im/${ee_array[$i]}${domain}/g" "/var/www/${ee_array[$i]}$domain/conf/nginx/ssl.conf"
 		echo "${b}Finished adding IPv6 support to the HTTPS version of the ${ee_array[$i]}$domain site...${x}"
 		echo
 
 		echo "${b}Now adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}$domain site...${x}"
 		echo
-		sed -i "s/example.im/${ee_array[$i]}${domain}/g" $source_dir/conf/nginx/force-ssl-${ee_array[$i]}conf
-		cp "$source_dir"/conf/nginx/force-ssl-${ee_array[$i]}conf /etc/nginx/conf.d/force-ssl-${ee_array[$i]}"$domain".conf
+		cp "$source_dir/conf/nginx/force-ssl-xx.conf" "/etc/nginx/conf.d/force-ssl-${ee_array[$i]}$domain.conf"
+		sed -i "s/example.im/${ee_array[$i]}${domain}/g" "/etc/nginx/conf.d/force-ssl-${ee_array[$i]}$domain.conf"
 		echo "${b}Finished adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}$domain site...${x}"
 		echo
 
