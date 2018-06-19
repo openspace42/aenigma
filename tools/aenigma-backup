@@ -4,20 +4,34 @@
 
 ### Set bash environment error management
 
-set -e
-set -u
+set -eu
 
-### Source local functions file
+### Add padding to output
 
 echo
-source_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [[ "$source_dir" == */tools ]]
+### Determine script execution directory, install directory, and source local functions file
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
 then
-        source_dir="${source_dir%/tools}"
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo
+        exit 1
+	fi
 fi
 
-. "$source_dir/functions"
+. "$exec_dir_root/functions"
 
 ### Source openspace functions file
 

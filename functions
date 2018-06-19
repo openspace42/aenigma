@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-### openspace bash-framework v0.1.5 [https://github.com/openspace42/bash-framework]
+### openspace bash-framework v0.1.7 [https://github.com/openspace42/bash-framework]
 
-os_bash_functions_version=0.2.2
+os_bash_functions_version=0.2.3
 
 ################################################################################
 
@@ -52,16 +52,26 @@ download_os_functions() {
 	clone_author="openspace42"
 	clone_name="bash-functions"
 
-	base_dir=/root/$clone_author
-	clone_dir=$base_dir/$clone_name
+	clone_base_dir=/root/$clone_author
+	clone_dir=$clone_base_dir/$clone_name
+
+	mkdir -p $clone_base_dir
 
 	if [ -d $clone_dir ]
 	then
 		rm -r ${clone_dir:?}
 	fi
 
-	mkdir -p $base_dir
-	( cd "$base_dir" && git clone "$clone_host/$clone_author/$clone_name" && cd "$clone_name" && if [ ! "${bleeding_edge_bf-null}" = "-b" ]; then git checkout "tags/v$os_bash_functions_version"; fi &> /dev/null )
+	( cd "$clone_base_dir" && git clone "$clone_host/$clone_author/$clone_name" && cd "$clone_name" && \
+		if [ ! "${custom_bf-null}" = "e" ]; \
+		then \
+			git checkout "tags/v$os_bash_functions_version" && \
+			echo "$os_bash_functions_version" > "./version_installed"; \
+		else \
+			clone_latest_commit="$(git log -n 1 --pretty=format:"%H"  | cut -c1-7)" && \
+			echo "bleeding-edge-$clone_latest_commit" > "./version_installed"; \
+		fi &> /dev/null \
+	)
 
 }
 
@@ -363,7 +373,7 @@ perform_installation() {
 
 	os-check_sslh_connection
 
-	os-check_distro_ubuntu16
+	os-check_distro_ubuntu_lts
 
 	os-check_inception_run
 

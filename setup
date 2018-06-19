@@ -4,47 +4,99 @@
 
 ### Set bash environment error management
 
-set -e
-set -u
+set -eu
 
-### Source local functions file
+### Add padding to output
 
 echo
-source_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [[ "$source_dir" == */tools ]]
+### Determine script execution directory, install directory, and source local functions file
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
 then
-        source_dir="${source_dir%/tools}"
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo
+        exit 1
+	fi
 fi
 
-. "$source_dir/functions"
+. "$exec_dir_root/functions"
 
 ### Check for root user runtime
 
 check_root
 
-### Download and source openspace functions file
+### Evaluate command arguments for custom-version install
 
-while getopts ":be" arguments; do
+while getopts ":b:r:" arguments
+do
     case $arguments in
-        b)	export bleeding_edge_bf="-b"
-        echo "Using bleeding-edge bash-functions as per | -b |."
-        echo
-        ;;
-        e)	export bleeding_edge_rc="-e"
-        echo "Using bleeding-edge repo code as per | -e |."
-        echo
-        ;;
+        b)	export custom_bf="$OPTARG"
+	        ;;
+		r)	export custom_rc="$OPTARG"
+	        ;;
         \?)	echo "Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |."
-        echo
-        exit
-        ;;
+	        echo
+	        exit
+	        ;;
     esac
 done
 
 OPTIND=1
 
-download_os_functions "${bleeding_edge_bf-}"
+if [ ! -z "${custom_bf-}" ]
+then
+	case $custom_bf in
+		e)	echo "Using bleeding-edge bash-functions as per | -b e |."
+			echo
+			;;
+		l)	echo "Disabling bash-functions download and using local version as per | -b l |."
+			echo
+			;;
+		*)	echo "Invalid content for | custom_bf | in function | ${FUNCNAME[0]} |."
+			echo
+			echo "Exiting..."
+			echo
+			exit
+			;;
+	esac
+fi
+
+if [ ! -z "${custom_rc-}" ]
+then
+	case $custom_rc in
+		e)	echo "Using bleeding-edge repo code as per | -r e |."
+			echo
+			;;
+		*)	echo "Invalid content for | custom_rc | in function | ${FUNCNAME[0]} |."
+			echo
+			echo "Exiting..."
+			echo
+			exit
+			;;
+	esac
+fi
+
+### Download and source openspace functions file
+
+if [ ! "${custom_bf-null}" = "l" ]
+then
+
+    download_os_functions
+
+fi
+
 source_os_functions
 
 ### Define formatting
