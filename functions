@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-### openspace bash-framework v0.1.7 [https://github.com/openspace42/bash-framework]
+### openspace synthia bootstrap framework v0.2.0 [https://github.com/openspace42/synthia]
 
-os_bash_functions_version=0.2.3
+os_dna_version=0.2.4
 
 ################################################################################
 
@@ -46,11 +46,11 @@ check_root() {
 
 }
 
-download_os_functions() {
+download_os_dna() {
 
 	clone_host="https://github.com"
 	clone_author="openspace42"
-	clone_name="bash-functions"
+	clone_name="dna"
 
 	clone_base_dir=/root/$clone_author
 	clone_dir=$clone_base_dir/$clone_name
@@ -63,10 +63,10 @@ download_os_functions() {
 	fi
 
 	( cd "$clone_base_dir" && git clone "$clone_host/$clone_author/$clone_name" && cd "$clone_name" && \
-		if [ ! "${custom_bf-null}" = "e" ]; \
+		if [ ! "${custom_dna_version-null}" = "b" ]; \
 		then \
-			git checkout "tags/v$os_bash_functions_version" && \
-			echo "$os_bash_functions_version" > "./version_installed"; \
+			git checkout "tags/v$os_dna_version" && \
+			echo "$os_dna_version" > "./version_installed"; \
 		else \
 			clone_latest_commit="$(git log -n 1 --pretty=format:"%H"  | cut -c1-7)" && \
 			echo "bleeding-edge-$clone_latest_commit" > "./version_installed"; \
@@ -75,9 +75,9 @@ download_os_functions() {
 
 }
 
-source_os_functions() {
+source_os_dna() {
 
-	for f in /root/openspace42/bash-functions/functions/*
+	for f in /root/openspace42/dna/functions/*
 	do
 		. $f
 	done

@@ -51,7 +51,7 @@ fi
 
 ### Source openspace functions file
 
-source_os_functions
+source_os_dna
 
 ### Define formatting
 
