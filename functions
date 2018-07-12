@@ -1418,7 +1418,7 @@ perform_installation() {
 	echo
 	/usr/sbin/service sslh stop &> /dev/null || true
 	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
-	apt-get -y install libwrap0-dev libconfig8-dev || true
+	apt-get -y install libwrap0-dev libconfig-dev || true
 	rm -r "$temp_dir/sslh" &> /dev/null || true
 	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
 	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )

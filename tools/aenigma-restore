@@ -132,10 +132,10 @@ fi
 ################################################################################
 
 restore_from_standalone_content_description() {
-	echo "${b}1] /root/$shortname-restore/config${x}"
-	echo "${b}2] /root/$shortname-restore/ejabberd-mnesia-backup${x}"
-	echo "${b}3] /root/$shortname-restore/etc-ejabberd${x}"
-	echo "${b}4] /root/$shortname-restore/var-lib-ejabberd${x}"
+	echo "${b}1] /root/$short_name-restore/config${x}"
+	echo "${b}2] /root/$short_name-restore/ejabberd-mnesia-backup${x}"
+	echo "${b}3] /root/$short_name-restore/etc-ejabberd${x}"
+	echo "${b}4] /root/$short_name-restore/var-lib-ejabberd${x}"
 }
 
 validate_standalone_restore_content="y"
