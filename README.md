@@ -29,6 +29,7 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 * Listens for **XMPP c2s [aka client to server], HTTP_upload, and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor
 * Configures ejabberd **Shared Roster Groups** to easily allow admins to see all users registered on their own rosters
 * Automaticaly **backups up** all ejabberd files and database **locally and [optionally] to S3** and includes a script for a **guided, consistent, and complete restore**.
+* Allows you to easily run your aenigma instance on multiple servers [a cluster] for robustness, load distribution / balancing, and failover.
 
 ## Non-features
 
@@ -36,7 +37,12 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## New features
 
-###  v0.5x
+### v0.6x [work in progress on the "clusterize" branch]
+
+* Make use of the new LetsEncrypt wildcard TLS certificates to massively simplify the codebase and the end-user setup itself
+* Full support for ejabberd clusterization [i.e. multi-master multi-server functionality]
+
+### v0.5x
 
 * Full XEP-0375 thanks to ejabberd 18.0x
 * Ubuntu 18.04 [bionic beaver] support [and requirement]
