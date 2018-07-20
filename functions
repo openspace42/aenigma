@@ -160,6 +160,7 @@ aenigma-add_ejabberd_repo() {
 	echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
 	wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
 	apt-get update
+	echo
 
 }
 
@@ -1081,6 +1082,7 @@ perform_installation() {
 	fi
 	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
 	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	sed -i "s|xu.@|xu${server_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
 	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
 	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
 	chmod +x /etc/init.d/sslh
@@ -1133,9 +1135,26 @@ perform_installation() {
 	echo "${b}Finished stopping ejabberd.${x}"
 	echo
 
-	### Perform some changes on the ejabberd config file
+	### Perform some changes on the ejabberd config files
 
+	sed -i "s/xe.@/xe${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xi.@/xi${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xm.@/xm${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xp.@/xp${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xu.@/xu${server_number}.@/g" /etc/ejabberd/ejabberd.yml
 
+	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
+	sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
+
+	rm -rf /var/lib/ejabberd/*
+
+	# Substitute .erlang.cookie with primary node's in the future for clusterization
+
+	mkdir /var/lib/ejabberd/uploads
+	chown ejabberd:ejabberd /var/lib/ejabberd/uploads
+
+	touch /var/log/ejabberd/www_access.log
+	chown ejabberd:adm /var/log/ejabberd/www_access.log
 
 	echo "${b}Now starting ejabberd...${x}"
 	/usr/sbin/service ejabberd start
