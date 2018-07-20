@@ -592,204 +592,32 @@ perform_installation() {
 
 	os-check_ipv6_connectivity
 
-	### Ask the user for the TLS cert for $domain or point it here to provision one locally
+	### Provision the LetsEncrypt wildcard TLS certificate for $domain
 
-	additional_tls_mode="notset"
+    echo "${b}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x}"
+    echo
 
-	if [ $config_option = 1 ]
-	then
+	os-provision_le_wildcard_cert -d "$domain"
 
-	    echo "${b}Having chosen config option 1, now it's time to set up the TLS [SSL] certificate that is valid for $domain on this machine.${x}"
-	    echo
+	#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
-	    if [ -f $conf_dir/additional_tls_mode ]
-	    then
-	        prev_additional_tls_mode="$(cat $conf_dir/additional_tls_mode)"
-	        case "$prev_additional_tls_mode" in
-	            "elsewhere"|"here")
-	            valid_prev_additional_tls_mode=y
-	            ;;
-	            *)
-	            valid_prev_additional_tls_mode=n
-	            ;;
-	        esac
-	    else
-	        touch $conf_dir/additional_tls_mode
-	        valid_prev_additional_tls_mode=n
-	    fi
+	cp "$source_dir/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
 
-	    if [ $valid_prev_additional_tls_mode = "y" ]
-	    then
-	        echo "${g}${b}You previously specified that the A/AAAA DNS records for $domain point [or are supposed to point] | $prev_additional_tls_mode | ${x}"
-	        echo
-	        read -rp "${b}Is this still true? (Y/n): ${x}" -n 1
-	        echo
-	        if [[ ! $REPLY =~ ^[Nn]$ ]]
-	        then
-	            additional_tls_mode=$prev_additional_tls_mode
-	        else
-	            echo
-	            additional_tls_mode=not-yet-set
-	        fi
-	    else
-	        additional_tls_mode=not-yet-set
-	    fi
+	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
 
-	    if [ $additional_tls_mode = "not-yet-set" ]
-	    then
+    if [ -f $tls_dir/$domain.pem ]
+    then
+        echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
+        echo
+		sleep 1
+    else
+        echo "${r}${b}Something went wrong provisioning the wildcard TLS certificate for $domain.${x}"
+        echo
+        os-exit_function
+    fi
 
-	        echo "The certificate file required for $short_name must be an all-in-one private key + certificate + chain file."
-	        echo
-	        echo "This means the file must include, in this order, the following:"
-	        echo
-	        echo "1] Private key; 2] Leaf [server] cert; 3] Certification Chain [Intermediate cert(s) + Root cert]"
-	        echo
-	        read -rp "${b}[press enter to continue reading...]${x}"
-	        clear
-
-	        echo "This certificate, if it already exists, resides on the server responding to $domain"
-	        echo
-	        echo "This is usually a web server, but check your domain/hosting infrastructure to see what server it is."
-	        echo
-	        echo "This is the IP to which your bare domain $domain is pointing to:"
-	        echo
-	        dig +noall +answer "$domain"
-	        echo
-	        echo "[If you see no output, then it might be misconfigured or not configured at all.]"
-	        echo
-	        read -rp "${b}[press enter to continue reading...]${x}"
-	        clear
-
-	        read -rp "${b}That said, is there ANOTHER [running] server that responds to $domain? (Y/n): ${x}" -n 1
-	        echo
-	        if [[ ! $REPLY =~ ^[Nn]$ ]]
-	        then
-	            read -rp "${b}Ok, does this server have a configured TLS [SSL] certificate up and running on it? (Y/n): ${x}" -n 1
-	            echo
-	            if [[ ! $REPLY =~ ^[Nn]$ ]]
-	            then
-	                read -rp "${b}Ok, is this a Linux server? (Y/n): ${x}" -n 1
-	                echo
-	                if [[ ! $REPLY =~ ^[Nn]$ ]]
-	                then
-	                    read -rp "${b}Ok, is this a Letsencrypt certificate? [if unsure, answer no] (Y/n): ${x}" -n 1
-	                    echo
-	                    if [[ ! $REPLY =~ ^[Nn]$ ]]
-	                    then
-	                        echo "${b}Very good, therefore access that server as root [or using sudo], and download this script in the root user's home directory:${x}"
-	                        echo
-	                        echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
-	                        echo
-	                        echo "${b}Now configure it to push its LE TLS cert to this server by following the instructions.${x}"
-	                        echo
-	                    else
-	                        echo
-	                        echo "${b}Ok, no problem, you can adapt this script:${x}"
-	                        echo
-	                        echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
-	                        echo
-	                        echo "${b}To have it fetch and concatenate your existing private key, TLS cert, and certification chain on the other server and push the resulting all-in-one file here periodically.${x}"
-	                        echo
-	                        echo "${b}Follow the instructions and adapt the paths to the existing TLS certs and private key.${x}"
-	                        echo
-	                    fi
-	                else
-	                    echo "${b}Ok, no problem, find your TLS certificate and related files on the other server and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!].${x}"
-	                    echo
-	                fi
-	            else
-	                read -rp "${b}Ok, no problem. Is this server a linux server? (Y/n): ${x}" -n 1
-	                echo
-	                if [[ ! $REPLY =~ ^[Nn]$ ]]
-	                then
-	                    echo "${b}Very good. You can therefore install letsencrypt on the other server, generate a cert for $domain, and copy it over here with this script:${x}"
-	                    echo
-	                    echo "${b}https://github.com/nikksno/LetsEncrypt-Cert-Push${x}"
-	                    echo
-	                else
-	                    echo "${b}Ok, no problem, get a TLS certificate, install it and its related files on the other server, and make a simple script to periodically concatenate your existing private key, TLS cert, and certification chain on the other server and send the resulting all-in-one file over to this server, or copy it here manually [and remember to copy it over again every time you renew the cert!].${x}"
-	                    echo
-	                fi
-	            fi
-
-				read -rp "${b}[press enter to continue reading...]${x}"
-				clear
-
-	            additional_tls_mode="elsewhere"
-	            echo "elsewhere" > $conf_dir/additional_tls_mode
-
-	        else
-
-	            echo
-	            echo "${b}Ok, so we'll point $domain to this server and provision a TLS certificate for it on this very server.${x}"
-	            echo
-	            echo "If you ever add a new server to respond to $domain [a webserver for instance], simply make sure you periodically send the TLS certificate you'll generate on the new server back here, either by using this script on the new server:"
-	            echo
-	            echo "https://github.com/nikksno/LetsEncrypt-Cert-Push"
-	            echo
-	            echo "[or an adaptation of it] or by doing some other manual scripting that periodically fetches the TLS cert and all of its related files on the other server, concatenates your private key, TLS cert, and certification chain on the other server, and sends the resulting all-in-one file over to this server, [and does so again every time you renew the cert!]."
-	            echo
-	            echo "For now, no need to worry about that."
-	            echo
-	            read -rp "${b}[press enter to continue reading...]${x}"
-	            clear
-
-	            echo "${b}Let's point $domain and www.$domain to this server for the time being.${x}"
-	            echo
-	            echo "This is required for the TLS certificate we'll be generating shortly on this server."
-	            echo
-	            echo "The DNS checks we'll be running shortly will guide you through these settings as well."
-	            echo
-
-	            additional_tls_mode="here"
-	            echo "here" > $conf_dir/additional_tls_mode
-
-	        fi
-
-	    fi
-
-	    if [ $additional_tls_mode = "elsewhere" ]
-	    then
-
-	        if [ -f $tls_dir/$domain.pem ]
-	        then
-	            echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
-	            echo
-				sleep 1
-	        else
-	            echo "${b}Now, in whatever way you've installed or copied to this server the all-in-one TLS cert file for $domain, it's time to place it inside the  | $tls_dir | directory named as | $domain.pem |.${x}"
-	            echo
-	            echo "${b}Place it there now ensuring its full path is indeed | $tls_dir/$domain.pem |.${x}"
-	            echo
-	            read -rp "${b}[press enter when ready...]${x}"
-	            clear
-	            exists=n
-	            until [ $exists = "y" ]
-	            do
-	                if [ -f  $tls_dir/$domain.pem ]
-	                then
-	                    echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
-	                    echo
-	                    exists=y
-	                else
-	                    echo "${r}${b}External TLS certificate for $domain NOT found in | $tls_dir/$domain.pem |."
-	                    echo
-	                    echo "${b}Please ensure you've correctly copied the certificate inside the directory and named it as above.${x}"
-	                    echo
-	                    read -rp "${b}[press enter when ready to try again...]${x}"
-	                    clear
-	                    exists=n
-	                fi
-	            done
-	        fi
-
-	        domain_tls_cert_location="$tls_dir/$domain.pem"
-	        echo "$domain_tls_cert_location" > "$conf_dir/domain_tls_cert_location"
-
-	    fi
-
-	fi
-	clear
+    domain_tls_cert_location="$tls_dir/$domain.pem"
+    echo "$domain_tls_cert_location" > "$conf_dir/domain_tls_cert_location"
 
 	### Setup backup restore
 
@@ -797,15 +625,7 @@ perform_installation() {
 
 	### Perform DNS checks
 
-	if [ $additional_tls_mode = "here" ]
-	then
-	    declare -a dnsarray=(
-	    "hostname"
-	    "domain"
-	    "XMPP"
-	    "SRV"
-	    )
-	elif [ $additional_tls_mode = "elsewhere" ]
+	if [ ! $config_option = "3" ]
 	then
 	    declare -a dnsarray=(
 	    "hostname"
@@ -830,6 +650,8 @@ perform_installation() {
 	    "v4"
 	    )
 	fi
+
+	server_number=00 ### Change this in the future to clusterize
 
 	for dnstype in "${dnsarray[@]}"
 	do
@@ -875,12 +697,12 @@ perform_installation() {
 	            elif [ "$dnstype" = "XMPP" ]
 	            then
 	                declare -A digarray=(
-	                [xc]="xc."
-	                [xe]="xe."
-	                [xi]="xi."
-	                [xm]="xm."
-	                [xp]="xp."
-	                [xu]="xu."
+	                [xc]="xc${server_number}."
+	                [xe]="xe${server_number}."
+	                [xi]="xi${server_number}."
+	                [xm]="xm${server_number}."
+	                [xp]="xp${server_number}."
+	                [xu]="xu${server_number}."
 	                )
 	            elif [ "$dnstype" = "SRV" ]
 	            then
@@ -891,18 +713,12 @@ perform_installation() {
 	                )
 	            fi
 
-	            # [xc]="XMPP messaging groups [aka conferences / MUCs in XMPP lingo]."
-	            # [xu]="XMPP HTTP uploads."
-	            # [xe]="the ejabberd MOD_ECHO module."
-	            # [xp]="the ejabberd MOD_PUBSUB module."
-	            # [xi]="join channels on IRC servers."
-
 	            digarrayiter=0
 
 	            for i in "${!digarray[@]}"
 	            do
 
-					if [ ! "$dnstype" = "SRV" ]
+					if [ "$dnstype" = "hostname" ]
 	                then
 						declare -A sub_digarray=(
 		                [tl]="${digarray[$i]}"
@@ -1140,7 +956,11 @@ perform_installation() {
 
 	/usr/sbin/service sslh stop &> /dev/null || true
 
-	### Create and configure sites and TLS certificates via LetsEncrypt
+	############################################################################
+
+	### Create and configure the $hostname website
+
+	### We still use a separate LE TLS cert for $hostname for ease of automation via EE
 
 	echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
 	echo
@@ -1174,151 +994,11 @@ perform_installation() {
 	echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
 	echo
 
-	#echo "${b}Now creating all-in-one TLS file for $hostname for ejabberd...${x}"
-	#echo
-	#touch $tls_dir/hostname.pem
-	#cat /etc/letsencrypt/live/"$hostname"/privkey.pem > "$tls_dir"/hostname.pem
-	#cat /etc/letsencrypt/live/"$hostname"/fullchain.pem >> "$tls_dir"/hostname.pem
-	#echo "${b}Finished creating all-in-one TLS file for $hostname for ejabberd.${x}"
-	#echo
-
 	echo "${b}Now setting index.html in docroot for $hostname...${x}"
 	echo
 	cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
 	echo "${b}Finished setting index.html in docroot for $hostname.${x}"
 	echo
-
-	############################################################################
-
-	declare -A ee_array=(
-		[xc]="xc."
-		[xe]="xe."
-		[xi]="xi."
-		[xm]="xm."
-		[xp]="xp."
-		[xu]="xu."
-	)
-
-	for i in "${!ee_array[@]}"
-	do
-
-		echo "${b}Now creating easyengine site for ${ee_array[$i]}$domain, generating its TLS certificate, and installing it...${x}"
-		echo
-		ee site create ${ee_array[$i]}"$domain" || true
-		echo
-		echo "${b}Finished creating easyengine site for ${ee_array[$i]}$domain.${x}"
-		echo
-
-		echo "${b}Now setting custom nginx config for ${ee_array[$i]}$domain...${x}"
-		echo
-		cp "$source_dir/conf/nginx/xx.conf" "/etc/nginx/sites-available/${ee_array[$i]}$domain"
-		sed -i "s/example.im/${ee_array[$i]}${domain}/g" "/etc/nginx/sites-available/${ee_array[$i]}$domain"
-		service nginx reload || true
-		echo "${b}Finished setting custom nginx config for ${ee_array[$i]}$domain.${x}"
-		echo
-
-		echo "${b}Now updating easyengine site ${ee_array[$i]}$domain to TLS encrypted with LetsEncrypt...${x}"
-		echo
-		ee site update ${ee_array[$i]}"$domain"  --le --experimental || true
-		if [ ! -f /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem ]
-		then
-			echo
-		    echo "${r}${b}There was an issue provisioning the TLS certificate for ${ee_array[$i]}$domain with LetsEncrypt.${x}"
-		    echo
-		    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
-		    echo
-		    echo "${b}Exiting...${x}"
-		    echo
-		    exit
-		fi
-		echo
-		echo "${b}Finished updating easyengine site ${ee_array[$i]}$domain to TLS encrypted with LetsEncrypt...${x}"
-		echo
-
-		#echo "${b}Now creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd...${x}"
-		#echo
-		#touch $tls_dir/${ee_array[$i]}pem
-		#cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/privkey.pem > "$tls_dir"/${ee_array[$i]}pem
-		#cat /etc/letsencrypt/live/${ee_array[$i]}"$domain"/fullchain.pem >> "$tls_dir"/${ee_array[$i]}pem
-		#echo "${b}Finished creating all-in-one TLS file for ${ee_array[$i]}$domain for ejabberd.${x}"
-		#echo
-
-	done
-
-	############################################################################
-
-	### Also provision a TLS certificate for $domain if during $config_option 1 or 2 specific configuration the user decided to point the domain here and let us automatically do the rest
-
-	if [ $additional_tls_mode = "here" ]
-	then
-
-	    echo "${b}Since you've chosen to provision a TLS certificate for $domain on this server, now we're now going to do so.${x}"
-	    echo
-
-	    echo "${b}Now creating easyengine site for $domain, generating its TLS certificate, and installing it...${x}"
-	    echo
-	    ee site create "$domain" || true
-	    echo
-	    echo "${b}Finished creating easyengine site for $domain.${x}"
-	    echo
-
-	    echo "${b}Now setting custom nginx config for $domain...${x}"
-	    echo
-	    sed -i "s/example.im/${domain}/g" $source_dir/conf/nginx/domain.conf
-	    cp "$source_dir"/conf/nginx/domain.conf /etc/nginx/sites-available/"$domain"
-	    service nginx reload || true
-	    echo "${b}Finished setting custom nginx config for $domain.${x}"
-	    echo
-
-	    echo "${b}Now updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
-	    echo
-	    ee site update "$domain"  --le --experimental || true
-	    if [ ! -f /etc/letsencrypt/live/"$domain"/fullchain.pem ]
-	    then
-	        echo "${r}${b}There was an issue provisioning the TLS certificate for $domain with LetsEncrypt.${x}"
-	        echo
-	        echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
-	        echo
-	        echo "${b}Exiting...${x}"
-	        echo
-	        exit
-	    fi
-	    echo
-	    echo "${b}Finished updating easyengine site $domain to TLS encrypted with LetsEncrypt...${x}"
-	    echo
-
-	    #echo "${b}Now creating all-in-one TLS file for $domain for ejabberd...${x}"
-	    #echo
-	    #touch $tls_dir/domain.pem
-	    #cat /etc/letsencrypt/live/"$domain"/privkey.pem > "$tls_dir"/domain.pem
-	    #cat /etc/letsencrypt/live/"$domain"/fullchain.pem >> "$tls_dir"/domain.pem
-	    #domain_tls_cert_location=$tls_dir/domain.pem
-	    #echo "${b}Finished creating all-in-one TLS file for $domain for ejabberd...${x}"
-	    #echo
-
-	    echo "${b}Now setting index.html in docroot for $domain...${x}"
-	    echo
-	    cp "$source_dir"/conf/web/domain/index.html /var/www/"$domain"/htdocs/
-	    echo "${b}Finished setting index.html in docroot for $domain.${x}"
-	    echo
-
-	    echo "${b}Now adding IPv6 support to the HTTPS version of the $domain site...${x}"
-	    echo
-	    sed -i "s/example.im/${domain}/g" $source_dir/conf/nginx/ssl-domain.conf
-	    cp "$source_dir"/conf/nginx/ssl-domain.conf /var/www/"$domain"/conf/nginx/ssl.conf
-	    echo "${b}Finished adding IPv6 support to the HTTPS version of the $domain site...${x}"
-	    echo
-
-	    echo "${b}Now adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
-	    echo
-	    sed -i "s/example.im/${domain}/g" $source_dir/conf/nginx/force-ssl-domain.conf
-	    cp "$source_dir"/conf/nginx/force-ssl-domain.conf /etc/nginx/conf.d/force-ssl-"$domain".conf
-	    echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $domain site...${x}"
-	    echo
-
-	fi
-
-	### only add IPv6 to hostname site after LE TLS cert has been provisioned for all sites otherwise .well-known check will fail due to wrong webroot
 
 	echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
 	echo
@@ -1336,30 +1016,7 @@ perform_installation() {
 
 	############################################################################
 
-	for i in "${!ee_array[@]}"
-	do
-
-		echo "${b}Now adding IPv6 support to the HTTPS version of the ${ee_array[$i]}$domain site...${x}"
-		echo
-		cp "$source_dir/conf/nginx/ssl-xx.conf" "/var/www/${ee_array[$i]}$domain/conf/nginx/ssl.conf"
-		sed -i "s/example.im/${ee_array[$i]}${domain}/g" "/var/www/${ee_array[$i]}$domain/conf/nginx/ssl.conf"
-		echo "${b}Finished adding IPv6 support to the HTTPS version of the ${ee_array[$i]}$domain site...${x}"
-		echo
-
-		echo "${b}Now adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}$domain site...${x}"
-		echo
-		cp "$source_dir/conf/nginx/force-ssl-xx.conf" "/etc/nginx/conf.d/force-ssl-${ee_array[$i]}$domain.conf"
-		sed -i "s/example.im/${ee_array[$i]}${domain}/g" "/etc/nginx/conf.d/force-ssl-${ee_array[$i]}$domain.conf"
-		echo "${b}Finished adding IPv6 support to the HTTPS redirect for the ${ee_array[$i]}$domain site...${x}"
-		echo
-
-	done
-
-	############################################################################
-
-	### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
-
-	cp "$source_dir/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
+	### Run the LetsEncrypt post-renewal now to be ready for the installation
 
 	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
 
