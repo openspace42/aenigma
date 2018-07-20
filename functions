@@ -381,17 +381,7 @@ perform_installation() {
 
 	os-apt_full_upgrade -e
 
-	echo "${b}Now installing dependencies...${x}"
-	echo
-	hostname="$(cat /etc/hostname)"
-	apt-add-repository ppa:duplicity-team/ppa -y
-	apt-get update
-	apt-get -y install duplicity python-pip s3cmd python-boto libpcre3-dev || true
-	pip install --upgrade pip
-	pip install boto
-	echo
-	echo "${b}Finished installing dependencies.${x}"
-	echo
+	os-install_duplicity
 
 	mkdir -p "$tls_dir"
 	mkdir -p "$temp_dir"
@@ -1485,6 +1475,10 @@ perform_installation() {
 	sleep 8
 	echo "${b}Finished stopping ejabberd.${x}"
 	echo
+
+	### Perform some changes on the ejabberd config file
+
+
 
 	echo "${b}Now starting ejabberd...${x}"
 	/usr/sbin/service ejabberd start
