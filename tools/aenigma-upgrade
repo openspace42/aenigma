@@ -86,6 +86,8 @@ then
 	esac
 fi
 
+cd
+
 ### Download and source openspace dna
 
 if [ ! "${custom_dna_version-null}" = "l" ]
@@ -107,6 +109,13 @@ define_vars
 
 ################################################################################
 
-### Actually run the installer
+### Clone and upgrade
+
+if [ -d "./${proj_name}/" ]
+then
+        rm -r "${proj_name}/"
+fi
+
+git clone ${git_host}/${author_name}/${proj_name}
 
 os-run_install

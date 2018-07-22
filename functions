@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-### openspace synthia bootstrap framework v0.2.0 [https://github.com/openspace42/synthia]
+### openspace synthia bootstrap framework v0.2.1 [https://github.com/openspace42/synthia]
 
-os_dna_version=0.2.5
+os_dna_version=0.2.6
 
 ################################################################################
 
@@ -1169,7 +1169,7 @@ perform_installation() {
 
 	echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
 	echo
-	ejab_admin_pw=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)
+	ejab_admin_pw="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
 	/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
 	echo "${b}Finished registering ejabberd admin user.${x}"
 	echo
