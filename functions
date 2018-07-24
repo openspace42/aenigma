@@ -794,7 +794,7 @@ perform_installation() {
 	            elif [ "$dnstype" = "XMPP" ]
 	            then
 	                declare -A digarray=(
-	                [xc]="xc${server_number}."
+	                [xc]="xc."
 	                [xe]="xe${server_number}."
 	                [xi]="xi${server_number}."
 	                [xm]="xm${server_number}."
@@ -818,8 +818,8 @@ perform_installation() {
 					if [ "$dnstype" = "hostname" ]
 	                then
 						declare -A sub_digarray=(
-		                [tl]="${digarray[$i]}"
-		                [ww]="www.${digarray[$i]}"
+		                [ht]="${digarray[$i]}"
+		                [hw]="www.${digarray[$i]}"
 		                )
 					else
 						declare -A sub_digarray=(
@@ -1255,7 +1255,7 @@ perform_installation() {
 	echo "${b}Now starting ejabberd...${x}"
 	/usr/sbin/service ejabberd start
 	echo
-	sleep 8
+	sleep 16
 	/usr/sbin/ejabberdctl status
 	echo
 	echo "${b}Finished starting ejabberd.${x}"
