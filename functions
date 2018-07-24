@@ -583,6 +583,102 @@ perform_installation() {
 	fi
 	clear
 
+	### Ask user if this aenigma node is going to be part of a cluster
+
+	echo "${b}$short_name can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x}"
+	echo
+	echo "${b}If you desire to setup $short_name in a cluster configuration, you must specify so now.${x}"
+	echo
+
+	describe_setting() {
+
+		echo "${b}Please set your desired server topology configuration [single/cluster]:${x}"
+		echo
+
+	}
+
+	validate_input() {
+
+		case $input in
+			single)		clusterize_enabled=n
+			valid=y
+			;;
+			cluster)	clusterize_enabled=y
+			valid=y
+			;;
+			*)	echo "${r}${b}Invalid setting for | clusterize_enabled | in function | ${FUNCNAME[0]} |.${x}"
+			echo
+			valid=n
+			;;
+		esac
+
+	}
+
+	os-set_option -o clusterize -v y -d y -p clusterize/clusterize_enabled
+
+	if [ "${clusterize_enabled}" = "y" ]
+	then
+		echo "${b}Having chosen to run $short_name in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x}"
+		echo
+
+		describe_setting() {
+
+			echo "${b}Please set the desired operating mode for this specific server [primary/secondary]:${x}"
+			echo
+
+		}
+
+		validate_input() {
+
+			case $input in
+				primary)		clusterize_mode=primary
+				valid=y
+				;;
+				secondary)		clusterize_mode=secondary
+				valid=y
+				;;
+				*)	echo "${r}${b}Invalid setting for | clusterize_mode | in function | ${FUNCNAME[0]} |.${x}"
+				echo
+				valid=n
+				;;
+			esac
+
+		}
+
+		os-set_option -o clusterize -v y -d y -p clusterize/clusterize_mode
+
+		if [ "${clusterize_mode}" = "primary" ]
+		then
+			echo "${b}Having chosen that this server will be your primary node for your $short_name installation, we can carry on with the standard installation.${x}"
+			echo
+		else
+			echo "${b}Having chosen that this server will be a secondary node for your $short_name installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x}"
+			echo
+			ask_for_boolean_question="Is the primary node for this $short_name already up and running and perfectly configured?"
+            os-ask_for_boolean_def_yes
+            if [ "$ask_for_boolean_output" = "y" ]
+            then
+				echo "${b}Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node...${x}"
+				echo
+            else
+				echo "${b}Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same $short_name install and selecting the | primary | node option when prompted.${x}"
+				echo
+				echo "${b}Only then will we be able to continue with the installation of this secondary node.${x}"
+				echo
+				echo "${b}Aborting installation for now.${x}"
+				echo
+                os-exit_function
+            fi
+		fi
+	fi
+
+
+
+
+
+
+
+
 	### Set admin email address
 
 	os-set_admin_email
