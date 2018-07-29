@@ -57,7 +57,7 @@ os-read_conf_settings
 
 ### Check or enable clusterization
 
-if [ "${clusterize_enabled}" = "n" ]
+if [ ! "${clusterize_enabled-null}" = "y" ]
 then
 	echo "${r}${b}${short_name} was not installed in clusterized mode.${x}"
 	echo
