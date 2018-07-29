@@ -55,6 +55,8 @@ os-read_conf_settings
 
 ################################################################################
 
+### Check or enable clusterization
+
 if [ "${clusterize_enabled}" = "n" ]
 then
 	echo "${r}${b}${short_name} was not installed in clusterized mode.${x}"
@@ -63,38 +65,49 @@ then
 	os-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		
-
-cd
-
-### Download and source openspace dna
-
-if [ ! "${custom_dna_version-null}" = "l" ]
-then
-
-    download_os_dna
-
+		echo "${b}Ok, setting clusterization to enabled.${x}"
+		echo
+		os-set_option -o clusterize_enabled -p clusterize -s "y"
+	else
+		echo "${b}Ok, leaving clusterization off for now.${x}"
+		echo
+		os-exit_function
+	fi
 fi
 
-source_os_dna
+### Check or set clusterization mode to primary
 
-### Define formatting
-
-os-define_formatting
-
-### Define variables
-
-define_vars
+if [ -z "${clusterize_mode-}" ]
+then
+	echo "${b}This script must only be run on the primary node of $short_name.${x}"
+	echo
+	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your $short_name instance?"
+	os-ask_for_boolean_def_no
+	if [ "$ask_for_boolean_output" = "y" ]
+	then
+		echo "${b}Ok, proceeding...${x}"
+		echo
+		os-set_option -o clusterize_mode -p clusterize -s "primary"
+	else
+		echo "${b}Ok, no problem. If this is a secondary node all you need to do is run the standard $short_name installation and select | secondary | when asked about the node type during clusterization setup.${x}"
+		echo
+		os-exit_function
+	fi
+elif [ "${clusterize_mode}" = "secondary" ]
+then
+	echo "${r}${b}This script must only be run on the primary node of $short_name.${x}"
+	echo
+	echo "${b}You've previously specified during install that this will instead be a secondary node.${x}"
+	echo
+	echo "${b}If that's the case then all you need to do is run the standard $short_name installation and select | secondary | when asked about the node type during clusterization setup.${x}"
+	echo
+	echo "${b}Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted.${x}"
+	echo
+else
+	echo "${g}${b}$short_name clusterization mode already set to: | ${x}${b}primary${g} |.${x}"
+	echo
+fi
 
 ################################################################################
 
-### Clone and upgrade
-
-if [ -d "./${proj_name}/" ]
-then
-        rm -r "${proj_name}/"
-fi
-
-git clone ${git_host}/${author_name}/${proj_name}
-
-os-run_install
+echo
