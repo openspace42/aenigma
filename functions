@@ -429,7 +429,7 @@ perform_installation() {
 
 	}
 
-	os-set_option -o clusterize -v y -d y -p clusterize/clusterize_enabled
+	os-set_option -o clusterize_enabled -v y -d y -p clusterize
 
 	if [ "${clusterize_enabled}" = "y" ]
 	then
@@ -460,7 +460,7 @@ perform_installation() {
 
 		}
 
-		os-set_option -o clusterize -v y -d y -p clusterize/clusterize_mode
+		os-set_option -o clusterize_mode -v y -d y -p clusterize
 
 		if [ "${clusterize_mode}" = "primary" ]
 		then
@@ -623,8 +623,8 @@ perform_installation() {
 		then
 			echo "${b}Ok, proceeding with ejabberd wipe...${x}"
 			echo
-			/usr/sbin/service ejabberd stop || true
-			/usr/bin/killall ejabberd || true
+			/usr/sbin/service ejabberd stop 2> /dev/null || true
+			/usr/bin/killall ejabberd 2> /dev/null || true
 			if [ -d /etc/ejabberd/ ]
 			then
 				rm -rf /etc/ejabberd/

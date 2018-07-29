@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+### Set bash environment error management
+
+set -eu
+
+### Add padding to output
+
+echo
+
+### Determine script execution directory, install directory, and source local functions file
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
+then
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo
+        exit 1
+	fi
+fi
+
+. "$exec_dir_root/functions"
+
+### Source openspace functions file
+
+source_os_dna
+
+### Define formatting
+
+os-define_formatting
+
+### Define variables
+
+define_vars
+
+################################################################################
+
+check_root
+
+os-log_script
+
+os-read_conf_settings
+
+################################################################################
+
+if [ "${clusterize_enabled}" = "n" ]
+then
+	echo "${r}${b}${short_name} was not installed in clusterized mode.${x}"
+	echo
+	ask_for_boolean_question="Do you wish to turn this instance into a clusterized one?"
+	os-ask_for_boolean_def_yes
+	if [ "$ask_for_boolean_output" = "y" ]
+	then
+		
+
+cd
+
+### Download and source openspace dna
+
+if [ ! "${custom_dna_version-null}" = "l" ]
+then
+
+    download_os_dna
+
+fi
+
+source_os_dna
+
+### Define formatting
+
+os-define_formatting
+
+### Define variables
+
+define_vars
+
+################################################################################
+
+### Clone and upgrade
+
+if [ -d "./${proj_name}/" ]
+then
+        rm -r "${proj_name}/"
+fi
+
+git clone ${git_host}/${author_name}/${proj_name}
+
+os-run_install
