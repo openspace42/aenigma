@@ -108,6 +108,116 @@ else
 	echo
 fi
 
+ask_for_boolean_question="Have you already started the $short_name installation on your secondary node?"
+os-ask_for_boolean_def_yes
+if [ "$ask_for_boolean_output" = "y" ]
+then
+	echo "${b}Ok, continuing...${x}"
+	echo
+else
+	echo "${b}Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | bash $short_name/setup | command.${x}"
+	echo
+	echo "${b}When prompted to start this very script come back here and continue on.${x}"
+	echo
+	read -rp "${b}[press enter to continue...]${x}"
+fi
+
 ################################################################################
 
+### Start creating the cluster node database and print this machine [the primary node]'s public IPv4 to the first line
+
+nodes_db_path="${$conf_dir}/cluster/nodes_db"
+os-get_public_ipv4
+
+touch "${nodes_db_path}"
+if [ -s "${nodes_db_path}" ]
+then
+	sed -i "1s/.*/${this_ipv4}/" "${nodes_db_path}"
+else
+	echo "${this_ipv4}" > "${nodes_db_path}"
+fi
+
+################################################################################
+
+### Now add the secondary node's IPv4 to the db
+
+read -rp "${b}Now enter the public IPv4 address displayed on your secondary node:${x} "
+secondary_node_ipv4="${REPLY}"
+
+if grep -q "${secondary_node_ipv4}" "${nodes_db_path}"
+then
+	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
+	echo "${b}The server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | is already registered as part of this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
+	echo
+	ask_for_boolean_question="Would you like to re-provision it?"
+	os-ask_for_boolean_def_yes
+	if [ "$ask_for_boolean_output" = "y" ]
+	then
+		echo "${b}Ok, continuing...${x}"
+		echo
+	else
+		echo "${b}Ok, skipping provisioning for node | ${g}${secondary_node_ipv4}${x}${b} |.${x}"
+		echo
+		os-exit_function
+	fi
+else
+	echo "${secondary_node_ipv4}" >> "${nodes_db_path}"
+	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
+	echo "${b}Ok, added server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | to this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
+	echo
+fi
+
+################################################################################
+
+### Generate or read and print the clusterization SSH pubkey and prompt the user to configure it on the seondary node
+
+if [ ! -f ~/.ssh/aenigma_clusterize.pub ]
+then
+	os-generate_ssh_keypair -n "aenigma_clusterize"
+else
+	ssk_keypair_pubkey_path="~/.ssh/aenigma_clusterize.pub"
+fi
+
+echo "${b}Now, when prompted, enter the following SSH public key on the secondary node:${x}"
 echo
+echo "${y}${b}${ssk_keypair_pubkey_path}${x}"
+echo
+
+if ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" exit
+then
+	echo "${g}${b}SSH connection to secondary node succeeded.${x}"
+	echo
+else
+	echo "${r}${b}SSH connection to secondary node failed.${x}"
+	echo
+	echo "${b}Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${x}${b} |, that its SSH port is | ${y}42022${x}${b} |, and that its firewall isn't blocking connections on that port.${x}"
+	echo
+	os-exit_function
+fi
+
+### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
+
+if secondary_node_token="$(ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /var/aenigma_clusterize_token)"
+then
+	echo "${g}${b}Token on secondary node correctly found.${x}"
+	echo
+	echo "${b}Its value is: | ${g}${secondary_node_token}${x}${b} |.${x}"
+	echo
+	ask_for_boolean_question="Does this token match what you see on the secondary node?"
+	os-ask_for_boolean_def_yes
+	if [ "$ask_for_boolean_output" = "y" ]
+	then
+		echo "${b}Ok, continuing...${x}"
+		echo
+	else
+		echo "${b}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${x}${b} | and try again.${x}"
+		echo
+		os-exit_function
+	fi
+else
+	echo "${r}${b}Token on secondary node not found.${x}"
+	echo
+	echo "${b}Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again.${x}"
+	echo
+	os-exit_function
+fi
