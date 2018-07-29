@@ -183,13 +183,10 @@ aenigma-install_ejabberd_config() {
 	touch /etc/ejabberd/ejabberd.yml
 	sed -i "s/example.im/${domain}/g" "$source_ejab_conf_file"
 	sed -i "s/hostname.im/${hostname}/g" "$source_ejab_conf_file"
-	if [ $config_option = 1 ]
-	then
-		sed -i "s|example.im|${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-		sed -i "s|pathtofile|${domain_tls_cert_location}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-		sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
-		sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
-	fi
+	sed -i "s|example.im|${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
+	sed -i "s|pathtofile|${domain_tls_cert_location}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
+	sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
+	sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
 	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
 	echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
 	echo
@@ -404,13 +401,12 @@ perform_installation() {
 
 	### Ask user if this aenigma node is going to be part of a cluster
 
-	echo "${b}$short_name can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x}"
-	echo
-	echo "${b}If you wish to setup $short_name in a cluster configuration, you must specify so now.${x}"
-	echo
-
 	describe_setting() {
 
+		echo "${b}$short_name can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x}"
+		echo
+		echo "${b}If you wish to setup $short_name in a cluster configuration, you must specify so now.${x}"
+		echo
 		echo "${b}Please set your desired server topology configuration [single/cluster]:${x}"
 		echo
 
@@ -437,11 +433,11 @@ perform_installation() {
 
 	if [ "${clusterize_enabled}" = "y" ]
 	then
-		echo "${b}Having chosen to run $short_name in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x}"
-		echo
 
 		describe_setting() {
 
+			echo "${b}Having chosen to run $short_name in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x}"
+			echo
 			echo "${b}Please set the desired operating mode for this specific server [primary/secondary]:${x}"
 			echo
 
@@ -543,7 +539,7 @@ perform_installation() {
 
 	    if [ "$curr_host_name" = "ae00.${domain}" ]
 	    then
-	        echo "${g}${b}Your hostname is already correctly set to | ae00.${domain} |.${x}"
+	        echo "${g}${b}Your hostname is already correctly set to: | ${x}${b}ae00.${domain}${g} |.${x}"
 	        echo
 	    else
 			echo "${b}This machine's hostname must become: | ae00.${domain} |.${x}"
@@ -695,19 +691,11 @@ perform_installation() {
 
 		### Perform DNS checks
 
-		if [ ! $config_option = "3" ]
-		then
-		    declare -a dnsarray=(
-		    "hostname"
-		    "XMPP"
-		    "SRV"
-		    )
-		else
-		    declare -a dnsarray=(
-		    "hostname"
-		    "XMPP"
-		    )
-		fi
+	    declare -a dnsarray=(
+	    "hostname"
+	    "XMPP"
+	    "SRV"
+	    )
 
 		if [ $ipv6_avail = "y" ]
 		then
