@@ -400,194 +400,13 @@ perform_installation() {
 	    aenigma_xmpp_intro
 	fi
 
-	### Set aenigma config option [described in intro]
-
-	validate_input() {
-
-	    case $input in
-	        1|2|3)	config_option=$input
-	        valid=y
-	        ;;
-	        *)	echo "${r}${b}Invalid setting for | config_option | in function | ${FUNCNAME[0]} |.${x}"
-	        echo
-	        valid=n
-	        ;;
-	    esac
-
-	}
-
-	os-set_option -o config_option -v y -d n -p xmpp
-
-	### Set xmpp domain [only one supported for now] if config_option != 3
-	### In the latter case the xmpp domain will match the machine hostname [see below]
-
-	if [ ! $config_option = "3" ]
-	then
-
-	    echo "${b}Ok, you've chosen option $config_option.${x}"
-	    echo
-
-	    describe_setting() {
-
-	        echo "${b}Now set your top level domain, which will also be the part after the @ in your XMPP account addresses:${x}"
-	        echo
-
-	    }
-
-	    os-set_option -o domain -v n -d y -p xmpp
-
-	    if [ $prev_val_outcome = "not-kept" ]
-	    then
-	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
-	        echo
-	        echo "${r}${b}WARNING:${x}"
-	        echo
-	        echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
-	        echo
-	        echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet.${x}"
-	        echo
-	        echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
-	        echo
-	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
-	        echo
-	        read -rp "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1
-	        echo
-	        if [[ $REPLY =~ ^[Yy]$ ]]
-	        then
-	            echo "${b}Ok, proceeding...${x}"
-	            echo
-	        else
-	            echo "${b}Ok, setting your domain back to the previous value | $prev_value |...${x}"
-	            echo
-	            domain="$prev_val"
-	            echo "$prev_val" > "$opt_path"
-	        fi
-	    fi
-
-	else
-
-	    echo "${b}Ok, you've chosen option 3.${x}"
-	    echo
-	    echo "${b}Your domain [the part after the @ in your XMPP account addresses] will match your server hostname.${x}"
-	    echo
-
-	fi
-
-	### Review and set machine hostname according to config_option
-
-	curr_host_name="$(cat /etc/hostname)"
-
-	if [ ! $config_option = "2" ]
-	then
-
-	    describe_setting() {
-
-	        if [ $config_option = "1" ]
-	        then
-	            echo "${b}Your hostname must be a third level domain [subdomain] of either $domain or another domain.${x}"
-	            echo
-	        elif [ $config_option = "3" ]
-	        then
-	            echo "${b}Your hostname must be a third level domain [subdomain] of your main domain.${x}"
-	            echo
-	            echo "${b}Keep in mind that your hostname will also become your domain [the part after the @ in your XMPP account addresses].${x}"
-	            echo
-	        fi
-
-	    }
-
-	    os-set_option -o hostname -v n -d y -p /etc
-
-	    if [ $config_option = "3" ]
-	    then
-	        domain=$hostname
-	    fi
-
-	else
-
-	    echo "${b}Your hostname must be identical to your domain: $domain.${x}"
-	    echo
-	    echo "${b}Your current hostname is:${x}"
-	    echo
-	    echo " | $curr_host_name |"
-	    echo
-	    if [ "$curr_host_name" = "$domain" ]
-	    then
-	        echo "${g}${b}Your hostname matches your domain, all good!${x}"
-	        echo
-	    else
-	        echo "${r}${b}Your hostname does NOT match the domain you've specified.${x}"
-	        echo
-	        echo "${b}Having chosen option 2, they must be identical.${x}"
-	        echo
-	        read -rp "${b}Do you want to set your hostname to match your domain? (Y/n): ${x}" -n 1
-	        echo
-	        if [[ ! $REPLY =~ ^[Nn]$ ]]
-	        then
-	            echo "${b}Ok, setting hostname to match domain.${x}"
-	            echo
-	            echo "$domain" > /etc/hostname
-	            echo "${b}New hostname set to | $domain | ${x}"
-	            echo
-	        else
-	            echo
-	            echo "${b}Not changing hostname. Exiting...${x}"
-	            echo
-	            exit
-	        fi
-	    fi
-
-	    hostname="$(cat /etc/hostname)"
-
-	fi
-	clear
-
-	### Review domain and hostname to see if the user approves
-
-	echo "----------------"
-	echo
-	echo "${b}To make sure everything is correct:${x}"
-	echo
-	echo "1] Your ${b}XMPP domain${x} [the part after the @ in your XMPP account addresses] will be:"
-	echo
-	echo "${b} | ${g}$domain${x}${b} | ${x}"
-	echo
-	echo "2] And therefore an ${b}XMPP account address${x} will look as follows:"
-	echo
-	echo "${b} | ${g}mark@$domain${x}${b} | ${x}"
-	echo
-	echo "3] Your ${b}hostname${x}, the location on the internet of this server, will be:"
-	echo
-	echo "${b} | ${g}$hostname${x}${b} | ${x}"
-	echo
-	echo "4] And therefore your ${b}aenigma admin panel${x} will be located at:"
-	echo
-	echo "${b} | ${g}https://$hostname${x}${b} | ${x}"
-	echo
-	echo "----------------"
-	echo
-
-	read -rp "${b}Does everything look all right? (Y/n): ${x}" -n 1
-	echo
-	if [[ ! $REPLY =~ ^[Nn]$ ]]
-	then
-	    echo "${b}Ok, continuing.${x}"
-	    echo
-	    touch $conf_dir/domain
-	    echo "$domain" > $conf_dir/domain
-	else
-	    echo
-	    echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
-	    echo
-	    exit
-	fi
-	clear
+	############################################################################
 
 	### Ask user if this aenigma node is going to be part of a cluster
 
 	echo "${b}$short_name can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x}"
 	echo
-	echo "${b}If you desire to setup $short_name in a cluster configuration, you must specify so now.${x}"
+	echo "${b}If you wish to setup $short_name in a cluster configuration, you must specify so now.${x}"
 	echo
 
 	describe_setting() {
@@ -672,739 +491,901 @@ perform_installation() {
 		fi
 	fi
 
+	############################################################################
 
-
-
-
-
-
-
-	### Set admin email address
-
-	os-set_admin_email
-
-	### Check internet connectivity and get public IP addresses
-
-	os-get_public_ipv4
-
-	os-check_ipv6_connectivity
-
-	### Provision the LetsEncrypt wildcard TLS certificate for $domain
-
-    echo "${b}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x}"
-    echo
-
-	os-provision_le_wildcard_cert -d "$domain"
-
-	#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
-
-	cp "$source_dir/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
-
-	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
-
-    if [ -f $tls_dir/$domain.pem ]
-    then
-        echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
-        echo
-		sleep 1
-    else
-        echo "${r}${b}Something went wrong provisioning the wildcard TLS certificate for $domain.${x}"
-        echo
-        os-exit_function
-    fi
-
-    domain_tls_cert_location="$tls_dir/$domain.pem"
-    echo "$domain_tls_cert_location" > "$conf_dir/domain_tls_cert_location"
-
-	### Setup backup restore
-
-	os-setup_backup_restore
-
-	### Perform DNS checks
-
-	if [ ! $config_option = "3" ]
+	if [ ! "${clusterize_mode-null}" = "secondary" ]
 	then
-	    declare -a dnsarray=(
-	    "hostname"
-	    "XMPP"
-	    "SRV"
-	    )
-	else
-	    declare -a dnsarray=(
-	    "hostname"
-	    "XMPP"
-	    )
-	fi
 
-	if [ $ipv6_avail = "y" ]
-	then
-	    declare -a iparray=(
-	    "v4"
-	    "v6"
-	    )
-	else
-	    declare -a iparray=(
-	    "v4"
-	    )
-	fi
+		### Set xmpp domain
 
-	server_number=00 ### Change this in the future to clusterize
+	    describe_setting() {
 
-	for dnstype in "${dnsarray[@]}"
-	do
+	        echo "${b}Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:${x}"
+	        echo
 
-	    if [ "$dnstype" = "hostname" ]
+	    }
+
+	    os-set_option -o domain -v n -d y -p xmpp
+
+	    if [ $prev_val_outcome = "not-kept" ]
 	    then
-	        dnschecktype=$hostname
-	    else
-	        dnschecktype=$domain
+	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+	        echo
+	        echo "${r}${b}WARNING:${x}"
+	        echo
+	        echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
+	        echo
+	        echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet.${x}"
+	        echo
+	        echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
+	        echo
+	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+	        echo
+	        read -rp "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1
+	        echo
+	        if [[ $REPLY =~ ^[Yy]$ ]]
+	        then
+	            echo "${b}Ok, proceeding...${x}"
+	            echo
+	        else
+	            echo "${b}Ok, setting your domain back to the previous value | $prev_value |...${x}"
+	            echo
+	            domain="$prev_val"
+	            echo "$prev_val" > "$opt_path"
+	        fi
 	    fi
 
-	    srvdone=n
+		########################################################################
 
-	    for ipversion in "${iparray[@]}"
-	    do
+		### Review and set machine hostname
 
-	        if [ $srvdone = n ]
+		curr_host_name="$(cat /etc/hostname)"
+
+	    if [ "$curr_host_name" = "ae00.${domain}" ]
+	    then
+	        echo "${g}${b}Your hostname is already correctly set to | ae00.${domain} |.${x}"
+	        echo
+	    else
+			echo "${b}This machine's hostname must become: | ae00.${domain} |.${x}"
+		    echo
+			echo "${b}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of $short_name into a cluster should you ever choose to do so.${x}"
+			echo
+		    echo "${b}Your current hostname is:${x}"
+		    echo
+		    echo " | $curr_host_name |"
+	        echo
+	        read -rp "${b}Do you want to correctly set your hostname automatically? (Y/n): ${x}" -n 1
+	        echo
+	        if [[ ! $REPLY =~ ^[Nn]$ ]]
 	        then
+	            echo "${b}Ok, setting hostname to: | ae00.${domain} |.${x}"
+	            echo
+	            echo "ae00.${domain}" > /etc/hostname
+	        else
+	            echo
+	            echo "${b}Ok, not changing hostname.${x}"
+	            echo
+				os-exit_function
+	        fi
+	    fi
 
-	            if [ ! "$dnstype" = "SRV" ]
-	            then
-	                echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
-	                echo
-	            else
-	                echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
-	                echo
-	                echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
-	                echo
-	                echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
-	                echo
-	            fi
+		hostname="$(cat /etc/hostname)"
 
-	            if [ "$dnstype" = "hostname" ]
-	            then
-	                declare -A digarray=(
-	                [HN]=""
-	                )
-	            elif [ "$dnstype" = "domain" ]
-	            then
-	                declare -A digarray=(
-	                [HN]=""
-	                )
-	            elif [ "$dnstype" = "XMPP" ]
-	            then
-	                declare -A digarray=(
-	                [xc]="xc."
-	                [xe]="xe${server_number}."
-	                [xi]="xi${server_number}."
-	                [xm]="xm${server_number}."
-	                [xp]="xp${server_number}."
-	                [xu]="xu${server_number}."
-	                )
-	            elif [ "$dnstype" = "SRV" ]
-	            then
-	                declare -A digarray=(
-	                [sj]="_jabber._tcp."
-	                [ss]="_xmpp-server._tcp."
-	                [sc]="_xmpp-client._tcp."
-	                )
-	            fi
+		########################################################################
 
-	            digarrayiter=0
+		### Review domain and hostname to see if the user approves
 
-	            for i in "${!digarray[@]}"
-	            do
+		echo "----------------"
+		echo
+		echo "${b}To make sure everything is correct:${x}"
+		echo
+		echo "1] Your ${b}XMPP domain${x} [the part after the @ in your XMPP account addresses] will be:"
+		echo
+		echo "${b} | ${g}$domain${x}${b} | ${x}"
+		echo
+		echo "2] And therefore an ${b}XMPP account address${x} will look as follows:"
+		echo
+		echo "${b} | ${g}mark@$domain${x}${b} | ${x}"
+		echo
+		echo "3] Your ${b}hostname${x}, the location on the internet of this server, will be:"
+		echo
+		echo "${b} | ${g}$hostname${x}${b} | ${x}"
+		echo
+		echo "4] And therefore your ${b}aenigma admin panel${x} will be located at:"
+		echo
+		echo "${b} | ${g}https://$hostname${x}${b} | ${x}"
+		echo
+		echo "----------------"
+		echo
 
-					if [ "$dnstype" = "hostname" ]
-	                then
-						declare -A sub_digarray=(
-		                [ht]="${digarray[$i]}"
-		                [hw]="www.${digarray[$i]}"
+		read -rp "${b}Does everything look all right? (Y/n): ${x}" -n 1
+		echo
+		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		then
+		    echo "${b}Ok, continuing.${x}"
+		    echo
+		    touch $conf_dir/domain
+		    echo "$domain" > $conf_dir/domain
+		else
+		    echo
+		    echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
+		    echo
+		    exit
+		fi
+		clear
+
+	else
+
+		echo "${r}${b}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server.${x}"
+		echo
+		echo "${b}Please ensure there is no valuable data on this machine.${x}"
+		echo
+
+		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server now?"
+		os-ask_for_boolean_def_no
+		if [ "$ask_for_boolean_output" = "y" ]
+		then
+			echo "${b}Ok, proceeding with ejabberd wipe...${x}"
+			echo
+			/usr/sbin/service ejabberd stop || true
+			/usr/bin/killall ejabberd || true
+			if [ -d /etc/ejabberd/ ]
+			then
+				rm -rf /etc/ejabberd/
+			fi
+			if [ -d /var/lib/ejabberd ]
+			then
+				rm -rf /var/lib/ejabberd
+			fi
+		else
+			echo "${b}Ok, skipping ejabberd wipe.${x}"
+			echo
+			os-exit_function
+		fi
+
+	fi
+
+	############################################################################
+
+	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	then
+
+		### Proceed with primary node install
+
+		### Set admin email address
+
+		os-set_admin_email
+
+		### Check internet connectivity and get public IP addresses
+
+		os-get_public_ipv4
+
+		os-check_ipv6_connectivity
+
+		### Provision the LetsEncrypt wildcard TLS certificate for $domain
+
+	    echo "${b}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x}"
+	    echo
+
+		os-provision_le_wildcard_cert -d "$domain"
+
+		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+
+		cp "$source_dir/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
+
+		bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
+
+	    if [ -f $tls_dir/$domain.pem ]
+	    then
+	        echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
+	        echo
+			sleep 1
+	    else
+	        echo "${r}${b}Something went wrong provisioning the wildcard TLS certificate for $domain.${x}"
+	        echo
+	        os-exit_function
+	    fi
+
+	    domain_tls_cert_location="$tls_dir/$domain.pem"
+	    echo "$domain_tls_cert_location" > "$conf_dir/domain_tls_cert_location"
+
+		### Setup backup restore
+
+		os-setup_backup_restore
+
+		### Perform DNS checks
+
+		if [ ! $config_option = "3" ]
+		then
+		    declare -a dnsarray=(
+		    "hostname"
+		    "XMPP"
+		    "SRV"
+		    )
+		else
+		    declare -a dnsarray=(
+		    "hostname"
+		    "XMPP"
+		    )
+		fi
+
+		if [ $ipv6_avail = "y" ]
+		then
+		    declare -a iparray=(
+		    "v4"
+		    "v6"
+		    )
+		else
+		    declare -a iparray=(
+		    "v4"
+		    )
+		fi
+
+		server_number=00 ### Change this in the future to clusterize
+
+		for dnstype in "${dnsarray[@]}"
+		do
+
+		    if [ "$dnstype" = "hostname" ]
+		    then
+		        dnschecktype=$hostname
+		    else
+		        dnschecktype=$domain
+		    fi
+
+		    srvdone=n
+
+		    for ipversion in "${iparray[@]}"
+		    do
+
+		        if [ $srvdone = n ]
+		        then
+
+		            if [ ! "$dnstype" = "SRV" ]
+		            then
+		                echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
+		                echo
+		            else
+		                echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
+		                echo
+		                echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
+		                echo
+		                echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
+		                echo
+		            fi
+
+		            if [ "$dnstype" = "hostname" ]
+		            then
+		                declare -A digarray=(
+		                [HN]=""
 		                )
-					else
-						declare -A sub_digarray=(
-		                [tl]="${digarray[$i]}"
+		            elif [ "$dnstype" = "domain" ]
+		            then
+		                declare -A digarray=(
+		                [HN]=""
 		                )
-					fi
+		            elif [ "$dnstype" = "XMPP" ]
+		            then
+		                declare -A digarray=(
+		                [xc]="xc."
+		                [xe]="xe${server_number}."
+		                [xi]="xi${server_number}."
+		                [xm]="xm${server_number}."
+		                [xp]="xp${server_number}."
+		                [xu]="xu${server_number}."
+		                )
+		            elif [ "$dnstype" = "SRV" ]
+		            then
+		                declare -A digarray=(
+		                [sj]="_jabber._tcp."
+		                [ss]="_xmpp-server._tcp."
+		                [sc]="_xmpp-client._tcp."
+		                )
+		            fi
 
-					for i in "${!sub_digarray[@]}"
+		            digarrayiter=0
+
+		            for i in "${!digarray[@]}"
 		            do
 
-		                digarrayiter=$((digarrayiter + 1))
-
-		                if [ ! "$dnstype" = "SRV" ]
+						if [ "$dnstype" = "hostname" ]
 		                then
-		                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
-		                    echo
-		                else
-		                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype SRV record...${x}"
-		                    echo
-		                fi
+							declare -A sub_digarray=(
+			                [ht]="${digarray[$i]}"
+			                [hw]="www.${digarray[$i]}"
+			                )
+						else
+							declare -A sub_digarray=(
+			                [tl]="${digarray[$i]}"
+			                )
+						fi
 
-		                accept=n
-		                until [ $accept = "y" ]
-		                do
+						for i in "${!sub_digarray[@]}"
+			            do
 
-		                    if [ ! "$dnstype" = "SRV" ]
-		                    then
-		                        if [ "$ipversion" = "v4" ]
-		                        then
-		                            thisip=$this_ipv4
-		                            digresult="$(getent ahostsv4 "${sub_digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
-		                            rectype="A"
-		                        else
-		                            thisip=$this_ipv6
-		                            digresult="$(getent ahostsv6 "${sub_digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
-		                            rectype="AAAA"
-		                        fi
-		                    else
-		                        if [ ! "${sub_digarray[$i]}" = "_xmpp-client._tcp." ]
-		                        then
-		                            thisip="0 0 5269 $hostname."
-		                        else
-		                            thisip="0 0 5222 $hostname."
-		                        fi
-		                        digresult="$(dig +short -t srv "${sub_digarray[$i]}""$domain")"
-		                        rectype="SRV"
-		                    fi
+			                digarrayiter=$((digarrayiter + 1))
 
-		                    if [ -z "$digresult" ]
-		                    then
+			                if [ ! "$dnstype" = "SRV" ]
+			                then
+			                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+			                    echo
+			                else
+			                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype SRV record...${x}"
+			                    echo
+			                fi
 
-		                        if [ ! "$dnstype" = "SRV" ]
-		                        then
-		                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
-		                            echo
-		                        else
-		                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
-		                            echo
-		                        fi
+			                accept=n
+			                until [ $accept = "y" ]
+			                do
 
-		                        echo "${b}Please ensure you set your DNS record as follows:${x}"
-		                        echo
-		                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-		                        echo
-		                        if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
-		                        then
-		                            if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-		                            then
-		                                if [ "$ipversion" = "v4" ]
-		                                then
-		                                    echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-		                                    echo
-		                                    echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
-		                                    echo
-		                                fi
-		                            fi
-		                        fi
-		                        result=notset
-		                    else
-		                        if [ "$digresult" = "$thisip" ]
-		                        then
+			                    if [ ! "$dnstype" = "SRV" ]
+			                    then
+			                        if [ "$ipversion" = "v4" ]
+			                        then
+			                            thisip=$this_ipv4
+			                            digresult="$(getent ahostsv4 "${sub_digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
+			                            rectype="A"
+			                        else
+			                            thisip=$this_ipv6
+			                            digresult="$(getent ahostsv6 "${sub_digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
+			                            rectype="AAAA"
+			                        fi
+			                    else
+			                        if [ ! "${sub_digarray[$i]}" = "_xmpp-client._tcp." ]
+			                        then
+			                            thisip="0 0 5269 $hostname."
+			                        else
+			                            thisip="0 0 5222 $hostname."
+			                        fi
+			                        digresult="$(dig +short -t srv "${sub_digarray[$i]}""$domain")"
+			                        rectype="SRV"
+			                    fi
 
-		                            if [ ! "$dnstype" = "SRV" ]
-		                            then
-		                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
-		                                echo
-		                            else
-		                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
-		                                echo
-		                            fi
+			                    if [ -z "$digresult" ]
+			                    then
 
-		                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-		                            echo
-		                            result=ok
-		                        else
+			                        if [ ! "$dnstype" = "SRV" ]
+			                        then
+			                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
+			                            echo
+			                        else
+			                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
+			                            echo
+			                        fi
 
-		                            if [ ! "$dnstype" = "SRV" ]
-		                            then
-		                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
-		                                echo
-		                            else
-		                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
-		                                echo
-		                            fi
+			                        echo "${b}Please ensure you set your DNS record as follows:${x}"
+			                        echo
+			                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+			                        echo
+			                        if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+			                        then
+			                            if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+			                            then
+			                                if [ "$ipversion" = "v4" ]
+			                                then
+			                                    echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+			                                    echo
+			                                    echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+			                                    echo
+			                                fi
+			                            fi
+			                        fi
+			                        result=notset
+			                    else
+			                        if [ "$digresult" = "$thisip" ]
+			                        then
 
-		                            echo "${b}This is the result of a DNS query for ${sub_digarray[$i]}$dnschecktype:${x}"
-		                            echo
-		                            echo "$digresult"
-		                            echo
-		                            echo "${b}Please set it instead to:${x}"
-		                            echo
-		                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-		                            echo
-		                            if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
-		                            then
-		                                if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-		                                then
-		                                    if [ "$ipversion" = "v4" ]
-		                                    then
-		                                        echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-		                                        echo
-		                                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
-		                                        echo
-		                                    fi
-		                                fi
-		                            fi
-		                            result=incorrect
-		                        fi
-		                    fi
+			                            if [ ! "$dnstype" = "SRV" ]
+			                            then
+			                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
+			                                echo
+			                            else
+			                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
+			                                echo
+			                            fi
 
-		                    if [ ! $result = "ok" ]
-		                    then
-		                        valid=n
-		                        until [ $valid = "y" ]
-		                        do
-		                            read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-		                            case $answer in
-		                                "")
-		                                echo
-		                                valid=y
-		                                accept=n
-		                                ;;
-		                                y)
-		                                echo -e "\\n"
-		                                valid=y
-		                                accept=n
-		                                ;;
-		                                s)
-		                                echo -e "\\n"
-		                                echo "${b}Skipping DNS check for this record...${x}"
-		                                echo
-		                                valid=y
-		                                accept=y
-		                                ;;
-		                                e)
-		                                echo -e "\\n"
-		                                echo "${b}Exiting...${x}"
-		                                echo
-		                                exit
-		                                ;;
-		                                *)
-		                                echo -e "\\n"
-		                                echo "${b}Invalid option. Retry...${x}"
-		                                echo
-		                                valid=n
-		                                accept=n
-		                                ;;
-		                            esac
-		                        done
-		                    else
-		                        accept=y
-		                    fi
-		                    clear
+			                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+			                            echo
+			                            result=ok
+			                        else
 
-		                done
+			                            if [ ! "$dnstype" = "SRV" ]
+			                            then
+			                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
+			                                echo
+			                            else
+			                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
+			                                echo
+			                            fi
 
-					done
+			                            echo "${b}This is the result of a DNS query for ${sub_digarray[$i]}$dnschecktype:${x}"
+			                            echo
+			                            echo "$digresult"
+			                            echo
+			                            echo "${b}Please set it instead to:${x}"
+			                            echo
+			                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+			                            echo
+			                            if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+			                            then
+			                                if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+			                                then
+			                                    if [ "$ipversion" = "v4" ]
+			                                    then
+			                                        echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+			                                        echo
+			                                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+			                                        echo
+			                                    fi
+			                                fi
+			                            fi
+			                            result=incorrect
+			                        fi
+			                    fi
 
-	            done
+			                    if [ ! $result = "ok" ]
+			                    then
+			                        valid=n
+			                        until [ $valid = "y" ]
+			                        do
+			                            read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+			                            case $answer in
+			                                "")
+			                                echo
+			                                valid=y
+			                                accept=n
+			                                ;;
+			                                y)
+			                                echo -e "\\n"
+			                                valid=y
+			                                accept=n
+			                                ;;
+			                                s)
+			                                echo -e "\\n"
+			                                echo "${b}Skipping DNS check for this record...${x}"
+			                                echo
+			                                valid=y
+			                                accept=y
+			                                ;;
+			                                e)
+			                                echo -e "\\n"
+			                                echo "${b}Exiting...${x}"
+			                                echo
+			                                exit
+			                                ;;
+			                                *)
+			                                echo -e "\\n"
+			                                echo "${b}Invalid option. Retry...${x}"
+			                                echo
+			                                valid=n
+			                                accept=n
+			                                ;;
+			                            esac
+			                        done
+			                    else
+			                        accept=y
+			                    fi
+			                    clear
 
-	            if [ ! "$dnstype" = "SRV" ]
-	            then
-	                echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
-	                echo
-	            else
-	                echo "${b}Finished checking your XMPP SRV records.${x}"
-	                echo
-	                srvdone=y
-	            fi
+			                done
 
-	        fi
+						done
 
-	    done
+		            done
 
-	done
-	clear
+		            if [ ! "$dnstype" = "SRV" ]
+		            then
+		                echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
+		                echo
+		            else
+		                echo "${b}Finished checking your XMPP SRV records.${x}"
+		                echo
+		                srvdone=y
+		            fi
 
-	### Set UFW rules
+		        fi
 
-	echo "${b}Now setting UFW rules...${x}"
-	echo
+		    done
 
-	ufw allow 5222
-	ufw allow 5223
-	ufw allow 5269
-	ufw allow 5444
-	ufw allow 80
-	ufw allow 443
+		done
+		clear
 
-	echo
-	echo "${b}Finished setting UFW rules.${x}"
-	echo
+		### Set UFW rules
 
-	### Install and if necessary upgrade EasyEngine
+		echo "${b}Now setting UFW rules...${x}"
+		echo
 
-	echo "${b}Now installing easyengine...${x}"
-	echo
-	wget -qO ee rt.cx/ee
-	bash ee || true
-	rm ee
-	source /etc/bash_completion.d/ee_auto.rc
-	ee update || true
-	rm /tmp/eeupdate* || true
-	mkdir -p /var/www/
-	chown -R www-data:www-data /var/www/
-	echo
-	echo "${b}Finished installing easyengine.${x}"
-	echo
+		ufw allow 5222
+		ufw allow 5223
+		ufw allow 5269
+		ufw allow 5444
+		ufw allow 80
+		ufw allow 443
 
-	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
+		echo
+		echo "${b}Finished setting UFW rules.${x}"
+		echo
 
-	/usr/sbin/service sslh stop &> /dev/null || true
+		### Install and if necessary upgrade EasyEngine
 
-	############################################################################
+		echo "${b}Now installing easyengine...${x}"
+		echo
+		wget -qO ee rt.cx/ee
+		bash ee || true
+		rm ee
+		source /etc/bash_completion.d/ee_auto.rc
+		ee update || true
+		rm /tmp/eeupdate* || true
+		mkdir -p /var/www/
+		chown -R www-data:www-data /var/www/
+		echo
+		echo "${b}Finished installing easyengine.${x}"
+		echo
 
-	### Create and configure the $hostname website
+		### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
 
-	### We still use a separate LE TLS cert for $hostname for ease of automation via EE
+		/usr/sbin/service sslh stop &> /dev/null || true
 
-	echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
-	echo
-	ee site create "$hostname" || true
-	echo
-	echo "${b}Finished creating easyengine site for $hostname.${x}"
-	echo
+		############################################################################
 
-	echo "${b}Now setting custom nginx config for $hostname...${x}"
-	echo
-	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
-	cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
-	service nginx reload || true
-	echo "${b}Finished setting custom nginx config for $hostname.${x}"
-	echo
+		### Create and configure the $hostname website
 
-	echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
-	echo
-	ee site update "$hostname"  --le --experimental || true
-	if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
-	then
-	    echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
-	    echo
-	    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
-	    echo
-	    echo "${b}Exiting...${x}"
-	    echo
-	    exit
-	fi
-	echo
-	echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
-	echo
+		### We still use a separate LE TLS cert for $hostname for ease of automation via EE
 
-	echo "${b}Now setting index.html in docroot for $hostname...${x}"
-	echo
-	cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
-	echo "${b}Finished setting index.html in docroot for $hostname.${x}"
-	echo
+		echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
+		echo
+		ee site create "$hostname" || true
+		echo
+		echo "${b}Finished creating easyengine site for $hostname.${x}"
+		echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
-	echo
-	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
-	cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
-	echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
-	echo
+		echo "${b}Now setting custom nginx config for $hostname...${x}"
+		echo
+		sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
+		cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
+		service nginx reload || true
+		echo "${b}Finished setting custom nginx config for $hostname.${x}"
+		echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
-	echo
-	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
-	cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
-	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
-	echo
+		echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+		echo
+		ee site update "$hostname"  --le --experimental || true
+		if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
+		then
+		    echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
+		    echo
+		    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+		    echo
+		    echo "${b}Exiting...${x}"
+		    echo
+		    exit
+		fi
+		echo
+		echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+		echo
 
-	############################################################################
+		echo "${b}Now setting index.html in docroot for $hostname...${x}"
+		echo
+		cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
+		echo "${b}Finished setting index.html in docroot for $hostname.${x}"
+		echo
 
-	### Run the LetsEncrypt post-renewal now to be ready for the installation
+		echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+		echo
+		sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
+		cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
+		echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+		echo
 
-	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
+		echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+		echo
+		sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
+		cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
+		echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+		echo
 
-	### Restart nginx
+		############################################################################
 
-	service nginx restart || true
+		### Run the LetsEncrypt post-renewal now to be ready for the installation
 
-	### Prepare APT for ejabberd installation
+		bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
 
-	aenigma-add_ejabberd_repo
+		### Restart nginx
 
-	aenigma-install_ejabberd_config
+		service nginx restart || true
 
-	### Create ejabberd uploads directory
+		### Prepare APT for ejabberd installation
 
-	echo "${b}Now creating uploads directory...${x}"
-	echo
-	mkdir -p /etc/ejabberd/uploads/
-	echo "${b}Finished creating uploads directory.${x}"
-	echo
+		aenigma-add_ejabberd_repo
 
-	### Create HTTP uploads directory
+		aenigma-install_ejabberd_config
 
-	echo "${b}Now creating HTTP fileserver directory...${x}"
-	echo
-	mkdir -p /var/www/ejabberd/
-	echo "${b}Finished creating HTTP fileserver directory.${x}"
-	echo
+		### Create ejabberd uploads directory
 
-	### Create logfile
+		echo "${b}Now creating uploads directory...${x}"
+		echo
+		mkdir -p /etc/ejabberd/uploads/
+		echo "${b}Finished creating uploads directory.${x}"
+		echo
 
-	echo "${b}Now creating logfile...${x}"
-	echo
-	mkdir -p /var/log/ejabberd/
-	touch /var/log/ejabberd/www_access.log
-	echo "${b}Finished creating logfile.${x}"
-	echo
+		### Create HTTP uploads directory
 
-	### Add backup script to crontab
+		echo "${b}Now creating HTTP fileserver directory...${x}"
+		echo
+		mkdir -p /var/www/ejabberd/
+		echo "${b}Finished creating HTTP fileserver directory.${x}"
+		echo
 
-	os-add_cron_job -n $short_name-backup -t "8 4 * * * " -c "bash /root/openspace42/$short_name/tools/$short_name-backup"
+		### Create logfile
 
-	### Install SSLH
+		echo "${b}Now creating logfile...${x}"
+		echo
+		mkdir -p /var/log/ejabberd/
+		touch /var/log/ejabberd/www_access.log
+		echo "${b}Finished creating logfile.${x}"
+		echo
 
-	echo "${b}Now installing SSLH...${x}"
-	echo
-	/usr/sbin/service sslh stop &> /dev/null || true
-	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
-	apt-get -y install libwrap0-dev libconfig-dev || true
-	rm -r "$temp_dir/sslh" &> /dev/null || true
-	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
-	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
-	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	if [ $ipv6_avail = "y" ]
-	then
-	    sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
-	    sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
-	    sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
+		### Add backup script to crontab
+
+		os-add_cron_job -n $short_name-backup -t "8 4 * * * " -c "bash /root/openspace42/$short_name/tools/$short_name-backup"
+
+		### Install SSLH
+
+		echo "${b}Now installing SSLH...${x}"
+		echo
+		/usr/sbin/service sslh stop &> /dev/null || true
+		ssh_port="$(cat $os_base_dir/inception/ssh-port)"
+		apt-get -y install libwrap0-dev libconfig-dev || true
+		rm -r "$temp_dir/sslh" &> /dev/null || true
+		git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
+		( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
+		sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
+		if [ $ipv6_avail = "y" ]
+		then
+		    sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
+		    sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
+		    sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
+		else
+		    sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
+		    sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
+		fi
+		sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|xu.@|xu${server_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
+		cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
+		cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
+		chmod +x /etc/init.d/sslh
+		update-rc.d sslh defaults
+		systemctl daemon-reload
+		rm -r "$temp_dir/sslh"
+		mkdir -p /var/run/sslh
+		touch /var/run/sslh/sslh.pid
+		service sslh restart || true
+		echo
+		echo "${b}Finished installing SSLH.${x}"
+		echo
+
+		### Ensure DPKG is available before proceeding
+
+		os-check_dpkg_availability
+
+		### Actually install ejabberd
+
+		echo "${b}Now installing ejabberd...${x}"
+		echo
+		export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
+		echo
+		echo "${b}Finished installing ejabberd.${x}"
+		echo
+
+		### Secure permissions
+
+		echo "${b}Now securing permissions...${x}"
+		echo
+
+		chown -R ejabberd:ejabberd $tls_dir
+		chmod -R 700 $tls_dir
+
+		chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
+		chmod -R 755 /etc/ejabberd/uploads/
+
+		chown -R ejabberd:ejabberd /var/www/ejabberd/
+		chmod -R 755 /var/www/ejabberd/
+
+		echo "${b}Finished securing permissions.${x}"
+		echo
+
+		### Restart ejabberd and ensure it correctly comes up
+
+		echo "${b}Now stopping ejabberd...${x}"
+		echo
+		/usr/sbin/service ejabberd stop
+		sleep 8
+		echo "${b}Finished stopping ejabberd.${x}"
+		echo
+
+		### Perform some changes on the ejabberd config files
+
+		sed -i "s/xe.@/xe${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xi.@/xi${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xm.@/xm${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xp.@/xp${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xu.@/xu${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+
+		sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
+		sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
+
+		rm -rf /var/lib/ejabberd/*
+
+		# Substitute .erlang.cookie with primary node's in the future for clusterization
+
+		mkdir /var/lib/ejabberd/uploads
+		chown ejabberd:ejabberd /var/lib/ejabberd/uploads
+
+		touch /var/log/ejabberd/www_access.log
+		chown ejabberd:adm /var/log/ejabberd/www_access.log
+
+		echo "${b}Now starting ejabberd...${x}"
+		/usr/sbin/service ejabberd start
+		echo
+		sleep 16
+		/usr/sbin/ejabberdctl status
+		echo
+		echo "${b}Finished starting ejabberd.${x}"
+		echo
+
+		### Register ejabberd admin user
+
+		echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
+		echo
+		ejab_admin_pw="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+		/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
+		echo "${b}Finished registering ejabberd admin user.${x}"
+		echo
+		clear
+
+		if [ -f $conf_dir/ejab_admin_pw_set ]
+		then
+		    read -rp "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1
+		    echo
+		    if [[ ! $REPLY =~ ^[Nn]$ ]]
+		    then
+		        echo "${b}Skipping ejabberd admin user password reset.${x}"
+		        echo
+		        ejab_admin_pwreset=n
+		    else
+		        echo
+		        echo "${b}Ok, resetting ejabberd admin user password to: | $ejab_admin_pw | ${x}"
+		        echo
+		        /usr/sbin/ejabberdctl change_password admin "$domain" "$ejab_admin_pw"
+		        ejab_admin_pwreset=y
+		    fi
+		else
+		    touch $conf_dir/ejab_admin_pw_set
+		    ejab_admin_pwreset=y
+		fi
+
+		### Update ejabberd's module repo
+
+		echo "${b}Now updating ejabberd's module repo...${x}"
+		echo
+		set +e
+		/usr/sbin/ejabberdctl modules_update_specs
+		set -e
+		echo "${b}Finished updating ejabberd's module repo...${x}"
+		echo
+
+		### Create shared roster groups
+
+		echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
+		echo
+		/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
+		/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody "$domain"
+		/usr/sbin/ejabberdctl srg_create online "$domain" "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
+		/usr/sbin/ejabberdctl srg-user-add @online@ localhost online "$domain"
+		/usr/sbin/ejabberdctl srg_create admin "$domain" admin "This is a shared roster group set by aenigma" "everybody\\nonline"
+		/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
+		echo "${b}Finished creating shared roster groups.${x}"
+		echo
+		clear
+
+		### Run a generic APT operation to catch its output and alert the user if something has gone wrong
+
+		echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
+		echo
+		set +e
+		if apt-get -y upgrade
+		then
+		    echo
+		    echo "${g}${b}All APT package installations completed successfully...${x}"
+		    echo
+		else
+		    echo
+		    echo "${r}${b}An error has occured during APT operations.${x}"
+		    echo
+		    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+		    echo
+		    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+		    echo
+		    read -rp "${b}[press enter to continue reading...]${x}"
+		fi
+		set -e
+		clear
+
+		### Run an nginx restart to catch its output and alert the user if something has gone wrong
+
+		echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+		echo
+		set +e
+		if service nginx restart
+		then
+		    echo
+		    echo "${g}${b}All nginx installations completed successfully...${x}"
+		    echo
+		else
+		    echo
+		    echo "${r}${b}An error has occured during nginx operations.${x}"
+		    echo
+		    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+		    echo
+		    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+		    echo
+		    read -rp "${b}[press enter to continue reading...]${x}"
+		fi
+		set -e
+		clear
+
+		### Run an sslh restart to catch its output and alert the user if something has gone wrong
+
+		echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+		echo
+		set +e
+		if service sslh restart
+		then
+		    echo
+		    echo "${g}${b}All sslh installations completed successfully...${x}"
+		    echo
+		else
+		    echo
+		    echo "${r}${b}An error has occured during sslh operations.${x}"
+		    echo
+		    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+		    echo
+		    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+		    echo
+		    read -rp "${b}[press enter to continue reading...]${x}"
+		fi
+		set -e
+		clear
+
+		### Pring login information and credentials
+
+		echo "${g}${b}You can finally log in:${x}"
+		echo
+		echo "${b}https://$hostname${x}"
+		echo
+		echo "${b}admin@$domain${x}"
+		echo
+
+		if [ $ejab_admin_pwreset = "y" ]
+		then
+		    echo "${b}$ejab_admin_pw${x}"
+		    echo
+		else
+		    echo "${b}[your previously set password]${x}"
+		    echo
+		fi
+
+		read -rp "${b}[press enter to continue reading...]${x}"
+		clear
+
 	else
-	    sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
-	    sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
+
+		### Proceed with secondary node install
+
+		echo
+
 	fi
-	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	sed -i "s|xu.@|xu${server_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
-	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
-	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
-	chmod +x /etc/init.d/sslh
-	update-rc.d sslh defaults
-	systemctl daemon-reload
-	rm -r "$temp_dir/sslh"
-	mkdir -p /var/run/sslh
-	touch /var/run/sslh/sslh.pid
-	service sslh restart || true
-	echo
-	echo "${b}Finished installing SSLH.${x}"
-	echo
-
-	### Ensure DPKG is available before proceeding
-
-	os-check_dpkg_availability
-
-	### Actually install ejabberd
-
-	echo "${b}Now installing ejabberd...${x}"
-	echo
-	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
-	echo
-	echo "${b}Finished installing ejabberd.${x}"
-	echo
-
-	### Secure permissions
-
-	echo "${b}Now securing permissions...${x}"
-	echo
-
-	chown -R ejabberd:ejabberd $tls_dir
-	chmod -R 700 $tls_dir
-
-	chown -R ejabberd:ejabberd /etc/ejabberd/uploads/
-	chmod -R 755 /etc/ejabberd/uploads/
-
-	chown -R ejabberd:ejabberd /var/www/ejabberd/
-	chmod -R 755 /var/www/ejabberd/
-
-	echo "${b}Finished securing permissions.${x}"
-	echo
-
-	### Restart ejabberd and ensure it correctly comes up
-
-	echo "${b}Now stopping ejabberd...${x}"
-	echo
-	/usr/sbin/service ejabberd stop
-	sleep 8
-	echo "${b}Finished stopping ejabberd.${x}"
-	echo
-
-	### Perform some changes on the ejabberd config files
-
-	sed -i "s/xe.@/xe${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xi.@/xi${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xm.@/xm${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xp.@/xp${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xu.@/xu${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-
-	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
-	sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
-
-	rm -rf /var/lib/ejabberd/*
-
-	# Substitute .erlang.cookie with primary node's in the future for clusterization
-
-	mkdir /var/lib/ejabberd/uploads
-	chown ejabberd:ejabberd /var/lib/ejabberd/uploads
-
-	touch /var/log/ejabberd/www_access.log
-	chown ejabberd:adm /var/log/ejabberd/www_access.log
-
-	echo "${b}Now starting ejabberd...${x}"
-	/usr/sbin/service ejabberd start
-	echo
-	sleep 16
-	/usr/sbin/ejabberdctl status
-	echo
-	echo "${b}Finished starting ejabberd.${x}"
-	echo
-
-	### Register ejabberd admin user
-
-	echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
-	echo
-	ejab_admin_pw="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-	/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
-	echo "${b}Finished registering ejabberd admin user.${x}"
-	echo
-	clear
-
-	if [ -f $conf_dir/ejab_admin_pw_set ]
-	then
-	    read -rp "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1
-	    echo
-	    if [[ ! $REPLY =~ ^[Nn]$ ]]
-	    then
-	        echo "${b}Skipping ejabberd admin user password reset.${x}"
-	        echo
-	        ejab_admin_pwreset=n
-	    else
-	        echo
-	        echo "${b}Ok, resetting ejabberd admin user password to: | $ejab_admin_pw | ${x}"
-	        echo
-	        /usr/sbin/ejabberdctl change_password admin "$domain" "$ejab_admin_pw"
-	        ejab_admin_pwreset=y
-	    fi
-	else
-	    touch $conf_dir/ejab_admin_pw_set
-	    ejab_admin_pwreset=y
-	fi
-
-	### Update ejabberd's module repo
-
-	echo "${b}Now updating ejabberd's module repo...${x}"
-	echo
-	set +e
-	/usr/sbin/ejabberdctl modules_update_specs
-	set -e
-	echo "${b}Finished updating ejabberd's module repo...${x}"
-	echo
-
-	### Create shared roster groups
-
-	echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
-	echo
-	/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
-	/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody "$domain"
-	/usr/sbin/ejabberdctl srg_create online "$domain" "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
-	/usr/sbin/ejabberdctl srg-user-add @online@ localhost online "$domain"
-	/usr/sbin/ejabberdctl srg_create admin "$domain" admin "This is a shared roster group set by aenigma" "everybody\\nonline"
-	/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
-	echo "${b}Finished creating shared roster groups.${x}"
-	echo
-	clear
-
-	### Run a generic APT operation to catch its output and alert the user if something has gone wrong
-
-	echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
-	echo
-	set +e
-	if apt-get -y upgrade
-	then
-	    echo
-	    echo "${g}${b}All APT package installations completed successfully...${x}"
-	    echo
-	else
-	    echo
-	    echo "${r}${b}An error has occured during APT operations.${x}"
-	    echo
-	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
-	    echo
-	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
-	    echo
-	    read -rp "${b}[press enter to continue reading...]${x}"
-	fi
-	set -e
-	clear
-
-	### Run an nginx restart to catch its output and alert the user if something has gone wrong
-
-	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
-	echo
-	set +e
-	if service nginx restart
-	then
-	    echo
-	    echo "${g}${b}All nginx installations completed successfully...${x}"
-	    echo
-	else
-	    echo
-	    echo "${r}${b}An error has occured during nginx operations.${x}"
-	    echo
-	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
-	    echo
-	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
-	    echo
-	    read -rp "${b}[press enter to continue reading...]${x}"
-	fi
-	set -e
-	clear
-
-	### Run an sslh restart to catch its output and alert the user if something has gone wrong
-
-	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
-	echo
-	set +e
-	if service sslh restart
-	then
-	    echo
-	    echo "${g}${b}All sslh installations completed successfully...${x}"
-	    echo
-	else
-	    echo
-	    echo "${r}${b}An error has occured during sslh operations.${x}"
-	    echo
-	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
-	    echo
-	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
-	    echo
-	    read -rp "${b}[press enter to continue reading...]${x}"
-	fi
-	set -e
-	clear
-
-	### Pring login information and credentials
-
-	echo "${g}${b}You can finally log in:${x}"
-	echo
-	echo "${b}https://$hostname${x}"
-	echo
-	echo "${b}admin@$domain${x}"
-	echo
-
-	if [ $ejab_admin_pwreset = "y" ]
-	then
-	    echo "${b}$ejab_admin_pw${x}"
-	    echo
-	else
-	    echo "${b}[your previously set password]${x}"
-	    echo
-	fi
-
-	read -rp "${b}[press enter to continue reading...]${x}"
-	clear
 
 	### Generate aenigma-specific DHparam file
 
