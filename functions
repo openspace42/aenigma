@@ -627,11 +627,11 @@ perform_installation() {
 			/usr/bin/killall ejabberd 2> /dev/null || true
 			if [ -d /etc/ejabberd/ ]
 			then
-				rm -rf /etc/ejabberd/
+				rm -rf /etc/ejabberd/* 2> /dev/null || true
 			fi
-			if [ -d /var/lib/ejabberd ]
+			if [ -d /var/lib/ejabberd/ ]
 			then
-				rm -rf /var/lib/ejabberd
+				rm -rf /var/lib/ejabberd/* 2> /dev/null || true
 			fi
 		else
 			echo "${b}Ok, skipping ejabberd wipe.${x}"

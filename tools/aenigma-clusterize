@@ -221,3 +221,10 @@ else
 	echo
 	os-exit_function
 fi
+
+### Push config to secondary node and proceed installation on its shell
+
+/usr/bin/scp -i ~/.ssh/aenigma_clusterize ${conf_dir}/xmpp/domain root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/
+/usr/bin/scp -i ~/.ssh/aenigma_clusterize /var/lib/ejabberd/.erlang.cookie root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/
+
+################################################################################
