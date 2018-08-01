@@ -613,6 +613,12 @@ perform_installation() {
 		fi
 		clear
 
+		########################################################################
+
+		### Set node_number to 00 as this is the primary node
+
+		os-set_option -o node_number -p clusterize -s "00"
+
 	else
 
 		echo "${r}${b}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server.${x}"
@@ -661,7 +667,9 @@ perform_installation() {
 	if [ ! "${clusterize_mode-null}" = "secondary" ]
 	then
 
-		### Proceed with primary node install
+		### Proceed with primary node installation
+
+		########################################################################
 
 		### Provision the LetsEncrypt wildcard TLS certificate for $domain
 
@@ -690,300 +698,421 @@ perform_installation() {
 	    domain_tls_cert_location="${tls_dir}/${domain}.pem"
 	    echo "${domain_tls_cert_location}" > "${conf_dir}/domain_tls_cert_location"
 
+		########################################################################
+
 		### Setup backup restore
 
 		os-setup_backup_restore
 
-		### Perform DNS checks
+		############################################################################
 
-	    declare -a dnsarray=(
-	    "hostname"
-	    "XMPP"
-	    "SRV"
-	    )
+	else
 
-		if [ $ipv6_avail = "y" ]
-		then
-		    declare -a iparray=(
-		    "v4"
-		    "v6"
-		    )
+		### Proceed with secondary node installation
+
+		########################################################################
+
+		echo "${b}This is the public IPv4 for this machine:${x}"
+		echo
+		echo "${b} | ${g}$this_ipv4${x}${b} | ${x}"
+		echo
+		echo "${b}Enter it on the primary node when prompted to do so.${x}"
+		echo
+		read -rp "${b}[press enter when done to continue...]${x}"
+		clear
+
+		########################################################################
+
+		if [ -f /root/.ssh/authorized_keys ]; then
+	        echo "${g}${b}SSH Authorized Keys file found.${x}"
+	        echo
 		else
-		    declare -a iparray=(
-		    "v4"
-		    )
+			echo "${b}SSH Authorized Keys file NOT found. Creating it now...${x}"
+			echo
+			mkdir -p /root/.ssh/
+	        touch /root/.ssh/authorized_keys
 		fi
 
-		### Set node_number to 00 as this is the primary node
+		chown root:root /root/.ssh/authorized_keys
+		chmod 600 /root/.ssh/authorized_keys
 
+		defined=n
+		until [ $defined = "y" ]
+		do
+			clusterize_ssh_pubkey=""
+			until [ ! "$clusterize_ssh_pubkey" = "" ]
+			do
+				read -rp "${b}Now specify the public SSH key displayed on the primary node: ${x}" clusterize_ssh_pubkey
+				echo
+			done
+			valid=n
+			until [ $valid = "y" ]
+			do
+				read -n 1 -p "${b}Is it correct? (Y/n/e[xit]) ${x}" answer;
+				case $answer in
+				"")
+					echo
+					valid=y
+					defined=y
+					;;
+				y)
+					echo -e "\n"
+					valid=y
+					defined=y
+					;;
+				n)
+					echo -e "\n"
+					echo "${b}Ok, then please try again...${x}"
+					echo
+					valid=y
+					defined=n
+					;;
+				e)
+					echo -e "\n"
+					echo "${b}Exiting...${x}"
+					echo
+					exit
+					;;
+				*)
+					echo -e "\n"
+					echo "${r}${b}Invalid option. Retry...${x}"
+					echo
+					valid=n
+					defined=n
+					;;
+				esac
+			done
+		done
+
+		if ! grep -q "${clusterize_ssh_pubkey}" /root/.ssh/authorized_keys
+		then
+			echo "$clusterize_ssh_pubkey" > /root/.ssh/authorized_keys
+		fi
+
+		### Generate token for user connection checking
+
+		aenigma_clusterize_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+		echo "${aenigma_clusterize_token}" > /tmp/aenigma_clusterize_token
+
+		echo "${b}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x}"
+		echo
+		echo "${b}After that, complete the execution of the clusterize script and come back here when finished.${x}"
+		echo
+		read -rp "${b}[press enter to continue...]${x}"
+
+		### Read newly received config
+
+
+
+		clear
+
+		########################################################################
+
+	fi
+
+	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	then
 		node_number=00
+	else
 
-		for dnstype in "${dnsarray[@]}"
+
+	### Perform DNS checks
+
+	declare -a dnsarray=(
+	"hostname"
+	"XMPP"
+	"SRV"
+	)
+
+	if [ $ipv6_avail = "y" ]
+	then
+		declare -a iparray=(
+		"v4"
+		"v6"
+		)
+	else
+		declare -a iparray=(
+		"v4"
+		)
+	fi
+
+	### Set node_number to 00 as this is the primary node
+
+	node_number=00
+
+	for dnstype in "${dnsarray[@]}"
+	do
+
+		if [ "$dnstype" = "hostname" ]
+		then
+			dnschecktype=$hostname
+		else
+			dnschecktype=$domain
+		fi
+
+		srvdone=n
+
+		for ipversion in "${iparray[@]}"
 		do
 
-		    if [ "$dnstype" = "hostname" ]
-		    then
-		        dnschecktype=$hostname
-		    else
-		        dnschecktype=$domain
-		    fi
+			if [ $srvdone = n ]
+			then
 
-		    srvdone=n
+				if [ ! "$dnstype" = "SRV" ]
+				then
+					echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
+					echo
+				else
+					echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
+					echo
+					echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
+					echo
+					echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
+					echo
+				fi
 
-		    for ipversion in "${iparray[@]}"
-		    do
+				if [ "$dnstype" = "hostname" ]
+				then
+					declare -A digarray=(
+					[HN]=""
+					)
+				elif [ "$dnstype" = "domain" ]
+				then
+					declare -A digarray=(
+					[HN]=""
+					)
+				elif [ "$dnstype" = "XMPP" ]
+				then
+					declare -A digarray=(
+					[xc]="xc."
+					[xe]="xe${node_number}."
+					[xi]="xi${node_number}."
+					[xm]="xm${node_number}."
+					[xp]="xp${node_number}."
+					[xu]="xu${node_number}."
+					)
+				elif [ "$dnstype" = "SRV" ]
+				then
+					declare -A digarray=(
+					[sj]="_jabber._tcp."
+					[ss]="_xmpp-server._tcp."
+					[sc]="_xmpp-client._tcp."
+					)
+				fi
 
-		        if [ $srvdone = n ]
-		        then
+				digarrayiter=0
 
-		            if [ ! "$dnstype" = "SRV" ]
-		            then
-		                echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
-		                echo
-		            else
-		                echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
-		                echo
-		                echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
-		                echo
-		                echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
-		                echo
-		            fi
+				for i in "${!digarray[@]}"
+				do
 
-		            if [ "$dnstype" = "hostname" ]
-		            then
-		                declare -A digarray=(
-		                [HN]=""
-		                )
-		            elif [ "$dnstype" = "domain" ]
-		            then
-		                declare -A digarray=(
-		                [HN]=""
-		                )
-		            elif [ "$dnstype" = "XMPP" ]
-		            then
-		                declare -A digarray=(
-		                [xc]="xc."
-		                [xe]="xe${node_number}."
-		                [xi]="xi${node_number}."
-		                [xm]="xm${node_number}."
-		                [xp]="xp${node_number}."
-		                [xu]="xu${node_number}."
-		                )
-		            elif [ "$dnstype" = "SRV" ]
-		            then
-		                declare -A digarray=(
-		                [sj]="_jabber._tcp."
-		                [ss]="_xmpp-server._tcp."
-		                [sc]="_xmpp-client._tcp."
-		                )
-		            fi
+					if [ "$dnstype" = "hostname" ]
+					then
+						declare -A sub_digarray=(
+						[ht]="${digarray[$i]}"
+						[hw]="www.${digarray[$i]}"
+						)
+					else
+						declare -A sub_digarray=(
+						[tl]="${digarray[$i]}"
+						)
+					fi
 
-		            digarrayiter=0
+					for i in "${!sub_digarray[@]}"
+					do
 
-		            for i in "${!digarray[@]}"
-		            do
+						digarrayiter=$((digarrayiter + 1))
 
-						if [ "$dnstype" = "hostname" ]
-		                then
-							declare -A sub_digarray=(
-			                [ht]="${digarray[$i]}"
-			                [hw]="www.${digarray[$i]}"
-			                )
+						if [ ! "$dnstype" = "SRV" ]
+						then
+							echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+							echo
 						else
-							declare -A sub_digarray=(
-			                [tl]="${digarray[$i]}"
-			                )
+							echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype SRV record...${x}"
+							echo
 						fi
 
-						for i in "${!sub_digarray[@]}"
-			            do
+						accept=n
+						until [ $accept = "y" ]
+						do
 
-			                digarrayiter=$((digarrayiter + 1))
+							if [ ! "$dnstype" = "SRV" ]
+							then
+								if [ "$ipversion" = "v4" ]
+								then
+									thisip=$this_ipv4
+									digresult="$(getent ahostsv4 "${sub_digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
+									rectype="A"
+								else
+									thisip=$this_ipv6
+									digresult="$(getent ahostsv6 "${sub_digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
+									rectype="AAAA"
+								fi
+							else
+								if [ ! "${sub_digarray[$i]}" = "_xmpp-client._tcp." ]
+								then
+									thisip="0 0 5269 $hostname."
+								else
+									thisip="0 0 5222 $hostname."
+								fi
+								digresult="$(dig +short -t srv "${sub_digarray[$i]}""$domain")"
+								rectype="SRV"
+							fi
 
-			                if [ ! "$dnstype" = "SRV" ]
-			                then
-			                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
-			                    echo
-			                else
-			                    echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype SRV record...${x}"
-			                    echo
-			                fi
+							if [ -z "$digresult" ]
+							then
 
-			                accept=n
-			                until [ $accept = "y" ]
-			                do
+								if [ ! "$dnstype" = "SRV" ]
+								then
+									echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
+									echo
+								else
+									echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
+									echo
+								fi
 
-			                    if [ ! "$dnstype" = "SRV" ]
-			                    then
-			                        if [ "$ipversion" = "v4" ]
-			                        then
-			                            thisip=$this_ipv4
-			                            digresult="$(getent ahostsv4 "${sub_digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
-			                            rectype="A"
-			                        else
-			                            thisip=$this_ipv6
-			                            digresult="$(getent ahostsv6 "${sub_digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
-			                            rectype="AAAA"
-			                        fi
-			                    else
-			                        if [ ! "${sub_digarray[$i]}" = "_xmpp-client._tcp." ]
-			                        then
-			                            thisip="0 0 5269 $hostname."
-			                        else
-			                            thisip="0 0 5222 $hostname."
-			                        fi
-			                        digresult="$(dig +short -t srv "${sub_digarray[$i]}""$domain")"
-			                        rectype="SRV"
-			                    fi
+								echo "${b}Please ensure you set your DNS record as follows:${x}"
+								echo
+								echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+								echo
+								if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+								then
+									if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+									then
+										if [ "$ipversion" = "v4" ]
+										then
+											echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+											echo
+											echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+											echo
+										fi
+									fi
+								fi
+								result=notset
+							else
+								if [ "$digresult" = "$thisip" ]
+								then
 
-			                    if [ -z "$digresult" ]
-			                    then
+									if [ ! "$dnstype" = "SRV" ]
+									then
+										echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
+										echo
+									else
+										echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
+										echo
+									fi
 
-			                        if [ ! "$dnstype" = "SRV" ]
-			                        then
-			                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
-			                            echo
-			                        else
-			                            echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
-			                            echo
-			                        fi
+									echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+									echo
+									result=ok
+								else
 
-			                        echo "${b}Please ensure you set your DNS record as follows:${x}"
-			                        echo
-			                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-			                        echo
-			                        if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
-			                        then
-			                            if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-			                            then
-			                                if [ "$ipversion" = "v4" ]
-			                                then
-			                                    echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-			                                    echo
-			                                    echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
-			                                    echo
-			                                fi
-			                            fi
-			                        fi
-			                        result=notset
-			                    else
-			                        if [ "$digresult" = "$thisip" ]
-			                        then
+									if [ ! "$dnstype" = "SRV" ]
+									then
+										echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
+										echo
+									else
+										echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
+										echo
+									fi
 
-			                            if [ ! "$dnstype" = "SRV" ]
-			                            then
-			                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
-			                                echo
-			                            else
-			                                echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
-			                                echo
-			                            fi
+									echo "${b}This is the result of a DNS query for ${sub_digarray[$i]}$dnschecktype:${x}"
+									echo
+									echo "$digresult"
+									echo
+									echo "${b}Please set it instead to:${x}"
+									echo
+									echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+									echo
+									if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+									then
+										if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+										then
+											if [ "$ipversion" = "v4" ]
+											then
+												echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+												echo
+												echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+												echo
+											fi
+										fi
+									fi
+									result=incorrect
+								fi
+							fi
 
-			                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-			                            echo
-			                            result=ok
-			                        else
-
-			                            if [ ! "$dnstype" = "SRV" ]
-			                            then
-			                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
-			                                echo
-			                            else
-			                                echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
-			                                echo
-			                            fi
-
-			                            echo "${b}This is the result of a DNS query for ${sub_digarray[$i]}$dnschecktype:${x}"
-			                            echo
-			                            echo "$digresult"
-			                            echo
-			                            echo "${b}Please set it instead to:${x}"
-			                            echo
-			                            echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
-			                            echo
-			                            if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
-			                            then
-			                                if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-			                                then
-			                                    if [ "$ipversion" = "v4" ]
-			                                    then
-			                                        echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-			                                        echo
-			                                        echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
-			                                        echo
-			                                    fi
-			                                fi
-			                            fi
-			                            result=incorrect
-			                        fi
-			                    fi
-
-			                    if [ ! $result = "ok" ]
-			                    then
-			                        valid=n
-			                        until [ $valid = "y" ]
-			                        do
-			                            read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-			                            case $answer in
-			                                "")
-			                                echo
-			                                valid=y
-			                                accept=n
-			                                ;;
-			                                y)
-			                                echo -e "\\n"
-			                                valid=y
-			                                accept=n
-			                                ;;
-			                                s)
-			                                echo -e "\\n"
-			                                echo "${b}Skipping DNS check for this record...${x}"
-			                                echo
-			                                valid=y
-			                                accept=y
-			                                ;;
-			                                e)
-			                                echo -e "\\n"
-			                                echo "${b}Exiting...${x}"
-			                                echo
-			                                exit
-			                                ;;
-			                                *)
-			                                echo -e "\\n"
-			                                echo "${b}Invalid option. Retry...${x}"
-			                                echo
-			                                valid=n
-			                                accept=n
-			                                ;;
-			                            esac
-			                        done
-			                    else
-			                        accept=y
-			                    fi
-			                    clear
-
-			                done
+							if [ ! $result = "ok" ]
+							then
+								valid=n
+								until [ $valid = "y" ]
+								do
+									read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+									case $answer in
+										"")
+										echo
+										valid=y
+										accept=n
+										;;
+										y)
+										echo -e "\\n"
+										valid=y
+										accept=n
+										;;
+										s)
+										echo -e "\\n"
+										echo "${b}Skipping DNS check for this record...${x}"
+										echo
+										valid=y
+										accept=y
+										;;
+										e)
+										echo -e "\\n"
+										echo "${b}Exiting...${x}"
+										echo
+										exit
+										;;
+										*)
+										echo -e "\\n"
+										echo "${b}Invalid option. Retry...${x}"
+										echo
+										valid=n
+										accept=n
+										;;
+									esac
+								done
+							else
+								accept=y
+							fi
+							clear
 
 						done
 
-		            done
+					done
 
-		            if [ ! "$dnstype" = "SRV" ]
-		            then
-		                echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
-		                echo
-		            else
-		                echo "${b}Finished checking your XMPP SRV records.${x}"
-		                echo
-		                srvdone=y
-		            fi
+				done
 
-		        fi
+				if [ ! "$dnstype" = "SRV" ]
+				then
+					echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
+					echo
+				else
+					echo "${b}Finished checking your XMPP SRV records.${x}"
+					echo
+					srvdone=y
+				fi
 
-		    done
+			fi
 
 		done
-		clear
+
+	done
+	clear
+
+	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	then
+
+		### Proceed with primary node installation
+
+		########################################################################
 
 		### Set UFW rules
 
@@ -1353,99 +1482,6 @@ perform_installation() {
 		fi
 
 		read -rp "${b}[press enter to continue reading...]${x}"
-		clear
-
-	else
-
-		### Proceed with secondary node install
-
-		########################################################################
-
-		echo "${b}This is the public IPv4 for this machine:${x}"
-		echo
-		echo "${b} | ${g}$this_ipv4${x}${b} | ${x}"
-		echo
-		echo "${b}Enter it on the primary node when prompted to do so.${x}"
-		echo
-		read -rp "${b}[press enter when done to continue...]${x}"
-		clear
-
-		########################################################################
-
-		if [ -f /root/.ssh/authorized_keys ]; then
-	        echo "${g}${b}SSH Authorized Keys file found.${x}"
-	        echo
-		else
-			echo "${b}SSH Authorized Keys file NOT found. Creating it now...${x}"
-			echo
-			mkdir -p /root/.ssh/
-	        touch /root/.ssh/authorized_keys
-		fi
-
-		chown root:root /root/.ssh/authorized_keys
-		chmod 600 /root/.ssh/authorized_keys
-
-		defined=n
-		until [ $defined = "y" ]
-		do
-			clusterize_ssh_pubkey=""
-			until [ ! "$clusterize_ssh_pubkey" = "" ]
-			do
-				read -rp "${b}Now specify the public SSH key displayed on the primary node: ${x}" clusterize_ssh_pubkey
-				echo
-			done
-			valid=n
-			until [ $valid = "y" ]
-			do
-				read -n 1 -p "${b}Is it correct? (Y/n/e[xit]) ${x}" answer;
-				case $answer in
-				"")
-					echo
-					valid=y
-					defined=y
-					;;
-				y)
-					echo -e "\n"
-					valid=y
-					defined=y
-					;;
-				n)
-					echo -e "\n"
-					echo "${b}Ok, then please try again...${x}"
-					echo
-					valid=y
-					defined=n
-					;;
-				e)
-					echo -e "\n"
-					echo "${b}Exiting...${x}"
-					echo
-					exit
-					;;
-				*)
-					echo -e "\n"
-					echo "${r}${b}Invalid option. Retry...${x}"
-					echo
-					valid=n
-					defined=n
-					;;
-				esac
-			done
-		done
-
-		if ! grep -q "${clusterize_ssh_pubkey}" /root/.ssh/authorized_keys
-		then
-			echo "$clusterize_ssh_pubkey" > /root/.ssh/authorized_keys
-		fi
-
-		### Generate token for user connection checking
-
-		aenigma_clusterize_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-		echo "${aenigma_clusterize_token}" > /tmp/aenigma_clusterize_token
-
-		echo "${b}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x}"
-		echo
-		read -rp "${b}[press enter to continue...]${x}"
 		clear
 
 	fi

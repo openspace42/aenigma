@@ -188,6 +188,32 @@ done
 
 ################################################################################
 
+### Set UFW rules on this node according to the updated nodes_db
+
+IFS=$'\n'
+set -f
+for i in $(cat < "${nodes_db_path}")
+do
+	/usr/sbin/ufw allow from "$i"
+done
+
+### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to clusterize with
+
+if ! grep -q "### aenigma_clusterize nodes list start" /etc/hosts
+then
+	echo "### aenigma_clusterize nodes list start" >> /etc/hosts
+fi
+
+if ! grep -Pzoq '### aenigma_clusterize nodes list start(?:.*\n)*?\K### aenigma_clusterize nodes list end' /etc/hosts
+then
+	echo "### aenigma_clusterize nodes list end" >> /etc/hosts
+fi
+
+sed -i '/### aenigma_clusterize nodes list start:/,/### aenigma_clusterize nodes list end:/{//!d}' /etc/hosts
+sed -i "/### aenigma_clusterize nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
+
+################################################################################
+
 ### Generate or read and print the clusterization SSH pubkey and prompt the user to configure it on the seondary node
 
 if [ ! -f ~/.ssh/aenigma_clusterize.pub ]
@@ -263,32 +289,6 @@ echo "${secondary_node_number}" > /tmp/aenigma_clusterize_secondary_node_number
 ### Push wildcard LE TLS cert for $domain to secondary node
 
 /usr/bin/scp -i ~/.ssh/aenigma_clusterize "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
-
-################################################################################
-
-### Set UFW rules on this node according to the updated nodes_db
-
-IFS=$'\n'
-set -f
-for i in $(cat < "${nodes_db_path}")
-do
-	/usr/sbin/ufw allow from "$i"
-done
-
-### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to clusterize with
-
-if ! grep -q "### aenigma_clusterize nodes list start" /etc/hosts
-then
-	echo "### aenigma_clusterize nodes list start" >> /etc/hosts
-fi
-
-if ! grep -Pzoq '### aenigma_clusterize nodes list start(?:.*\n)*?\K### aenigma_clusterize nodes list end' /etc/hosts
-then
-	echo "### aenigma_clusterize nodes list end" >> /etc/hosts
-fi
-
-sed -i '/### aenigma_clusterize nodes list start:/,/### aenigma_clusterize nodes list end:/{//!d}' /etc/hosts
-sed -i "/### aenigma_clusterize nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
 
 ################################################################################
 
