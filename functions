@@ -802,7 +802,11 @@ perform_installation() {
 
 		### Read newly received config
 
+		os-read_conf_settings
 
+		### Set hostname according to the node_number from the newly received config
+
+		echo "ae${node_number}.${domain}" > /etc/hostname
 
 		clear
 
@@ -810,57 +814,48 @@ perform_installation() {
 
 	fi
 
-	if [ ! "${clusterize_mode-null}" = "secondary" ]
-	then
-		node_number=00
-	else
-
-
 	### Perform DNS checks
 
-	declare -a dnsarray=(
+	declare -a dns_array=(
 	"hostname"
 	"XMPP"
+	"round-robin"
 	"SRV"
 	)
 
 	if [ $ipv6_avail = "y" ]
 	then
-		declare -a iparray=(
+		declare -a ip_version_array=(
 		"v4"
 		"v6"
 		)
 	else
-		declare -a iparray=(
+		declare -a ip_version_array=(
 		"v4"
 		)
 	fi
 
-	### Set node_number to 00 as this is the primary node
-
-	node_number=00
-
-	for dnstype in "${dnsarray[@]}"
+	for dns_type in "${dns_array[@]}"
 	do
 
-		if [ "$dnstype" = "hostname" ]
+		if [ "$dns_type" = "hostname" ]
 		then
-			dnschecktype=$hostname
+			dns_check_type=$hostname
 		else
-			dnschecktype=$domain
+			dns_check_type=$domain
 		fi
 
-		srvdone=n
+		srv_done=n
 
-		for ipversion in "${iparray[@]}"
+		for ip_version in "${ip_version_array[@]}"
 		do
 
-			if [ $srvdone = n ]
+			if [ $srv_done = n ]
 			then
 
-				if [ ! "$dnstype" = "SRV" ]
+				if [ ! "$dns_type" = "SRV" ]
 				then
-					echo "${b}Now let's make sure your $dnstype IP$ipversion DNS settings are correct.${x}"
+					echo "${b}Now let's make sure your $dns_type IP$ip_version DNS settings are correct.${x}"
 					echo
 				else
 					echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
@@ -871,27 +866,32 @@ perform_installation() {
 					echo
 				fi
 
-				if [ "$dnstype" = "hostname" ]
+				if [ "$dns_type" = "hostname" ]
 				then
 					declare -A digarray=(
 					[HN]=""
 					)
-				elif [ "$dnstype" = "domain" ]
+				elif [ "$dns_type" = "domain" ]
 				then
 					declare -A digarray=(
 					[HN]=""
 					)
-				elif [ "$dnstype" = "XMPP" ]
+				elif [ "$dns_type" = "XMPP" ]
 				then
 					declare -A digarray=(
-					[xc]="xc."
 					[xe]="xe${node_number}."
 					[xi]="xi${node_number}."
 					[xm]="xm${node_number}."
 					[xp]="xp${node_number}."
 					[xu]="xu${node_number}."
 					)
-				elif [ "$dnstype" = "SRV" ]
+				elif [ "$dns_type" = "round-robin" ]
+				then
+					declare -A digarray=(
+					[ae]="ae."
+					[xc]="xc."
+					)
+				elif [ "$dns_type" = "SRV" ]
 				then
 					declare -A digarray=(
 					[sj]="_jabber._tcp."
@@ -905,29 +905,29 @@ perform_installation() {
 				for i in "${!digarray[@]}"
 				do
 
-					if [ "$dnstype" = "hostname" ]
+					if [ "$dns_type" = "hostname" ]
 					then
-						declare -A sub_digarray=(
+						declare -A sub_dig_array=(
 						[ht]="${digarray[$i]}"
 						[hw]="www.${digarray[$i]}"
 						)
 					else
-						declare -A sub_digarray=(
+						declare -A sub_dig_array=(
 						[tl]="${digarray[$i]}"
 						)
 					fi
 
-					for i in "${!sub_digarray[@]}"
+					for i in "${!sub_dig_array[@]}"
 					do
 
 						digarrayiter=$((digarrayiter + 1))
 
-						if [ ! "$dnstype" = "SRV" ]
+						if [ ! "$dns_type" = "SRV" ]
 						then
-							echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype DNS record in IP$ipversion...${x}"
+							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type DNS record in IP$ip_version...${x}"
 							echo
 						else
-							echo "${b}$digarrayiter] Now checking the ${sub_digarray[$i]}$dnschecktype SRV record...${x}"
+							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type SRV record...${x}"
 							echo
 						fi
 
@@ -935,103 +935,112 @@ perform_installation() {
 						until [ $accept = "y" ]
 						do
 
-							if [ ! "$dnstype" = "SRV" ]
+							if [ ! "$dns_type" = "SRV" ]
 							then
-								if [ "$ipversion" = "v4" ]
+								if [ "$ip_version" = "v4" ]
 								then
-									thisip=$this_ipv4
-									digresult="$(getent ahostsv4 "${sub_digarray[$i]}""$dnschecktype". | head -1 |sed 's/ .*//')"
+									if [ ! "${dns_type}" = "round-robin" ]
+									then
+										this_ip=$this_ipv4
+										dig_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | head -1 |sed 's/ .*//')"
+									else
+										dig_rr_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | grep "${this_ipv4}" &> /dev/null)"
+										if [ $? == 0 ]
+										then
+											dig_result="${this_ipv4}"
+										fi
+									fi
 									rectype="A"
 								else
-									thisip=$this_ipv6
-									digresult="$(getent ahostsv6 "${sub_digarray[$i]}""$dnschecktype". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
+									this_ip=$this_ipv6
+									dig_result="$(getent ahostsv6 "${sub_dig_array[$i]}""$dns_check_type". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
 									rectype="AAAA"
 								fi
 							else
-								if [ ! "${sub_digarray[$i]}" = "_xmpp-client._tcp." ]
+								if [ ! "${sub_dig_array[$i]}" = "_xmpp-client._tcp." ]
 								then
-									thisip="0 0 5269 $hostname."
+									this_ip="0 0 5269 ae.${domain}."
 								else
-									thisip="0 0 5222 $hostname."
+									this_ip="0 0 5222 ae.${domain}."
 								fi
-								digresult="$(dig +short -t srv "${sub_digarray[$i]}""$domain")"
+								dig_result="$(dig +short -t srv "${sub_dig_array[$i]}""$domain")"
 								rectype="SRV"
 							fi
 
-							if [ -z "$digresult" ]
+							if [ -z "$dig_result" ]
 							then
 
-								if [ ! "$dnstype" = "SRV" ]
+								if [ ! "$dns_type" = "SRV" ]
 								then
-									echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to be at all set.${x}"
+									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to be at all set.${x}"
 									echo
 								else
-									echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to be at all set.${x}"
+									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to be at all set.${x}"
 									echo
 								fi
 
 								echo "${b}Please ensure you set your DNS record as follows:${x}"
 								echo
-								echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+								echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
 								echo
-								if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+								if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
 								then
 									if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 									then
-										if [ "$ipversion" = "v4" ]
+										if [ "$ip_version" = "v4" ]
 										then
 											echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
 											echo
-											echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+											echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
 											echo
 										fi
 									fi
 								fi
 								result=notset
 							else
-								if [ "$digresult" = "$thisip" ]
+								if [ "$dig_result" = "$this_ip" ]
 								then
 
-									if [ ! "$dnstype" = "SRV" ]
+									if [ ! "$dns_type" = "SRV" ]
 									then
-										echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record appears to resolve correctly to this server.${x}"
+										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record appears to resolve correctly to this server.${x}"
 										echo
 									else
-										echo "${g}${b}The ${sub_digarray[$i]}$dnschecktype SRV record appears to resolve correctly to this server.${x}"
+										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record appears to resolve correctly to this server.${x}"
 										echo
 									fi
 
-									echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
 									echo
 									result=ok
 								else
 
-									if [ ! "$dnstype" = "SRV" ]
+									if [ ! "$dns_type" = "SRV" ]
 									then
-										echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype IP$ipversion DNS record does NOT appear to correctly resolve to this server.${x}"
+										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to correctly resolve to this server.${x}"
 										echo
 									else
-										echo "${r}${b}The ${sub_digarray[$i]}$dnschecktype SRV record does NOT appear to correctly resolve to this server.${x}"
+										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to correctly resolve to this server.${x}"
 										echo
 									fi
 
-									echo "${b}This is the result of a DNS query for ${sub_digarray[$i]}$dnschecktype:${x}"
+									echo "${b}This is the result of a DNS query for ${sub_dig_array[$i]}$dns_check_type:${x}"
 									echo
-									echo "$digresult"
+									echo "$dig_result"
 									echo
 									echo "${b}Please set it instead to:${x}"
 									echo
-									echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\t$rectype\\t$thisip |"
+									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
 									echo
-									if [ ! "${sub_digarray[$i]}$dnschecktype" = "$hostname" ]
+									if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
 									then
 										if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
 										then
-											if [ "$ipversion" = "v4" ]
+											if [ "$ip_version" = "v4" ]
 											then
 												echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
 												echo
-												echo -e "| ${sub_digarray[$i]}$dnschecktype\\t\\tCNAME\\t$hostname |"
+												echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
 												echo
 											fi
 										fi
@@ -1090,14 +1099,14 @@ perform_installation() {
 
 				done
 
-				if [ ! "$dnstype" = "SRV" ]
+				if [ ! "$dns_type" = "SRV" ]
 				then
-					echo "${b}Finished checking your $dnstype IP$ipversion DNS settings.${x}"
+					echo "${b}Finished checking your $dns_type IP$ip_version DNS settings.${x}"
 					echo
 				else
 					echo "${b}Finished checking your XMPP SRV records.${x}"
 					echo
-					srvdone=y
+					srv_done=y
 				fi
 
 			fi
@@ -1107,6 +1116,214 @@ perform_installation() {
 	done
 	clear
 
+	### Set UFW rules
+
+	echo "${b}Now setting UFW rules...${x}"
+	echo
+
+	ufw allow 5222
+	ufw allow 5223
+	ufw allow 5269
+	ufw allow 5444
+	ufw allow 80
+	ufw allow 443
+
+	echo
+	echo "${g}${b}Finished setting UFW rules.${x}"
+	echo
+
+	### Install and if necessary upgrade EasyEngine
+
+	echo "${b}Now installing easyengine...${x}"
+	echo
+	wget -qO ee rt.cx/ee
+	bash ee || true
+	rm ee
+	source /etc/bash_completion.d/ee_auto.rc
+	ee update || true
+	rm /tmp/eeupdate* || true
+	mkdir -p /var/www/
+	chown -R www-data:www-data /var/www/
+	echo
+	echo "${g}${b}Finished installing easyengine.${x}"
+	echo
+
+	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
+
+	/usr/sbin/service sslh stop &> /dev/null || true
+
+	############################################################################
+
+	### Create and configure the $hostname website
+
+	### We still use a separate LE TLS cert for $hostname for ease of automation via EE
+
+	echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
+	echo
+	ee site create "$hostname" || true
+	echo
+	echo "${b}Finished creating easyengine site for $hostname.${x}"
+	echo
+
+	echo "${b}Now setting custom nginx config for $hostname...${x}"
+	echo
+	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
+	cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
+	service nginx reload || true
+	echo "${b}Finished setting custom nginx config for $hostname.${x}"
+	echo
+
+	echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+	echo
+	ee site update "$hostname"  --le --experimental || true
+	if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
+	then
+		echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
+		echo
+		echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+		echo
+		echo "${b}Exiting...${x}"
+		echo
+		exit
+	fi
+	echo
+	echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+	echo
+
+	echo "${b}Now setting index.html in docroot for $hostname...${x}"
+	echo
+	cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
+	echo "${b}Finished setting index.html in docroot for $hostname.${x}"
+	echo
+
+	echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+	echo
+	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
+	cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
+	echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+	echo
+
+	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+	echo
+	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
+	cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
+	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+	echo
+
+	############################################################################
+
+	### Run the LetsEncrypt post-renewal now to be ready for the installation
+
+	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
+
+	### Restart nginx
+
+	/usr/sbin/service nginx restart || true
+
+	### Prepare APT for ejabberd installation
+
+	aenigma-add_ejabberd_repo
+
+	aenigma-install_ejabberd_config
+
+	### Create ejabberd uploads directory
+
+	echo "${b}Now creating uploads directory...${x}"
+	echo
+	mkdir -p /var/lib/ejabberd/uploads
+	chown ejabberd:ejabberd /var/lib/ejabberd/uploads
+	echo "${b}Finished creating uploads directory.${x}"
+	echo
+
+	### Create HTTP uploads directory
+
+	echo "${b}Now creating HTTP fileserver directory...${x}"
+	echo
+	mkdir -p "/var/www/ejabberd/"
+	chown -R ejabberd:ejabberd "/var/www/ejabberd/"
+	chmod -R 755 "/var/www/ejabberd/"
+	echo "${b}Finished creating HTTP fileserver directory.${x}"
+	echo
+
+	### Create logfile
+
+	echo "${b}Now creating logfile...${x}"
+	echo
+	mkdir -p /var/log/ejabberd/
+	touch /var/log/ejabberd/www_access.log
+	chown ejabberd:adm /var/log/ejabberd/www_access.log
+	echo "${b}Finished creating logfile.${x}"
+	echo
+
+	### Install SSLH
+
+	echo "${b}Now installing SSLH...${x}"
+	echo
+	/usr/sbin/service sslh stop &> /dev/null || true
+	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
+	apt-get -y install libwrap0-dev libconfig-dev || true
+	rm -r "$temp_dir/sslh" &> /dev/null || true
+	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
+	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
+	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	if [ $ipv6_avail = "y" ]
+	then
+		sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	else
+		sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
+	fi
+	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	sed -i "s|xu.@|xu${node_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
+	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
+	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
+	chmod +x /etc/init.d/sslh
+	update-rc.d sslh defaults
+	systemctl daemon-reload
+	rm -r "$temp_dir/sslh"
+	mkdir -p /var/run/sslh
+	touch /var/run/sslh/sslh.pid
+	service sslh restart || true
+	echo
+	echo "${b}Finished installing SSLH.${x}"
+	echo
+
+	### Ensure DPKG is available before proceeding
+
+	os-check_dpkg_availability
+
+	### Actually install ejabberd
+
+	echo "${b}Now installing ejabberd...${x}"
+	echo
+	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
+	echo
+	echo "${b}Finished installing ejabberd.${x}"
+	echo
+
+	### Restart ejabberd and ensure it correctly comes up
+
+	echo "${b}Now stopping ejabberd...${x}"
+	echo
+	/usr/sbin/service ejabberd stop
+	sleep 8
+	echo "${b}Finished stopping ejabberd.${x}"
+	echo
+
+	### Perform some changes on the ejabberd config files
+
+	sed -i "s/xe.@/xe${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xi.@/xi${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xm.@/xm${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+
+	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
+	sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
+
 	if [ ! "${clusterize_mode-null}" = "secondary" ]
 	then
 
@@ -1114,230 +1331,31 @@ perform_installation() {
 
 		########################################################################
 
-		### Set UFW rules
-
-		echo "${b}Now setting UFW rules...${x}"
-		echo
-
-		ufw allow 5222
-		ufw allow 5223
-		ufw allow 5269
-		ufw allow 5444
-		ufw allow 80
-		ufw allow 443
-
-		echo
-		echo "${b}Finished setting UFW rules.${x}"
-		echo
-
-		### Install and if necessary upgrade EasyEngine
-
-		echo "${b}Now installing easyengine...${x}"
-		echo
-		wget -qO ee rt.cx/ee
-		bash ee || true
-		rm ee
-		source /etc/bash_completion.d/ee_auto.rc
-		ee update || true
-		rm /tmp/eeupdate* || true
-		mkdir -p /var/www/
-		chown -R www-data:www-data /var/www/
-		echo
-		echo "${b}Finished installing easyengine.${x}"
-		echo
-
-		### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
-
-		/usr/sbin/service sslh stop &> /dev/null || true
-
-		############################################################################
-
-		### Create and configure the $hostname website
-
-		### We still use a separate LE TLS cert for $hostname for ease of automation via EE
-
-		echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
-		echo
-		ee site create "$hostname" || true
-		echo
-		echo "${b}Finished creating easyengine site for $hostname.${x}"
-		echo
-
-		echo "${b}Now setting custom nginx config for $hostname...${x}"
-		echo
-		sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
-		cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
-		service nginx reload || true
-		echo "${b}Finished setting custom nginx config for $hostname.${x}"
-		echo
-
-		echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
-		echo
-		ee site update "$hostname"  --le --experimental || true
-		if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
-		then
-		    echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
-		    echo
-		    echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
-		    echo
-		    echo "${b}Exiting...${x}"
-		    echo
-		    exit
-		fi
-		echo
-		echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
-		echo
-
-		echo "${b}Now setting index.html in docroot for $hostname...${x}"
-		echo
-		cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
-		echo "${b}Finished setting index.html in docroot for $hostname.${x}"
-		echo
-
-		echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
-		echo
-		sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
-		cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
-		echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
-		echo
-
-		echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
-		echo
-		sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
-		cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
-		echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
-		echo
-
-		############################################################################
-
-		### Run the LetsEncrypt post-renewal now to be ready for the installation
-
-		bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
-
-		### Restart nginx
-
-		service nginx restart || true
-
-		### Prepare APT for ejabberd installation
-
-		aenigma-add_ejabberd_repo
-
-		aenigma-install_ejabberd_config
-
-		### Create ejabberd uploads directory
-
-		echo "${b}Now creating uploads directory...${x}"
-		echo
-		mkdir -p /var/lib/ejabberd/uploads
-		chown ejabberd:ejabberd /var/lib/ejabberd/uploads
-		echo "${b}Finished creating uploads directory.${x}"
-		echo
-
-		### Create HTTP uploads directory
-
-		echo "${b}Now creating HTTP fileserver directory...${x}"
-		echo
-		mkdir -p "/var/www/ejabberd/"
-		chown -R ejabberd:ejabberd "/var/www/ejabberd/"
-		chmod -R 755 "/var/www/ejabberd/"
-		echo "${b}Finished creating HTTP fileserver directory.${x}"
-		echo
-
-		### Create logfile
-
-		echo "${b}Now creating logfile...${x}"
-		echo
-		mkdir -p /var/log/ejabberd/
-		touch /var/log/ejabberd/www_access.log
-		chown ejabberd:adm /var/log/ejabberd/www_access.log
-		echo "${b}Finished creating logfile.${x}"
-		echo
-
 		### Add backup script to crontab
 
 		os-add_cron_job -n $short_name-backup -t "8 4 * * * " -c "bash /root/openspace42/$short_name/tools/$short_name-backup"
 
-		### Install SSLH
-
-		echo "${b}Now installing SSLH...${x}"
-		echo
-		/usr/sbin/service sslh stop &> /dev/null || true
-		ssh_port="$(cat $os_base_dir/inception/ssh-port)"
-		apt-get -y install libwrap0-dev libconfig-dev || true
-		rm -r "$temp_dir/sslh" &> /dev/null || true
-		git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
-		( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
-		sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
-		if [ $ipv6_avail = "y" ]
-		then
-		    sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
-		    sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
-		    sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
-		else
-		    sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
-		    sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
-		fi
-		sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|xu.@|xu${node_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
-		cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
-		cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
-		chmod +x /etc/init.d/sslh
-		update-rc.d sslh defaults
-		systemctl daemon-reload
-		rm -r "$temp_dir/sslh"
-		mkdir -p /var/run/sslh
-		touch /var/run/sslh/sslh.pid
-		service sslh restart || true
-		echo
-		echo "${b}Finished installing SSLH.${x}"
-		echo
-
-		### Ensure DPKG is available before proceeding
-
-		os-check_dpkg_availability
-
-		### Actually install ejabberd
-
-		echo "${b}Now installing ejabberd...${x}"
-		echo
-		export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
-		echo
-		echo "${b}Finished installing ejabberd.${x}"
-		echo
-
-		### Restart ejabberd and ensure it correctly comes up
-
-		echo "${b}Now stopping ejabberd...${x}"
-		echo
-		/usr/sbin/service ejabberd stop
-		sleep 8
-		echo "${b}Finished stopping ejabberd.${x}"
-		echo
-
-		### Perform some changes on the ejabberd config files
-
-		sed -i "s/xe.@/xe${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xi.@/xi${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xm.@/xm${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-
-		sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
-		sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
-
 		rm -rf /var/lib/ejabberd/*
 
-		# Substitute .erlang.cookie with primary node's in the future for clusterization
+		########################################################################
 
-		echo "${b}Now starting ejabberd...${x}"
-		/usr/sbin/service ejabberd start
-		echo
-		sleep 16
-		/usr/sbin/ejabberdctl status
-		echo
-		echo "${b}Finished starting ejabberd.${x}"
-		echo
+	fi
+
+	echo "${b}Now starting ejabberd...${x}"
+	/usr/sbin/service ejabberd start
+	echo
+	sleep 16
+	/usr/sbin/ejabberdctl status
+	echo
+	echo "${b}Finished starting ejabberd.${x}"
+	echo
+
+	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	then
+
+		### Proceed with primary node installation
+
+		########################################################################
 
 		### Register ejabberd admin user
 
@@ -1394,82 +1412,91 @@ perform_installation() {
 		echo
 		clear
 
-		### Run a generic APT operation to catch its output and alert the user if something has gone wrong
+	fi
 
-		echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
-		echo
-		set +e
-		if apt-get -y upgrade
-		then
-		    echo
-		    echo "${g}${b}All APT package installations completed successfully...${x}"
-		    echo
-		else
-		    echo
-		    echo "${r}${b}An error has occured during APT operations.${x}"
-		    echo
-		    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
-		    echo
-		    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
-		    echo
-		    read -rp "${b}[press enter to continue reading...]${x}"
-		fi
-		set -e
-		clear
+	### Run a generic APT operation to catch its output and alert the user if something has gone wrong
 
-		### Run an nginx restart to catch its output and alert the user if something has gone wrong
+	echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
+	echo
+	set +e
+	if apt-get -y upgrade
+	then
+	    echo
+	    echo "${g}${b}All APT package installations completed successfully...${x}"
+	    echo
+	else
+	    echo
+	    echo "${r}${b}An error has occured during APT operations.${x}"
+	    echo
+	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo
+	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo
+	    read -rp "${b}[press enter to continue reading...]${x}"
+	fi
+	set -e
+	clear
 
-		echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
-		echo
-		set +e
-		if service nginx restart
-		then
-		    echo
-		    echo "${g}${b}All nginx installations completed successfully...${x}"
-		    echo
-		else
-		    echo
-		    echo "${r}${b}An error has occured during nginx operations.${x}"
-		    echo
-		    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
-		    echo
-		    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
-		    echo
-		    read -rp "${b}[press enter to continue reading...]${x}"
-		fi
-		set -e
-		clear
+	### Run an nginx restart to catch its output and alert the user if something has gone wrong
 
-		### Run an sslh restart to catch its output and alert the user if something has gone wrong
+	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+	echo
+	set +e
+	if service nginx restart
+	then
+	    echo
+	    echo "${g}${b}All nginx installations completed successfully...${x}"
+	    echo
+	else
+	    echo
+	    echo "${r}${b}An error has occured during nginx operations.${x}"
+	    echo
+	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo
+	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo
+	    read -rp "${b}[press enter to continue reading...]${x}"
+	fi
+	set -e
+	clear
 
-		echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
-		echo
-		set +e
-		if service sslh restart
-		then
-		    echo
-		    echo "${g}${b}All sslh installations completed successfully...${x}"
-		    echo
-		else
-		    echo
-		    echo "${r}${b}An error has occured during sslh operations.${x}"
-		    echo
-		    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
-		    echo
-		    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
-		    echo
-		    read -rp "${b}[press enter to continue reading...]${x}"
-		fi
-		set -e
-		clear
+	### Run an sslh restart to catch its output and alert the user if something has gone wrong
+
+	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+	echo
+	set +e
+	if service sslh restart
+	then
+	    echo
+	    echo "${g}${b}All sslh installations completed successfully...${x}"
+	    echo
+	else
+	    echo
+	    echo "${r}${b}An error has occured during sslh operations.${x}"
+	    echo
+	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo
+	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo
+	    read -rp "${b}[press enter to continue reading...]${x}"
+	fi
+	set -e
+	clear
+
+	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	then
+
+		### Proceed with primary node installation
+
+		########################################################################
 
 		### Pring login information and credentials
 
 		echo "${g}${b}You can finally log in:${x}"
 		echo
-		echo "${b}https://$hostname${x}"
+		echo "${b}https://${hostname}${x}"
 		echo
-		echo "${b}admin@$domain${x}"
+		echo "${b}admin@${domain}${x}"
 		echo
 
 		if [ $ejab_admin_pwreset = "y" ]
