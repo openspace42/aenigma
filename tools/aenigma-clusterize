@@ -127,6 +127,7 @@ fi
 ### Start creating the cluster node database and print this machine [the primary node]'s public IPv4 to the first line
 
 nodes_db_path="${$conf_dir}/cluster/nodes_db"
+nodes_db_numbered_path="${$conf_dir}/cluster/nodes_db_numbered"
 os-get_public_ipv4
 
 touch "${nodes_db_path}"
@@ -166,6 +167,24 @@ else
 	echo "${b}Ok, added server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | to this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
 	echo
 fi
+
+### Create a node-numbered version of "nodes_db"
+
+if [ -f "${nodes_db_numbered_path}" ]
+then
+	rm "${nodes_db_numbered_path}"
+	touch "${nodes_db_numbered_path}"
+fi
+
+array_iter=0
+IFS=$'\n'
+set -f
+for i in $(cat < "${nodes_db_path}")
+do
+	array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
+	echo "${i}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
+	array_iter=$((array_iter + 1))
+done
 
 ################################################################################
 
@@ -222,9 +241,53 @@ else
 	os-exit_function
 fi
 
-### Push config to secondary node and proceed installation on its shell
+################################################################################
 
-/usr/bin/scp -i ~/.ssh/aenigma_clusterize ${conf_dir}/xmpp/domain root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/
-/usr/bin/scp -i ~/.ssh/aenigma_clusterize /var/lib/ejabberd/.erlang.cookie root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/
+### Push config to secondary node
+
+/usr/bin/scp -i "~/.ssh/aenigma_clusterize" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/"
+/usr/bin/scp -i "~/.ssh/aenigma_clusterize" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
+
+### Push node db files to secondary node for /etc/hosts and ufw rules configuration
+
+/usr/bin/scp -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
+/usr/bin/scp -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db_numbered" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
+
+### Push wildcard LE TLS cert for $domain to secondary node
+
+/usr/bin/scp -i ~/.ssh/aenigma_clusterize "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
 
 ################################################################################
+
+### Set UFW rules on this node according to the updated nodes_db
+
+IFS=$'\n'
+set -f
+for i in $(cat < "${nodes_db_path}")
+do
+	/usr/sbin/ufw allow from "$i"
+done
+
+### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to clusterize with
+
+if ! grep -q "### aenigma_clusterize nodes list start" /etc/hosts
+then
+	echo "### aenigma_clusterize nodes list start" >> /etc/hosts
+fi
+
+if ! grep -Pzoq '### aenigma_clusterize nodes list start(?:.*\n)*?\K### aenigma_clusterize nodes list end' /etc/hosts
+then
+	echo "### aenigma_clusterize nodes list end" >> /etc/hosts
+fi
+
+sed -i '/### aenigma_clusterize nodes list start:/,/### aenigma_clusterize nodes list end:/{//!d}' /etc/hosts
+sed -i "/### aenigma_clusterize nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
+
+################################################################################
+
+### Prompt the user to finish the installation on secondary node by following the next steps on the other node
+
+echo "${g}${b}Primary_node-level configuration complete.${x}"
+echo
+echo "${b}Please continue the installation on the secondary node by following the remaining steps on the installation.${x}"
+echo

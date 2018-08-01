@@ -643,20 +643,22 @@ perform_installation() {
 
 	############################################################################
 
+	### Set admin email address
+
+	os-set_admin_email
+
+	### Check internet connectivity and get public IP addresses
+
+	os-get_public_ipv4
+
+	os-check_ipv6_connectivity
+
+	############################################################################
+
 	if [ ! "${clusterize_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node install
-
-		### Set admin email address
-
-		os-set_admin_email
-
-		### Check internet connectivity and get public IP addresses
-
-		os-get_public_ipv4
-
-		os-check_ipv6_connectivity
 
 		### Provision the LetsEncrypt wildcard TLS certificate for $domain
 
@@ -682,8 +684,8 @@ perform_installation() {
 	        os-exit_function
 	    fi
 
-	    domain_tls_cert_location="$tls_dir/$domain.pem"
-	    echo "$domain_tls_cert_location" > "$conf_dir/domain_tls_cert_location"
+	    domain_tls_cert_location="${tls_dir}/${domain}.pem"
+	    echo "${domain_tls_cert_location}" > "${conf_dir}/domain_tls_cert_location"
 
 		### Setup backup restore
 
@@ -709,7 +711,9 @@ perform_installation() {
 		    )
 		fi
 
-		server_number=00 ### Change this in the future to clusterize
+		### Set node_number to 00 as this is the primary node
+
+		node_number=00
 
 		for dnstype in "${dnsarray[@]}"
 		do
@@ -756,11 +760,11 @@ perform_installation() {
 		            then
 		                declare -A digarray=(
 		                [xc]="xc."
-		                [xe]="xe${server_number}."
-		                [xi]="xi${server_number}."
-		                [xm]="xm${server_number}."
-		                [xp]="xp${server_number}."
-		                [xu]="xu${server_number}."
+		                [xe]="xe${node_number}."
+		                [xi]="xi${node_number}."
+		                [xm]="xm${node_number}."
+		                [xp]="xp${node_number}."
+		                [xu]="xu${node_number}."
 		                )
 		            elif [ "$dnstype" = "SRV" ]
 		            then
@@ -1139,7 +1143,7 @@ perform_installation() {
 		fi
 		sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
 		sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|xu.@|xu${server_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|xu.@|xu${node_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
 		cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
 		cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
 		chmod +x /etc/init.d/sslh
@@ -1194,11 +1198,11 @@ perform_installation() {
 
 		### Perform some changes on the ejabberd config files
 
-		sed -i "s/xe.@/xe${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xi.@/xi${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xm.@/xm${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xp.@/xp${server_number}.@/g" /etc/ejabberd/ejabberd.yml
-		sed -i "s/xu.@/xu${server_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xe.@/xe${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xi.@/xi${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xm.@/xm${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+		sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 
 		sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
 		sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
