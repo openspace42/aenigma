@@ -789,10 +789,15 @@ perform_installation() {
 			echo "$clusterize_ssh_pubkey" > /root/.ssh/authorized_keys
 		fi
 
-		### Generate token for user connection checking
+		### Generate token [or use the public IPv6 address of this machine if available] for user connection checking
 
-		aenigma_clusterize_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-		echo "${aenigma_clusterize_token}" > /tmp/aenigma_clusterize_token
+		if [ $ipv6_avail = "y" ]
+		then
+			echo "${this_ipv6}" > /tmp/aenigma_clusterize_token
+		else
+			aenigma_clusterize_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			echo "${aenigma_clusterize_token}" > /tmp/aenigma_clusterize_token
+		fi
 
 		echo "${b}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x}"
 		echo
