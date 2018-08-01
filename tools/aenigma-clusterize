@@ -201,6 +201,8 @@ echo "${b}Now, when prompted, enter the following SSH public key on the secondar
 echo
 echo "${y}${b}${ssk_keypair_pubkey_path}${x}"
 echo
+read -rp "${b}[press enter when done to continue...]${x}"
+clear
 
 if ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" exit
 then
@@ -216,7 +218,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /var/aenigma_clusterize_token)"
+if secondary_node_token="$(ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /tmp/aenigma_clusterize_token)"
 then
 	echo "${g}${b}Token on secondary node correctly found.${x}"
 	echo
@@ -242,6 +244,11 @@ else
 fi
 
 ################################################################################
+
+### Push node_number to secondary node
+
+echo "${secondary_node_number}" > /tmp/aenigma_clusterize_secondary_node_number
+/usr/bin/scp -i "~/.ssh/aenigma_clusterize" "/tmp/aenigma_clusterize_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/node_number"
 
 ### Push config to secondary node
 
