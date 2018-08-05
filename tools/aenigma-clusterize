@@ -124,18 +124,44 @@ fi
 
 ################################################################################
 
-### Start creating the cluster node database and print this machine [the primary node]'s public IPv4 to the first line
+### Start creating the cluster node database files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
 
-nodes_db_path="${$conf_dir}/cluster/nodes_db"
+nodes_db_ipv4_path="${$conf_dir}/cluster/nodes_db_ipv4"
+nodes_db_ipv6_path="${$conf_dir}/cluster/nodes_db_ipv6"
 nodes_db_numbered_path="${$conf_dir}/cluster/nodes_db_numbered"
+
 os-get_public_ipv4
 
-touch "${nodes_db_path}"
-if [ -s "${nodes_db_path}" ]
+### IPv4
+
+touch "${nodes_db_ipv4_path}"
+
+if [ -s "${nodes_db_ipv4_path}" ]
 then
-	sed -i "1s/.*/${this_ipv4}/" "${nodes_db_path}"
+	sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
 else
-	echo "${this_ipv4}" > "${nodes_db_path}"
+	echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
+fi
+
+### IPv6
+
+touch "${nodes_db_ipv6_path}"
+
+if [ -s "${nodes_db_ipv6_path}" ]
+then
+	if [ "${ipv6_avail}" = "y" ]
+	then
+		sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
+	else
+		sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
+	fi
+else
+	if [ "${ipv6_avail}" = "y" ]
+	then
+		echo "${this_ipv6}" > "${nodes_db_ipv4_path}"
+	else
+		echo "null" > "${nodes_db_ipv4_path}"
+	fi
 fi
 
 ################################################################################
@@ -145,9 +171,9 @@ fi
 read -rp "${b}Now enter the public IPv4 address displayed on your secondary node:${x} "
 secondary_node_ipv4="${REPLY}"
 
-if grep -q "${secondary_node_ipv4}" "${nodes_db_path}"
+if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
 then
-	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
+	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
 	echo "${b}The server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | is already registered as part of this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
 	echo
 	ask_for_boolean_question="Would you like to re-provision it?"
@@ -162,8 +188,8 @@ then
 		os-exit_function
 	fi
 else
-	echo "${secondary_node_ipv4}" >> "${nodes_db_path}"
-	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
+	echo "${secondary_node_ipv4}" >> "${nodes_db_ipv4_path}"
+	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
 	echo "${b}Ok, added server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | to this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
 	echo
 fi
@@ -179,7 +205,7 @@ fi
 array_iter=0
 IFS=$'\n'
 set -f
-for i in $(cat < "${nodes_db_path}")
+for i in $(cat < "${nodes_db_ipv4_path}")
 do
 	array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
 	echo "${i}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
@@ -192,7 +218,7 @@ done
 
 IFS=$'\n'
 set -f
-for i in $(cat < "${nodes_db_path}")
+for i in $(cat < "${nodes_db_ipv4_path}")
 do
 	/usr/sbin/ufw allow from "$i"
 done
@@ -268,6 +294,34 @@ else
 	echo
 	os-exit_function
 fi
+
+#### Add blank line to nodes_db_ipv6 if it doens't yet exist for sed matching below
+
+nodes_db_ipv6_lines="$(wc -l < ${nodes_db_ipv6_path})"
+if [ "${nodes_db_ipv6_lines}" -lt "${secondary_node_number}" ]
+then
+	echo " " >> "${nodes_db_ipv6_path}"
+fi
+
+#### If token is an IPv6 address then import it here and add it to nodes_db_ipv6 otherwise specify lack thereof
+
+scp -P42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}:/tmp/aenigma_clusterize_token" "/tmp/"
+
+if grep -q ":" "/tmp/aenigma_clusterize_token"
+then
+	### The secondary node is IPv6 enabled, add this to nodes_db_ipv6
+	secodary_node_ipv6="$(cat /tmp/aenigma_clusterize_token)"
+	sed -i "${secondary_node_number}s/.*/${secondary_node_ipv6}/" "${nodes_db_ipv6_path}"
+else
+	### The secondary node is NOT IPv6 enabled, specify this in nodes_db_ipv6
+	sed -i "${secondary_node_number}s/.*/null/" "${nodes_db_ipv6_path}"
+fi
+
+################################################################################
+
+### Perform updated DNS checks based on the newly registered information about the secondary node
+
+aenigma-perform_dns_checks
 
 ################################################################################
 

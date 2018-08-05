@@ -193,6 +193,312 @@ aenigma-install_ejabberd_config() {
 
 }
 
+aenigma-perform_dns_checks() {
+
+	### Perform DNS checks. These must only be run by the primary node.
+
+	declare -a dns_array=(
+	"hostname"
+	"XMPP"
+	"round-robin"
+	"SRV"
+	)
+
+	if [ $ipv6_avail = "y" ]
+	then
+		declare -a ip_version_array=(
+		"v4"
+		"v6"
+		)
+	else
+		declare -a ip_version_array=(
+		"v4"
+		)
+	fi
+
+	for dns_type in "${dns_array[@]}"
+	do
+
+		if [ "$dns_type" = "hostname" ]
+		then
+			dns_check_type=$hostname
+		else
+			dns_check_type=$domain
+		fi
+
+		srv_done=n
+
+		for ip_version in "${ip_version_array[@]}"
+		do
+
+			if [ $srv_done = n ]
+			then
+
+				if [ ! "$dns_type" = "SRV" ]
+				then
+					echo "${b}Now let's make sure your $dns_type IP$ip_version DNS settings are correct.${x}"
+					echo
+				else
+					echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
+					echo
+					echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
+					echo
+					echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
+					echo
+				fi
+
+				if [ "$dns_type" = "hostname" ]
+				then
+					declare -A digarray=(
+					[HN]=""
+					)
+				elif [ "$dns_type" = "domain" ]
+				then
+					declare -A digarray=(
+					[HN]=""
+					)
+				elif [ "$dns_type" = "XMPP" ]
+				then
+					declare -A digarray=(
+					[xe]="xe${node_number}."
+					[xi]="xi${node_number}."
+					[xm]="xm${node_number}."
+					[xp]="xp${node_number}."
+					[xu]="xu${node_number}."
+					)
+				elif [ "$dns_type" = "round-robin" ]
+				then
+					declare -A digarray=(
+					[ae]="ae."
+					[xc]="xc."
+					)
+				elif [ "$dns_type" = "SRV" ]
+				then
+					declare -A digarray=(
+					[sj]="_jabber._tcp."
+					[ss]="_xmpp-server._tcp."
+					[sc]="_xmpp-client._tcp."
+					)
+				fi
+
+				digarrayiter=0
+
+				for i in "${!digarray[@]}"
+				do
+
+					if [ "$dns_type" = "hostname" ]
+					then
+						declare -A sub_dig_array=(
+						[ht]="${digarray[$i]}"
+						[hw]="www.${digarray[$i]}"
+						)
+					else
+						declare -A sub_dig_array=(
+						[tl]="${digarray[$i]}"
+						)
+					fi
+
+					for i in "${!sub_dig_array[@]}"
+					do
+
+						digarrayiter=$((digarrayiter + 1))
+
+						if [ ! "$dns_type" = "SRV" ]
+						then
+							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type DNS record in IP$ip_version...${x}"
+							echo
+						else
+							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type SRV record...${x}"
+							echo
+						fi
+
+						accept=n
+						until [ $accept = "y" ]
+						do
+
+							if [ ! "$dns_type" = "SRV" ]
+							then
+								if [ "$ip_version" = "v4" ]
+								then
+									if [ ! "${dns_type}" = "round-robin" ]
+									then
+										this_ip=$this_ipv4
+										dig_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | head -1 |sed 's/ .*//')"
+									else
+										dig_rr_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | grep "${this_ipv4}" &> /dev/null)"
+										if [ $? == 0 ]
+										then
+											dig_result="${this_ipv4}"
+										fi
+									fi
+									rectype="A"
+								else
+									this_ip=$this_ipv6
+									dig_result="$(getent ahostsv6 "${sub_dig_array[$i]}""$dns_check_type". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
+									rectype="AAAA"
+								fi
+							else
+								if [ ! "${sub_dig_array[$i]}" = "_xmpp-client._tcp." ]
+								then
+									this_ip="0 0 5269 ae.${domain}."
+								else
+									this_ip="0 0 5222 ae.${domain}."
+								fi
+								dig_result="$(dig +short -t srv "${sub_dig_array[$i]}""$domain")"
+								rectype="SRV"
+							fi
+
+							if [ -z "$dig_result" ]
+							then
+
+								if [ ! "$dns_type" = "SRV" ]
+								then
+									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to be at all set.${x}"
+									echo
+								else
+									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to be at all set.${x}"
+									echo
+								fi
+
+								echo "${b}Please ensure you set your DNS record as follows:${x}"
+								echo
+								echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
+								echo
+								if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
+								then
+									if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+									then
+										if [ "$ip_version" = "v4" ]
+										then
+											echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+											echo
+											echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
+											echo
+										fi
+									fi
+								fi
+								result=notset
+							else
+								if [ "$dig_result" = "$this_ip" ]
+								then
+
+									if [ ! "$dns_type" = "SRV" ]
+									then
+										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record appears to resolve correctly to this server.${x}"
+										echo
+									else
+										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record appears to resolve correctly to this server.${x}"
+										echo
+									fi
+
+									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
+									echo
+									result=ok
+								else
+
+									if [ ! "$dns_type" = "SRV" ]
+									then
+										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to correctly resolve to this server.${x}"
+										echo
+									else
+										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to correctly resolve to this server.${x}"
+										echo
+									fi
+
+									echo "${b}This is the result of a DNS query for ${sub_dig_array[$i]}$dns_check_type:${x}"
+									echo
+									echo "$dig_result"
+									echo
+									echo "${b}Please set it instead to:${x}"
+									echo
+									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
+									echo
+									if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
+									then
+										if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
+										then
+											if [ "$ip_version" = "v4" ]
+											then
+												echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+												echo
+												echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
+												echo
+											fi
+										fi
+									fi
+									result=incorrect
+								fi
+							fi
+
+							if [ ! $result = "ok" ]
+							then
+								valid=n
+								until [ $valid = "y" ]
+								do
+									read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+									case $answer in
+										"")
+										echo
+										valid=y
+										accept=n
+										;;
+										y)
+										echo -e "\\n"
+										valid=y
+										accept=n
+										;;
+										s)
+										echo -e "\\n"
+										echo "${b}Skipping DNS check for this record...${x}"
+										echo
+										valid=y
+										accept=y
+										;;
+										e)
+										echo -e "\\n"
+										echo "${b}Exiting...${x}"
+										echo
+										exit
+										;;
+										*)
+										echo -e "\\n"
+										echo "${b}Invalid option. Retry...${x}"
+										echo
+										valid=n
+										accept=n
+										;;
+									esac
+								done
+							else
+								accept=y
+							fi
+							clear
+
+						done
+
+					done
+
+				done
+
+				if [ ! "$dns_type" = "SRV" ]
+				then
+					echo "${b}Finished checking your $dns_type IP$ip_version DNS settings.${x}"
+					echo
+				else
+					echo "${b}Finished checking your XMPP SRV records.${x}"
+					echo
+					srv_done=y
+				fi
+
+			fi
+
+		done
+
+	done
+	clear
+
+}
+
 backup_locally_loop() {
 
 	cp -r "$conf_dir" "$tmp_backup_dir"/conf/
@@ -669,6 +975,8 @@ perform_installation() {
 
 		### Proceed with primary node installation
 
+		aenigma-perform_dns_checks
+
 		########################################################################
 
 		### Provision the LetsEncrypt wildcard TLS certificate for $domain
@@ -789,7 +1097,7 @@ perform_installation() {
 			echo "$clusterize_ssh_pubkey" > /root/.ssh/authorized_keys
 		fi
 
-		### Generate token [or use the public IPv6 address of this machine if available] for user connection checking
+		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
 
 		if [ $ipv6_avail = "y" ]
 		then
@@ -819,307 +1127,12 @@ perform_installation() {
 
 	fi
 
-	### Perform DNS checks
 
-	declare -a dns_array=(
-	"hostname"
-	"XMPP"
-	"round-robin"
-	"SRV"
-	)
 
-	if [ $ipv6_avail = "y" ]
-	then
-		declare -a ip_version_array=(
-		"v4"
-		"v6"
-		)
-	else
-		declare -a ip_version_array=(
-		"v4"
-		)
-	fi
 
-	for dns_type in "${dns_array[@]}"
-	do
 
-		if [ "$dns_type" = "hostname" ]
-		then
-			dns_check_type=$hostname
-		else
-			dns_check_type=$domain
-		fi
 
-		srv_done=n
 
-		for ip_version in "${ip_version_array[@]}"
-		do
-
-			if [ $srv_done = n ]
-			then
-
-				if [ ! "$dns_type" = "SRV" ]
-				then
-					echo "${b}Now let's make sure your $dns_type IP$ip_version DNS settings are correct.${x}"
-					echo
-				else
-					echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
-					echo
-					echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
-					echo
-					echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
-					echo
-				fi
-
-				if [ "$dns_type" = "hostname" ]
-				then
-					declare -A digarray=(
-					[HN]=""
-					)
-				elif [ "$dns_type" = "domain" ]
-				then
-					declare -A digarray=(
-					[HN]=""
-					)
-				elif [ "$dns_type" = "XMPP" ]
-				then
-					declare -A digarray=(
-					[xe]="xe${node_number}."
-					[xi]="xi${node_number}."
-					[xm]="xm${node_number}."
-					[xp]="xp${node_number}."
-					[xu]="xu${node_number}."
-					)
-				elif [ "$dns_type" = "round-robin" ]
-				then
-					declare -A digarray=(
-					[ae]="ae."
-					[xc]="xc."
-					)
-				elif [ "$dns_type" = "SRV" ]
-				then
-					declare -A digarray=(
-					[sj]="_jabber._tcp."
-					[ss]="_xmpp-server._tcp."
-					[sc]="_xmpp-client._tcp."
-					)
-				fi
-
-				digarrayiter=0
-
-				for i in "${!digarray[@]}"
-				do
-
-					if [ "$dns_type" = "hostname" ]
-					then
-						declare -A sub_dig_array=(
-						[ht]="${digarray[$i]}"
-						[hw]="www.${digarray[$i]}"
-						)
-					else
-						declare -A sub_dig_array=(
-						[tl]="${digarray[$i]}"
-						)
-					fi
-
-					for i in "${!sub_dig_array[@]}"
-					do
-
-						digarrayiter=$((digarrayiter + 1))
-
-						if [ ! "$dns_type" = "SRV" ]
-						then
-							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type DNS record in IP$ip_version...${x}"
-							echo
-						else
-							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type SRV record...${x}"
-							echo
-						fi
-
-						accept=n
-						until [ $accept = "y" ]
-						do
-
-							if [ ! "$dns_type" = "SRV" ]
-							then
-								if [ "$ip_version" = "v4" ]
-								then
-									if [ ! "${dns_type}" = "round-robin" ]
-									then
-										this_ip=$this_ipv4
-										dig_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | head -1 |sed 's/ .*//')"
-									else
-										dig_rr_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | grep "${this_ipv4}" &> /dev/null)"
-										if [ $? == 0 ]
-										then
-											dig_result="${this_ipv4}"
-										fi
-									fi
-									rectype="A"
-								else
-									this_ip=$this_ipv6
-									dig_result="$(getent ahostsv6 "${sub_dig_array[$i]}""$dns_check_type". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
-									rectype="AAAA"
-								fi
-							else
-								if [ ! "${sub_dig_array[$i]}" = "_xmpp-client._tcp." ]
-								then
-									this_ip="0 0 5269 ae.${domain}."
-								else
-									this_ip="0 0 5222 ae.${domain}."
-								fi
-								dig_result="$(dig +short -t srv "${sub_dig_array[$i]}""$domain")"
-								rectype="SRV"
-							fi
-
-							if [ -z "$dig_result" ]
-							then
-
-								if [ ! "$dns_type" = "SRV" ]
-								then
-									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to be at all set.${x}"
-									echo
-								else
-									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to be at all set.${x}"
-									echo
-								fi
-
-								echo "${b}Please ensure you set your DNS record as follows:${x}"
-								echo
-								echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
-								echo
-								if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
-								then
-									if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-									then
-										if [ "$ip_version" = "v4" ]
-										then
-											echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-											echo
-											echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
-											echo
-										fi
-									fi
-								fi
-								result=notset
-							else
-								if [ "$dig_result" = "$this_ip" ]
-								then
-
-									if [ ! "$dns_type" = "SRV" ]
-									then
-										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record appears to resolve correctly to this server.${x}"
-										echo
-									else
-										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record appears to resolve correctly to this server.${x}"
-										echo
-									fi
-
-									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
-									echo
-									result=ok
-								else
-
-									if [ ! "$dns_type" = "SRV" ]
-									then
-										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to correctly resolve to this server.${x}"
-										echo
-									else
-										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to correctly resolve to this server.${x}"
-										echo
-									fi
-
-									echo "${b}This is the result of a DNS query for ${sub_dig_array[$i]}$dns_check_type:${x}"
-									echo
-									echo "$dig_result"
-									echo
-									echo "${b}Please set it instead to:${x}"
-									echo
-									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
-									echo
-									if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
-									then
-										if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-										then
-											if [ "$ip_version" = "v4" ]
-											then
-												echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
-												echo
-												echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
-												echo
-											fi
-										fi
-									fi
-									result=incorrect
-								fi
-							fi
-
-							if [ ! $result = "ok" ]
-							then
-								valid=n
-								until [ $valid = "y" ]
-								do
-									read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
-									case $answer in
-										"")
-										echo
-										valid=y
-										accept=n
-										;;
-										y)
-										echo -e "\\n"
-										valid=y
-										accept=n
-										;;
-										s)
-										echo -e "\\n"
-										echo "${b}Skipping DNS check for this record...${x}"
-										echo
-										valid=y
-										accept=y
-										;;
-										e)
-										echo -e "\\n"
-										echo "${b}Exiting...${x}"
-										echo
-										exit
-										;;
-										*)
-										echo -e "\\n"
-										echo "${b}Invalid option. Retry...${x}"
-										echo
-										valid=n
-										accept=n
-										;;
-									esac
-								done
-							else
-								accept=y
-							fi
-							clear
-
-						done
-
-					done
-
-				done
-
-				if [ ! "$dns_type" = "SRV" ]
-				then
-					echo "${b}Finished checking your $dns_type IP$ip_version DNS settings.${x}"
-					echo
-				else
-					echo "${b}Finished checking your XMPP SRV records.${x}"
-					echo
-					srv_done=y
-				fi
-
-			fi
-
-		done
-
-	done
-	clear
 
 	### Set UFW rules
 
