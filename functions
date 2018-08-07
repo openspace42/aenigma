@@ -716,8 +716,6 @@ perform_installation() {
 		echo
 		echo "${b}If you wish to setup $short_name in a cluster configuration, you must specify so now.${x}"
 		echo
-		echo "${b}Please set your desired server topology configuration [single/cluster]:${x}"
-		echo
 
 	}
 
@@ -738,7 +736,7 @@ perform_installation() {
 
 	}
 
-	os-set_option -o clusterize_enabled -v y -d y -p clusterize
+	os-set_option -o "clusterize_enabled" -p "clusterize" -d y -c "[single/cluster]" -v y
 
 	if [ "${clusterize_enabled}" = "y" ]
 	then
@@ -812,7 +810,7 @@ perform_installation() {
 
 	    os-set_option -o domain -v n -d y -p xmpp
 
-	    if [ $prev_val_outcome = "not-kept" ]
+	    if [ $previous_value_outcome = "not-kept" ]
 	    then
 	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
 	        echo
@@ -833,10 +831,10 @@ perform_installation() {
 	            echo "${b}Ok, proceeding...${x}"
 	            echo
 	        else
-	            echo "${b}Ok, setting your domain back to the previous value | $prev_value |...${x}"
+	            echo "${b}Ok, setting your domain back to the previous value | $previous_value |...${x}"
 	            echo
-	            domain="$prev_val"
-	            echo "$prev_val" > "$opt_path"
+	            domain="$previous_value"
+	            echo "$previous_value" > "$opt_path"
 	        fi
 	    fi
 

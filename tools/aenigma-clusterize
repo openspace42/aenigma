@@ -256,7 +256,7 @@ echo
 read -rp "${b}[press enter when done to continue...]${x}"
 clear
 
-if ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" exit
+if ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" exit
 then
 	echo "${g}${b}SSH connection to secondary node succeeded.${x}"
 	echo
@@ -270,7 +270,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /tmp/aenigma_clusterize_token)"
+if secondary_node_token="$(ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /tmp/aenigma_clusterize_token)"
 then
 	echo "${g}${b}Token on secondary node correctly found.${x}"
 	echo
@@ -305,7 +305,7 @@ fi
 
 #### If token is an IPv6 address then import it here and add it to nodes_db_ipv6 otherwise specify lack thereof
 
-scp -P42022 -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}:/tmp/aenigma_clusterize_token" "/tmp/"
+scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}:/tmp/aenigma_clusterize_token" "/tmp/"
 
 if grep -q ":" "/tmp/aenigma_clusterize_token"
 then
@@ -328,21 +328,21 @@ aenigma-perform_dns_checks
 ### Push node_number to secondary node
 
 echo "${secondary_node_number}" > /tmp/aenigma_clusterize_secondary_node_number
-/usr/bin/scp -i "~/.ssh/aenigma_clusterize" "/tmp/aenigma_clusterize_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/node_number"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "/tmp/aenigma_clusterize_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/node_number"
 
 ### Push config to secondary node
 
-/usr/bin/scp -i "~/.ssh/aenigma_clusterize" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/"
-/usr/bin/scp -i "~/.ssh/aenigma_clusterize" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "~/.ssh/aenigma_clusterize" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
 
 ### Push node db files to secondary node for /etc/hosts and ufw rules configuration
 
-/usr/bin/scp -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
-/usr/bin/scp -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db_numbered" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db_numbered" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
 
 ### Push wildcard LE TLS cert for $domain to secondary node
 
-/usr/bin/scp -i ~/.ssh/aenigma_clusterize "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_clusterize "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
 
 ################################################################################
 
