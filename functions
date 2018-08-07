@@ -721,7 +721,7 @@ perform_installation() {
 
 	validate_input() {
 
-		case "${input}" in
+		case $input in
 			single)		valid="y"
 			;;
 			cluster)	valid="y"
@@ -743,14 +743,12 @@ perform_installation() {
 
 			echo "${b-}Having chosen to run ${short_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x-}"
 			echo
-			echo "${b-}Please set the desired operating mode for this specific server [primary/secondary]:${x-}"
-			echo
 
 		}
 
 		validate_input() {
 
-			case "${input}" in
+			case $input in
 				primary)		valid="y"
 				;;
 				secondary)		valid="y"
