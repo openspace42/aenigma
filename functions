@@ -98,7 +98,7 @@ aenigma_xmpp_intro() {
 	echo
 	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS SRV record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
 	echo
-	read -rp "${b}[press enter to continue reading...]${x}"
+	read -rp "${b-}[press enter to continue reading...]${x-}"
 	clear
 
 	echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
@@ -115,7 +115,7 @@ aenigma_xmpp_intro() {
 	echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
 	echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
 	echo
-	read -rp "${b}[press enter to continue reading...]${x}"
+	read -rp "${b-}[press enter to continue reading...]${x-}"
 	clear
 
 	echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
@@ -130,7 +130,7 @@ aenigma_xmpp_intro() {
 	echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
 	echo "                          and not to a wider project."
 	echo
-	read -rp "${b}[press enter to continue reading...]${x}"
+	read -rp "${b-}[press enter to continue reading...]${x-}"
 	clear
 
 	echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
@@ -143,7 +143,7 @@ aenigma_xmpp_intro() {
 	echo "CONs:                  a] longer and more complex addresses"
 	echo "                       b] not logically 'clean'."
 	echo
-	read -rp "${b}[press enter to continue reading...]${x}"
+	read -rp "${b-}[press enter to continue reading...]${x-}"
 	clear
 
 	echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
@@ -166,7 +166,7 @@ aenigma-add_ejabberd_repo() {
 
 aenigma-install_ejabberd_config() {
 
-	echo "${b}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x}"
+	echo "${b-}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x-}"
 	echo
 
 	ejab_cand_vers="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
@@ -188,7 +188,7 @@ aenigma-install_ejabberd_config() {
 	sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
 	sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
 	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
-	echo "${b}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x}"
+	echo "${b-}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x-}"
 	echo
 
 }
@@ -236,14 +236,14 @@ aenigma-perform_dns_checks() {
 
 				if [ ! "$dns_type" = "SRV" ]
 				then
-					echo "${b}Now let's make sure your $dns_type IP$ip_version DNS settings are correct.${x}"
+					echo "${b-}Now let's make sure your $dns_type IP$ip_version DNS settings are correct.${x-}"
 					echo
 				else
-					echo "${b}Since you've chosen option 1, your domain is different from your hostname.${x}"
+					echo "${b-}Since you've chosen option 1, your domain is different from your hostname.${x-}"
 					echo
-					echo "${b}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x}"
+					echo "${b-}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x-}"
 					echo
-					echo "${b}Now let's make sure your XMPP SRV records are correct.${x}"
+					echo "${b-}Now let's make sure your XMPP SRV records are correct.${x-}"
 					echo
 				fi
 
@@ -305,10 +305,10 @@ aenigma-perform_dns_checks() {
 
 						if [ ! "$dns_type" = "SRV" ]
 						then
-							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type DNS record in IP$ip_version...${x}"
+							echo "${b-}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type DNS record in IP$ip_version...${x-}"
 							echo
 						else
-							echo "${b}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type SRV record...${x}"
+							echo "${b-}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type SRV record...${x-}"
 							echo
 						fi
 
@@ -353,14 +353,14 @@ aenigma-perform_dns_checks() {
 
 								if [ ! "$dns_type" = "SRV" ]
 								then
-									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to be at all set.${x}"
+									echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to be at all set.${x-}"
 									echo
 								else
-									echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to be at all set.${x}"
+									echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to be at all set.${x-}"
 									echo
 								fi
 
-								echo "${b}Please ensure you set your DNS record as follows:${x}"
+								echo "${b-}Please ensure you set your DNS record as follows:${x-}"
 								echo
 								echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
 								echo
@@ -370,7 +370,7 @@ aenigma-perform_dns_checks() {
 									then
 										if [ "$ip_version" = "v4" ]
 										then
-											echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+											echo "${g-}${b-}You can also set this record as a CNAME [suggested choice]:${x-}"
 											echo
 											echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
 											echo
@@ -384,10 +384,10 @@ aenigma-perform_dns_checks() {
 
 									if [ ! "$dns_type" = "SRV" ]
 									then
-										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record appears to resolve correctly to this server.${x}"
+										echo "${g-}${b-}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record appears to resolve correctly to this server.${x-}"
 										echo
 									else
-										echo "${g}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record appears to resolve correctly to this server.${x}"
+										echo "${g-}${b-}The ${sub_dig_array[$i]}$dns_check_type SRV record appears to resolve correctly to this server.${x-}"
 										echo
 									fi
 
@@ -398,18 +398,18 @@ aenigma-perform_dns_checks() {
 
 									if [ ! "$dns_type" = "SRV" ]
 									then
-										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to correctly resolve to this server.${x}"
+										echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to correctly resolve to this server.${x-}"
 										echo
 									else
-										echo "${r}${b}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to correctly resolve to this server.${x}"
+										echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to correctly resolve to this server.${x-}"
 										echo
 									fi
 
-									echo "${b}This is the result of a DNS query for ${sub_dig_array[$i]}$dns_check_type:${x}"
+									echo "${b-}This is the result of a DNS query for ${sub_dig_array[$i]}$dns_check_type:${x-}"
 									echo
 									echo "$dig_result"
 									echo
-									echo "${b}Please set it instead to:${x}"
+									echo "${b-}Please set it instead to:${x-}"
 									echo
 									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
 									echo
@@ -419,7 +419,7 @@ aenigma-perform_dns_checks() {
 										then
 											if [ "$ip_version" = "v4" ]
 											then
-												echo "${g}${b}You can also set this record as a CNAME [suggested choice]:${x}"
+												echo "${g-}${b-}You can also set this record as a CNAME [suggested choice]:${x-}"
 												echo
 												echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
 												echo
@@ -435,7 +435,7 @@ aenigma-perform_dns_checks() {
 								valid=n
 								until [ $valid = "y" ]
 								do
-									read -n 1 -rp "${b}Test again?${x} (${b}Y${x}[es]/${b}s${x}[kip]/${b}e${x}[xit]) " answer;
+									read -n 1 -rp "${b-}Test again?${x-} (${b-}Y${x-}[es]/${b-}s${x-}[kip]/${b-}e${x-}[xit]) " answer;
 									case $answer in
 										"")
 										echo
@@ -449,20 +449,20 @@ aenigma-perform_dns_checks() {
 										;;
 										s)
 										echo -e "\\n"
-										echo "${b}Skipping DNS check for this record...${x}"
+										echo "${b-}Skipping DNS check for this record...${x-}"
 										echo
 										valid=y
 										accept=y
 										;;
 										e)
 										echo -e "\\n"
-										echo "${b}Exiting...${x}"
+										echo "${b-}Exiting...${x-}"
 										echo
 										exit
 										;;
 										*)
 										echo -e "\\n"
-										echo "${b}Invalid option. Retry...${x}"
+										echo "${b-}Invalid option. Retry...${x-}"
 										echo
 										valid=n
 										accept=n
@@ -482,10 +482,10 @@ aenigma-perform_dns_checks() {
 
 				if [ ! "$dns_type" = "SRV" ]
 				then
-					echo "${b}Finished checking your $dns_type IP$ip_version DNS settings.${x}"
+					echo "${b-}Finished checking your $dns_type IP$ip_version DNS settings.${x-}"
 					echo
 				else
-					echo "${b}Finished checking your XMPP SRV records.${x}"
+					echo "${b-}Finished checking your XMPP SRV records.${x-}"
 					echo
 					srv_done=y
 				fi
@@ -512,22 +512,22 @@ backup_locally_loop() {
 
 restore_loop() {
 
-	echo "${b}1] Now restoring aenigma config directory...${x}"
+	echo "${b-}1] Now restoring aenigma config directory...${x-}"
 	echo
 
 	rsync -aAXx --delete $restore_file_path/conf/ $conf_dir/
 
-	echo "${b}2] Now restoring ejabberd database...${x}"
+	echo "${b-}2] Now restoring ejabberd database...${x-}"
 	echo
 
 	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 	then
-	        echo "${g}${b}ejabberd is already running. Continuing...${x}"
+	        echo "${g-}${b-}ejabberd is already running. Continuing...${x-}"
 	        echo
 	else
-	        echo "${r}${b}ejabberd NOT running. Starting it now...${x}"
+	        echo "${r-}${b-}ejabberd NOT running. Starting it now...${x-}"
 	        echo
-	        echo "${b}Now starting ejabberd ...${x}"
+	        echo "${b-}Now starting ejabberd ...${x-}"
 	        /usr/sbin/service ejabberd start
 	        echo
 	        sleep 8
@@ -542,36 +542,36 @@ restore_loop() {
 		cp ./ejabberd-mnesia-backup /var/lib/ejabberd/
 	        /usr/sbin/ejabberdctl restore ejabberd-mnesia-backup
 		rm /var/lib/ejabberd/ejabberd-mnesia-backup
-	        echo "${b}Successfully restored ejabberd database...${x}"
+	        echo "${b-}Successfully restored ejabberd database...${x-}"
 	        echo
 	        sleep 8
 	else
-	        echo "${r}${b}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x}"
+	        echo "${r-}${b-}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x-}"
 	        echo
 	        os-exit_function
 	fi
 
-	echo "${b}Now restoring ejabberd directories...${x}"
+	echo "${b-}Now restoring ejabberd directories...${x-}"
 	echo
 
-	echo "${b}Now stopping ejabberd for directory restore...${x}"
+	echo "${b-}Now stopping ejabberd for directory restore...${x-}"
 	echo
 	/usr/sbin/service ejabberd stop
 	sleep 8
 
-	echo "${b}3] Now syncing ejabberd directories...${x}"
+	echo "${b-}3] Now syncing ejabberd directories...${x-}"
 	echo
 
 	rsync -aAXx --delete $restore_file_path/data/etc-ejabberd/ /etc/ejabberd/
 	rsync -aAXx --delete $restore_file_path/data/var-lib-ejabberd/ /var/lib/ejabberd/
 
-	echo "${b}Now setting permissions on ejabberd directories...${x}"
+	echo "${b-}Now setting permissions on ejabberd directories...${x-}"
 	echo
 
 	chown -R ejabberd:ejabberd /etc/ejabberd/
 	chown -R ejabberd:ejabberd /var/lib/ejabberd/
 
-	echo "${b}Now starting ejabberd...${x}"
+	echo "${b-}Now starting ejabberd...${x-}"
 	/usr/sbin/service ejabberd start
 	echo
 	sleep 16
@@ -582,54 +582,54 @@ restore_loop() {
 	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 	then
 
-	        echo "${g}${b}Restore complete!${x}"
+	        echo "${g-}${b-}Restore complete!${x-}"
 	        echo
-	        echo "${b}Now please verify your aenigma instance is running correctly and has everything you except it to.${x}"
+	        echo "${b-}Now please verify your aenigma instance is running correctly and has everything you except it to.${x-}"
 	        echo
 
-	        read -p "${b}Has your previous instance of aenigma been restored correctly? (Y/n): ${x}" -n 1 -r
+	        read -p "${b-}Has your previous instance of aenigma been restored correctly? (Y/n): ${x-}" -n 1 -r
 	        echo
 	        if [[ ! $REPLY =~ ^[Nn]$ ]]
 	        then
-	                echo "${g}${b}Ok, all done!${x}"
+	                echo "${g-}${b-}Ok, all done!${x-}"
 	                echo
 	                if [ -f $conf_dir/blocks3backups ]
 	                then
 				rm $conf_dir/blocks3backups
-	                        echo "${b}Removing S3 backups lock since your restore has been successful.${x}"
+	                        echo "${b-}Removing S3 backups lock since your restore has been successful.${x-}"
 	                        echo
-	                        echo "${r}${b}This machine will now pick up where the old one left off and start backing up again to S3 and will overwrite all previous data stored on S3.${x}"
+	                        echo "${r-}${b-}This machine will now pick up where the old one left off and start backing up again to S3 and will overwrite all previous data stored on S3.${x-}"
 	                        echo
-	                        echo "${b}If you've changed your mind and are NOT yet sure this restore was completely successful, simply:${x}"
+	                        echo "${b-}If you've changed your mind and are NOT yet sure this restore was completely successful, simply:${x-}"
 	                        echo
-	                        echo "${b} | touch $conf_dir/blocks3backups |"
+	                        echo "${b-} | touch $conf_dir/blocks3backups |"
 	                        echo
-	                        echo "${b}And remember to remove it as soon as you're done verifying this restored instance to then resume backups to S3!${x}"
+	                        echo "${b-}And remember to remove it as soon as you're done verifying this restored instance to then resume backups to S3!${x-}"
 	                        echo
-	                        echo "${g}${b}All done for now.${x}"
+	                        echo "${g-}${b-}All done for now.${x-}"
 	                        echo
 	                fi
 	        else
 	                echo
-	                echo "${b}Sorry about that, please collect all evidence you can find so and simply file an issue report at:${x}"
+	                echo "${b-}Sorry about that, please collect all evidence you can find so and simply file an issue report at:${x-}"
 	        	echo
-	        	echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+	        	echo "${b-} | https://github.com/openspace42/aenigma/issues |${x-}"
 	        	echo
-	        	echo "${b}Thank you in advance!${x}"
+	        	echo "${b-}Thank you in advance!${x-}"
 	                echo
 	        fi
 
 	else
 
-	        echo "${r}${b}ERROR: ejabberd not running after restore. Please check ejabberd directories.${x}"
+	        echo "${r-}${b-}ERROR: ejabberd not running after restore. Please check ejabberd directories.${x-}"
 	        echo
-	        echo "${b}Please collect all evidence you can find so and simply file an issue report at:${x}"
+	        echo "${b-}Please collect all evidence you can find so and simply file an issue report at:${x-}"
 	        echo
-	        echo "${b} | https://github.com/openspace42/aenigma/issues |${x}"
+	        echo "${b-} | https://github.com/openspace42/aenigma/issues |${x-}"
 	        echo
-	        echo "${b}Thank you in advance!${x}"
+	        echo "${b-}Thank you in advance!${x-}"
 	        echo
-	        echo "${b}Exiting...${x}"
+	        echo "${b-}Exiting...${x-}"
 	        echo
 	        exit
 
@@ -640,9 +640,9 @@ restore_loop() {
 		rm -r "$restores_dir/local/"
 	fi
 
-	if [ -d "/root/$short_name-restore/" ]
+	if [ -d "/root/${short_name}-restore/" ]
 	then
-		rm -r "/root/$short_name-restore/"
+		rm -r "/root/${short_name}-restore/"
 	fi
 
 	if [ -d "$tmpdir" ]
@@ -652,13 +652,13 @@ restore_loop() {
 
 	if [ $bootstrapmode = "on" ]
 	then
-		echo "${b}Now that we're finished with the initial restore, it's time to re-run the install script and get this machine up and running with your old instance's files and settings${x}"
+		echo "${b-}Now that we're finished with the initial restore, it's time to re-run the install script and get this machine up and running with your old instance's files and settings${x-}"
 		echo
-		echo "${b}Running install script now.${x}"
+		echo "${b-}Running install script now.${x-}"
 		echo
-		echo "${r}${b}Should you exit the install script during its runtime, you can re-run it manually with:${x}"
+		echo "${r-}${b-}Should you exit the install script during its runtime, you can re-run it manually with:${x-}"
 		echo
-		echo "${b} | bash $sourcedir/install.sh | ${x}"
+		echo "${b-} | bash $sourcedir/install.sh | ${x-}"
 		cd
 		bash $sourcedir/install.sh
 	fi
@@ -697,7 +697,7 @@ perform_installation() {
 
 	### Copy files to destination
 
-	rsync -aAXx $source_dir/ $install_dir/ --include=tools*** --include=functions --exclude="*"
+	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
 	### Skip intro if requested by user
 
@@ -712,25 +712,25 @@ perform_installation() {
 
 	describe_setting() {
 
-		echo "${b}$short_name can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x}"
+		echo "${b-}${short_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x-}"
 		echo
-		echo "${b}If you wish to setup $short_name in a cluster configuration, you must specify so now.${x}"
+		echo "${b-}If you wish to setup ${short_name} in a cluster configuration, you must specify so now.${x-}"
 		echo
 
 	}
 
 	validate_input() {
 
-		case $input in
-			single)		clusterize_enabled=n
-			valid=y
+		case "${input}" in
+			single)		clusterize_enabled="n"
+			valid="y"
 			;;
-			cluster)	clusterize_enabled=y
-			valid=y
+			cluster)	clusterize_enabled="y"
+			valid="y"
 			;;
-			*)	echo "${r}${b}Invalid setting for | clusterize_enabled | in function | ${FUNCNAME[0]} |.${x}"
+			*)	echo "${r-}${b-}Invalid setting for | ${n-}${clusterize_enabled}${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
-			valid=n
+			valid="n"
 			;;
 		esac
 
@@ -743,51 +743,51 @@ perform_installation() {
 
 		describe_setting() {
 
-			echo "${b}Having chosen to run $short_name in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x}"
+			echo "${b-}Having chosen to run ${short_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x-}"
 			echo
-			echo "${b}Please set the desired operating mode for this specific server [primary/secondary]:${x}"
+			echo "${b-}Please set the desired operating mode for this specific server [primary/secondary]:${x-}"
 			echo
 
 		}
 
 		validate_input() {
 
-			case $input in
-				primary)		clusterize_mode=primary
-				valid=y
+			case "${input}" in
+				primary)		clusterize_mode="primary"
+				valid="y"
 				;;
-				secondary)		clusterize_mode=secondary
-				valid=y
+				secondary)		clusterize_mode="secondary"
+				valid="y"
 				;;
-				*)	echo "${r}${b}Invalid setting for | clusterize_mode | in function | ${FUNCNAME[0]} |.${x}"
+				*)	echo "${r-}${b-}Invalid setting for | ${n-}${clusterize_mode}${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 				echo
-				valid=n
+				valid="n"
 				;;
 			esac
 
 		}
 
-		os-set_option -o clusterize_mode -v y -d y -p clusterize
+		os-set_option -o "clusterize_mode" -p "clusterize" -d y -c "[primary/secondary]" -v y
 
 		if [ "${clusterize_mode}" = "primary" ]
 		then
-			echo "${b}Having chosen that this server will be your primary node for your $short_name installation, we can carry on with the standard installation.${x}"
+			echo "${b-}Having chosen that this server will be your primary node for your ${short_name} installation, we can carry on with the standard installation.${x-}"
 			echo
 		else
-			echo "${b}Having chosen that this server will be a secondary node for your $short_name installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x}"
+			echo "${b-}Having chosen that this server will be a secondary node for your ${short_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x-}"
 			echo
-			ask_for_boolean_question="Is the primary node for this $short_name already up and running and perfectly configured?"
+			ask_for_boolean_question="Is the primary node for this ${short_name} already up and running and perfectly configured?"
             os-ask_for_boolean_def_yes
             if [ "$ask_for_boolean_output" = "y" ]
             then
-				echo "${b}Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node...${x}"
+				echo "${b-}Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node...${x-}"
 				echo
             else
-				echo "${b}Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same $short_name install and selecting the | primary | node option when prompted.${x}"
+				echo "${b-}Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${short_name} install and selecting the | primary | node option when prompted.${x-}"
 				echo
-				echo "${b}Only then will we be able to continue with the installation of this secondary node.${x}"
+				echo "${b-}Only then will we be able to continue with the installation of this secondary node.${x-}"
 				echo
-				echo "${b}Aborting installation for now.${x}"
+				echo "${b-}Aborting installation for now.${x-}"
 				echo
                 os-exit_function
             fi
@@ -803,7 +803,7 @@ perform_installation() {
 
 	    describe_setting() {
 
-	        echo "${b}Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:${x}"
+	        echo "${b-}Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:${x-}"
 	        echo
 
 	    }
@@ -812,26 +812,26 @@ perform_installation() {
 
 	    if [ $previous_value_outcome = "not-kept" ]
 	    then
-	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+	        echo "${b-}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x-}"
 	        echo
-	        echo "${r}${b}WARNING:${x}"
+	        echo "${r-}${b-}WARNING:${x-}"
 	        echo
-	        echo "${r}${b}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x}"
+	        echo "${r-}${b-}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x-}"
 	        echo
-	        echo "${b}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet.${x}"
+	        echo "${b-}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet.${x-}"
 	        echo
-	        echo "${b}If you abort the domain change operation now, nothing will be deleted.${x}"
+	        echo "${b-}If you abort the domain change operation now, nothing will be deleted.${x-}"
 	        echo
-	        echo "${b}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x}"
+	        echo "${b-}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x-}"
 	        echo
-	        read -rp "${b}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x}" -n 1
+	        read -rp "${b-}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x-}" -n 1
 	        echo
 	        if [[ $REPLY =~ ^[Yy]$ ]]
 	        then
-	            echo "${b}Ok, proceeding...${x}"
+	            echo "${b-}Ok, proceeding...${x-}"
 	            echo
 	        else
-	            echo "${b}Ok, setting your domain back to the previous value | $previous_value |...${x}"
+	            echo "${b-}Ok, setting your domain back to the previous value | $previous_value |...${x-}"
 	            echo
 	            domain="$previous_value"
 	            echo "$previous_value" > "$opt_path"
@@ -846,27 +846,27 @@ perform_installation() {
 
 	    if [ "$curr_host_name" = "ae00.${domain}" ]
 	    then
-	        echo "${g}${b}Your hostname is already correctly set to: | ${x}${b}ae00.${domain}${g} |.${x}"
+	        echo "${g-}${b-}Your hostname is already correctly set to: | ${x-}${b-}ae00.${domain}${g-} |.${x-}"
 	        echo
 	    else
-			echo "${b}This machine's hostname must become: | ae00.${domain} |.${x}"
+			echo "${b-}This machine's hostname must become: | ae00.${domain} |.${x-}"
 		    echo
-			echo "${b}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of $short_name into a cluster should you ever choose to do so.${x}"
+			echo "${b-}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${short_name} into a cluster should you ever choose to do so.${x-}"
 			echo
-		    echo "${b}Your current hostname is:${x}"
+		    echo "${b-}Your current hostname is:${x-}"
 		    echo
 		    echo " | $curr_host_name |"
 	        echo
-	        read -rp "${b}Do you want to correctly set your hostname automatically? (Y/n): ${x}" -n 1
+	        read -rp "${b-}Do you want to correctly set your hostname automatically? (Y/n): ${x-}" -n 1
 	        echo
 	        if [[ ! $REPLY =~ ^[Nn]$ ]]
 	        then
-	            echo "${b}Ok, setting hostname to: | ae00.${domain} |.${x}"
+	            echo "${b-}Ok, setting hostname to: | ae00.${domain} |.${x-}"
 	            echo
 	            echo "ae00.${domain}" > /etc/hostname
 	        else
 	            echo
-	            echo "${b}Ok, not changing hostname.${x}"
+	            echo "${b-}Ok, not changing hostname.${x-}"
 	            echo
 				os-exit_function
 	        fi
@@ -880,38 +880,38 @@ perform_installation() {
 
 		echo "----------------"
 		echo
-		echo "${b}To make sure everything is correct:${x}"
+		echo "${b-}To make sure everything is correct:${x-}"
 		echo
-		echo "1] Your ${b}XMPP domain${x} [the part after the @ in your XMPP account addresses] will be:"
+		echo "1] Your ${b-}XMPP domain${x-} [the part after the @ in your XMPP account addresses] will be:"
 		echo
-		echo "${b} | ${g}$domain${x}${b} | ${x}"
+		echo "${b-} | ${g-}$domain${x-}${b-} | ${x-}"
 		echo
-		echo "2] And therefore an ${b}XMPP account address${x} will look as follows:"
+		echo "2] And therefore an ${b-}XMPP account address${x-} will look as follows:"
 		echo
-		echo "${b} | ${g}mark@$domain${x}${b} | ${x}"
+		echo "${b-} | ${g-}mark@$domain${x-}${b-} | ${x-}"
 		echo
-		echo "3] Your ${b}hostname${x}, the location on the internet of this server, will be:"
+		echo "3] Your ${b-}hostname${x-}, the location on the internet of this server, will be:"
 		echo
-		echo "${b} | ${g}$hostname${x}${b} | ${x}"
+		echo "${b-} | ${g-}$hostname${x-}${b-} | ${x-}"
 		echo
-		echo "4] And therefore your ${b}aenigma admin panel${x} will be located at:"
+		echo "4] And therefore your ${b-}aenigma admin panel${x-} will be located at:"
 		echo
-		echo "${b} | ${g}https://$hostname${x}${b} | ${x}"
+		echo "${b-} | ${g-}https://$hostname${x-}${b-} | ${x-}"
 		echo
 		echo "----------------"
 		echo
 
-		read -rp "${b}Does everything look all right? (Y/n): ${x}" -n 1
+		read -rp "${b-}Does everything look all right? (Y/n): ${x-}" -n 1
 		echo
 		if [[ ! $REPLY =~ ^[Nn]$ ]]
 		then
-		    echo "${b}Ok, continuing.${x}"
+		    echo "${b-}Ok, continuing.${x-}"
 		    echo
 		    touch $conf_dir/domain
 		    echo "$domain" > $conf_dir/domain
 		else
 		    echo
-		    echo "${b}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x}"
+		    echo "${b-}Ok, no worries. You can re-run this script right now and make the correct choices. Exiting...${x-}"
 		    echo
 		    exit
 		fi
@@ -925,16 +925,16 @@ perform_installation() {
 
 	else
 
-		echo "${r}${b}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server.${x}"
+		echo "${r-}${b-}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server.${x-}"
 		echo
-		echo "${b}Please ensure there is no valuable data on this machine.${x}"
+		echo "${b-}Please ensure there is no valuable data on this machine.${x-}"
 		echo
 
 		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server now?"
 		os-ask_for_boolean_def_no
 		if [ "$ask_for_boolean_output" = "y" ]
 		then
-			echo "${b}Ok, proceeding with ejabberd wipe...${x}"
+			echo "${b-}Ok, proceeding with ejabberd wipe...${x-}"
 			echo
 			/usr/sbin/service ejabberd stop 2> /dev/null || true
 			/usr/bin/killall ejabberd 2> /dev/null || true
@@ -947,7 +947,7 @@ perform_installation() {
 				rm -rf /var/lib/ejabberd/* 2> /dev/null || true
 			fi
 		else
-			echo "${b}Ok, skipping ejabberd wipe.${x}"
+			echo "${b-}Ok, skipping ejabberd wipe.${x-}"
 			echo
 			os-exit_function
 		fi
@@ -979,7 +979,7 @@ perform_installation() {
 
 		### Provision the LetsEncrypt wildcard TLS certificate for $domain
 
-	    echo "${b}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x}"
+	    echo "${b-}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x-}"
 	    echo
 
 		os-provision_le_wildcard_cert -d "$domain"
@@ -992,11 +992,11 @@ perform_installation() {
 
 	    if [ -f $tls_dir/$domain.pem ]
 	    then
-	        echo "${g}${b}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
+	        echo "${g-}${b-}External TLS certificate for $domain found in | $tls_dir/$domain.pem |."
 	        echo
 			sleep 1
 	    else
-	        echo "${r}${b}Something went wrong provisioning the wildcard TLS certificate for $domain.${x}"
+	        echo "${r-}${b-}Something went wrong provisioning the wildcard TLS certificate for $domain.${x-}"
 	        echo
 	        os-exit_function
 	    fi
@@ -1018,22 +1018,22 @@ perform_installation() {
 
 		########################################################################
 
-		echo "${b}This is the public IPv4 for this machine:${x}"
+		echo "${b-}This is the public IPv4 for this machine:${x-}"
 		echo
-		echo "${b} | ${g}$this_ipv4${x}${b} | ${x}"
+		echo "${b-} | ${g-}$this_ipv4${x-}${b-} | ${x-}"
 		echo
-		echo "${b}Enter it on the primary node when prompted to do so.${x}"
+		echo "${b-}Enter it on the primary node when prompted to do so.${x-}"
 		echo
-		read -rp "${b}[press enter when done to continue...]${x}"
+		read -rp "${b-}[press enter when done to continue...]${x-}"
 		clear
 
 		########################################################################
 
 		if [ -f /root/.ssh/authorized_keys ]; then
-	        echo "${g}${b}SSH Authorized Keys file found.${x}"
+	        echo "${g-}${b-}SSH Authorized Keys file found.${x-}"
 	        echo
 		else
-			echo "${b}SSH Authorized Keys file NOT found. Creating it now...${x}"
+			echo "${b-}SSH Authorized Keys file NOT found. Creating it now...${x-}"
 			echo
 			mkdir -p /root/.ssh/
 	        touch /root/.ssh/authorized_keys
@@ -1048,13 +1048,13 @@ perform_installation() {
 			clusterize_ssh_pubkey=""
 			until [ ! "$clusterize_ssh_pubkey" = "" ]
 			do
-				read -rp "${b}Now specify the public SSH key displayed on the primary node: ${x}" clusterize_ssh_pubkey
+				read -rp "${b-}Now specify the public SSH key displayed on the primary node: ${x-}" clusterize_ssh_pubkey
 				echo
 			done
 			valid=n
 			until [ $valid = "y" ]
 			do
-				read -n 1 -p "${b}Is it correct? (Y/n/e[xit]) ${x}" answer;
+				read -n 1 -p "${b-}Is it correct? (Y/n/e[xit]) ${x-}" answer;
 				case $answer in
 				"")
 					echo
@@ -1068,20 +1068,20 @@ perform_installation() {
 					;;
 				n)
 					echo -e "\n"
-					echo "${b}Ok, then please try again...${x}"
+					echo "${b-}Ok, then please try again...${x-}"
 					echo
 					valid=y
 					defined=n
 					;;
 				e)
 					echo -e "\n"
-					echo "${b}Exiting...${x}"
+					echo "${b-}Exiting...${x-}"
 					echo
 					exit
 					;;
 				*)
 					echo -e "\n"
-					echo "${r}${b}Invalid option. Retry...${x}"
+					echo "${r-}${b-}Invalid option. Retry...${x-}"
 					echo
 					valid=n
 					defined=n
@@ -1105,11 +1105,11 @@ perform_installation() {
 			echo "${aenigma_clusterize_token}" > /tmp/aenigma_clusterize_token
 		fi
 
-		echo "${b}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x}"
+		echo "${b-}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x-}"
 		echo
-		echo "${b}After that, complete the execution of the clusterize script and come back here when finished.${x}"
+		echo "${b-}After that, complete the execution of the clusterize script and come back here when finished.${x-}"
 		echo
-		read -rp "${b}[press enter to continue...]${x}"
+		read -rp "${b-}[press enter to continue...]${x-}"
 
 		### Read newly received config
 
@@ -1134,7 +1134,7 @@ perform_installation() {
 
 	### Set UFW rules
 
-	echo "${b}Now setting UFW rules...${x}"
+	echo "${b-}Now setting UFW rules...${x-}"
 	echo
 
 	ufw allow 5222
@@ -1145,12 +1145,12 @@ perform_installation() {
 	ufw allow 443
 
 	echo
-	echo "${g}${b}Finished setting UFW rules.${x}"
+	echo "${g-}${b-}Finished setting UFW rules.${x-}"
 	echo
 
 	### Install and if necessary upgrade EasyEngine
 
-	echo "${b}Now installing easyengine...${x}"
+	echo "${b-}Now installing easyengine...${x-}"
 	echo
 	wget -qO ee rt.cx/ee
 	bash ee || true
@@ -1161,7 +1161,7 @@ perform_installation() {
 	mkdir -p /var/www/
 	chown -R www-data:www-data /var/www/
 	echo
-	echo "${g}${b}Finished installing easyengine.${x}"
+	echo "${g-}${b-}Finished installing easyengine.${x-}"
 	echo
 
 	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
@@ -1174,56 +1174,56 @@ perform_installation() {
 
 	### We still use a separate LE TLS cert for $hostname for ease of automation via EE
 
-	echo "${b}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x}"
+	echo "${b-}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x-}"
 	echo
 	ee site create "$hostname" || true
 	echo
-	echo "${b}Finished creating easyengine site for $hostname.${x}"
+	echo "${b-}Finished creating easyengine site for $hostname.${x-}"
 	echo
 
-	echo "${b}Now setting custom nginx config for $hostname...${x}"
+	echo "${b-}Now setting custom nginx config for $hostname...${x-}"
 	echo
 	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
 	cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
 	service nginx reload || true
-	echo "${b}Finished setting custom nginx config for $hostname.${x}"
+	echo "${b-}Finished setting custom nginx config for $hostname.${x-}"
 	echo
 
-	echo "${b}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+	echo "${b-}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x-}"
 	echo
 	ee site update "$hostname"  --le --experimental || true
 	if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
 	then
-		echo "${r}${b}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x}"
+		echo "${r-}${b-}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x-}"
 		echo
-		echo "${b}Make sure you haven't skipped any DNS checks and try running the installation again...${x}"
+		echo "${b-}Make sure you haven't skipped any DNS checks and try running the installation again...${x-}"
 		echo
-		echo "${b}Exiting...${x}"
+		echo "${b-}Exiting...${x-}"
 		echo
 		exit
 	fi
 	echo
-	echo "${b}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x}"
+	echo "${b-}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x-}"
 	echo
 
-	echo "${b}Now setting index.html in docroot for $hostname...${x}"
+	echo "${b-}Now setting index.html in docroot for $hostname...${x-}"
 	echo
 	cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
-	echo "${b}Finished setting index.html in docroot for $hostname.${x}"
+	echo "${b-}Finished setting index.html in docroot for $hostname.${x-}"
 	echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+	echo "${b-}Now adding IPv6 support to the HTTPS version of the $hostname site...${x-}"
 	echo
 	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
 	cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
-	echo "${b}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x}"
+	echo "${b-}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x-}"
 	echo
 
-	echo "${b}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+	echo "${b-}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x-}"
 	echo
 	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
 	cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
-	echo "${b}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x}"
+	echo "${b-}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x-}"
 	echo
 
 	############################################################################
@@ -1244,36 +1244,36 @@ perform_installation() {
 
 	### Create ejabberd uploads directory
 
-	echo "${b}Now creating uploads directory...${x}"
+	echo "${b-}Now creating uploads directory...${x-}"
 	echo
 	mkdir -p /var/lib/ejabberd/uploads
 	chown ejabberd:ejabberd /var/lib/ejabberd/uploads
-	echo "${b}Finished creating uploads directory.${x}"
+	echo "${b-}Finished creating uploads directory.${x-}"
 	echo
 
 	### Create HTTP uploads directory
 
-	echo "${b}Now creating HTTP fileserver directory...${x}"
+	echo "${b-}Now creating HTTP fileserver directory...${x-}"
 	echo
 	mkdir -p "/var/www/ejabberd/"
 	chown -R ejabberd:ejabberd "/var/www/ejabberd/"
 	chmod -R 755 "/var/www/ejabberd/"
-	echo "${b}Finished creating HTTP fileserver directory.${x}"
+	echo "${b-}Finished creating HTTP fileserver directory.${x-}"
 	echo
 
 	### Create logfile
 
-	echo "${b}Now creating logfile...${x}"
+	echo "${b-}Now creating logfile...${x-}"
 	echo
 	mkdir -p /var/log/ejabberd/
 	touch /var/log/ejabberd/www_access.log
 	chown ejabberd:adm /var/log/ejabberd/www_access.log
-	echo "${b}Finished creating logfile.${x}"
+	echo "${b-}Finished creating logfile.${x-}"
 	echo
 
 	### Install SSLH
 
-	echo "${b}Now installing SSLH...${x}"
+	echo "${b-}Now installing SSLH...${x-}"
 	echo
 	/usr/sbin/service sslh stop &> /dev/null || true
 	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
@@ -1304,7 +1304,7 @@ perform_installation() {
 	touch /var/run/sslh/sslh.pid
 	service sslh restart || true
 	echo
-	echo "${b}Finished installing SSLH.${x}"
+	echo "${b-}Finished installing SSLH.${x-}"
 	echo
 
 	### Ensure DPKG is available before proceeding
@@ -1313,20 +1313,20 @@ perform_installation() {
 
 	### Actually install ejabberd
 
-	echo "${b}Now installing ejabberd...${x}"
+	echo "${b-}Now installing ejabberd...${x-}"
 	echo
 	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
 	echo
-	echo "${b}Finished installing ejabberd.${x}"
+	echo "${b-}Finished installing ejabberd.${x-}"
 	echo
 
 	### Restart ejabberd and ensure it correctly comes up
 
-	echo "${b}Now stopping ejabberd...${x}"
+	echo "${b-}Now stopping ejabberd...${x-}"
 	echo
 	/usr/sbin/service ejabberd stop
 	sleep 8
-	echo "${b}Finished stopping ejabberd.${x}"
+	echo "${b-}Finished stopping ejabberd.${x-}"
 	echo
 
 	### Perform some changes on the ejabberd config files
@@ -1349,7 +1349,7 @@ perform_installation() {
 
 		### Add backup script to crontab
 
-		os-add_cron_job -n $short_name-backup -t "8 4 * * * " -c "bash /root/openspace42/$short_name/tools/$short_name-backup"
+		os-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
 
 		rm -rf /var/lib/ejabberd/*
 
@@ -1357,13 +1357,13 @@ perform_installation() {
 
 	fi
 
-	echo "${b}Now starting ejabberd...${x}"
+	echo "${b-}Now starting ejabberd...${x-}"
 	/usr/sbin/service ejabberd start
 	echo
 	sleep 16
 	/usr/sbin/ejabberdctl status
 	echo
-	echo "${b}Finished starting ejabberd.${x}"
+	echo "${b-}Finished starting ejabberd.${x-}"
 	echo
 
 	if [ ! "${clusterize_mode-null}" = "secondary" ]
@@ -1375,26 +1375,26 @@ perform_installation() {
 
 		### Register ejabberd admin user
 
-		echo "${b}Now registering ejabberd admin user [if it doesn't yet exist]...${x}"
+		echo "${b-}Now registering ejabberd admin user [if it doesn't yet exist]...${x-}"
 		echo
 		ejab_admin_pw="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
 		/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
-		echo "${b}Finished registering ejabberd admin user.${x}"
+		echo "${b-}Finished registering ejabberd admin user.${x-}"
 		echo
 		clear
 
 		if [ -f $conf_dir/ejab_admin_pw_set ]
 		then
-		    read -rp "${b}Leave ejabberd admin user password the same as previously set? (Y/n): ${x}" -n 1
+		    read -rp "${b-}Leave ejabberd admin user password the same as previously set? (Y/n): ${x-}" -n 1
 		    echo
 		    if [[ ! $REPLY =~ ^[Nn]$ ]]
 		    then
-		        echo "${b}Skipping ejabberd admin user password reset.${x}"
+		        echo "${b-}Skipping ejabberd admin user password reset.${x-}"
 		        echo
 		        ejab_admin_pwreset=n
 		    else
 		        echo
-		        echo "${b}Ok, resetting ejabberd admin user password to: | $ejab_admin_pw | ${x}"
+		        echo "${b-}Ok, resetting ejabberd admin user password to: | $ejab_admin_pw | ${x-}"
 		        echo
 		        /usr/sbin/ejabberdctl change_password admin "$domain" "$ejab_admin_pw"
 		        ejab_admin_pwreset=y
@@ -1406,17 +1406,17 @@ perform_installation() {
 
 		### Update ejabberd's module repo
 
-		echo "${b}Now updating ejabberd's module repo...${x}"
+		echo "${b-}Now updating ejabberd's module repo...${x-}"
 		echo
 		set +e
 		/usr/sbin/ejabberdctl modules_update_specs
 		set -e
-		echo "${b}Finished updating ejabberd's module repo...${x}"
+		echo "${b-}Finished updating ejabberd's module repo...${x-}"
 		echo
 
 		### Create shared roster groups
 
-		echo "${b}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x}"
+		echo "${b-}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x-}"
 		echo
 		/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
 		/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody "$domain"
@@ -1424,7 +1424,7 @@ perform_installation() {
 		/usr/sbin/ejabberdctl srg-user-add @online@ localhost online "$domain"
 		/usr/sbin/ejabberdctl srg_create admin "$domain" admin "This is a shared roster group set by aenigma" "everybody\\nonline"
 		/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
-		echo "${b}Finished creating shared roster groups.${x}"
+		echo "${b-}Finished creating shared roster groups.${x-}"
 		echo
 		clear
 
@@ -1432,69 +1432,69 @@ perform_installation() {
 
 	### Run a generic APT operation to catch its output and alert the user if something has gone wrong
 
-	echo "${b}Now performing a final run of APT to ensure all package installations have completed successfully...${x}"
+	echo "${b-}Now performing a final run of APT to ensure all package installations have completed successfully...${x-}"
 	echo
 	set +e
 	if apt-get -y upgrade
 	then
 	    echo
-	    echo "${g}${b}All APT package installations completed successfully...${x}"
+	    echo "${g-}${b-}All APT package installations completed successfully...${x-}"
 	    echo
 	else
 	    echo
-	    echo "${r}${b}An error has occured during APT operations.${x}"
+	    echo "${r-}${b-}An error has occured during APT operations.${x-}"
 	    echo
-	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo "${b-}This was the last step in this installation, so it's possible your end result is at least partially working.${x-}"
 	    echo
-	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo "${b-}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x-}"
 	    echo
-	    read -rp "${b}[press enter to continue reading...]${x}"
+	    read -rp "${b-}[press enter to continue reading...]${x-}"
 	fi
 	set -e
 	clear
 
 	### Run an nginx restart to catch its output and alert the user if something has gone wrong
 
-	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+	echo "${b-}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x-}"
 	echo
 	set +e
 	if service nginx restart
 	then
 	    echo
-	    echo "${g}${b}All nginx installations completed successfully...${x}"
+	    echo "${g-}${b-}All nginx installations completed successfully...${x-}"
 	    echo
 	else
 	    echo
-	    echo "${r}${b}An error has occured during nginx operations.${x}"
+	    echo "${r-}${b-}An error has occured during nginx operations.${x-}"
 	    echo
-	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo "${b-}This was the last step in this installation, so it's possible your end result is at least partially working.${x-}"
 	    echo
-	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo "${b-}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x-}"
 	    echo
-	    read -rp "${b}[press enter to continue reading...]${x}"
+	    read -rp "${b-}[press enter to continue reading...]${x-}"
 	fi
 	set -e
 	clear
 
 	### Run an sslh restart to catch its output and alert the user if something has gone wrong
 
-	echo "${b}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x}"
+	echo "${b-}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x-}"
 	echo
 	set +e
 	if service sslh restart
 	then
 	    echo
-	    echo "${g}${b}All sslh installations completed successfully...${x}"
+	    echo "${g-}${b-}All sslh installations completed successfully...${x-}"
 	    echo
 	else
 	    echo
-	    echo "${r}${b}An error has occured during sslh operations.${x}"
+	    echo "${r-}${b-}An error has occured during sslh operations.${x-}"
 	    echo
-	    echo "${b}This was the last step in this installation, so it's possible your end result is at least partially working.${x}"
+	    echo "${b-}This was the last step in this installation, so it's possible your end result is at least partially working.${x-}"
 	    echo
-	    echo "${b}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x}"
+	    echo "${b-}Please review the above log and try running the installation again. If necessary open an issue on github. Thank you.${x-}"
 	    echo
-	    read -rp "${b}[press enter to continue reading...]${x}"
+	    read -rp "${b-}[press enter to continue reading...]${x-}"
 	fi
 	set -e
 	clear
@@ -1508,23 +1508,23 @@ perform_installation() {
 
 		### Pring login information and credentials
 
-		echo "${g}${b}You can finally log in:${x}"
+		echo "${g-}${b-}You can finally log in:${x-}"
 		echo
-		echo "${b}https://${hostname}${x}"
+		echo "${b-}https://${hostname}${x-}"
 		echo
-		echo "${b}admin@${domain}${x}"
+		echo "${b-}admin@${domain}${x-}"
 		echo
 
 		if [ $ejab_admin_pwreset = "y" ]
 		then
-		    echo "${b}$ejab_admin_pw${x}"
+		    echo "${b-}$ejab_admin_pw${x-}"
 		    echo
 		else
-		    echo "${b}[your previously set password]${x}"
+		    echo "${b-}[your previously set password]${x-}"
 		    echo
 		fi
 
-		read -rp "${b}[press enter to continue reading...]${x}"
+		read -rp "${b-}[press enter to continue reading...]${x-}"
 		clear
 
 	fi

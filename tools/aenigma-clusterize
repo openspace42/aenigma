@@ -59,17 +59,17 @@ os-read_conf_settings
 
 if [ ! "${clusterize_enabled-null}" = "y" ]
 then
-	echo "${r}${b}${short_name} was not installed in clusterized mode.${x}"
+	echo "${r-}${b-}${short_name} was not installed in clusterized mode.${x-}"
 	echo
 	ask_for_boolean_question="Do you wish to turn this instance into a clusterized one?"
 	os-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b}Ok, setting clusterization to enabled.${x}"
+		echo "${b-}Ok, setting clusterization to enabled.${x-}"
 		echo
 		os-set_option -o clusterize_enabled -p clusterize -s "y"
 	else
-		echo "${b}Ok, leaving clusterization off for now.${x}"
+		echo "${b-}Ok, leaving clusterization off for now.${x-}"
 		echo
 		os-exit_function
 	fi
@@ -79,47 +79,47 @@ fi
 
 if [ -z "${clusterize_mode-}" ]
 then
-	echo "${b}This script must only be run on the primary node of $short_name.${x}"
+	echo "${b-}This script must only be run on the primary node of ${short_name}.${x-}"
 	echo
-	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your $short_name instance?"
+	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your ${short_name} instance?"
 	os-ask_for_boolean_def_no
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b}Ok, proceeding...${x}"
+		echo "${b-}Ok, proceeding...${x-}"
 		echo
 		os-set_option -o clusterize_mode -p clusterize -s "primary"
 	else
-		echo "${b}Ok, no problem. If this is a secondary node all you need to do is run the standard $short_name installation and select | secondary | when asked about the node type during clusterization setup.${x}"
+		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 		echo
 		os-exit_function
 	fi
 elif [ "${clusterize_mode}" = "secondary" ]
 then
-	echo "${r}${b}This script must only be run on the primary node of $short_name.${x}"
+	echo "${r-}${b-}This script must only be run on the primary node of ${short_name}.${x-}"
 	echo
-	echo "${b}You've previously specified during install that this will instead be a secondary node.${x}"
+	echo "${b-}You've previously specified during install that this will instead be a secondary node.${x-}"
 	echo
-	echo "${b}If that's the case then all you need to do is run the standard $short_name installation and select | secondary | when asked about the node type during clusterization setup.${x}"
+	echo "${b-}If that's the case then all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 	echo
-	echo "${b}Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted.${x}"
+	echo "${b-}Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted.${x-}"
 	echo
 else
-	echo "${g}${b}$short_name clusterization mode already set to: | ${x}${b}primary${g} |.${x}"
+	echo "${g-}${b-}${short_name} clusterization mode already set to: | ${x-}${b-}primary${g-} |.${x-}"
 	echo
 fi
 
-ask_for_boolean_question="Have you already started the $short_name installation on your secondary node?"
+ask_for_boolean_question="Have you already started the ${short_name} installation on your secondary node?"
 os-ask_for_boolean_def_yes
 if [ "$ask_for_boolean_output" = "y" ]
 then
-	echo "${b}Ok, continuing...${x}"
+	echo "${b-}Ok, continuing...${x-}"
 	echo
 else
-	echo "${b}Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | bash $short_name/setup | command.${x}"
+	echo "${b-}Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | bash ${short_name}/setup | command.${x-}"
 	echo
-	echo "${b}When prompted to start this very script come back here and continue on.${x}"
+	echo "${b-}When prompted to start this very script come back here and continue on.${x-}"
 	echo
-	read -rp "${b}[press enter to continue...]${x}"
+	read -rp "${b-}[press enter to continue...]${x-}"
 fi
 
 ################################################################################
@@ -168,29 +168,29 @@ fi
 
 ### Now add the secondary node's IPv4 to the db
 
-read -rp "${b}Now enter the public IPv4 address displayed on your secondary node:${x} "
+read -rp "${b-}Now enter the public IPv4 address displayed on your secondary node:${x-} "
 secondary_node_ipv4="${REPLY}"
 
 if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
 then
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	echo "${b}The server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | is already registered as part of this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
+	echo "${b-}The server with IPv4 | ${g-}${secondary_node_ipv4}${x-}${b-} | is already registered as part of this cluster with node number | ${g-}${secondary_node_number}${x-}${b-} | .${x-}"
 	echo
 	ask_for_boolean_question="Would you like to re-provision it?"
 	os-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b}Ok, continuing...${x}"
+		echo "${b-}Ok, continuing...${x-}"
 		echo
 	else
-		echo "${b}Ok, skipping provisioning for node | ${g}${secondary_node_ipv4}${x}${b} |.${x}"
+		echo "${b-}Ok, skipping provisioning for node | ${g-}${secondary_node_ipv4}${x-}${b-} |.${x-}"
 		echo
 		os-exit_function
 	fi
 else
 	echo "${secondary_node_ipv4}" >> "${nodes_db_ipv4_path}"
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	echo "${b}Ok, added server with IPv4 | ${g}${secondary_node_ipv4}${x}${b} | to this cluster with node number | ${g}${secondary_node_number}${x}${b} | .${x}"
+	echo "${b-}Ok, added server with IPv4 | ${g-}${secondary_node_ipv4}${x-}${b-} | to this cluster with node number | ${g-}${secondary_node_number}${x-}${b-} | .${x-}"
 	echo
 fi
 
@@ -249,21 +249,21 @@ else
 	ssk_keypair_pubkey_path="~/.ssh/aenigma_clusterize.pub"
 fi
 
-echo "${b}Now, when prompted, enter the following SSH public key on the secondary node:${x}"
+echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
 echo
-echo "${y}${b}${ssk_keypair_pubkey_path}${x}"
+echo "${y}${b-}${ssk_keypair_pubkey_path}${x-}"
 echo
-read -rp "${b}[press enter when done to continue...]${x}"
+read -rp "${b-}[press enter when done to continue...]${x-}"
 clear
 
 if ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" exit
 then
-	echo "${g}${b}SSH connection to secondary node succeeded.${x}"
+	echo "${g-}${b-}SSH connection to secondary node succeeded.${x-}"
 	echo
 else
-	echo "${r}${b}SSH connection to secondary node failed.${x}"
+	echo "${r-}${b-}SSH connection to secondary node failed.${x-}"
 	echo
-	echo "${b}Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${x}${b} |, that its SSH port is | ${y}42022${x}${b} |, and that its firewall isn't blocking connections on that port.${x}"
+	echo "${b-}Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${x-}${b-} |, that its SSH port is | ${y}42022${x-}${b-} |, and that its firewall isn't blocking connections on that port.${x-}"
 	echo
 	os-exit_function
 fi
@@ -272,25 +272,25 @@ fi
 
 if secondary_node_token="$(ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /tmp/aenigma_clusterize_token)"
 then
-	echo "${g}${b}Token on secondary node correctly found.${x}"
+	echo "${g-}${b-}Token on secondary node correctly found.${x-}"
 	echo
-	echo "${b}Its value is: | ${g}${secondary_node_token}${x}${b} |.${x}"
+	echo "${b-}Its value is: | ${g-}${secondary_node_token}${x-}${b-} |.${x-}"
 	echo
 	ask_for_boolean_question="Does this token match what you see on the secondary node?"
 	os-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b}Ok, continuing...${x}"
+		echo "${b-}Ok, continuing...${x-}"
 		echo
 	else
-		echo "${b}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${x}${b} | and try again.${x}"
+		echo "${b-}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${x-}${b-} | and try again.${x-}"
 		echo
 		os-exit_function
 	fi
 else
-	echo "${r}${b}Token on secondary node not found.${x}"
+	echo "${r-}${b-}Token on secondary node not found.${x-}"
 	echo
-	echo "${b}Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again.${x}"
+	echo "${b-}Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again.${x-}"
 	echo
 	os-exit_function
 fi
@@ -348,7 +348,7 @@ echo "${secondary_node_number}" > /tmp/aenigma_clusterize_secondary_node_number
 
 ### Prompt the user to finish the installation on secondary node by following the next steps on the other node
 
-echo "${g}${b}Primary_node-level configuration complete.${x}"
+echo "${g-}${b-}Primary_node-level configuration complete.${x-}"
 echo
-echo "${b}Please continue the installation on the secondary node by following the remaining steps on the installation.${x}"
+echo "${b-}Please continue the installation on the secondary node by following the remaining steps on the installation.${x-}"
 echo
