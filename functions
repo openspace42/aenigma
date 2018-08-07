@@ -726,7 +726,7 @@ perform_installation() {
 			;;
 			cluster)	valid="y"
 			;;
-			*)	echo "${r-}${b-}Invalid setting for | ${n-}${clusterize_enabled}${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
+			*)	echo "${r-}${b-}Invalid setting for | ${n-}clusterize_enabled${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
 			valid="n"
 			;;
@@ -753,7 +753,7 @@ perform_installation() {
 				;;
 				secondary)		valid="y"
 				;;
-				*)	echo "${r-}${b-}Invalid setting for | ${n-}${clusterize_mode}${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
+				*)	echo "${r-}${b-}Invalid setting for | ${n-}clusterize_mode${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 				echo
 				valid="n"
 				;;
