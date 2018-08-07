@@ -722,11 +722,9 @@ perform_installation() {
 	validate_input() {
 
 		case "${input}" in
-			single)		clusterize_enabled="n"
-			valid="y"
+			single)		valid="y"
 			;;
-			cluster)	clusterize_enabled="y"
-			valid="y"
+			cluster)	valid="y"
 			;;
 			*)	echo "${r-}${b-}Invalid setting for | ${n-}${clusterize_enabled}${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
@@ -738,7 +736,7 @@ perform_installation() {
 
 	os-set_option -o "clusterize_enabled" -p "clusterize" -d y -c "[single/cluster]" -v y
 
-	if [ "${clusterize_enabled}" = "y" ]
+	if [ "${clusterize_enabled}" = "cluster" ]
 	then
 
 		describe_setting() {
@@ -753,11 +751,9 @@ perform_installation() {
 		validate_input() {
 
 			case "${input}" in
-				primary)		clusterize_mode="primary"
-				valid="y"
+				primary)		valid="y"
 				;;
-				secondary)		clusterize_mode="secondary"
-				valid="y"
+				secondary)		valid="y"
 				;;
 				*)	echo "${r-}${b-}Invalid setting for | ${n-}${clusterize_mode}${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 				echo
