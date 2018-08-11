@@ -220,9 +220,9 @@ aenigma-update_routing_info() {
 
 	IFS=$'\n'
 	set -f
-	for node in $(cat < "${nodes_db_ipv4_path}")
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
-		/usr/sbin/ufw allow from "$node"
+		/usr/sbin/ufw allow from "$node_ipv4"
 	done
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with

@@ -49,13 +49,13 @@ define_vars
 
 check_root
 
-os-log_script
+os-head_script
 
 os-read_conf_settings
 
 ################################################################################
 
-### Check or enable clusterization
+### Check / enable clusterization
 
 if [ ! "${cluster_enabled-null}" = "y" ]
 then
@@ -75,7 +75,7 @@ then
 	fi
 fi
 
-### Check or set clusterization mode to primary
+### Check / set clusterization mode to primary
 
 if [ -z "${cluster_mode-}" ]
 then
@@ -134,8 +134,10 @@ touch "${nodes_db_ipv4_path}"
 
 if [ -s "${nodes_db_ipv4_path}" ]
 then
+	### File is not empty, alter first line.
 	sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
 else
+	### File is empty, write to it.
 	echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
 fi
 
@@ -147,46 +149,52 @@ if [ -s "${nodes_db_ipv6_path}" ]
 then
 	if [ "${ipv6_avail}" = "y" ]
 	then
+		### File is not empty, alter first line.
 		sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
 	else
+		### File is empty, write to it.
 		sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
 	fi
 else
 	if [ "${ipv6_avail}" = "y" ]
 	then
-		echo "${this_ipv6}" > "${nodes_db_ipv4_path}"
+		### File is not empty, alter first line.
+		echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
 	else
-		echo "null" > "${nodes_db_ipv4_path}"
+		### File is empty, write to it.
+		echo "null" > "${nodes_db_ipv6_path}"
 	fi
 fi
 
 ################################################################################
 
-### Now add the secondary node's IPv4 to the db
+### Now add the secondary node's IPv4 to nodes_db_ipv4
 
-read -rp "${b-}Now enter the public IPv4 address displayed on your secondary node:${x-} "
+read -rp "${b-}Now enter the public IPv4 address displayed on your secondary node: ${x-} "
 secondary_node_ipv4="${REPLY}"
 
 if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
 then
+	### Specified secondary node is already registered
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	echo "${b-}The server with IPv4 | ${g-}${secondary_node_ipv4}${x-}${b-} | is already registered as part of this cluster with node number | ${g-}${secondary_node_number}${x-}${b-} | .${x-}"
+	echo "${b-}The server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | is already registered as part of this cluster with node number | ${o-}${secondary_node_number}${n-} |.${x-}"
 	echo
 	ask_for_boolean_question="Would you like to re-provision it?"
 	os-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b-}Ok, continuing...${x-}"
+		echo "${b-}Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |...${x-}"
 		echo
 	else
-		echo "${b-}Ok, skipping provisioning for node | ${g-}${secondary_node_ipv4}${x-}${b-} |.${x-}"
+		echo "${b-}Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |.${x-}"
 		echo
 		os-exit_function
 	fi
 else
+	### Specified secondary node is new to this cluster
 	echo "${secondary_node_ipv4}" >> "${nodes_db_ipv4_path}"
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	echo "${b-}Ok, added server with IPv4 | ${g-}${secondary_node_ipv4}${x-}${b-} | to this cluster with node number | ${g-}${secondary_node_number}${x-}${b-} | .${x-}"
+	echo "${b-}Ok, added server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | to this cluster with node number | ${o-}${secondary_node_number}${n-} |.${x-}"
 	echo
 fi
 
@@ -201,45 +209,18 @@ fi
 array_iter=0
 IFS=$'\n'
 set -f
-for i in $(cat < "${nodes_db_ipv4_path}")
+for secondary_node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 do
 	array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
-	echo "${i}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
+	echo "${secondary_node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 	array_iter=$((array_iter + 1))
 done
 
 ################################################################################
 
-aenigma-push_routing_info() {
-
-	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
-
-	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_cluster -r "${conf_dir}/cluster/nodes/" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/cluster/
-
-	aenigma-exec() {
-
-	        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-update_routing_info
-"
-
-	}
-
-	for secondary_node in $(cat < "${nodes_db_ipv4_path}")
-	do
-	        ssh -tt -p42022 -i "~/.ssh/aenigma_test" "root@${secondary_node}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-aenigma-exec
-exit
-END
-	done
-
-}
-
-################################################################################
-
 ### Generate or read and print the clusterization SSH pubkey and prompt the user to configure it on the seondary node
 
-if [ ! -f ~/.ssh/aenigma_cluster.pub ]
+if [ ! -f "~/.ssh/aenigma_cluster.pub" ]
 then
 	os-generate_ssh_keypair -n "aenigma_cluster"
 else
@@ -248,7 +229,7 @@ fi
 
 echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
 echo
-echo "${y}${b-}${ssk_keypair_pubkey_path}${x-}"
+echo "${y-}${b-}$(cat ${ssk_keypair_pubkey_path})${x-}"
 echo
 read -rp "${b-}[press enter when done to continue...]${x-}"
 clear
@@ -271,7 +252,7 @@ if secondary_node_token="$(ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKno
 then
 	echo "${g-}${b-}Token on secondary node correctly found.${x-}"
 	echo
-	echo "${b-}Its value is: | ${g-}${secondary_node_token}${x-}${b-} |.${x-}"
+	echo "${b-}Its value is: | ${y-}${secondary_node_token}${n-} |.${x-}"
 	echo
 	ask_for_boolean_question="Does this token match what you see on the secondary node?"
 	os-ask_for_boolean_def_yes
@@ -280,7 +261,7 @@ then
 		echo "${b-}Ok, continuing...${x-}"
 		echo
 	else
-		echo "${b-}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${x-}${b-} | and try again.${x-}"
+		echo "${b-}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} | and try again.${x-}"
 		echo
 		os-exit_function
 	fi
@@ -292,7 +273,9 @@ else
 	os-exit_function
 fi
 
-#### Add blank line to nodes_db_ipv6 if it doens't yet exist for sed matching below
+################################################################################
+
+#### Add blank line to nodes_db_ipv6 if it doesn't yet exist for sed matching below
 
 nodes_db_ipv6_lines="$(wc -l < ${nodes_db_ipv6_path})"
 if [ "${nodes_db_ipv6_lines}" -lt "${secondary_node_number}" ]
@@ -316,20 +299,56 @@ fi
 
 ################################################################################
 
+### Update routing info on this [the primary] node
+
+aenigma-update_routing_info
+
+### Push and update routing info on all secondary nodes [both existing and the new one we're now provisioning] to allow them to connect to each other correctly.
+
+aenigma-push_routing_info() {
+
+	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
+
+	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@ae${secondary_node_number}.${domain}:~/${conf_cluster_dir}"
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+        bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-update_routing_info
+"
+
+	}
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+        ssh -tt -p42022 -i "~/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+aenigma-exec
+exit
+END
+		fi
+	done
+
+}
+
+################################################################################
+
 ### Perform updated DNS checks based on the newly registered information about the secondary node
 
 aenigma-perform_dns_checks
-
-### Push /etc/hosts config and ufw rules to all secondary nodes [existing and the new one being configured alike] to allow them to connect to each other correctly
-
-aenigma-push_nodes_db
 
 ################################################################################
 
 ### Push node_number to secondary node
 
 echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/cluster/node_number"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_cluster_dir}/node_number"
 
 ### Push config to secondary node
 
