@@ -126,10 +126,6 @@ fi
 
 ### Start creating the cluster node database files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
 
-nodes_db_ipv4_path="${conf_dir}/cluster/nodes/nodes_db_ipv4"
-nodes_db_ipv6_path="${conf_dir}/cluster/nodes/nodes_db_ipv6"
-nodes_db_numbered_path="${conf_dir}/cluster/nodes/nodes_db_numbered"
-
 os-get_public_ipv4
 
 ### IPv4
@@ -213,34 +209,6 @@ do
 done
 
 ################################################################################
-
-aenigma-update_routing_info() {
-
-	### Set UFW rules on this node according to the updated nodes_db
-
-	IFS=$'\n'
-	set -f
-	for i in $(cat < "${nodes_db_ipv4_path}")
-	do
-		/usr/sbin/ufw allow from "$i"
-	done
-
-	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
-
-	if ! grep -q "### aenigma cluster nodes list start" /etc/hosts
-	then
-		echo "### aenigma cluster nodes list start" >> /etc/hosts
-	fi
-
-	if ! grep -Pzoq '### aenigma cluster nodes list start(?:.*\n)*?\K### aenigma cluster nodes list end' /etc/hosts
-	then
-		echo "### aenigma cluster nodes list end" >> /etc/hosts
-	fi
-
-	sed -i '/### aenigma cluster nodes list start:/,/### aenigma cluster nodes list end:/{//!d}' /etc/hosts
-	sed -i "/### aenigma cluster nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
-
-}
 
 aenigma-push_routing_info() {
 

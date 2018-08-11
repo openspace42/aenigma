@@ -9,7 +9,7 @@ os_dna_version=0.2.6
 define_vars() {
 
 	############################################################################
-	######################## Insert your variables here ########################
+	#################### Insert your initial variables here ####################
 	############################################################################
 
 	proj_name="aenigma"
@@ -27,7 +27,28 @@ define_vars() {
 	############################################################################
 	############################################################################
 
+	### Do NOT edit the following line
+
 	os-define_vars
+
+	############################################################################
+	################## Insert your additional variables here ###################
+	############################################################################
+
+	### Set the paths to the cluster / nodes conf dirs
+
+	conf_cluster_dir="${conf_dir}/cluster"
+	conf_cluster_nodes_dir="${conf_cluster_dir}/nodes"
+
+	### Set the paths to the nodes_db files
+
+	nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
+	nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
+	nodes_db_numbered_path="${conf_cluster_nodes_dir}/nodes_db_numbered"
+
+	############################################################################
+	############################################################################
+	############################################################################
 
 }
 
@@ -190,6 +211,34 @@ aenigma-install_ejabberd_config() {
 	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
 	echo "${b-}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x-}"
 	echo
+
+}
+
+aenigma-update_routing_info() {
+
+	### Set UFW rules on this node according to the updated nodes_db
+
+	IFS=$'\n'
+	set -f
+	for node in $(cat < "${nodes_db_ipv4_path}")
+	do
+		/usr/sbin/ufw allow from "$node"
+	done
+
+	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
+
+	if ! grep -q "### aenigma cluster nodes list start" /etc/hosts
+	then
+		echo "### aenigma cluster nodes list start" >> /etc/hosts
+	fi
+
+	if ! grep -Pzoq '### aenigma cluster nodes list start(?:.*\n)*?\K### aenigma cluster nodes list end' /etc/hosts
+	then
+		echo "### aenigma cluster nodes list end" >> /etc/hosts
+	fi
+
+	sed -i '/### aenigma cluster nodes list start:/,/### aenigma cluster nodes list end:/{//!d}' /etc/hosts
+	sed -i "/### aenigma cluster nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
 
 }
 
