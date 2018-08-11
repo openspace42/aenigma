@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+### Set bash environment error management
+
+set -eu
+
+################################################################################
+
+### Add padding to output
+
+echo
+
+### Determine script execution directory, install directory, and source local functions file
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
+then
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo
+        exit 1
+	fi
+fi
+
+. "$exec_dir_root/functions"
+
+### Source openspace functions file
+
+source_os_dna
+
+### Define formatting
+
+os-define_formatting
+
+### Define variables
+
+define_vars
+
+################################################################################
+
+### Read arguments
+
+if [ $# -eq 0 ]
+then
+    echo "${r-}${b-}No argument supplied for function | ${FUNCNAME[0]} |.${x-}"
+    echo
+    os-exit_function
+fi
+
+while getopts ":c:" arguments; do
+    case $arguments in
+        c)	commands="$OPTARG"
+        ;;
+        \?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
+        echo
+        os-exit_function
+        ;;
+    esac
+done
+OPTIND=1
+
+if [ -z "${commands-}" ]
+then
+    echo "${r-}${b-}Commands [option | -c |] must be supplied for function | ${FUNCNAME[0]} |.${x-}"
+    echo
+    os-exit_function
+fi
+
+################################################################################
+
+### Execute commands
+
+echo "$commands" |
+while IFS= read -r line
+do
+        if [ ! -z "${line-}" ]
+        then
+                line="$(echo $line | xargs)"
+                ${line}
+        fi
+done

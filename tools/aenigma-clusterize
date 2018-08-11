@@ -57,17 +57,17 @@ os-read_conf_settings
 
 ### Check or enable clusterization
 
-if [ ! "${clusterize_enabled-null}" = "y" ]
+if [ ! "${cluster_enabled-null}" = "y" ]
 then
-	echo "${r-}${b-}${short_name} was not installed in clusterized mode.${x-}"
+	echo "${r-}${b-}${short_name} was not installed in cluster mode.${x-}"
 	echo
-	ask_for_boolean_question="Do you wish to turn this instance into a clusterized one?"
+	ask_for_boolean_question="Do you wish to turn this instance into a cluster one?"
 	os-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
 		echo "${b-}Ok, setting clusterization to enabled.${x-}"
 		echo
-		os-set_option -o clusterize_enabled -p clusterize -s "y"
+		os-set_option -o cluster_enabled -p cluster -s "y"
 	else
 		echo "${b-}Ok, leaving clusterization off for now.${x-}"
 		echo
@@ -77,7 +77,7 @@ fi
 
 ### Check or set clusterization mode to primary
 
-if [ -z "${clusterize_mode-}" ]
+if [ -z "${cluster_mode-}" ]
 then
 	echo "${b-}This script must only be run on the primary node of ${short_name}.${x-}"
 	echo
@@ -87,13 +87,13 @@ then
 	then
 		echo "${b-}Ok, proceeding...${x-}"
 		echo
-		os-set_option -o clusterize_mode -p clusterize -s "primary"
+		os-set_option -o cluster_mode -p cluster -s "primary"
 	else
 		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 		echo
 		os-exit_function
 	fi
-elif [ "${clusterize_mode}" = "secondary" ]
+elif [ "${cluster_mode}" = "secondary" ]
 then
 	echo "${r-}${b-}This script must only be run on the primary node of ${short_name}.${x-}"
 	echo
@@ -126,9 +126,9 @@ fi
 
 ### Start creating the cluster node database files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
 
-nodes_db_ipv4_path="${$conf_dir}/cluster/nodes_db_ipv4"
-nodes_db_ipv6_path="${$conf_dir}/cluster/nodes_db_ipv6"
-nodes_db_numbered_path="${$conf_dir}/cluster/nodes_db_numbered"
+nodes_db_ipv4_path="${conf_dir}/cluster/nodes/nodes_db_ipv4"
+nodes_db_ipv6_path="${conf_dir}/cluster/nodes/nodes_db_ipv6"
+nodes_db_numbered_path="${conf_dir}/cluster/nodes/nodes_db_numbered"
 
 os-get_public_ipv4
 
@@ -214,39 +214,68 @@ done
 
 ################################################################################
 
-### Set UFW rules on this node according to the updated nodes_db
+aenigma-update_routing_info() {
 
-IFS=$'\n'
-set -f
-for i in $(cat < "${nodes_db_ipv4_path}")
-do
-	/usr/sbin/ufw allow from "$i"
-done
+	### Set UFW rules on this node according to the updated nodes_db
 
-### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to clusterize with
+	IFS=$'\n'
+	set -f
+	for i in $(cat < "${nodes_db_ipv4_path}")
+	do
+		/usr/sbin/ufw allow from "$i"
+	done
 
-if ! grep -q "### aenigma_clusterize nodes list start" /etc/hosts
-then
-	echo "### aenigma_clusterize nodes list start" >> /etc/hosts
-fi
+	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
 
-if ! grep -Pzoq '### aenigma_clusterize nodes list start(?:.*\n)*?\K### aenigma_clusterize nodes list end' /etc/hosts
-then
-	echo "### aenigma_clusterize nodes list end" >> /etc/hosts
-fi
+	if ! grep -q "### aenigma cluster nodes list start" /etc/hosts
+	then
+		echo "### aenigma cluster nodes list start" >> /etc/hosts
+	fi
 
-sed -i '/### aenigma_clusterize nodes list start:/,/### aenigma_clusterize nodes list end:/{//!d}' /etc/hosts
-sed -i "/### aenigma_clusterize nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
+	if ! grep -Pzoq '### aenigma cluster nodes list start(?:.*\n)*?\K### aenigma cluster nodes list end' /etc/hosts
+	then
+		echo "### aenigma cluster nodes list end" >> /etc/hosts
+	fi
+
+	sed -i '/### aenigma cluster nodes list start:/,/### aenigma cluster nodes list end:/{//!d}' /etc/hosts
+	sed -i "/### aenigma cluster nodes list start:/ r ${nodes_db_numbered_path}" /etc/hosts
+
+}
+
+aenigma-push_routing_info() {
+
+	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
+
+	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_cluster -r "${conf_dir}/cluster/nodes/" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/cluster/
+
+	aenigma-exec() {
+
+	        bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-update_routing_info
+"
+
+	}
+
+	for secondary_node in $(cat < "${nodes_db_ipv4_path}")
+	do
+	        ssh -tt -p42022 -i "~/.ssh/aenigma_test" "root@${secondary_node}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+aenigma-exec
+exit
+END
+	done
+
+}
 
 ################################################################################
 
 ### Generate or read and print the clusterization SSH pubkey and prompt the user to configure it on the seondary node
 
-if [ ! -f ~/.ssh/aenigma_clusterize.pub ]
+if [ ! -f ~/.ssh/aenigma_cluster.pub ]
 then
-	os-generate_ssh_keypair -n "aenigma_clusterize"
+	os-generate_ssh_keypair -n "aenigma_cluster"
 else
-	ssk_keypair_pubkey_path="~/.ssh/aenigma_clusterize.pub"
+	ssk_keypair_pubkey_path="~/.ssh/aenigma_cluster.pub"
 fi
 
 echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
@@ -256,7 +285,7 @@ echo
 read -rp "${b-}[press enter when done to continue...]${x-}"
 clear
 
-if ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" exit
+if ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
 then
 	echo "${g-}${b-}SSH connection to secondary node succeeded.${x-}"
 	echo
@@ -270,7 +299,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}" cat /tmp/aenigma_clusterize_token)"
+if secondary_node_token="$(ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma_cluster_token)"
 then
 	echo "${g-}${b-}Token on secondary node correctly found.${x-}"
 	echo
@@ -305,12 +334,12 @@ fi
 
 #### If token is an IPv6 address then import it here and add it to nodes_db_ipv6 otherwise specify lack thereof
 
-scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "root@${secondary_node_ipv4}:/tmp/aenigma_clusterize_token" "/tmp/"
+scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}:/tmp/aenigma_cluster_token" "/tmp/"
 
-if grep -q ":" "/tmp/aenigma_clusterize_token"
+if grep -q ":" "/tmp/aenigma_cluster_token"
 then
 	### The secondary node is IPv6 enabled, add this to nodes_db_ipv6
-	secodary_node_ipv6="$(cat /tmp/aenigma_clusterize_token)"
+	secodary_node_ipv6="$(cat /tmp/aenigma_token)"
 	sed -i "${secondary_node_number}s/.*/${secondary_node_ipv6}/" "${nodes_db_ipv6_path}"
 else
 	### The secondary node is NOT IPv6 enabled, specify this in nodes_db_ipv6
@@ -323,26 +352,25 @@ fi
 
 aenigma-perform_dns_checks
 
+### Push /etc/hosts config and ufw rules to all secondary nodes [existing and the new one being configured alike] to allow them to connect to each other correctly
+
+aenigma-push_nodes_db
+
 ################################################################################
 
 ### Push node_number to secondary node
 
-echo "${secondary_node_number}" > /tmp/aenigma_clusterize_secondary_node_number
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "/tmp/aenigma_clusterize_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/node_number"
+echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/cluster/node_number"
 
 ### Push config to secondary node
 
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_clusterize" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "~/.ssh/aenigma_clusterize" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
-
-### Push node db files to secondary node for /etc/hosts and ufw rules configuration
-
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_clusterize "${conf_dir}/clusterize/nodes_db_numbered" root@ae${secondary_node_number}.${domain}:~/${conf_dir}/clusterize/
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:~/${conf_dir}/xmpp/"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "~/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
 
 ### Push wildcard LE TLS cert for $domain to secondary node
 
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_clusterize "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i ~/.ssh/aenigma_cluster "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
 
 ################################################################################
 

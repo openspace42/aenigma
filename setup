@@ -61,6 +61,7 @@ then
 			echo
 			;;
 		l)	echo "Disabling dna download and using local version as per | -d l |."
+			echo
 			;;
 		*)	echo "Invalid content for | custom_dna_version | in function | ${FUNCNAME[0]} |."
 			echo

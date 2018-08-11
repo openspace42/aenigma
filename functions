@@ -198,10 +198,10 @@ aenigma-perform_dns_checks() {
 	### Perform DNS checks. These must only be run by the primary node.
 
 	declare -a dns_array=(
-	"hostname"
-	"XMPP"
-	"round-robin"
-	"SRV"
+		"hostname"
+		"XMPP"
+		"round-robin"
+		"SRV"
 	)
 
 	if [ $ipv6_avail = "y" ]
