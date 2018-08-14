@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+set -eu
+
+echo
+
+### Determine terminal window center
+
+columns_number="$(tput cols)"
+
+### Insert minimum width check here
+###################################
+
+columns_median="$(echo $((columns_number / 2)))"
+
+### The aenigma logo is 45 pixels and therefore 90 columns wide, therefore...
+
+base_column="$(echo $((columns_median - 45)))"
+
+### Set colors
+
+b=$'\e[38;5;16m'
+w=$'\e[38;5;15m'
+
+l=$'\e[38;5;27m'
+
+x=$'\e[0m'
+z=$'\e[8m'
+
+### Lines {01..04} are all white
+set p02{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p03{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p04{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p05{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+
+### Except for the dot over the "i"
+
+eval p03{19..19}='$b'
+
+### Set base for remaining lines
+set p06{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p07{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p08{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p09{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p10{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p11{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p12{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p13{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p14{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p15{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p16{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+set p17{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+
+### Line 06
+
+eval p06{03..09}='$l'
+eval p06{11..17}='$b'
+eval p06{19..19}='$b'
+eval p06{21..27}='$b'
+eval p06{29..35}='$b'
+eval p06{38..43}='$b'
+
+### Set borders
+
+set p01{01..45} && array="$@" && for item in $array; do eval $item='$b'; done && unset array item
+set p17{01..45} && array="$@" && for item in $array; do eval $item='$b'; done && unset array item
+eval p{01..17}01='$b'
+eval p{01..17}45='$b'
+
+### Print
+
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p01{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p02{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p03{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p04{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p05{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p06{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p07{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p08{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p09{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p10{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p11{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p12{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p13{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p14{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p15{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p16{01..45}██ | tr -d ' ')"
+echo "${z}$(eval $(echo printf '"█%0.s"' {1..$base_column}))${x}$(echo $p17{01..45}██ | tr -d ' ')"
+
+echo ${x}

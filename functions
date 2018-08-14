@@ -550,12 +550,34 @@ aenigma-perform_dns_checks() {
 
 backup_locally_loop() {
 
-	cp -r "$conf_dir" "$tmp_backup_dir"/conf/
-	mkdir -p "$tmp_backup_dir"/data/
+	if [ "${cluster_mode-null}" = "secondary" ]
+	then
+		echo "${r-}${b-}The backup script is only intended to run on the primary node.${x-}"
+		echo
+		echo "${b-}The primary node will take care of backing up the ejabberd uploads directory of the secondary nodes. No further backup is required on secondary nodes.${x-}"
+		echo
+		os-exit_function
+	fi
+
+	cp -r "${conf_dir}" "${tmp_backup_dir}"/conf/
+	mkdir -p "${tmp_backup_dir}"/data/
 	/usr/sbin/ejabberdctl backup ejabberd-mnesia-backup
-	mv /var/lib/ejabberd/ejabberd-mnesia-backup "$tmp_backup_dir"/data/ejabberd-mnesia-backup
-	cp -r /etc/ejabberd/ "$tmp_backup_dir"/data/etc-ejabberd/
-	cp -r /var/lib/ejabberd/ "$tmp_backup_dir"/data/var-lib-ejabberd/
+	mv /var/lib/ejabberd/ejabberd-mnesia-backup "${tmp_backup_dir}"/data/ejabberd-mnesia-backup
+	cp -r /etc/ejabberd/ "${tmp_backup_dir}"/data/etc-ejabberd/
+	cp -r /var/lib/ejabberd/ "${tmp_backup_dir}"/data/var-lib-ejabberd/
+
+	if [ "${cluster_enabled}" = "y" ]
+	then
+		for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+		do
+			### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+			then
+				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
+				/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
+			fi
+		done
+	fi
 
 }
 
