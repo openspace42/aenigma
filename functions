@@ -111,7 +111,163 @@ source_os_dna() {
 ######################## Insert project functions here #########################
 ################################################################################
 
-aenigma_xmpp_intro() {
+aenigma-display_logo() {
+
+	### Determine terminal window size
+
+	columns_number="$(tput cols)"
+	rows_number="$(tput lines)"
+
+	### Check that the terminal window is large enough to display the logo
+
+	if [ "${columns_number}" -ge "93" ] && [ "${rows_number}" -ge "24" ]
+	then
+
+	    ### Determine terminal window center
+
+	    columns_median="$(echo $((columns_number / 2)))"
+
+	    ### The aenigma logo is 45 pixels and therefore 90 columns wide, therefore...
+
+	    base_column="$(echo $((columns_median - 45)))"
+
+	    ### Set colors
+
+	    b=$'\e[38;5;16m'
+	    w=$'\e[38;5;15m'
+
+	    l=$'\e[38;5;33m'
+
+	    x=$'\e[0m'
+	    z=$'\e[8m'
+
+	    ### Set white base for all lines
+	    set p02{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p03{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p04{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p05{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p06{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p07{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p08{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p09{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p10{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p11{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p12{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p13{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p14{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p15{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p16{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+	    set p17{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
+
+	    ### Line 03
+
+	    eval p0319='$b'
+
+	    ### Line 06
+
+	    eval p06{03..09}='$l'
+	    eval p06{11..17}='$b'
+	    eval p0619='$b'
+	    eval p06{21..27}='$b'
+	    eval p06{29..35}='$b'
+	    eval p06{38..43}='$b'
+
+	    ### Lines {07..08}
+
+	    eval p{07..08}06='$l'
+	    eval p{07..08}09='$l'
+	    eval p{07..08}11='$b'
+	    eval p{07..08}17='$b'
+	    eval p{07..08}19='$b'
+	    eval p{07..08}21='$b'
+	    eval p{07..08}27='$b'
+	    eval p{07..08}29='$b'
+	    eval p{07..08}32='$b'
+	    eval p{07..08}35='$b'
+	    eval p{07..08}43='$b'
+
+	    ### Line 09
+
+	    eval p09{03..09}='$l'
+	    eval p0911='$b'
+	    eval p0917='$b'
+	    eval p0919='$b'
+	    eval p0921='$b'
+	    eval p0927='$b'
+	    eval p0929='$b'
+	    eval p0932='$b'
+	    eval p0935='$b'
+	    eval p09{37..43}='$b'
+
+	    ### Lines {10..11}
+
+	    eval p{10..11}03='$l'
+	    eval p{10..11}06='$l'
+	    eval p{10..11}11='$b'
+	    eval p{10..11}17='$b'
+	    eval p{10..11}19='$b'
+	    eval p{10..11}21='$b'
+	    eval p{10..11}27='$b'
+	    eval p{10..11}29='$b'
+	    eval p{10..11}32='$b'
+	    eval p{10..11}35='$b'
+	    eval p{10..11}37='$b'
+	    eval p{10..11}43='$b'
+
+	    ### Line 12
+
+	    eval p12{03..09}='$l'
+	    eval p1211='$b'
+	    eval p1217='$b'
+	    eval p1219='$b'
+	    eval p12{21..27}='$b'
+	    eval p1229='$b'
+	    eval p1232='$b'
+	    eval p1235='$b'
+	    eval p12{37..43}='$b'
+
+	    ### Lines {13..14}
+
+	    eval p{13..14}27='$b'
+
+	    ### Line 15
+
+	    eval p15{22..27}='$b'
+
+	    ### Set borders
+
+	    set p01{01..45} && array="$@" && for item in $array; do eval $item='$b'; done && unset array item
+	    set p17{01..45} && array="$@" && for item in $array; do eval $item='$b'; done && unset array item
+	    eval p{01..17}01='$b'
+	    eval p{01..17}45='$b'
+
+	    ### Print
+
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p01{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p02{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p03{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p04{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p05{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p06{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p07{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p08{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p09{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p10{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p11{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p12{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p13{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p14{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p15{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p16{01..45}██ | tr -d ' ')"
+	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p17{01..45}██ | tr -d ' ')"
+
+	    echo ${x}
+
+	fi
+
+}
+
+aenigma-xmpp_intro() {
 
 	echo "0] First of all, a little introduction on how XMPP actually works"
 	echo
@@ -770,11 +926,15 @@ perform_installation() {
 
 	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
+	### Display aenigma logo
+
+	aenigma-display_logo
+
 	### Skip intro if requested by user
 
 	if [ $skip_intro = "n" ]
 	then
-	    aenigma_xmpp_intro
+	    aenigma-xmpp_intro
 	fi
 
 	############################################################################
