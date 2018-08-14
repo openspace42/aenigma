@@ -263,6 +263,10 @@ aenigma-display_logo() {
 
 	    echo ${x}
 
+		unset b w l x z
+
+		os-define_formatting
+
 	fi
 
 }
@@ -902,6 +906,12 @@ perform_installation() {
 	################### Add your install-time functions here ###################
 	############################################################################
 
+	### Display aenigma logo
+
+	aenigma-display_logo
+
+	################################################################################
+
 	os-check_sslh_connection
 
 	os-check_distro_ubuntu_lts
@@ -925,10 +935,6 @@ perform_installation() {
 	### Copy files to destination
 
 	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
-
-	### Display aenigma logo
-
-	aenigma-display_logo
 
 	### Skip intro if requested by user
 
