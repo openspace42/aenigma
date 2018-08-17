@@ -389,6 +389,7 @@ aenigma-update_routing_info() {
 
 	if ! grep -q "### aenigma cluster nodes list start" /etc/hosts
 	then
+		echo >> /etc/hosts
 		echo "### aenigma cluster nodes list start" >> /etc/hosts
 	fi
 
