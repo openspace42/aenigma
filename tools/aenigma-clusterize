@@ -126,7 +126,9 @@ fi
 
 ### Start creating the cluster node database files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
 
-os-get_public_ipv4
+os-get_public_ipv4 -s
+
+mkdir -p "${conf_cluster_nodes_dir}"
 
 ### IPv4
 
