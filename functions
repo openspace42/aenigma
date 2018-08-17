@@ -734,7 +734,7 @@ backup_locally_loop() {
 			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 			then
 				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
-				/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "~/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
+				/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
 			fi
 		done
 	fi
@@ -1150,7 +1150,7 @@ perform_installation() {
 
 		########################################################################
 
-		### Set node_number to 00 as this is the primary node
+		### Set node_number to 01 as this is the primary node
 
 		os-set_option -o node_number -p clusterize -s "01"
 
@@ -1323,7 +1323,7 @@ perform_installation() {
 
 		if ! grep -q "${clusterize_ssh_pubkey}" /root/.ssh/authorized_keys
 		then
-			echo "$clusterize_ssh_pubkey" > /root/.ssh/authorized_keys
+			echo "$clusterize_ssh_pubkey" >> /root/.ssh/authorized_keys
 		fi
 
 		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
