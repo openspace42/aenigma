@@ -39,7 +39,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -49,9 +49,9 @@ define_vars
 
 check_root
 
-os-log_script
+dna-log_script
 
-os-read_conf_settings
+dna-read_conf_settings
 
 ################################################################################
 
@@ -61,7 +61,7 @@ while getopts ":s" arguments; do
 		;;
 		\?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 		;;
 	esac
 done
@@ -82,7 +82,7 @@ then
     if [ $interactive = "y" ]
     then
         ask_for_boolean_question="If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
-        os-ask_for_boolean_def_no
+        dna-ask_for_boolean_def_no
         if [ "$ask_for_boolean_output" = "y" ]
         then
             echo "${b-}Ok, continuing anyway...${x-}"
@@ -91,7 +91,7 @@ then
         else
             echo "${b-}Ok, aborting...${x-}"
             echo
-            os-exit_function
+            dna-exit_function
         fi
     else
         echo "${b-}If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted.${x-}"
@@ -100,7 +100,7 @@ then
         echo
         echo "${r-}${b-}Aborting backup for now.${x-}"
         echo
-        os-exit_function
+        dna-exit_function
     fi
 else
     ### set lockfile
@@ -110,28 +110,28 @@ fi
 
 ################################################################################
 
-os-br_purge_incomplete_archives
+dna-br_purge_incomplete_archives
 
-os-br_purge_dirs
+dna-br_purge_dirs
 
-os-br_create_dirs backup
+dna-br_create_dirs backup
 
-os-br_update_storage_info
+dna-br_update_storage_info
 
-os-br_purge_backups
+dna-br_purge_backups
 
 if [ "$backup_archival_location" = "s3" ]
 then
 
-    os-br_restore_from_S3 test
+    dna-br_restore_from_S3 test
 
-    os-br_purge_dirs
+    dna-br_purge_dirs
 
-    os-br_create_dirs backup
+    dna-br_create_dirs backup
 
 fi
 
-os-br_backup_locally "${skip_install_complete_check-}"
+dna-br_backup_locally "${skip_install_complete_check-}"
 
 ################################################################################
 
@@ -152,7 +152,7 @@ then
 
     	############################################################################
 
-    	os-br_backup_to_S3
+    	dna-br_backup_to_S3
 
     fi
 
@@ -167,7 +167,7 @@ then
 	rm -r "${backup_local_storage_path:?}/temp"
 fi
 
-os-br_purge_dirs
+dna-br_purge_dirs
 
 if [ -f "/tmp/${short_name}-backup-running-lockfile" ]
 then
@@ -176,7 +176,7 @@ fi
 
 if [ "${s3_restore_test_failed-null}" = "y" ]
 then
-    os-exit_function
+    dna-exit_function
 fi
 
 echo "${g-}${b-}Backup complete!${x-}"

@@ -41,7 +41,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -59,7 +59,7 @@ then
     echo
     echo "${b-}It is only meant to be executed by other functions remotely.${x-}"
     echo
-    os-exit_function
+    dna-exit_function
 fi
 
 while getopts ":c:" arguments; do
@@ -68,7 +68,7 @@ while getopts ":c:" arguments; do
         ;;
         \?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
         echo
-        os-exit_function
+        dna-exit_function
         ;;
     esac
 done
@@ -78,7 +78,7 @@ if [ -z "${commands-}" ]
 then
     echo "${r-}${b-}Commands [option | -c |] must be supplied for function | ${FUNCNAME[0]} |.${x-}"
     echo
-    os-exit_function
+    dna-exit_function
 fi
 
 ################################################################################

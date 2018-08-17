@@ -39,7 +39,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -49,9 +49,9 @@ define_vars
 
 check_root
 
-os-head_script
+dna-head_script
 
-os-read_conf_settings
+dna-read_conf_settings
 
 ################################################################################
 
@@ -62,16 +62,16 @@ then
 	echo "${r-}${b-}${short_name} was not installed in cluster mode.${x-}"
 	echo
 	ask_for_boolean_question="Do you wish to turn this instance into a cluster one?"
-	os-ask_for_boolean_def_yes
+	dna-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
 		echo "${b-}Ok, setting clusterization to enabled.${x-}"
 		echo
-		os-set_option -o cluster_enabled -p cluster -s "y"
+		dna-set_option -o cluster_enabled -p cluster -s "y"
 	else
 		echo "${b-}Ok, leaving clusterization off for now.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 	fi
 fi
 
@@ -82,16 +82,16 @@ then
 	echo "${b-}This script must only be run on the primary node of ${short_name}.${x-}"
 	echo
 	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your ${short_name} instance?"
-	os-ask_for_boolean_def_no
+	dna-ask_for_boolean_def_no
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
 		echo "${b-}Ok, proceeding...${x-}"
 		echo
-		os-set_option -o cluster_mode -p cluster -s "primary"
+		dna-set_option -o cluster_mode -p cluster -s "primary"
 	else
 		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 	fi
 elif [ "${cluster_mode}" = "secondary" ]
 then
@@ -109,7 +109,7 @@ else
 fi
 
 ask_for_boolean_question="Have you already started the ${short_name} installation on your secondary node?"
-os-ask_for_boolean_def_yes
+dna-ask_for_boolean_def_yes
 if [ "$ask_for_boolean_output" = "y" ]
 then
 	echo "${b-}Ok, continuing...${x-}"
@@ -126,9 +126,9 @@ fi
 
 ### Start creating the cluster node database files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
 
-os-get_public_ipv4 -s
+dna-get_public_ipv4 -s
 
-os-check_ipv6_connectivity -s
+dna-check_ipv6_connectivity -s
 
 mkdir -p "${conf_cluster_nodes_dir}"
 
@@ -186,7 +186,7 @@ then
 	echo "${b-}The server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | is already registered as part of this cluster with node number | ${o-}${secondary_node_number}${n-} |.${x-}"
 	echo
 	ask_for_boolean_question="Would you like to re-provision it?"
-	os-ask_for_boolean_def_yes
+	dna-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
 		echo "${b-}Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |...${x-}"
@@ -194,7 +194,7 @@ then
 	else
 		echo "${b-}Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 	fi
 else
 	### Specified secondary node is new to this cluster
@@ -249,7 +249,7 @@ else
 	echo
 	echo "${b-}Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${x-}${b-} |, that its SSH port is | ${y}42022${x-}${b-} |, and that its firewall isn't blocking connections on that port.${x-}"
 	echo
-	os-exit_function
+	dna-exit_function
 fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
@@ -261,7 +261,7 @@ then
 	echo "${b-}Its value is: | ${y-}${secondary_node_token}${n-} |.${x-}"
 	echo
 	ask_for_boolean_question="Does this token match what you see on the secondary node?"
-	os-ask_for_boolean_def_yes
+	dna-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
 		echo "${b-}Ok, continuing...${x-}"
@@ -269,14 +269,14 @@ then
 	else
 		echo "${b-}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} | and try again.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 	fi
 else
 	echo "${r-}${b-}Token on secondary node not found.${x-}"
 	echo
 	echo "${b-}Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again.${x-}"
 	echo
-	os-exit_function
+	dna-exit_function
 fi
 
 ################################################################################

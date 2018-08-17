@@ -101,7 +101,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -118,4 +118,4 @@ fi
 
 git clone ${git_host}/${author_name}/${proj_name}
 
-os-run_install
+dna-run_install

@@ -39,7 +39,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -49,9 +49,9 @@ define_vars
 
 check_root
 
-os-head_script
+dna-head_script
 
-os-read_conf_settings
+dna-read_conf_settings
 
 ################################################################################
 
@@ -65,15 +65,15 @@ os-read_conf_settings
 
 ################################################################################
 
-os-br_purge_incomplete_archives
+dna-br_purge_incomplete_archives
 
-os-br_purge_dirs
+dna-br_purge_dirs
 
-os-br_create_dirs restore
+dna-br_create_dirs restore
 
 ################################################################################
 
-os-check_install_complete
+dna-check_install_complete
 
 if [ "$install_complete" = "n" ]
 then
@@ -87,7 +87,7 @@ then
 
 	ask_for_boolean_question="Run this script in bootstrap mode to restore your previous instance from S3?"
 
-	os-ask_for_boolean_def_no
+	dna-ask_for_boolean_def_no
 
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
@@ -97,14 +97,14 @@ then
 	else
 		echo "${b-}Ok, aborting.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 	fi
 
 	if [ ${bootstrap_mode-null} = "y" ]
 	then
 
-		os-setup_backup_restore_s3 -s
-		os-br_launch_restore -s
+		dna-setup_backup_restore_s3 -s
+		dna-br_launch_restore -s
 		rsync -aAXx --delete "$restore_file_path/conf/" "$conf_dir/"
 
 		echo "${g-}${b-}Bootstrap-mode restore from S3 complete.${x-}"
@@ -112,7 +112,7 @@ then
 		echo "${b-}Now launching installation.${x-}"
 		echo
 
-		os-run_install
+		dna-run_install
 
 		echo "${g-}${b-}Bootstrap-mode installation complete.${x-}"
 		echo
@@ -185,7 +185,7 @@ restore_from_standalone_content_validation() {
 ################################################################################
 ################################################################################
 
-os-br_launch_restore
+dna-br_launch_restore
 
 ################################################################################
 
@@ -194,7 +194,7 @@ os-br_launch_restore
 if [ ! "${skip_backup:-null}" = "y" ]
 then
 
-	os-br_last_local_backup
+	dna-br_last_local_backup
 
 fi
 
@@ -202,7 +202,7 @@ fi
 
 restore_loop
 
-os-br_purge_dirs
+dna-br_purge_dirs
 
 echo "${g-}${b-}Restore complete!${x-}"
 echo

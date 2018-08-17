@@ -55,7 +55,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -65,7 +65,7 @@ define_vars
 
 ### Check for any already existing installation
 
-os-check_install_version
+dna-check_install_version
 
 ### All ready for installation
 

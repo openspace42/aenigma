@@ -29,7 +29,7 @@ define_vars() {
 
 	### Do NOT edit the following line
 
-	os-define_vars
+	dna-define_vars
 
 	############################################################################
 	################## Insert your additional variables here ###################
@@ -265,7 +265,7 @@ aenigma-display_logo() {
 
 		unset b w l x z
 
-		os-define_formatting
+		dna-define_formatting
 
 	fi
 
@@ -717,7 +717,7 @@ backup_locally_loop() {
 		echo
 		echo "${b-}The primary node will take care of backing up the ejabberd uploads directory of the secondary nodes. No further backup is required on secondary nodes.${x-}"
 		echo
-		os-exit_function
+		dna-exit_function
 	fi
 
 	cp -r "${conf_dir}" "${tmp_backup_dir}"/conf/
@@ -780,7 +780,7 @@ restore_loop() {
 	else
 	        echo "${r-}${b-}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x-}"
 	        echo
-	        os-exit_function
+	        dna-exit_function
 	fi
 
 	echo "${b-}Now restoring ejabberd directories...${x-}"
@@ -913,17 +913,17 @@ perform_installation() {
 
 	################################################################################
 
-	os-check_sslh_connection
+	dna-check_sslh_connection
 
-	os-check_distro_ubuntu_lts
+	dna-check_distro_ubuntu_lts
 
-	os-check_inception_run
+	dna-check_inception_run
 
 	################################################################################
 
-	os-apt_full_upgrade -e
+	dna-apt_full_upgrade -e
 
-	os-install_duplicity
+	dna-install_duplicity
 
 	mkdir -p "${tls_dir}"
 	chown -R ejabberd:ejabberd "${tls_dir}" 2> /dev/null || true
@@ -972,7 +972,7 @@ perform_installation() {
 
 	}
 
-	os-set_option -o "cluster_enabled" -p "cluster" -d y -c "[single/cluster]" -v y
+	dna-set_option -o "cluster_enabled" -p "cluster" -d y -c "[single/cluster]" -v y
 
 	if [ "${cluster_enabled}" = "cluster" ]
 	then
@@ -999,7 +999,7 @@ perform_installation() {
 
 		}
 
-		os-set_option -o "cluster_mode" -p "cluster" -d y -c "[primary/secondary]" -v y
+		dna-set_option -o "cluster_mode" -p "cluster" -d y -c "[primary/secondary]" -v y
 
 		if [ "${cluster_mode}" = "primary" ]
 		then
@@ -1009,7 +1009,7 @@ perform_installation() {
 			echo "${b-}Having chosen that this server will be a secondary node for your ${short_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x-}"
 			echo
 			ask_for_boolean_question="Is the primary node for this ${short_name} already up and running and perfectly configured?"
-            os-ask_for_boolean_def_yes
+            dna-ask_for_boolean_def_yes
             if [ "$ask_for_boolean_output" = "y" ]
             then
 				echo "${b-}Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node...${x-}"
@@ -1021,7 +1021,7 @@ perform_installation() {
 				echo
 				echo "${b-}Aborting installation for now.${x-}"
 				echo
-                os-exit_function
+                dna-exit_function
             fi
 		fi
 	fi
@@ -1040,7 +1040,7 @@ perform_installation() {
 
 	    }
 
-	    os-set_option -o domain -v n -d y -p xmpp
+	    dna-set_option -o domain -v n -d y -p xmpp
 
 	    if [ $previous_value_outcome = "not-kept" ]
 	    then
@@ -1100,7 +1100,7 @@ perform_installation() {
 	            echo
 	            echo "${b-}Ok, not changing hostname.${x-}"
 	            echo
-				os-exit_function
+				dna-exit_function
 	        fi
 	    fi
 
@@ -1153,7 +1153,7 @@ perform_installation() {
 
 		### Set node_number to 01 as this is the primary node
 
-		os-set_option -o node_number -p cluster -s "01"
+		dna-set_option -o node_number -p cluster -s "01"
 
 	else
 
@@ -1163,7 +1163,7 @@ perform_installation() {
 		echo
 
 		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server now?"
-		os-ask_for_boolean_def_no
+		dna-ask_for_boolean_def_no
 		if [ "$ask_for_boolean_output" = "y" ]
 		then
 			echo "${b-}Ok, proceeding with ejabberd wipe...${x-}"
@@ -1181,7 +1181,7 @@ perform_installation() {
 		else
 			echo "${b-}Ok, skipping ejabberd wipe.${x-}"
 			echo
-			os-exit_function
+			dna-exit_function
 		fi
 
 	fi
@@ -1190,13 +1190,13 @@ perform_installation() {
 
 	### Set admin email address
 
-	os-set_admin_email
+	dna-set_admin_email
 
 	### Check internet connectivity and get public IP addresses
 
-	os-get_public_ipv4
+	dna-get_public_ipv4
 
-	os-check_ipv6_connectivity
+	dna-check_ipv6_connectivity
 
 	############################################################################
 
@@ -1214,7 +1214,7 @@ perform_installation() {
 	    echo "${b-}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x-}"
 	    echo
 
-		os-provision_le_wildcard_cert -d "$domain"
+		dna-provision_le_wildcard_cert -d "$domain"
 
 		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
@@ -1230,7 +1230,7 @@ perform_installation() {
 	    else
 	        echo "${r-}${b-}Something went wrong provisioning the wildcard TLS certificate for $domain.${x-}"
 	        echo
-	        os-exit_function
+	        dna-exit_function
 	    fi
 
 	    domain_tls_cert_location="${tls_dir}/${domain}.pem"
@@ -1240,7 +1240,7 @@ perform_installation() {
 
 		### Setup backup restore
 
-		os-setup_backup_restore
+		dna-setup_backup_restore
 
 		############################################################################
 
@@ -1352,7 +1352,7 @@ perform_installation() {
 
 		### Read newly received config
 
-		os-read_conf_settings
+		dna-read_conf_settings
 
 		### Set hostname according to the node_number from the newly received config
 
@@ -1548,7 +1548,7 @@ perform_installation() {
 
 	### Ensure DPKG is available before proceeding
 
-	os-check_dpkg_availability
+	dna-check_dpkg_availability
 
 	### Actually install ejabberd
 
@@ -1588,7 +1588,7 @@ perform_installation() {
 
 		### Add backup script to crontab
 
-		os-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
+		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
 
 		rm -rf /var/lib/ejabberd/*
 
@@ -1770,7 +1770,7 @@ perform_installation() {
 
 	### Generate aenigma-specific DHparam file
 
-	os-generate_project_specific_dhparam
+	dna-generate_project_specific_dhparam
 
 	############################################################################
 	############################################################################

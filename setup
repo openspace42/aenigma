@@ -100,7 +100,7 @@ source_os_dna
 
 ### Define formatting
 
-os-define_formatting
+dna-define_formatting
 
 ### Define variables
 
@@ -110,4 +110,4 @@ define_vars
 
 ### Actually run the installer
 
-os-run_install
+dna-run_install
