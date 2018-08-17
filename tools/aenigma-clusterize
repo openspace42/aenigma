@@ -228,7 +228,7 @@ done
 
 if [ ! -f "~/.ssh/aenigma_cluster.pub" ]
 then
-	os-generate_ssh_keypair -n "aenigma_cluster"
+	dna-generate_ssh_keypair -n "aenigma_cluster"
 else
 	ssk_keypair_pubkey_path="~/.ssh/aenigma_cluster.pub"
 fi
