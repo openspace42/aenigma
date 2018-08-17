@@ -963,7 +963,7 @@ perform_installation() {
 			;;
 			cluster)	valid="y"
 			;;
-			*)	echo "${r-}${b-}Invalid setting for | ${n-}clusterize_enabled${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
+			*)	echo "${r-}${b-}Invalid setting for | ${n-}cluster_enabled${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
 			valid="n"
 			;;
@@ -971,9 +971,9 @@ perform_installation() {
 
 	}
 
-	os-set_option -o "clusterize_enabled" -p "clusterize" -d y -c "[single/cluster]" -v y
+	os-set_option -o "cluster_enabled" -p "cluster" -d y -c "[single/cluster]" -v y
 
-	if [ "${clusterize_enabled}" = "cluster" ]
+	if [ "${cluster_enabled}" = "cluster" ]
 	then
 
 		describe_setting() {
@@ -990,7 +990,7 @@ perform_installation() {
 				;;
 				secondary)		valid="y"
 				;;
-				*)	echo "${r-}${b-}Invalid setting for | ${n-}clusterize_mode${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
+				*)	echo "${r-}${b-}Invalid setting for | ${n-}cluster_mode${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 				echo
 				valid="n"
 				;;
@@ -998,9 +998,9 @@ perform_installation() {
 
 		}
 
-		os-set_option -o "clusterize_mode" -p "clusterize" -d y -c "[primary/secondary]" -v y
+		os-set_option -o "cluster_mode" -p "cluster" -d y -c "[primary/secondary]" -v y
 
-		if [ "${clusterize_mode}" = "primary" ]
+		if [ "${cluster_mode}" = "primary" ]
 		then
 			echo "${b-}Having chosen that this server will be your primary node for your ${short_name} installation, we can carry on with the standard installation.${x-}"
 			echo
@@ -1027,7 +1027,7 @@ perform_installation() {
 
 	############################################################################
 
-	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Set xmpp domain
@@ -1152,7 +1152,7 @@ perform_installation() {
 
 		### Set node_number to 01 as this is the primary node
 
-		os-set_option -o node_number -p clusterize -s "01"
+		os-set_option -o node_number -p cluster -s "01"
 
 	else
 
@@ -1199,7 +1199,7 @@ perform_installation() {
 
 	############################################################################
 
-	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
@@ -1276,10 +1276,10 @@ perform_installation() {
 		defined=n
 		until [ $defined = "y" ]
 		do
-			clusterize_ssh_pubkey=""
-			until [ ! "$clusterize_ssh_pubkey" = "" ]
+			cluster_ssh_pubkey=""
+			until [ ! "$cluster_ssh_pubkey" = "" ]
 			do
-				read -rp "${b-}Now specify the public SSH key displayed on the primary node: ${x-}" clusterize_ssh_pubkey
+				read -rp "${b-}Now specify the public SSH key displayed on the primary node: ${x-}" cluster_ssh_pubkey
 				echo
 			done
 			valid=n
@@ -1321,19 +1321,19 @@ perform_installation() {
 			done
 		done
 
-		if ! grep -q "${clusterize_ssh_pubkey}" /root/.ssh/authorized_keys
+		if ! grep -q "${cluster_ssh_pubkey}" /root/.ssh/authorized_keys
 		then
-			echo "$clusterize_ssh_pubkey" >> /root/.ssh/authorized_keys
+			echo "$cluster_ssh_pubkey" >> /root/.ssh/authorized_keys
 		fi
 
 		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
 
 		if [ $ipv6_avail = "y" ]
 		then
-			echo "${this_ipv6}" > /tmp/aenigma_clusterize_token
+			echo "${this_ipv6}" > /tmp/aenigma_cluster_token
 		else
-			aenigma_clusterize_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-			echo "${aenigma_clusterize_token}" > /tmp/aenigma_clusterize_token
+			aenigma_cluster_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			echo "${aenigma_cluster_token}" > /tmp/aenigma_cluster_token
 		fi
 
 		echo "${b-}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x-}"
@@ -1571,7 +1571,7 @@ perform_installation() {
 	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
 	sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
 
-	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	if [ ! "${/root/_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
@@ -1597,7 +1597,7 @@ perform_installation() {
 	echo "${b-}Finished starting ejabberd.${x-}"
 	echo
 
-	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	if [ ! "${/root/_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
@@ -1730,7 +1730,7 @@ perform_installation() {
 	set -e
 	clear
 
-	if [ ! "${clusterize_mode-null}" = "secondary" ]
+	if [ ! "${/root/_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
