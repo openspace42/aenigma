@@ -1075,12 +1075,12 @@ perform_installation() {
 
 		curr_host_name="$(cat /etc/hostname)"
 
-	    if [ "$curr_host_name" = "ae00.${domain}" ]
+	    if [ "$curr_host_name" = "ae01.${domain}" ]
 	    then
-	        echo "${g-}${b-}Your hostname is already correctly set to: | ${x-}${b-}ae00.${domain}${g-} |.${x-}"
+	        echo "${g-}${b-}Your hostname is already correctly set to: | ${x-}${b-}ae01.${domain}${g-} |.${x-}"
 	        echo
 	    else
-			echo "${b-}This machine's hostname must become: | ae00.${domain} |.${x-}"
+			echo "${b-}This machine's hostname must become: | ae01.${domain} |.${x-}"
 		    echo
 			echo "${b-}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${short_name} into a cluster should you ever choose to do so.${x-}"
 			echo
@@ -1092,9 +1092,9 @@ perform_installation() {
 	        echo
 	        if [[ ! $REPLY =~ ^[Nn]$ ]]
 	        then
-	            echo "${b-}Ok, setting hostname to: | ae00.${domain} |.${x-}"
+	            echo "${b-}Ok, setting hostname to: | ae01.${domain} |.${x-}"
 	            echo
-	            echo "ae00.${domain}" > /etc/hostname
+	            echo "ae01.${domain}" > /etc/hostname
 	        else
 	            echo
 	            echo "${b-}Ok, not changing hostname.${x-}"
@@ -1152,7 +1152,7 @@ perform_installation() {
 
 		### Set node_number to 00 as this is the primary node
 
-		os-set_option -o node_number -p clusterize -s "00"
+		os-set_option -o node_number -p clusterize -s "01"
 
 	else
 

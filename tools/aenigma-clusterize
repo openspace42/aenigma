@@ -174,7 +174,9 @@ fi
 
 ### Now add the secondary node's IPv4 to nodes_db_ipv4
 
-read -rp "${b-}Now enter the public IPv4 address displayed on your secondary node: ${x-} "
+read -rp "${b-}Now enter the public IPv4 address displayed on your secondary node: ${x-}"
+echo
+
 secondary_node_ipv4="${REPLY}"
 
 if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
