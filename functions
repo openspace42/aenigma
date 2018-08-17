@@ -1336,6 +1336,13 @@ perform_installation() {
 			echo "${aenigma_cluster_token}" > /tmp/aenigma_cluster_token
 		fi
 
+		echo "${b-}A token has been generated to verify a correct connection to this machine from the primary node.${x-}"
+		echo
+		echo "${b-}You'll be asked to verify it matches with the one that will shortly be displayed on the primary node.${x-}"
+		echo
+		echo "${b-}Its value is: | ${y-}${secondary_node_token}${n-} |.${x-}"
+		echo
+
 		echo "${b-}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x-}"
 		echo
 		echo "${b-}After that, complete the execution of the clusterize script and come back here when finished.${x-}"
