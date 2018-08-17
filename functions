@@ -799,8 +799,8 @@ restore_loop() {
 	echo "${b-}Now setting permissions on ejabberd directories...${x-}"
 	echo
 
-	chown -R ejabberd:ejabberd /etc/ejabberd/
-	chown -R ejabberd:ejabberd /var/lib/ejabberd/
+	chown -R ejabberd:ejabberd /etc/ejabberd/ 2> /dev/null || true
+	chown -R ejabberd:ejabberd /var/lib/ejabberd/ 2> /dev/null || true
 
 	echo "${b-}Now starting ejabberd...${x-}"
 	/usr/sbin/service ejabberd start
@@ -925,7 +925,7 @@ perform_installation() {
 	os-install_duplicity
 
 	mkdir -p "${tls_dir}"
-	chown -R ejabberd:ejabberd "${tls_dir}"
+	chown -R ejabberd:ejabberd "${tls_dir}" 2> /dev/null || true
 	chmod -R 700 "${tls_dir}"
 
 	mkdir -p "$temp_dir"
@@ -1478,7 +1478,7 @@ perform_installation() {
 	echo "${b-}Now creating uploads directory...${x-}"
 	echo
 	mkdir -p /var/lib/ejabberd/uploads
-	chown ejabberd:ejabberd /var/lib/ejabberd/uploads
+	chown ejabberd:ejabberd /var/lib/ejabberd/uploads 2> /dev/null || true
 	echo "${b-}Finished creating uploads directory.${x-}"
 	echo
 
@@ -1487,7 +1487,7 @@ perform_installation() {
 	echo "${b-}Now creating HTTP fileserver directory...${x-}"
 	echo
 	mkdir -p "/var/www/ejabberd/"
-	chown -R ejabberd:ejabberd "/var/www/ejabberd/"
+	chown -R ejabberd:ejabberd "/var/www/ejabberd/" 2> /dev/null || true
 	chmod -R 755 "/var/www/ejabberd/"
 	echo "${b-}Finished creating HTTP fileserver directory.${x-}"
 	echo

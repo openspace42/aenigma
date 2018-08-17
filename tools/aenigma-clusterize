@@ -128,6 +128,8 @@ fi
 
 os-get_public_ipv4 -s
 
+os-check_ipv6_connectivity -s
+
 mkdir -p "${conf_cluster_nodes_dir}"
 
 ### IPv4
