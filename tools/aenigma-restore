@@ -97,7 +97,7 @@ then
 	else
 		echo "${b-}Ok, aborting.${x-}"
 		echo
-		dna-exit_function
+		dna-exit
 	fi
 
 	if [ ${bootstrap_mode-null} = "y" ]

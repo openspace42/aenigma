@@ -403,9 +403,52 @@ aenigma-update_routing_info() {
 
 }
 
+aenigma-perform_new_dns_checks() {
+
+	### Perform DNS checks.
+
+	#### Check hostnames
+
+	if [ "${cluster_mode-null}" = "secondary" ]
+	then
+
+		dna-echo -m "${r-}These checks must only be run by the primary node."
+		dna-exit
+
+	fi
+
+	### Perform checks in both IPv4 and IPv6. If this node [or a node in case of a cluster] doesn't have IPv6 connectivity its IPv6 check will be ignored locally.
+
+	declare -a ip_version_array=(
+		"4"
+		"6"
+	)
+
+	for ip_version in "${ip_version_array[@]}"
+	do
+
+		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+
+		array_iter=0
+		IFS=$'\n'
+		set -f
+
+		for node_ip in $(cat < "${nodes_db_path}")
+		do
+
+			array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
+			dna-check_dns_record_address -n "ae${array_iter_padded}.${domain}" -r "${node_ip}" -v "${ip_version}"
+			array_iter=$((array_iter + 1))
+
+		done
+
+	done
+
+}
+
 aenigma-perform_dns_checks() {
 
-	### Perform DNS checks. These must only be run by the primary node.
+
 
 	declare -a dns_array=(
 		"hostname"
@@ -717,7 +760,7 @@ backup_locally_loop() {
 		echo
 		echo "${b-}The primary node will take care of backing up the ejabberd uploads directory of the secondary nodes. No further backup is required on secondary nodes.${x-}"
 		echo
-		dna-exit_function
+		dna-exit
 	fi
 
 	cp -r "${conf_dir}" "${tmp_backup_dir}"/conf/
@@ -780,7 +823,7 @@ restore_loop() {
 	else
 	        echo "${r-}${b-}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x-}"
 	        echo
-	        dna-exit_function
+	        dna-exit
 	fi
 
 	echo "${b-}Now restoring ejabberd directories...${x-}"
@@ -1021,7 +1064,7 @@ perform_installation() {
 				echo
 				echo "${b-}Aborting installation for now.${x-}"
 				echo
-                dna-exit_function
+                dna-exit
             fi
 		fi
 	fi
@@ -1030,6 +1073,73 @@ perform_installation() {
 
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
+
+		########################################################################
+
+		### Start creating the nodes_db files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
+		### We create the nodes_db file independently of whether clusterization is enabled or not.
+
+		if [ "${cluster_enabled}" = "single" ]
+		then
+
+			### Clusterization has been turned off. Delete the conf_nodes directory if present.
+
+			if [ -d "${conf_cluster_nodes_dir}" ]
+			then
+				rm -rf "${conf_cluster_nodes_dir}"
+			fi
+
+		fi
+
+		mkdir -p "${conf_cluster_nodes_dir}"
+
+		dna-get_public_ipv4 -s
+
+		dna-check_ipv6_connectivity -s
+
+		### IPv4
+
+		touch "${nodes_db_ipv4_path}"
+
+		if [ -s "${nodes_db_ipv4_path}" ]
+		then
+			### File is not empty, alter first line.
+			sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
+		else
+			### File is empty, write to it.
+			echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
+		fi
+
+		### IPv6
+
+		touch "${nodes_db_ipv6_path}"
+
+		if [ -s "${nodes_db_ipv6_path}" ]
+		then
+
+			### File is not empty, alter first line.
+
+			if [ "${ipv6_avail}" = "y" ]
+			then
+				sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
+			else
+				sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
+			fi
+
+		else
+
+			### File is empty, write to it.
+
+			if [ "${ipv6_avail}" = "y" ]
+			then
+				echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
+			else
+				echo "null" > "${nodes_db_ipv6_path}"
+			fi
+
+		fi
+
+		########################################################################
 
 		### Set xmpp domain
 
@@ -1100,7 +1210,7 @@ perform_installation() {
 	            echo
 	            echo "${b-}Ok, not changing hostname.${x-}"
 	            echo
-				dna-exit_function
+				dna-exit
 	        fi
 	    fi
 
@@ -1181,7 +1291,7 @@ perform_installation() {
 		else
 			echo "${b-}Ok, skipping ejabberd wipe.${x-}"
 			echo
-			dna-exit_function
+			dna-exit
 		fi
 
 	fi
@@ -1230,7 +1340,7 @@ perform_installation() {
 	    else
 	        echo "${r-}${b-}Something went wrong provisioning the wildcard TLS certificate for $domain.${x-}"
 	        echo
-	        dna-exit_function
+	        dna-exit
 	    fi
 
 	    domain_tls_cert_location="${tls_dir}/${domain}.pem"

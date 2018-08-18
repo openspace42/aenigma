@@ -59,7 +59,7 @@ then
     echo
     echo "${b-}It is only meant to be executed by other functions remotely.${x-}"
     echo
-    dna-exit_function
+    dna-exit
 fi
 
 while getopts ":c:" arguments; do
@@ -68,7 +68,7 @@ while getopts ":c:" arguments; do
         ;;
         \?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
         echo
-        dna-exit_function
+        dna-exit
         ;;
     esac
 done
@@ -78,7 +78,7 @@ if [ -z "${commands-}" ]
 then
     echo "${r-}${b-}Commands [option | -c |] must be supplied for function | ${FUNCNAME[0]} |.${x-}"
     echo
-    dna-exit_function
+    dna-exit
 fi
 
 ################################################################################

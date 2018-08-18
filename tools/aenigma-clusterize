@@ -71,7 +71,7 @@ then
 	else
 		echo "${b-}Ok, leaving clusterization off for now.${x-}"
 		echo
-		dna-exit_function
+		dna-exit
 	fi
 fi
 
@@ -91,7 +91,7 @@ then
 	else
 		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 		echo
-		dna-exit_function
+		dna-exit
 	fi
 elif [ "${cluster_mode}" = "secondary" ]
 then
@@ -124,50 +124,23 @@ fi
 
 ################################################################################
 
-### Start creating the cluster node database files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
+### Ensure the nodes_db files are up to date with the IP address[es] of this machine
 
 dna-get_public_ipv4 -s
 
 dna-check_ipv6_connectivity -s
 
-mkdir -p "${conf_cluster_nodes_dir}"
-
 ### IPv4
 
-touch "${nodes_db_ipv4_path}"
-
-if [ -s "${nodes_db_ipv4_path}" ]
-then
-	### File is not empty, alter first line.
-	sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
-else
-	### File is empty, write to it.
-	echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
-fi
+sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
 
 ### IPv6
 
-touch "${nodes_db_ipv6_path}"
-
-if [ -s "${nodes_db_ipv6_path}" ]
+if [ "${ipv6_avail}" = "y" ]
 then
-	if [ "${ipv6_avail}" = "y" ]
-	then
-		### File is not empty, alter first line.
-		sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
-	else
-		### File is empty, write to it.
-		sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
-	fi
+	sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
 else
-	if [ "${ipv6_avail}" = "y" ]
-	then
-		### File is not empty, alter first line.
-		echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
-	else
-		### File is empty, write to it.
-		echo "null" > "${nodes_db_ipv6_path}"
-	fi
+	sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
 fi
 
 ################################################################################
@@ -194,7 +167,7 @@ then
 	else
 		echo "${b-}Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |.${x-}"
 		echo
-		dna-exit_function
+		dna-exit
 	fi
 else
 	### Specified secondary node is new to this cluster
@@ -215,10 +188,10 @@ fi
 array_iter=0
 IFS=$'\n'
 set -f
-for secondary_node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 do
 	array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
-	echo "${secondary_node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
+	echo "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 	array_iter=$((array_iter + 1))
 done
 
@@ -249,7 +222,7 @@ else
 	echo
 	echo "${b-}Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${x-}${b-} |, that its SSH port is | ${y}42022${x-}${b-} |, and that its firewall isn't blocking connections on that port.${x-}"
 	echo
-	dna-exit_function
+	dna-exit
 fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
@@ -269,14 +242,14 @@ then
 	else
 		echo "${b-}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} | and try again.${x-}"
 		echo
-		dna-exit_function
+		dna-exit
 	fi
 else
 	echo "${r-}${b-}Token on secondary node not found.${x-}"
 	echo
 	echo "${b-}Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again.${x-}"
 	echo
-	dna-exit_function
+	dna-exit
 fi
 
 ################################################################################
