@@ -439,7 +439,7 @@ aenigma-perform_dns_checks() {
 
 		aenigma-calculate_ip_version_vars
 
-		array_iter=0
+		array_iter=1
 		IFS=$'\n'
 		set -f
 
@@ -465,7 +465,7 @@ aenigma-perform_dns_checks() {
 
 		aenigma-calculate_ip_version_vars
 
-		dna-check_dns_record -n "xc.${domain}" -t "${address_type}" -r "${nodes_db_path}"
+		dna-check_dns_record -n "ae.${domain}" -t "${address_type}" -r "${nodes_db_path}"
 
 	done
 
@@ -480,7 +480,7 @@ aenigma-perform_dns_checks() {
 
 		aenigma-calculate_ip_version_vars
 
-		array_iter=0
+		array_iter=1
 		IFS=$'\n'
 		set -f
 
@@ -533,7 +533,7 @@ aenigma-perform_dns_checks() {
 		"_xmpp-server._tcp"
 	)
 
-	for srv_record in "${ip_version_array[@]}"
+	for srv_record in "${srv_record_array[@]}"
 	do
 
 		dna-check_dns_record -n "${srv_record}.${domain}" -t "srv" -r "0 0 5269 ae.${domain}."
