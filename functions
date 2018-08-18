@@ -403,7 +403,7 @@ aenigma-update_routing_info() {
 
 }
 
-aenigma-perform_new_dns_checks() {
+aenigma-perform_dns_checks() {
 
 	### Perform DNS checks. They must only be run by the primary node.
 
@@ -415,6 +415,18 @@ aenigma-perform_new_dns_checks() {
 		"4"
 		"6"
 	)
+
+	aenigma-calculate_dns_address_type() {
+
+		if [ "${ip_version}" = "4" ]
+		then
+			address_type="a"
+		elif [ "${ip_version}" = "6" ]
+		then
+			address_type="aaaa"
+		fi
+
+	}
 
 	############################################################################
 
@@ -432,8 +444,10 @@ aenigma-perform_new_dns_checks() {
 		for node_ip in $(cat < "${nodes_db_path}")
 		do
 
+			aenigma-calculate_dns_address_type
+
 			node_number="$(echo ${array_iter} | xargs printf %02d)"
-			dna-check_dns_record_address -n "ae${node_number}.${domain}" -r "${node_ip}" -v "${ip_version}"
+			dna-check_dns_record -n "ae${node_number}.${domain}" -t "${address_type}" -r "${node_ip}"
 			array_iter=$((array_iter + 1))
 
 		done
@@ -449,9 +463,11 @@ aenigma-perform_new_dns_checks() {
 	for ip_version in "${ip_version_array[@]}"
 	do
 
+		aenigma-calculate_dns_address_type
+
 		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
 
-		dna-check_dns_record_address -n "xc.${domain}" -r "${nodes_db_path}" -v "${ip_version}"
+		dna-check_dns_record -n "xc.${domain}" -t "${address_type}" -r "${nodes_db_path}"
 
 	done
 
@@ -463,6 +479,8 @@ aenigma-perform_new_dns_checks() {
 
 	for ip_version in "${ip_version_array[@]}"
 	do
+
+		aenigma-calculate_dns_address_type
 
 		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
 
@@ -486,7 +504,7 @@ aenigma-perform_new_dns_checks() {
 			for xmpp_service in "${xmpp_service_array[@]}"
 			do
 
-				dna-check_dns_record_address -n "${xmpp_service}${node_number}.${domain}" -r "${node_ip}" -v "${ip_version}"
+				dna-check_dns_record -n "${xmpp_service}${node_number}.${domain}" -t "${address_type}" -r "${node_ip}"
 				array_iter=$((array_iter + 1))
 
 			done
@@ -502,9 +520,11 @@ aenigma-perform_new_dns_checks() {
 	for ip_version in "${ip_version_array[@]}"
 	do
 
+		aenigma-calculate_dns_address_type
+
 		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
 
-		dna-check_dns_record_address -n "xc.${domain}" -r "${nodes_db_path}" -v "${ip_version}"
+		dna-check_dns_record -n "xc.${domain}" -t "${address_type}" -r "${nodes_db_path}"
 
 	done
 
@@ -512,7 +532,7 @@ aenigma-perform_new_dns_checks() {
 
 	### Check SRV records
 
-	dna-check_dns_record -t "SRV" -n "_xmpp-client._tcp.${domain}" -r "0 0 5222 ae.${domain}."
+	dna-check_dns_record -n "_xmpp-client._tcp.${domain}" -t "srv" -r "0 0 5222 ae.${domain}."
 
 	declare -a srv_record_array=(
 		"_jabber._tcp"
@@ -522,7 +542,7 @@ aenigma-perform_new_dns_checks() {
 	for srv_record in "${ip_version_array[@]}"
 	do
 
-		dna-check_dns_record -t "SRV" -n "${srv_record}.${domain}" -r "0 0 5269 ae.${domain}."
+		dna-check_dns_record -n "${srv_record}.${domain}" -t "srv" -r "0 0 5269 ae.${domain}."
 
 	done
 
@@ -530,7 +550,7 @@ aenigma-perform_new_dns_checks() {
 
 }
 
-aenigma-perform_dns_checks() {
+aenigma-perform_dns_checks_old() {
 
 	declare -a dns_array=(
 		"hostname"
