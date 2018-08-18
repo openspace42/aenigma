@@ -405,17 +405,9 @@ aenigma-update_routing_info() {
 
 aenigma-perform_new_dns_checks() {
 
-	### Perform DNS checks.
+	### Perform DNS checks. They must only be run by the primary node.
 
-	#### Check hostnames
-
-	if [ "${cluster_mode-null}" = "secondary" ]
-	then
-
-		dna-echo -m "${r-}These checks must only be run by the primary node."
-		dna-exit
-
-	fi
+	############################################################################
 
 	### Perform checks in both IPv4 and IPv6. If this node [or a node in case of a cluster] doesn't have IPv6 connectivity its IPv6 check will be ignored locally.
 
@@ -423,6 +415,10 @@ aenigma-perform_new_dns_checks() {
 		"4"
 		"6"
 	)
+
+	############################################################################
+
+	### Check hostnames.
 
 	for ip_version in "${ip_version_array[@]}"
 	do
@@ -436,19 +432,105 @@ aenigma-perform_new_dns_checks() {
 		for node_ip in $(cat < "${nodes_db_path}")
 		do
 
-			array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
-			dna-check_dns_record_address -n "ae${array_iter_padded}.${domain}" -r "${node_ip}" -v "${ip_version}"
+			node_number="$(echo ${array_iter} | xargs printf %02d)"
+			dna-check_dns_record_address -n "ae${node_number}.${domain}" -r "${node_ip}" -v "${ip_version}"
 			array_iter=$((array_iter + 1))
+
+		done
+
+		unset array_iter
+
+	done
+
+	############################################################################
+
+	### Now check that "ae.$domain" points to all nodes in a round-robin fashion.
+
+	for ip_version in "${ip_version_array[@]}"
+	do
+
+		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+
+		dna-check_dns_record_address -n "xc.${domain}" -r "${nodes_db_path}" -v "${ip_version}"
+
+	done
+
+	############################################################################
+
+	### Check XMPP services records
+
+	### First check services that need to point to each node respectively
+
+	for ip_version in "${ip_version_array[@]}"
+	do
+
+		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+
+		array_iter=0
+		IFS=$'\n'
+		set -f
+
+		for node_ip in $(cat < "${nodes_db_path}")
+		do
+
+			node_number="$(echo ${array_iter} | xargs printf %02d)"
+
+			declare -a xmpp_service_array=(
+				"xe"
+				"xi"
+				"xm"
+				"xp"
+				"xu"
+			)
+
+			for xmpp_service in "${xmpp_service_array[@]}"
+			do
+
+				dna-check_dns_record_address -n "${xmpp_service}${node_number}.${domain}" -r "${node_ip}" -v "${ip_version}"
+				array_iter=$((array_iter + 1))
+
+			done
+
+			unset array_iter
 
 		done
 
 	done
 
+	### Then check "xc.$domain" as it should not be a set of numbered records [xc01, xc02...] but instead be only one record pointing to all nodes in a round-robin fashion
+
+	for ip_version in "${ip_version_array[@]}"
+	do
+
+		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+
+		dna-check_dns_record_address -n "xc.${domain}" -r "${nodes_db_path}" -v "${ip_version}"
+
+	done
+
+	############################################################################
+
+	### Check SRV records
+
+	dna-check_dns_record -t "SRV" -n "_xmpp-client._tcp.${domain}" -r "0 0 5222 ae.${domain}."
+
+	declare -a srv_record_array=(
+		"_jabber._tcp"
+		"_xmpp-server._tcp"
+	)
+
+	for srv_record in "${ip_version_array[@]}"
+	do
+
+		dna-check_dns_record -t "SRV" -n "${srv_record}.${domain}" -r "0 0 5269 ae.${domain}."
+
+	done
+
+	############################################################################
+
 }
 
 aenigma-perform_dns_checks() {
-
-
 
 	declare -a dns_array=(
 		"hostname"
