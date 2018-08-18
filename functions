@@ -416,13 +416,15 @@ aenigma-perform_dns_checks() {
 		"6"
 	)
 
-	aenigma-calculate_dns_address_type() {
+	aenigma-calculate_ip_version_vars() {
 
 		if [ "${ip_version}" = "4" ]
 		then
+			nodes_db_path="${nodes_db_ipv4_path}"
 			address_type="a"
 		elif [ "${ip_version}" = "6" ]
 		then
+			nodes_db_path="${nodes_db_ipv6_path}"
 			address_type="aaaa"
 		fi
 
@@ -435,7 +437,7 @@ aenigma-perform_dns_checks() {
 	for ip_version in "${ip_version_array[@]}"
 	do
 
-		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+		aenigma-calculate_ip_version_vars
 
 		array_iter=0
 		IFS=$'\n'
@@ -443,8 +445,6 @@ aenigma-perform_dns_checks() {
 
 		for node_ip in $(cat < "${nodes_db_path}")
 		do
-
-			aenigma-calculate_dns_address_type
 
 			node_number="$(echo ${array_iter} | xargs printf %02d)"
 			dna-check_dns_record -n "ae${node_number}.${domain}" -t "${address_type}" -r "${node_ip}"
@@ -463,9 +463,7 @@ aenigma-perform_dns_checks() {
 	for ip_version in "${ip_version_array[@]}"
 	do
 
-		aenigma-calculate_dns_address_type
-
-		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+		aenigma-calculate_ip_version_vars
 
 		dna-check_dns_record -n "xc.${domain}" -t "${address_type}" -r "${nodes_db_path}"
 
@@ -480,9 +478,7 @@ aenigma-perform_dns_checks() {
 	for ip_version in "${ip_version_array[@]}"
 	do
 
-		aenigma-calculate_dns_address_type
-
-		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+		aenigma-calculate_ip_version_vars
 
 		array_iter=0
 		IFS=$'\n'
@@ -520,9 +516,7 @@ aenigma-perform_dns_checks() {
 	for ip_version in "${ip_version_array[@]}"
 	do
 
-		aenigma-calculate_dns_address_type
-
-		nodes_db_path="$(echo "nodes_db_ipv${ip_version}_path")"
+		aenigma-calculate_ip_version_vars
 
 		dna-check_dns_record -n "xc.${domain}" -t "${address_type}" -r "${nodes_db_path}"
 
