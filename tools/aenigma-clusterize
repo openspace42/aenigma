@@ -269,37 +269,7 @@ aenigma-update_routing_info
 
 ### Push and update routing info on all secondary nodes [both existing and the new one we're now provisioning] to allow them to connect to each other correctly.
 
-aenigma-push_routing_info() {
-
-	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
-
-	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@ae${secondary_node_number}.${domain}:${conf_cluster_dir}"
-
-	aenigma-exec() {
-
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-update_routing_info
-"
-
-	}
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
-	do
-		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
-		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-        ssh -tt -p42022 -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-aenigma-exec
-exit
-END
-		fi
-	done
-
-}
+aenigma-push_routing_info
 
 ################################################################################
 
