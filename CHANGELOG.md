@@ -1,5 +1,16 @@
 # aenigma changelog
 
+## v6.0.0
+
+1. Completely restructured code. More neatly organized aenigma functions. More functions integrated into or sourced from dna.
+2. Removed the 3 installation options in favour of a single option [formerly #1] that works for everyone.
+2. Leverage the use of LetsEncrypt's new wildcard TLS certificates that works for every service we need.
+3. Entirely new DNS checks now part of dna.
+4. New DNS provider functionality [also part of dna] for automated DNS record configuration from the aforementioned DNS checks function.
+5. aenigma is now clusterizable in a simple and straightforward fashion. Every new instance installed is ready to clusterized in the future from now on.
+
+## [...]
+
 ## v0.47 [currently in beta - 2018-01-16]
 
 1. Added testing mode for Ubuntu 17.10 [artful] [and therefore - currently - ejabberd 18.01 as per the repo we use] to prepare for Ubuntu 18.04 and ejabberd 18.xx:

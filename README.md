@@ -37,17 +37,14 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## New features
 
-### v0.6x [work in progress on the "clusterize" branch]
+### v6.0.0
 
-* Make use of the new LetsEncrypt wildcard TLS certificates to massively simplify the codebase and the end-user setup itself
-* Full support for ejabberd clusterization [i.e. multi-master multi-server functionality]
-
-### v0.5x
-
-* Full XEP-0375 thanks to ejabberd 18.0x
-* Ubuntu 18.04 [bionic beaver] support [and requirement]
-* Newly implemented openspace [bash-functions](https://github.com/openspace42/bash-functions)
-* So much more, see the [releases](https://github.com/openspace42/aenigma/releases) page for details
+1. Completely restructured code. More neatly organized aenigma functions. More functions integrated into or sourced from dna.
+2. Removed the 3 installation options in favour of a single option [formerly #1] that works for everyone.
+2. Leverage the use of LetsEncrypt's new wildcard TLS certificates that works for every service we need. This massively simplify the codebase and the end-user setup itself.
+3. Entirely new DNS checks now part of dna.
+4. New DNS provider functionality [also part of dna] for automated DNS record configuration from the aforementioned DNS checks function.
+5. aenigma is now clusterizable in a simple and straightforward fashion. Every new instance installed is ready to clusterized in the future from now on. This is known as multi-master multi-server functionality.
 
 ## Donate to keep the project running
 
