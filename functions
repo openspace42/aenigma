@@ -1251,6 +1251,16 @@ perform_installation() {
 
 	############################################################################
 
+	### Install certbot/letsencrypt
+
+	dna-install_certbot
+
+	#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+
+	cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
+
+	############################################################################
+
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
@@ -1266,10 +1276,6 @@ perform_installation() {
 	    echo
 
 		dna-provision_le_wildcard_cert -d "$domain"
-
-		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
-
-		cp "$source_dir/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
 
 		bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
 
