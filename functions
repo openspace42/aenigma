@@ -35,6 +35,10 @@ define_vars() {
 	################## Insert your additional variables here ###################
 	############################################################################
 
+	### Set the path to the LE wildcard TLS certificate
+
+	domain_tls_cert_location="${tls_dir}/${domain}.pem"
+
 	### Set the paths to the cluster / nodes conf dirs
 
 	conf_cluster_dir="${conf_dir}/cluster"
@@ -1286,8 +1290,7 @@ perform_installation() {
 	        dna-exit
 	    fi
 
-	    domain_tls_cert_location="${tls_dir}/${domain}.pem"
-	    echo "${domain_tls_cert_location}" > "${conf_dir}/domain_tls_cert_location"
+	    # echo "${domain_tls_cert_location}" > "${conf_dir}/domain_tls_cert_location"
 
 		########################################################################
 
