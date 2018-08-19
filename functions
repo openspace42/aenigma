@@ -384,6 +384,7 @@ aenigma-update_routing_info() {
 	do
 		/usr/sbin/ufw allow from "$node_ipv4"
 	done
+	echo
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
 
@@ -505,9 +506,9 @@ aenigma-perform_dns_checks() {
 
 			done
 
-			unset array_iter
-
 		done
+
+		unset array_iter
 
 	done
 
@@ -1547,7 +1548,7 @@ perform_installation() {
 		echo
 		echo "${b-}You'll be asked to verify it matches with the one that will shortly be displayed on the primary node.${x-}"
 		echo
-		echo "${b-}Its value is: | ${y-}${secondary_node_token}${n-} |.${x-}"
+		echo "${b-}Its value is: | ${y-}$(cat /tmp/aenigma_cluster_token)${n-} |.${x-}"
 		echo
 
 		echo "${b-}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x-}"
