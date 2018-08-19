@@ -542,6 +542,10 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
+	# Insert node enumeration printing here
+
+	############################################################################
+
 	### Perform checks in both IPv4 and IPv6. If this node [or a node in case of a cluster] doesn't have IPv6 connectivity its IPv6 check will be ignored locally.
 
 	declare -a ip_version_array=(
@@ -1382,7 +1386,7 @@ perform_installation() {
 	ufw allow 443
 
 	echo
-	dna-echo "${g-}Finished setting UFW rules."
+	dna-echo -m "${g-}Finished setting UFW rules."
 
 	### Install and if necessary upgrade EasyEngine
 
@@ -1396,59 +1400,30 @@ perform_installation() {
 
 	### Create and configure the $hostname website
 
-	### We still use a separate LE TLS cert for $hostname for ease of automation via EE
+	dna-echo -m "Now creating EasyEngine site for ${$hostname}..."
+	ee site create "${hostname}" || true
+	echo
+	dna-echo -m "${g-}Finished creating EasyEngine site for ${hostname}."
 
-	echo "${b-}Now creating easyengine site for $hostname, generating its TLS certificate, and installing it...${x-}"
-	echo
-	ee site create "$hostname" || true
-	echo
-	echo "${b-}Finished creating easyengine site for $hostname.${x-}"
-	echo
-
-	echo "${b-}Now setting custom nginx config for $hostname...${x-}"
-	echo
-	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/hostname.conf
-	cp "$source_dir"/conf/nginx/hostname.conf /etc/nginx/sites-available/"$hostname"
+	dna-echo -m "Now setting custom nginx config for ${hostname}..."
+	cp "${source_dir}/conf/nginx/hostname.conf" "/etc/nginx/sites-available/${hostname}"
+	sed -i "s/example.im/${hostname}/g" "/etc/nginx/sites-available/${hostname}"
 	service nginx reload || true
-	echo "${b-}Finished setting custom nginx config for $hostname.${x-}"
-	echo
+	dna-echo -m "${g-}Finished setting custom nginx config for ${hostname}."
 
-	echo "${b-}Now updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x-}"
-	echo
-	ee site update "$hostname"  --le --experimental || true
-	if [ ! -f /etc/letsencrypt/live/"$hostname"/fullchain.pem ]
-	then
-		echo "${r-}${b-}There was an issue provisioning the TLS certificate for $hostname with LetsEncrypt.${x-}"
-		echo
-		echo "${b-}Make sure you haven't skipped any DNS checks and try running the installation again...${x-}"
-		echo
-		echo "${b-}Exiting...${x-}"
-		echo
-		exit
-	fi
-	echo
-	echo "${b-}Finished updating easyengine site $hostname to TLS encrypted with LetsEncrypt...${x-}"
-	echo
+	dna-echo -m "Now setting index.html in docroot for ${hostname}..."
+	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/htdocs/"
+	dna-echo -m "${g-}Finished setting index.html in docroot for ${hostname}."
 
-	echo "${b-}Now setting index.html in docroot for $hostname...${x-}"
-	echo
-	cp "$source_dir"/conf/web/hostname/index.html /var/www/"$hostname"/htdocs/
-	echo "${b-}Finished setting index.html in docroot for $hostname.${x-}"
-	echo
+	dna-echo -m "${b-}Now adding HTTPS and IPv6 support to the ${hostname} site..."
+	cp "${source_dir}/conf/nginx/ssl-hostname.conf" "/var/www/${hostname}/conf/nginx/ssl.conf"
+	sed -i "s/example.im/${hostname}/g" "/var/www/${hostname}/conf/nginx/ssl.conf"
+	dna-echo -m "${g-}Finished adding HTTPS and IPv6 support to the ${hostname} site..."
 
-	echo "${b-}Now adding IPv6 support to the HTTPS version of the $hostname site...${x-}"
-	echo
-	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/ssl-hostname.conf
-	cp "$source_dir"/conf/nginx/ssl-hostname.conf /var/www/"$hostname"/conf/nginx/ssl.conf
-	echo "${b-}Finished adding IPv6 support to the HTTPS version of the $hostname site...${x-}"
-	echo
-
-	echo "${b-}Now adding IPv6 support to the HTTPS redirect for the $hostname site...${x-}"
-	echo
-	sed -i "s/example.im/${hostname}/g" $source_dir/conf/nginx/force-ssl-hostname.conf
-	cp "$source_dir"/conf/nginx/force-ssl-hostname.conf /etc/nginx/conf.d/force-ssl-"$hostname".conf
-	echo "${b-}Finished adding IPv6 support to the HTTPS redirect for the $hostname site...${x-}"
-	echo
+	dna-echo -m "Now adding HTTPS redirect for the ${hostname} site..."
+	cp "${source_dir}/conf/nginx/force-ssl-hostname.conf" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
+	sed -i "s/example.im/${hostname}/g" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
+	dna-echo -m "${g-}Finished adding HTTPS redirect for the ${hostname} site..."
 
 	############################################################################
 

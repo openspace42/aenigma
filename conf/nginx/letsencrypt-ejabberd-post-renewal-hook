@@ -19,7 +19,7 @@ do
 
     le_cert_domain="$(echo $le_cert_domain_full | sed 's:.*/::')"
 
-    echo "Now creating all-in-one TLS file for $le_cert_domain..."
+    echo "Now creating all-in-one TLS certificate file for $le_cert_domain..."
     echo
 
     touch "$tls_dir/$le_cert_domain.pem"
@@ -27,6 +27,17 @@ do
     cat "$le_dir/$le_cert_domain/fullchain.pem" >> "$tls_dir/$le_cert_domain.pem"
 
     echo "Finished creating all-in-one TLS file for $le_cert_domain."
+    echo
+
+    echo "Now copying individual fullchain and privkey files for $le_cert_domain..."
+    echo
+
+    mkdir -p "${tls_dir}/${le_cert_domain}.d/"
+
+    cp "$le_dir/$le_cert_domain/privkey.pem" "${tls_dir}/${le_cert_domain}.d/"
+    cp "$le_dir/$le_cert_domain/fullchain.pem" "${tls_dir}/${le_cert_domain}.d/"
+
+    echo "Finished copying individual fullchain and privkey files for $le_cert_domain."
     echo
 
 done
