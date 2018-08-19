@@ -540,7 +540,7 @@ aenigma-push_routing_info() {
 
 	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
 
-	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@ae${secondary_node_number}.${domain}:${conf_cluster_dir}"
+	/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@ae${secondary_node_number}.${domain}:${conf_cluster_dir}"
 
 	aenigma-exec() {
 
@@ -558,7 +558,7 @@ aenigma-update_routing_info
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-        ssh -tt -p42022 -q -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+        ssh -tt -p42022 -o "LogLevel=ERROR" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 aenigma-exec
 exit
@@ -741,7 +741,7 @@ backup_locally_loop() {
 			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 			then
 				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
-				/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
+				/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
 			fi
 		done
 	fi
@@ -1243,12 +1243,6 @@ perform_installation() {
 
 	dna-set_admin_email
 
-	### Check internet connectivity and get public IP addresses
-
-	dna-get_public_ipv4
-
-	dna-check_ipv6_connectivity
-
 	############################################################################
 
 	### Install certbot/letsencrypt
@@ -1258,6 +1252,14 @@ perform_installation() {
 	#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
 	cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
+
+	############################################################################
+
+	### Check internet connectivity and get public IP addresses
+
+	dna-get_public_ipv4
+
+	dna-check_ipv6_connectivity
 
 	############################################################################
 
