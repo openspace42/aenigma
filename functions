@@ -334,7 +334,7 @@ aenigma-xmpp_intro() {
 
 }
 
-aenigma-install_sllh() {
+aenigma-install_sslh() {
 
 	### Install SSLH
 
@@ -1163,7 +1163,7 @@ perform_installation() {
 
 		### Create the necessary files and directories for ejabberd
 
-		aenigma-install_ejabberd_locations
+		aenigma-create_ejabberd_locations
 
 		### Ensure DPKG is available before proceeding
 
@@ -1400,7 +1400,7 @@ perform_installation() {
 
 	### Create and configure the $hostname website
 
-	dna-echo -m "Now creating EasyEngine site for ${$hostname}..."
+	dna-echo -m "Now creating EasyEngine site for ${hostname}..."
 	ee site create "${hostname}" || true
 	echo
 	dna-echo -m "${g-}Finished creating EasyEngine site for ${hostname}."
@@ -1417,7 +1417,7 @@ perform_installation() {
 
 	dna-echo -m "${b-}Now adding HTTPS and IPv6 support to the ${hostname} site..."
 	cp "${source_dir}/conf/nginx/ssl-hostname.conf" "/var/www/${hostname}/conf/nginx/ssl.conf"
-	sed -i "s/example.im/${hostname}/g" "/var/www/${hostname}/conf/nginx/ssl.conf"
+	sed -i "s/example.im/${domain}/g" "/var/www/${hostname}/conf/nginx/ssl.conf"
 	dna-echo -m "${g-}Finished adding HTTPS and IPv6 support to the ${hostname} site..."
 
 	dna-echo -m "Now adding HTTPS redirect for the ${hostname} site..."
@@ -1456,7 +1456,7 @@ perform_installation() {
 
 		### Create the necessary files and directories for ejabberd
 
-		aenigma-install_ejabberd_locations
+		aenigma-create_ejabberd_locations
 
 		### Ensure DPKG is available before proceeding
 
