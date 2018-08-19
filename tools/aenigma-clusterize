@@ -126,22 +126,7 @@ fi
 
 ### Ensure the nodes_db files are up to date with the IP address[es] of this machine
 
-dna-get_public_ipv4 -s
-
-dna-check_ipv6_connectivity -s
-
-### IPv4
-
-sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
-
-### IPv6
-
-if [ "${ipv6_avail}" = "y" ]
-then
-	sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
-else
-	sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
-fi
+aenigma-initialize_nodes_db_files
 
 ################################################################################
 
@@ -191,7 +176,7 @@ set -f
 for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 do
 	array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
-	echo "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
+	echo -e "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 	array_iter=$((array_iter + 1))
 done
 
@@ -213,7 +198,7 @@ echo
 read -rp "${b-}[press enter when done to continue...]${x-}"
 clear
 
-if ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
+if ssh -p42022 -q -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
 then
 	echo "${g-}${b-}SSH connection to secondary node succeeded.${x-}"
 	echo
@@ -227,7 +212,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma_cluster_token)"
+if secondary_node_token="$(ssh -p42022 -q -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma_cluster_token)"
 then
 	echo "${g-}${b-}Token on secondary node correctly found.${x-}"
 	echo

@@ -374,6 +374,58 @@ aenigma-install_ejabberd_config() {
 
 }
 
+aenigma-initialize_nodes_db_files() {
+
+	mkdir -p "${conf_cluster_nodes_dir}"
+
+	dna-get_public_ipv4 -s
+
+	dna-check_ipv6_connectivity -s
+
+	### IPv4
+
+	touch "${nodes_db_ipv4_path}"
+
+	if [ -s "${nodes_db_ipv4_path}" ]
+	then
+		### File is not empty, alter first line.
+		sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
+	else
+		### File is empty, write to it.
+		echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
+	fi
+
+	### IPv6
+
+	touch "${nodes_db_ipv6_path}"
+
+	if [ -s "${nodes_db_ipv6_path}" ]
+	then
+
+		### File is not empty, alter first line.
+
+		if [ "${ipv6_avail}" = "y" ]
+		then
+			sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
+		else
+			sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
+		fi
+
+	else
+
+		### File is empty, write to it.
+
+		if [ "${ipv6_avail}" = "y" ]
+		then
+			echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
+		else
+			echo "null" > "${nodes_db_ipv6_path}"
+		fi
+
+	fi
+
+}
+
 aenigma-update_routing_info() {
 
 	### Set UFW rules on this node according to the updated nodes_db
@@ -502,9 +554,10 @@ aenigma-perform_dns_checks() {
 			do
 
 				dna-check_dns_record -n "${xmpp_service}${node_number}.${domain}" -t "${address_type}" -r "${node_ip}"
-				array_iter=$((array_iter + 1))
 
 			done
+
+			array_iter=$((array_iter + 1))
 
 		done
 
@@ -1188,53 +1241,7 @@ perform_installation() {
 
 		fi
 
-		mkdir -p "${conf_cluster_nodes_dir}"
-
-		dna-get_public_ipv4 -s
-
-		dna-check_ipv6_connectivity -s
-
-		### IPv4
-
-		touch "${nodes_db_ipv4_path}"
-
-		if [ -s "${nodes_db_ipv4_path}" ]
-		then
-			### File is not empty, alter first line.
-			sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
-		else
-			### File is empty, write to it.
-			echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
-		fi
-
-		### IPv6
-
-		touch "${nodes_db_ipv6_path}"
-
-		if [ -s "${nodes_db_ipv6_path}" ]
-		then
-
-			### File is not empty, alter first line.
-
-			if [ "${ipv6_avail}" = "y" ]
-			then
-				sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
-			else
-				sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
-			fi
-
-		else
-
-			### File is empty, write to it.
-
-			if [ "${ipv6_avail}" = "y" ]
-			then
-				echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
-			else
-				echo "null" > "${nodes_db_ipv6_path}"
-			fi
-
-		fi
+		aenigma-initialize_nodes_db_files
 
 		########################################################################
 
