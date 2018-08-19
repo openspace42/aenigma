@@ -334,6 +334,44 @@ aenigma-xmpp_intro() {
 
 }
 
+aenigma-install_sllh() {
+
+	### Install SSLH
+
+	dna-echo -m "Now installing SSLH..."
+	/usr/sbin/service sslh stop &> /dev/null || true
+	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
+	apt-get -y install libwrap0-dev libconfig-dev || true
+	rm -r "$temp_dir/sslh" &> /dev/null || true
+	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
+	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
+	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	if [ $ipv6_avail = "y" ]
+	then
+		sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	else
+		sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
+		sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
+	fi
+	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
+	sed -i "s|xu.@|xu${node_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
+	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
+	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
+	chmod +x /etc/init.d/sslh
+	update-rc.d sslh defaults
+	systemctl daemon-reload
+	rm -r "$temp_dir/sslh"
+	mkdir -p /var/run/sslh
+	touch /var/run/sslh/sslh.pid
+	service sslh restart || true
+	echo
+	dna-echo -m "${g-}Finished installing SSLH."
+
+}
+
 aenigma-add_ejabberd_repo() {
 
 	currdistro="$(lsb_release --codename | cut -f2)"
@@ -371,6 +409,48 @@ aenigma-install_ejabberd_config() {
 	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
 	echo "${b-}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x-}"
 	echo
+
+}
+
+aenigma-create_ejabberd_locations() {
+
+	### Create ejabberd uploads directory
+
+	echo "${b-}Now creating uploads directory...${x-}"
+	echo
+	mkdir -p /var/lib/ejabberd/uploads
+	chown ejabberd:ejabberd /var/lib/ejabberd/uploads 2> /dev/null || true
+	echo "${b-}Finished creating uploads directory.${x-}"
+	echo
+
+	### Create HTTP uploads directory
+
+	echo "${b-}Now creating HTTP fileserver directory...${x-}"
+	echo
+	mkdir -p "/var/www/ejabberd/"
+	chown -R ejabberd:ejabberd "/var/www/ejabberd/" 2> /dev/null || true
+	chmod -R 755 "/var/www/ejabberd/"
+	echo "${b-}Finished creating HTTP fileserver directory.${x-}"
+	echo
+
+	### Create logfile
+
+	echo "${b-}Now creating logfile...${x-}"
+	echo
+	mkdir -p /var/log/ejabberd/
+	touch /var/log/ejabberd/www_access.log
+	chown ejabberd:adm /var/log/ejabberd/www_access.log
+	echo "${b-}Finished creating logfile.${x-}"
+	echo
+
+}
+
+aenigma-install_ejabberd() {
+
+	dna-echo -m "Now installing ejabberd..."
+	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
+	echo
+	dna-echo -m "${g-}Finished installing ejabberd."
 
 }
 
@@ -598,310 +678,6 @@ aenigma-perform_dns_checks() {
 
 }
 
-aenigma-perform_dns_checks_old() {
-
-	declare -a dns_array=(
-		"hostname"
-		"XMPP"
-		"round-robin"
-		"SRV"
-	)
-
-	if [ $ipv6_avail = "y" ]
-	then
-		declare -a ip_version_array=(
-		"v4"
-		"v6"
-		)
-	else
-		declare -a ip_version_array=(
-		"v4"
-		)
-	fi
-
-	for dns_type in "${dns_array[@]}"
-	do
-
-		if [ "$dns_type" = "hostname" ]
-		then
-			dns_check_type=$hostname
-		else
-			dns_check_type=$domain
-		fi
-
-		srv_done=n
-
-		for ip_version in "${ip_version_array[@]}"
-		do
-
-			if [ $srv_done = n ]
-			then
-
-				if [ ! "$dns_type" = "SRV" ]
-				then
-					echo "${b-}Now let's make sure your $dns_type IP$ip_version DNS settings are correct.${x-}"
-					echo
-				else
-					echo "${b-}Since you've chosen option 1, your domain is different from your hostname.${x-}"
-					echo
-					echo "${b-}Therefore, we have to set some DNS 'SRV' records which will direct XMPP connections for $domain to this server.${x-}"
-					echo
-					echo "${b-}Now let's make sure your XMPP SRV records are correct.${x-}"
-					echo
-				fi
-
-				if [ "$dns_type" = "hostname" ]
-				then
-					declare -A digarray=(
-					[HN]=""
-					)
-				elif [ "$dns_type" = "domain" ]
-				then
-					declare -A digarray=(
-					[HN]=""
-					)
-				elif [ "$dns_type" = "XMPP" ]
-				then
-					declare -A digarray=(
-					[xe]="xe${node_number}."
-					[xi]="xi${node_number}."
-					[xm]="xm${node_number}."
-					[xp]="xp${node_number}."
-					[xu]="xu${node_number}."
-					)
-				elif [ "$dns_type" = "round-robin" ]
-				then
-					declare -A digarray=(
-					[ae]="ae."
-					[xc]="xc."
-					)
-				elif [ "$dns_type" = "SRV" ]
-				then
-					declare -A digarray=(
-					[sj]="_jabber._tcp."
-					[ss]="_xmpp-server._tcp."
-					[sc]="_xmpp-client._tcp."
-					)
-				fi
-
-				digarrayiter=0
-
-				for i in "${!digarray[@]}"
-				do
-
-					if [ "$dns_type" = "hostname" ]
-					then
-						declare -A sub_dig_array=(
-						[ht]="${digarray[$i]}"
-						[hw]="www.${digarray[$i]}"
-						)
-					else
-						declare -A sub_dig_array=(
-						[tl]="${digarray[$i]}"
-						)
-					fi
-
-					for i in "${!sub_dig_array[@]}"
-					do
-
-						digarrayiter=$((digarrayiter + 1))
-
-						if [ ! "$dns_type" = "SRV" ]
-						then
-							echo "${b-}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type DNS record in IP$ip_version...${x-}"
-							echo
-						else
-							echo "${b-}$digarrayiter] Now checking the ${sub_dig_array[$i]}$dns_check_type SRV record...${x-}"
-							echo
-						fi
-
-						accept=n
-						until [ $accept = "y" ]
-						do
-
-							if [ ! "$dns_type" = "SRV" ]
-							then
-								if [ "$ip_version" = "v4" ]
-								then
-									if [ ! "${dns_type}" = "round-robin" ]
-									then
-										this_ip=$this_ipv4
-										dig_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | head -1 |sed 's/ .*//')"
-									else
-										dig_rr_result="$(getent ahostsv4 "${sub_dig_array[$i]}""$dns_check_type". | grep "${this_ipv4}" &> /dev/null)"
-										if [ $? == 0 ]
-										then
-											dig_result="${this_ipv4}"
-										fi
-									fi
-									rectype="A"
-								else
-									this_ip=$this_ipv6
-									dig_result="$(getent ahostsv6 "${sub_dig_array[$i]}""$dns_check_type". | grep -v "$this_ipv4" | head -1 | sed 's/ .*//')"
-									rectype="AAAA"
-								fi
-							else
-								if [ ! "${sub_dig_array[$i]}" = "_xmpp-client._tcp." ]
-								then
-									this_ip="0 0 5269 ae.${domain}."
-								else
-									this_ip="0 0 5222 ae.${domain}."
-								fi
-								dig_result="$(dig +short -t srv "${sub_dig_array[$i]}""$domain")"
-								rectype="SRV"
-							fi
-
-							if [ -z "$dig_result" ]
-							then
-
-								if [ ! "$dns_type" = "SRV" ]
-								then
-									echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to be at all set.${x-}"
-									echo
-								else
-									echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to be at all set.${x-}"
-									echo
-								fi
-
-								echo "${b-}Please ensure you set your DNS record as follows:${x-}"
-								echo
-								echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
-								echo
-								if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
-								then
-									if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-									then
-										if [ "$ip_version" = "v4" ]
-										then
-											echo "${g-}${b-}You can also set this record as a CNAME [suggested choice]:${x-}"
-											echo
-											echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
-											echo
-										fi
-									fi
-								fi
-								result=notset
-							else
-								if [ "$dig_result" = "$this_ip" ]
-								then
-
-									if [ ! "$dns_type" = "SRV" ]
-									then
-										echo "${g-}${b-}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record appears to resolve correctly to this server.${x-}"
-										echo
-									else
-										echo "${g-}${b-}The ${sub_dig_array[$i]}$dns_check_type SRV record appears to resolve correctly to this server.${x-}"
-										echo
-									fi
-
-									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
-									echo
-									result=ok
-								else
-
-									if [ ! "$dns_type" = "SRV" ]
-									then
-										echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type IP$ip_version DNS record does NOT appear to correctly resolve to this server.${x-}"
-										echo
-									else
-										echo "${r-}${b-}The ${sub_dig_array[$i]}$dns_check_type SRV record does NOT appear to correctly resolve to this server.${x-}"
-										echo
-									fi
-
-									echo "${b-}This is the result of a DNS query for ${sub_dig_array[$i]}$dns_check_type:${x-}"
-									echo
-									echo "$dig_result"
-									echo
-									echo "${b-}Please set it instead to:${x-}"
-									echo
-									echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\t$rectype\\t$this_ip |"
-									echo
-									if [ ! "${sub_dig_array[$i]}$dns_check_type" = "$hostname" ]
-									then
-										if [ $rectype = "A" ] || [ $rectype = "AAAA" ]
-										then
-											if [ "$ip_version" = "v4" ]
-											then
-												echo "${g-}${b-}You can also set this record as a CNAME [suggested choice]:${x-}"
-												echo
-												echo -e "| ${sub_dig_array[$i]}$dns_check_type\\t\\tCNAME\\t$hostname |"
-												echo
-											fi
-										fi
-									fi
-									result=incorrect
-								fi
-							fi
-
-							if [ ! $result = "ok" ]
-							then
-								valid=n
-								until [ $valid = "y" ]
-								do
-									read -n 1 -rp "${b-}Test again?${x-} (${b-}Y${x-}[es]/${b-}s${x-}[kip]/${b-}e${x-}[xit]) " answer;
-									case $answer in
-										"")
-										echo
-										valid=y
-										accept=n
-										;;
-										y)
-										echo -e "\\n"
-										valid=y
-										accept=n
-										;;
-										s)
-										echo -e "\\n"
-										echo "${b-}Skipping DNS check for this record...${x-}"
-										echo
-										valid=y
-										accept=y
-										;;
-										e)
-										echo -e "\\n"
-										echo "${b-}Exiting...${x-}"
-										echo
-										exit
-										;;
-										*)
-										echo -e "\\n"
-										echo "${b-}Invalid option. Retry...${x-}"
-										echo
-										valid=n
-										accept=n
-										;;
-									esac
-								done
-							else
-								accept=y
-							fi
-							clear
-
-						done
-
-					done
-
-				done
-
-				if [ ! "$dns_type" = "SRV" ]
-				then
-					echo "${b-}Finished checking your $dns_type IP$ip_version DNS settings.${x-}"
-					echo
-				else
-					echo "${b-}Finished checking your XMPP SRV records.${x-}"
-					echo
-					srv_done=y
-				fi
-
-			fi
-
-		done
-
-	done
-	clear
-
-}
-
 backup_locally_loop() {
 
 	if [ "${cluster_mode-null}" = "secondary" ]
@@ -1114,6 +890,14 @@ perform_installation() {
 
 	################################################################################
 
+	### Copy files to destination
+
+	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
+
+	dna-echo -m $"${g-}Finished transferring files into installation directory."
+
+	################################################################################
+
 	dna-apt_full_upgrade -e
 
 	dna-install_duplicity
@@ -1125,10 +909,6 @@ perform_installation() {
 	mkdir -p "$temp_dir"
 
 	################################################################################
-
-	### Copy files to destination
-
-	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
 	### Skip intro if requested by user
 
@@ -1371,17 +1151,36 @@ perform_installation() {
 
 	else
 
-		echo "${r-}${b-}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server.${x-}"
-		echo
-		echo "${b-}Please ensure there is no valuable data on this machine.${x-}"
-		echo
+		########################################################################
+
+		### Prepare APT for ejabberd installation
+
+		aenigma-add_ejabberd_repo
+
+		### Create the necessary files and directories for ejabberd
+
+		aenigma-install_ejabberd_locations
+
+		### Ensure DPKG is available before proceeding
+
+		dna-check_dpkg_availability
+
+		### Actually install ejabberd
+
+		aenigma-install_ejabberd
+
+		########################################################################
+
+		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
+
+		dna-echo -m "${r-}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server."
+		dna-echo -m "Please ensure there is no valuable data on this machine."
 
 		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server now?"
 		dna-ask_for_boolean_def_no
 		if [ "$ask_for_boolean_output" = "y" ]
 		then
-			echo "${b-}Ok, proceeding with ejabberd wipe...${x-}"
-			echo
+			dna-echo -m "Ok, proceeding with ejabberd wipe..."
 			/usr/sbin/service ejabberd stop 2> /dev/null || true
 			/usr/bin/killall ejabberd 2> /dev/null || true
 			if [ -d /etc/ejabberd/ ]
@@ -1393,10 +1192,11 @@ perform_installation() {
 				rm -rf /var/lib/ejabberd/* 2> /dev/null || true
 			fi
 		else
-			echo "${b-}Ok, skipping ejabberd wipe.${x-}"
-			echo
+			dna-echo -m "Ok, skipping ejabberd wipe."
 			dna-exit
 		fi
+
+		########################################################################
 
 	fi
 
@@ -1464,23 +1264,18 @@ perform_installation() {
 
 		########################################################################
 
-		echo "${b-}This is the public IPv4 for this machine:${x-}"
-		echo
-		echo "${b-} | ${g-}$this_ipv4${x-}${b-} | ${x-}"
-		echo
-		echo "${b-}Enter it on the primary node when prompted to do so.${x-}"
-		echo
+		dna-echo -m "This is the public IPv4 for this machine:"
+		dna-echo -m " | ${g-}$this_ipv4${n-} | "
+		dna-echo -m "Enter it on the primary node when prompted to do so."
 		read -rp "${b-}[press enter when done to continue...]${x-}"
 		clear
 
 		########################################################################
 
 		if [ -f /root/.ssh/authorized_keys ]; then
-	        echo "${g-}${b-}SSH Authorized Keys file found.${x-}"
-	        echo
+	        dna-echo -m "${g-}SSH Authorized Keys file found."
 		else
-			echo "${b-}SSH Authorized Keys file NOT found. Creating it now...${x-}"
-			echo
+			dna-echo -m "$SSH Authorized Keys file NOT found. Creating it now..."
 			mkdir -p /root/.ssh/
 	        touch /root/.ssh/authorized_keys
 		fi
@@ -1514,21 +1309,18 @@ perform_installation() {
 					;;
 				n)
 					echo -e "\n"
-					echo "${b-}Ok, then please try again...${x-}"
-					echo
+					dna-echo -m "Ok, then please try again..."
 					valid=y
 					defined=n
 					;;
 				e)
 					echo -e "\n"
-					echo "${b-}Exiting...${x-}"
-					echo
+					dna-echo -m "Exiting..."
 					exit
 					;;
 				*)
 					echo -e "\n"
-					echo "${r-}${b-}Invalid option. Retry...${x-}"
-					echo
+					dna-echo -m "${r-}Invalid option. Retry..."
 					valid=n
 					defined=n
 					;;
@@ -1578,17 +1370,9 @@ perform_installation() {
 
 	fi
 
-
-
-
-
-
-
-
 	### Set UFW rules
 
-	echo "${b-}Now setting UFW rules...${x-}"
-	echo
+	dna-echo -m "Now setting UFW rules..."
 
 	ufw allow 5222
 	ufw allow 5223
@@ -1598,24 +1382,11 @@ perform_installation() {
 	ufw allow 443
 
 	echo
-	echo "${g-}${b-}Finished setting UFW rules.${x-}"
-	echo
+	dna-echo "${g-}Finished setting UFW rules."
 
 	### Install and if necessary upgrade EasyEngine
 
-	echo "${b-}Now installing easyengine...${x-}"
-	echo
-	wget -qO ee rt.cx/ee
-	bash ee || true
-	rm ee
-	source /etc/bash_completion.d/ee_auto.rc
-	ee update || true
-	rm /tmp/eeupdate* || true
-	mkdir -p /var/www/
-	chown -R www-data:www-data /var/www/
-	echo
-	echo "${g-}${b-}Finished installing easyengine.${x-}"
-	echo
+	dna-install_easyengine
 
 	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
 
@@ -1689,89 +1460,38 @@ perform_installation() {
 
 	/usr/sbin/service nginx restart || true
 
-	### Prepare APT for ejabberd installation
-
-	aenigma-add_ejabberd_repo
-
-	aenigma-install_ejabberd_config
-
-	### Create ejabberd uploads directory
-
-	echo "${b-}Now creating uploads directory...${x-}"
-	echo
-	mkdir -p /var/lib/ejabberd/uploads
-	chown ejabberd:ejabberd /var/lib/ejabberd/uploads 2> /dev/null || true
-	echo "${b-}Finished creating uploads directory.${x-}"
-	echo
-
-	### Create HTTP uploads directory
-
-	echo "${b-}Now creating HTTP fileserver directory...${x-}"
-	echo
-	mkdir -p "/var/www/ejabberd/"
-	chown -R ejabberd:ejabberd "/var/www/ejabberd/" 2> /dev/null || true
-	chmod -R 755 "/var/www/ejabberd/"
-	echo "${b-}Finished creating HTTP fileserver directory.${x-}"
-	echo
-
-	### Create logfile
-
-	echo "${b-}Now creating logfile...${x-}"
-	echo
-	mkdir -p /var/log/ejabberd/
-	touch /var/log/ejabberd/www_access.log
-	chown ejabberd:adm /var/log/ejabberd/www_access.log
-	echo "${b-}Finished creating logfile.${x-}"
-	echo
+	############################################################################
 
 	### Install SSLH
 
-	echo "${b-}Now installing SSLH...${x-}"
-	echo
-	/usr/sbin/service sslh stop &> /dev/null || true
-	ssh_port="$(cat $os_base_dir/inception/ssh-port)"
-	apt-get -y install libwrap0-dev libconfig-dev || true
-	rm -r "$temp_dir/sslh" &> /dev/null || true
-	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
-	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
-	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	if [ $ipv6_avail = "y" ]
+	aenigma-install_sslh
+
+	############################################################################
+
+	### Install the aenigma ejabberd config
+
+	aenigma-install_ejabberd_config
+
+	if [ ! "${cluster_mode}" = "secondary" ]
 	then
-		sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	else
-		sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
+
+		### Prepare APT for ejabberd installation
+
+		aenigma-add_ejabberd_repo
+
+		### Create the necessary files and directories for ejabberd
+
+		aenigma-install_ejabberd_locations
+
+		### Ensure DPKG is available before proceeding
+
+		dna-check_dpkg_availability
+
+		### Actually install ejabberd
+
+		aenigma-install_ejabberd
+
 	fi
-	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	sed -i "s|xu.@|xu${node_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
-	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
-	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
-	chmod +x /etc/init.d/sslh
-	update-rc.d sslh defaults
-	systemctl daemon-reload
-	rm -r "$temp_dir/sslh"
-	mkdir -p /var/run/sslh
-	touch /var/run/sslh/sslh.pid
-	service sslh restart || true
-	echo
-	echo "${b-}Finished installing SSLH.${x-}"
-	echo
-
-	### Ensure DPKG is available before proceeding
-
-	dna-check_dpkg_availability
-
-	### Actually install ejabberd
-
-	echo "${b-}Now installing ejabberd...${x-}"
-	echo
-	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
-	echo
-	echo "${b-}Finished installing ejabberd.${x-}"
-	echo
 
 	### Restart ejabberd and ensure it correctly comes up
 
@@ -1791,9 +1511,59 @@ perform_installation() {
 	sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 
 	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
-	sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
 
-	if [ ! "${/root/_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode}" = "secondary" ]
+	then
+
+		### Determine if this is a fresh install and if so wipe the /var/lib/ejabberd after the config file change below to apply the new setting
+
+		if grep -q "#ERLANG_NODE=ejabberd@localhost" /etc/ejabberd/ejabberdctl.cfg
+		then
+
+			dna-echo -m "To complete the ejabberd installation we need to delete the existing ejabberd data directory [/var/lib/ejabberd/]."
+			dna-echo -m "As this is a fresh ejabberd install, we expect no valuable data to be present in such directory."
+
+			ask_for_boolean_question="Do you confirm this is a fresh install and we can proceed with the ejabberd data directory wipe?"
+			dna-ask_for_boolean_def_yes
+
+			if [ "$ask_for_boolean_output" = "y" ]
+			then
+				dna-echo -m "Ok, continuing..."
+				sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
+				rm -rf /var/lib/ejabberd/*
+			else
+				dna-echo -m "Ok, read carefully below:"
+				dna-echo -m "If, as you specified, you actually do have valuable data in the /var/lib/ejabberd directory, it likely means that, for some reason, you've manually removed ejabberd from this system previously, as we're detecting this to be a fresh ejabberd install on this machine."
+				dna-echo -m "If such existing data exists, it will not work with ejabberd."
+				dna-echo -m "To allow for any future clusterization of this $short_name instance, we now change the ejabberd ERLANG_NODE value to the full hostname of this machine, which is the correct configuration to have in any event."
+				dna-echo -m "However, changing the ERLANG_NODE value will make your current ejabberd data unusable. There is a conversion process that at least partially works but we do not recommend it, and instead advise to start clean with a fresh ejabberd install."
+				dna-echo -m "If you'd like to keep your data working, then select to continue without changing the ERLANG_NODE value at the prompt. This will make future clusterization impossible."
+				dna-echo -m "Otherwise you should exit the installation now, move such data to a secure location, and restart the installation choosing to wipe the current ejabberd data at the prompt."
+				ask_for_boolean_question="Continue the installation without changing the ERLANG_NODE value?"
+				dna-ask_for_boolean_def_yes
+				if [ "$ask_for_boolean_output" = "y" ]
+				then
+					dna-echo -m "Ok, continuing..."
+				else
+					dna-echo -m "Ok, aborting installation..."
+					dna-exit
+				fi
+			fi
+
+		fi
+
+		### Insert wrong ERLANG_NODE hostname check here
+
+	else
+
+		### This is necessarily a fresh install, proceed with ejabberd config change and data directory wipe.
+
+		sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
+		rm -rf /var/lib/ejabberd/*
+
+	fi
+
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
@@ -1803,8 +1573,6 @@ perform_installation() {
 		### Add backup script to crontab
 
 		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
-
-		rm -rf /var/lib/ejabberd/*
 
 		########################################################################
 
@@ -1819,7 +1587,7 @@ perform_installation() {
 	echo "${b-}Finished starting ejabberd.${x-}"
 	echo
 
-	if [ ! "${/root/_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
@@ -1952,7 +1720,7 @@ perform_installation() {
 	set -e
 	clear
 
-	if [ ! "${/root/_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Proceed with primary node installation
