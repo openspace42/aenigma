@@ -35,10 +35,6 @@ define_vars() {
 	################## Insert your additional variables here ###################
 	############################################################################
 
-	### Set the path to the LE wildcard TLS certificate
-
-	domain_tls_cert_location="${tls_dir}/${domain}.pem"
-
 	### Set the paths to the cluster / nodes conf dirs
 
 	conf_cluster_dir="${conf_dir}/cluster"
@@ -407,7 +403,7 @@ aenigma-install_ejabberd_config() {
 	sed -i "s/example.im/${domain}/g" "$source_ejab_conf_file"
 	sed -i "s/hostname.im/${hostname}/g" "$source_ejab_conf_file"
 	sed -i "s|example.im|${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-	sed -i "s|pathtofile|${domain_tls_cert_location}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
+	sed -i "s|pathtofile|${tls_dir}/${domain}.pem|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
 	sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
 	sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
 	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
@@ -1289,8 +1285,6 @@ perform_installation() {
 	        echo
 	        dna-exit
 	    fi
-
-	    # echo "${domain_tls_cert_location}" > "${conf_dir}/domain_tls_cert_location"
 
 		########################################################################
 
