@@ -67,7 +67,7 @@ then
 	then
 		echo "${b-}Ok, setting clusterization to enabled.${x-}"
 		echo
-		dna-set_option -o cluster_enabled -p cluster -s "y"
+		dna-set_option -o cluster_enabled -p cluster -s "cluster"
 	else
 		echo "${b-}Ok, leaving clusterization off for now.${x-}"
 		echo
@@ -273,7 +273,7 @@ aenigma-push_routing_info() {
 
 	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
 
-	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@ae${secondary_node_number}.${domain}:/root/${conf_cluster_dir}"
+	/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@ae${secondary_node_number}.${domain}:${conf_cluster_dir}"
 
 	aenigma-exec() {
 
@@ -312,11 +312,11 @@ aenigma-perform_dns_checks
 ### Push node_number to secondary node
 
 echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@ae${secondary_node_number}.${domain}:/root/${conf_cluster_dir}/node_number"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@ae${secondary_node_number}.${domain}:${conf_cluster_dir}/node_number"
 
 ### Push config to secondary node
 
-/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:/root/${conf_dir}/xmpp/"
+/usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:${conf_dir}/xmpp/"
 /usr/bin/scp -P42022 -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
 
 ### Push wildcard LE TLS cert for $domain to secondary node
