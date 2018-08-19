@@ -293,6 +293,8 @@ echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
 
 /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
 
+echo
+
 ################################################################################
 
 ### Prompt the user to finish the installation on secondary node by following the next steps on the other node
@@ -301,4 +303,3 @@ echo "${g-}${b-}Primary_node-level configuration complete.${x-}"
 echo
 echo "${b-}Please continue the installation on the secondary node by following the remaining steps on the installation.${x-}"
 echo
--o "LogLevel=ERROR"

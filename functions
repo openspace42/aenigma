@@ -1245,16 +1245,6 @@ perform_installation() {
 
 	############################################################################
 
-	### Install certbot/letsencrypt
-
-	dna-install_certbot
-
-	#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
-
-	cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
-
-	############################################################################
-
 	### Check internet connectivity and get public IP addresses
 
 	dna-get_public_ipv4
@@ -1271,6 +1261,10 @@ perform_installation() {
 		aenigma-perform_dns_checks
 
 		########################################################################
+
+		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+
+		cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
 
 		### Provision the LetsEncrypt wildcard TLS certificate for $domain
 
@@ -1469,10 +1463,6 @@ perform_installation() {
 	dna-echo -m "${g-}Finished adding HTTPS redirect for the ${hostname} site..."
 
 	############################################################################
-
-	### Run the LetsEncrypt post-renewal now to be ready for the installation
-
-	bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
 
 	### Restart nginx
 
