@@ -412,8 +412,8 @@ aenigma-create_ejabberd_locations() {
 
 	echo "${b-}Now creating uploads directory...${x-}"
 	echo
-	mkdir -p /var/lib/ejabberd/uploads
-	chown ejabberd:ejabberd /var/lib/ejabberd/uploads 2> /dev/null || true
+	mkdir -p "/var/lib/ejabberd/uploads/"
+	chown ejabberd:ejabberd "/var/lib/ejabberd/" 2> /dev/null || true
 	echo "${b-}Finished creating uploads directory.${x-}"
 	echo
 
@@ -433,7 +433,7 @@ aenigma-create_ejabberd_locations() {
 	echo
 	mkdir -p /var/log/ejabberd/
 	touch /var/log/ejabberd/www_access.log
-	chown ejabberd:adm /var/log/ejabberd/www_access.log &> /dev/null || true
+	chown ejabberd:adm /var/log/ejabberd/www_access.log 2> /dev/null || true
 	echo "${b-}Finished creating logfile.${x-}"
 	echo
 
@@ -569,7 +569,8 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
-	# Insert node enumeration printing here
+	dna-echo -m "Performing DNS checks for the following nodes:"
+	dna-echo -m "${y-}$(cat ${nodes_db_numbered_path})"
 
 	############################################################################
 
@@ -1219,6 +1220,12 @@ perform_installation() {
 
 	############################################################################
 
+	### Create the necessary files and directories for ejabberd
+
+	aenigma-create_ejabberd_locations
+
+	############################################################################
+
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
@@ -1408,7 +1415,6 @@ perform_installation() {
 	dna-echo -m "Now setting custom nginx config for ${hostname}..."
 	cp "${source_dir}/conf/nginx/hostname.conf" "/etc/nginx/sites-available/${hostname}"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${hostname}"
-	service nginx reload || true
 	dna-echo -m "${g-}Finished setting custom nginx config for ${hostname}."
 
 	dna-echo -m "Now setting index.html in docroot for ${hostname}..."
@@ -1424,6 +1430,8 @@ perform_installation() {
 	cp "${source_dir}/conf/nginx/force-ssl-hostname.conf" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
 	dna-echo -m "${g-}Finished adding HTTPS redirect for the ${hostname} site..."
+
+	service nginx reload || true
 
 	############################################################################
 
@@ -1545,10 +1553,6 @@ perform_installation() {
 	### Install the aenigma ejabberd config
 
 	aenigma-install_ejabberd_config
-
-	### Create the necessary files and directories for ejabberd
-
-	aenigma-create_ejabberd_locations
 
 	### Prepare APT for ejabberd installation
 

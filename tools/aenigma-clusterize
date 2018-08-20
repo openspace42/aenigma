@@ -291,7 +291,7 @@ echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
 
 ### Push wildcard LE TLS cert for $domain to secondary node
 
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster "${tls_dir}/${domain}.pem" "root@ae${secondary_node_number}.${domain}:/${tls_dir}/"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_dir}" "root@ae${secondary_node_number}.${domain}:/etc/ssl/"
 
 echo
 
