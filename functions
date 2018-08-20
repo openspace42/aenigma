@@ -385,8 +385,7 @@ aenigma-add_ejabberd_repo() {
 
 aenigma-install_ejabberd_config() {
 
-	echo "${b-}Now creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml...${x-}"
-	echo
+	dna-echo -m "Now creating ejabberd directory and setting custom aenigma config..."
 
 	ejab_cand_vers="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
 
@@ -399,16 +398,11 @@ aenigma-install_ejabberd_config() {
 	fi
 
 	mkdir -p /etc/ejabberd/
-	touch /etc/ejabberd/ejabberd.yml
-	sed -i "s/example.im/${domain}/g" "$source_ejab_conf_file"
-	sed -i "s/hostname.im/${hostname}/g" "$source_ejab_conf_file"
-	sed -i "s|example.im|${domain}|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-	sed -i "s|pathtofile|${tls_dir}/${domain}.pem|g" $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt
-	sed -i '/## aenigma_host_config_domain_placeholder_start:/,/## aenigma_host_config_domain_placeholder_end:/{//!d}' $source_dir/conf/ejabberd/ejabberd.yml
-	sed -i "/## aenigma_host_config_domain_placeholder_start:/ r $source_dir/conf/ejabberd/ejabberd-tlsaddition-domain.txt" $source_dir/conf/ejabberd/ejabberd.yml
-	cp "$source_ejab_conf_file" /etc/ejabberd/ejabberd.yml
-	echo "${b-}Finished creating ejabberd directory and setting custom aenigma config to /etc/ejabberd/ejabberd.yml.${x-}"
-	echo
+	cp "$source_ejab_conf_file" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
+
+	dna-echo -m "${g-}Finished creating ejabberd directory and setting custom aenigma config."
 
 }
 
@@ -1190,24 +1184,6 @@ perform_installation() {
 
 		########################################################################
 
-		### Prepare APT for ejabberd installation
-
-		aenigma-add_ejabberd_repo
-
-		### Create the necessary files and directories for ejabberd
-
-		aenigma-create_ejabberd_locations
-
-		### Ensure DPKG is available before proceeding
-
-		dna-check_dpkg_availability
-
-		### Actually install ejabberd
-
-		aenigma-install_ejabberd
-
-		########################################################################
-
 		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
 
 		dna-echo -m "${r-}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server."
@@ -1218,18 +1194,8 @@ perform_installation() {
 		if [ "$ask_for_boolean_output" = "y" ]
 		then
 			dna-echo -m "Ok, proceeding with ejabberd wipe..."
-			/usr/sbin/service ejabberd stop 2> /dev/null || true
-			/usr/bin/killall ejabberd 2> /dev/null || true
-			if [ -d /etc/ejabberd/ ]
-			then
-				rm -rf /etc/ejabberd/* 2> /dev/null || true
-			fi
-			if [ -d /var/lib/ejabberd/ ]
-			then
-				rm -rf /var/lib/ejabberd/* 2> /dev/null || true
-			fi
 		else
-			dna-echo -m "Ok, skipping ejabberd wipe."
+			dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
 			dna-exit
 		fi
 
@@ -1441,7 +1407,7 @@ perform_installation() {
 
 	dna-echo -m "Now setting custom nginx config for ${hostname}..."
 	cp "${source_dir}/conf/nginx/hostname.conf" "/etc/nginx/sites-available/${hostname}"
-	sed -i "s/example.im/${hostname}/g" "/etc/nginx/sites-available/${hostname}"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${hostname}"
 	service nginx reload || true
 	dna-echo -m "${g-}Finished setting custom nginx config for ${hostname}."
 
@@ -1451,12 +1417,12 @@ perform_installation() {
 
 	dna-echo -m "${b-}Now adding HTTPS and IPv6 support to the ${hostname} site..."
 	cp "${source_dir}/conf/nginx/ssl-hostname.conf" "/var/www/${hostname}/conf/nginx/ssl.conf"
-	sed -i "s/example.im/${domain}/g" "/var/www/${hostname}/conf/nginx/ssl.conf"
+	sed -i "s/domain.xyz/${domain}/g" "/var/www/${hostname}/conf/nginx/ssl.conf"
 	dna-echo -m "${g-}Finished adding HTTPS and IPv6 support to the ${hostname} site..."
 
 	dna-echo -m "Now adding HTTPS redirect for the ${hostname} site..."
 	cp "${source_dir}/conf/nginx/force-ssl-hostname.conf" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
-	sed -i "s/example.im/${hostname}/g" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
 	dna-echo -m "${g-}Finished adding HTTPS redirect for the ${hostname} site..."
 
 	############################################################################
@@ -1473,37 +1439,137 @@ perform_installation() {
 
 	############################################################################
 
+	if [ ! "${cluster_mode}" = "secondary" ]
+	then
+
+		### Determine if this is a fresh install
+
+		if [ ! -d /var/lib/ejabberd/ ]
+		then
+
+			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+
+			set_erlang_node_to_hostname=ok
+			wipe_var_lib_ejabberd=ok
+
+		else
+
+			### This is a re-install.
+
+			wipe_var_lib_ejabberd=no
+
+			### Check to see if config file already exists.
+
+			if [ -f /etc/ejabberd/ejabberdctl.cfg ]
+			then
+
+				### The config file is in place. Check to see if the ERLANG_NODE value is already correct.
+
+				if grep -q "^ERLANG_NODE=ejabberd@${hostname}$" /etc/ejabberd/ejabberdctl.cfg
+				then
+
+					### The configuration is already correct, the existing data in /var/lib/ejabberd will work fine.
+
+					set_erlang_node_to_hostname=no
+
+				else
+
+					### Check to see if the ERLANG_NODE line exists
+
+					if ! grep -q "ERLANG_NODE=ejabberd@" /etc/ejabberd/ejabberdctl.cfg
+					then
+
+						dna-echo -m "${r-}There is an error in your existing | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
+						dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
+						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/ejabberd/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+						dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
+						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
+						read -rp "${b-}Press enter to continue...${x-}"
+						echo
+
+						set_erlang_node_to_hostname=ok
+
+					else
+
+						### Check to see if the ERLANG_NODE line is commented or its value is set to localhost
+
+						if grep -q "#ERLANG_NODE=ejabberd@" /etc/ejabberd/ejabberdctl.cfg || grep -q "^ERLANG_NODE=ejabberd@localhost$" /etc/ejabberd/ejabberdctl.cfg
+						then
+
+							dna-echo -m "${r-}Your existing | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance with a previous version of $short_name."
+
+						else
+
+							dna-echo -m "${r-}Your existing | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance of $short_name with a different hostname than the current one."
+
+						fi
+
+						dna-echo -m "If you choose to continue with the upgrade/re-install, the installation will continue without any issues, but it will be impossible to turn this instance of $short_name into a cluster in the future."
+						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
+						read -rp "${b-}Press enter to continue...${x-}"
+						echo
+
+						set_erlang_node_to_hostname=no
+
+					fi
+
+				fi
+
+			else
+
+				dna-echo -m "${r-}The | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | configuration file of this existing installation of $short_name is missing."
+				dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
+				dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/ejabberd/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+				dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
+				dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
+				read -rp "${b-}Press enter to continue...${x-}"
+				echo
+
+				set_erlang_node_to_hostname=ok
+
+			fi
+
+		fi
+
+	else
+
+		### This is a secondary node install, the user has already consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+
+		set_erlang_node_to_hostname=ok
+		wipe_var_lib_ejabberd=ok
+
+	fi
+
+	############################################################################
+
 	### Install the aenigma ejabberd config
 
 	aenigma-install_ejabberd_config
 
-	if [ ! "${cluster_mode}" = "secondary" ]
-	then
+	### Create the necessary files and directories for ejabberd
 
-		### Prepare APT for ejabberd installation
+	aenigma-create_ejabberd_locations
 
-		aenigma-add_ejabberd_repo
+	### Prepare APT for ejabberd installation
 
-		### Create the necessary files and directories for ejabberd
+	aenigma-add_ejabberd_repo
 
-		aenigma-create_ejabberd_locations
+	### Ensure DPKG is available before proceeding
 
-		### Ensure DPKG is available before proceeding
+	dna-check_dpkg_availability
 
-		dna-check_dpkg_availability
+	### Actually install ejabberd
 
-		### Actually install ejabberd
+	aenigma-install_ejabberd
 
-		aenigma-install_ejabberd
-
-	fi
+	############################################################################
 
 	### Restart ejabberd and ensure it correctly comes up
 
 	echo "${b-}Now stopping ejabberd...${x-}"
 	echo
 	/usr/sbin/service ejabberd stop
-	sleep 8
+	sleep 11
 	echo "${b-}Finished stopping ejabberd.${x-}"
 	echo
 
@@ -1517,69 +1583,21 @@ perform_installation() {
 
 	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
 
-	if [ ! "${cluster_mode}" = "secondary" ]
+	if [ "${set_erlang_node_to_hostname}" = "ok" ]
 	then
-
-		### Determine if this is a fresh install and if so wipe the /var/lib/ejabberd after the config file change below to apply the new setting
-
-		if grep -q "#ERLANG_NODE=ejabberd@localhost" /etc/ejabberd/ejabberdctl.cfg
-		then
-
-			dna-echo -m "To complete the ejabberd installation we need to delete the existing ejabberd data directory [/var/lib/ejabberd/]."
-			dna-echo -m "As this is a fresh ejabberd install, we expect no valuable data to be present in such directory."
-
-			ask_for_boolean_question="Do you confirm this is a fresh install and we can proceed with the ejabberd data directory wipe?"
-			dna-ask_for_boolean_def_yes
-
-			if [ "$ask_for_boolean_output" = "y" ]
-			then
-				dna-echo -m "Ok, continuing..."
-				sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
-				rm -rf /var/lib/ejabberd/*
-			else
-				dna-echo -m "Ok, read carefully below:"
-				dna-echo -m "If, as you specified, you actually do have valuable data in the /var/lib/ejabberd directory, it likely means that, for some reason, you've manually removed ejabberd from this system previously, as we're detecting this to be a fresh ejabberd install on this machine."
-				dna-echo -m "If such existing data exists, it will not work with ejabberd."
-				dna-echo -m "To allow for any future clusterization of this $short_name instance, we now change the ejabberd ERLANG_NODE value to the full hostname of this machine, which is the correct configuration to have in any event."
-				dna-echo -m "However, changing the ERLANG_NODE value will make your current ejabberd data unusable. There is a conversion process that at least partially works but we do not recommend it, and instead advise to start clean with a fresh ejabberd install."
-				dna-echo -m "If you'd like to keep your data working, then select to continue without changing the ERLANG_NODE value at the prompt. This will make future clusterization impossible."
-				dna-echo -m "Otherwise you should exit the installation now, move such data to a secure location, and restart the installation choosing to wipe the current ejabberd data at the prompt."
-				ask_for_boolean_question="Continue the installation without changing the ERLANG_NODE value?"
-				dna-ask_for_boolean_def_yes
-				if [ "$ask_for_boolean_output" = "y" ]
-				then
-					dna-echo -m "Ok, continuing..."
-				else
-					dna-echo -m "Ok, aborting installation..."
-					dna-exit
-				fi
-			fi
-
-		fi
-
-		### Insert wrong ERLANG_NODE hostname check here
-
-	else
-
-		### This is necessarily a fresh install, proceed with ejabberd config change and data directory wipe.
-
-		sed -i "s/\#ERLANG_NODE=ejabberd@localhost/ERLANG_NODE=ejabberd@${hostname}/g" /etc/ejabberd/ejabberdctl.cfg
-		rm -rf /var/lib/ejabberd/*
-
+		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/ejabberd/ejabberdctl.cfg
 	fi
 
-	if [ ! "${cluster_mode-null}" = "secondary" ]
+	if [ "${wipe_var_lib_ejabberd}" = "ok" ]
 	then
 
-		### Proceed with primary node installation
+		/usr/sbin/service ejabberd stop 2> /dev/null || true
+		/usr/bin/killall ejabberd 2> /dev/null || true
 
-		########################################################################
-
-		### Add backup script to crontab
-
-		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
-
-		########################################################################
+		if [ -d /var/lib/ejabberd/ ]
+		then
+			rm -rf /var/lib/ejabberd/* 2> /dev/null || true
+		fi
 
 	fi
 
@@ -1598,6 +1616,10 @@ perform_installation() {
 		### Proceed with primary node installation
 
 		########################################################################
+
+		### Add backup script to crontab
+
+		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
 
 		### Register ejabberd admin user
 
