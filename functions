@@ -921,7 +921,7 @@ perform_installation() {
 
 	dna-check_sslh_connection
 
-	dna-check_distro_ubuntu_lts
+	dna-check_distro_ubuntu_18
 
 	dna-check_inception_run
 
