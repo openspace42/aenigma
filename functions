@@ -569,8 +569,13 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
-	dna-echo -m "Performing DNS checks for the following nodes:"
-	dna-echo -m "${y-}$(cat ${nodes_db_numbered_path})"
+	if [ -f "${nodes_db_numbered_path}" ]
+	then
+
+		dna-echo -m "Performing DNS checks for the following nodes:"
+		dna-echo -m "${y-}$(cat ${nodes_db_numbered_path})"
+
+	fi
 
 	############################################################################
 
@@ -1235,16 +1240,16 @@ perform_installation() {
 
 		########################################################################
 
-		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
-
-		cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
-
 		### Provision the LetsEncrypt wildcard TLS certificate for $domain
 
 	    echo "${b-}It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for *.$domain.${x-}"
 	    echo
 
 		dna-provision_le_wildcard_cert -d "$domain"
+
+		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+
+		cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
 
 		bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
 

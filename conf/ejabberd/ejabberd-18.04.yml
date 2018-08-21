@@ -177,12 +177,6 @@ s2s_dhfile: 'DHFILE'
 s2s_protocol_options: 'S2STLSOPTS'
 s2s_ciphers: 'S2SCIPHERS'
 
-## aenigma_host_config_domain_placeholder_start:
-## aenigma_host_config_domain_placeholder_end:
-
-## aenigma_host_config_xu_placeholder_start:
-## aenigma_host_config_xu_placeholder_end:
-
 ## s2s_access: s2s
 
 ## outgoing_s2s_families:
