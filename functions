@@ -1452,7 +1452,7 @@ perform_installation() {
 
 	############################################################################
 
-	if [ ! "${cluster_mode}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Determine if this is a fresh install
@@ -1530,13 +1530,22 @@ perform_installation() {
 
 			else
 
-				dna-echo -m "${r-}The | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | configuration file of this existing installation of $short_name is missing."
-				dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-				dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/ejabberd/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
-				dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
-				dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
-				read -rp "${b-}Press enter to continue...${x-}"
-				echo
+				### It's possible the installation was never completed in the first place, this might explain the lack of a configuration file.
+
+				if [ -f "${conf_dir}/version/version_installed" ]
+				then
+
+					### An installation was actually completed at some point. Proceed with warning the user.
+
+					dna-echo -m "${r-}The | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | configuration file of this existing installation of $short_name is missing."
+					dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
+					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/ejabberd/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+					dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
+					dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
+					read -rp "${b-}Press enter to continue...${x-}"
+					echo
+
+				fi
 
 				set_erlang_node_to_hostname=ok
 
