@@ -187,9 +187,9 @@ done
 if [ ! -f "/root/.ssh/aenigma_cluster.pub" ]
 then
 	dna-generate_ssh_keypair -n "aenigma_cluster"
-else
-	ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 fi
+
+	ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 
 echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
 echo
@@ -282,16 +282,16 @@ aenigma-perform_dns_checks
 ### Push node_number to secondary node
 
 echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@ae${secondary_node_number}.${domain}:${conf_cluster_dir}/node_number"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@${secondary_node_ipv4}:${conf_cluster_dir}/node_number"
 
 ### Push config to secondary node
 
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@ae${secondary_node_number}.${domain}:${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@ae${secondary_node_number}.${domain}:/var/lib/ejabberd/"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:/var/lib/ejabberd/"
 
 ### Push wildcard LE TLS cert for $domain to secondary node
 
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_dir}" "root@ae${secondary_node_number}.${domain}:/etc/ssl/"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_dir}" "root@${secondary_node_ipv4}:/etc/ssl/"
 
 echo
 
