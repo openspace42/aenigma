@@ -1640,9 +1640,10 @@ perform_installation() {
 		/usr/sbin/service ejabberd stop 2> /dev/null || true
 		/usr/bin/killall ejabberd 2> /dev/null || true
 
-		if [ -d /var/lib/ejabberd/ ]
+		if [ -d "/var/lib/ejabberd" ]
 		then
-			rm -rf /var/lib/ejabberd/* 2> /dev/null || true
+			rm -rf "/var/lib/ejabberd/"
+			aenigma-create_ejabberd_locations
 		fi
 
 	fi
