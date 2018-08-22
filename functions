@@ -477,8 +477,9 @@ aenigma-install_ejabberd() {
 	dna-echo -m "Now installing ejabberd..."
 	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
 	echo
+	dna-echo -m "Now allowing time to ejabberd to start up correctly..."
+	sleep 16
 	dna-echo -m "${g-}Finished installing ejabberd."
-
 }
 
 aenigma-initialize_nodes_db_files() {
@@ -1610,7 +1611,7 @@ perform_installation() {
 
 	############################################################################
 
-	### Restart ejabberd and ensure it correctly comes up
+	### Stop ejabberd to perform config changes
 
 	echo "${b-}Now stopping ejabberd...${x-}"
 	echo
@@ -1648,13 +1649,13 @@ perform_installation() {
 
 	fi
 
-	echo "${b-}Now starting ejabberd...${x-}"
+	echo "${b-}Now finally starting ejabberd back up again...${x-}"
 	/usr/sbin/service ejabberd start
 	echo
 	sleep 16
 	/usr/sbin/ejabberdctl status
 	echo
-	echo "${b-}Finished starting ejabberd.${x-}"
+	echo "${b-}Finished starting ejabberd back up.${x-}"
 	echo
 
 	if [ ! "${cluster_mode-null}" = "secondary" ]
