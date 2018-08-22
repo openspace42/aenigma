@@ -438,6 +438,7 @@ aenigma-set_permissions() {
 	### ~/.ssh/
 
 	chown "root:root" "/root/.ssh/authorized_keys" 2> /dev/null || true
+	chmod 755 "/root/.ssh/" 2> /dev/null || true
 	chmod 600 "/root/.ssh/authorized_keys" 2> /dev/null || true
 
 	dna-echo -m "${g-}Finished setting permissions on ejabberd directories."
