@@ -1485,7 +1485,7 @@ perform_installation() {
 
 		### Determine if this is a fresh install
 
-		if [ ! -d /var/lib/ejabberd/ ]
+		if [ ! -f /var/lib/ejabberd/LATEST.LOG ]
 		then
 
 			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
