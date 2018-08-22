@@ -42,8 +42,8 @@ do
 
 done
 
-chown -R ejabberd:ejabberd $tls_dir || true
-chmod -R 700 $tls_dir
+chown -R "ejabberd:ejabberd" "${tls_dir}" 2> /dev/null || true
+chmod -R 700 "${tls_dir}"
 
 echo "Finished creating all-in-one TLS files."
 echo
