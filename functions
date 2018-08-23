@@ -453,6 +453,13 @@ aenigma-create_ejabberd_locations() {
 	mkdir -p "/var/lib/ejabberd/uploads/"
 	dna-echo -m "${g-}Finished creating uploads directory."
 
+	### .erlang.cookie
+
+	if [ -f "${conf_cluster_dir}/.erlang.cookie" ]
+	then
+		cp "${conf_cluster_dir}/.erlang.cookie" "/var/lib/ejabberd/"
+	fi
+
 	### Create HTTP uploads directory
 
 	dna-echo -m "Now creating HTTP fileserver directory..."

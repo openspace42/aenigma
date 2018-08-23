@@ -287,7 +287,7 @@ echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
 ### Push config to secondary node
 
 /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:/var/lib/ejabberd/"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:${conf_cluster_dir}"
 
 ### Push wildcard LE TLS cert for $domain to secondary node
 
