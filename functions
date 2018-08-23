@@ -426,8 +426,11 @@ aenigma-set_permissions() {
 
 	if id "ejabberd" >/dev/null 2>&1
 	then
-		chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie"
 		chmod 2750 "/var/lib/ejabberd/uploads/"
+		if [ -f "/var/lib/ejabberd/.erlang.cookie" ]
+		then
+			chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie"
+		fi
 	fi
 
 	### /var/www/ejabberd
@@ -452,6 +455,7 @@ aenigma-set_permissions() {
 	then
 		chown -R "ejabberd:ejabberd" "${tls_dir}"
 		chmod -R 700 "${tls_dir}"
+	fi
 
 	### ~/.ssh/
 
