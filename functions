@@ -1634,11 +1634,11 @@ perform_installation() {
 	sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 	sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 
-	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/ejabberd/ejabberdctl.cfg
+	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/default/ejabberd
 
 	if [ "${set_erlang_node_to_hostname}" = "ok" ]
 	then
-		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/ejabberd/ejabberdctl.cfg
+		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
 	fi
 
 	if [ "${wipe_var_lib_ejabberd}" = "ok" ]
