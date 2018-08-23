@@ -1618,13 +1618,13 @@ perform_installation() {
 
 	############################################################################
 
-	### Install the aenigma ejabberd config.
-
-	aenigma-install_ejabberd_config
-
 	### Prepare APT for ejabberd installation.
 
 	aenigma-add_ejabberd_repo
+
+	### Install the aenigma ejabberd config.
+
+	aenigma-install_ejabberd_config
 
 	### Ensure DPKG is available before proceeding.
 
