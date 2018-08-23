@@ -414,6 +414,7 @@ aenigma-set_permissions() {
 
 	chown -R "root:root" "/etc/ejabberd/" 2> /dev/null || true
 	chown "ejabberd:ejabberd" "/etc/ejabberd/ejabberd.yml" 2> /dev/null || true
+	chown "root:ejabberd" "/etc/ejabberd/ejabberd.pem"
 
 	chown "root:ejabberd" "/etc/ejabberd/" 2> /dev/null || true
 	chmod 750 "/etc/ejabberd/" 2> /dev/null || true
