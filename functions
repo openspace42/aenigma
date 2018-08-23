@@ -408,38 +408,50 @@ aenigma-install_ejabberd_config() {
 
 aenigma-set_permissions() {
 
-	dna-echo -m "Now setting permissions on ejabberd directories..."
+	dna-echo -m "Now setting permissions..."
 
 	### /etc/ejabberd/
 
-	chown -R "root:root" "/etc/ejabberd/" 2> /dev/null || true
-	chown "ejabberd:ejabberd" "/etc/ejabberd/ejabberd.yml" 2> /dev/null || true
-	chown "root:ejabberd" "/etc/ejabberd/ejabberd.pem" 2> /dev/null || true
+	#chown -R "root:root" "/etc/ejabberd/" 2> /dev/null || true
+	#chown "ejabberd:ejabberd" "/etc/ejabberd/ejabberd.yml" 2> /dev/null || true
+	#chown "root:ejabberd" "/etc/ejabberd/ejabberd.pem" 2> /dev/null || true
 
-	chown "root:ejabberd" "/etc/ejabberd/" 2> /dev/null || true
-	chmod 750 "/etc/ejabberd/" 2> /dev/null || true
+	#chown "root:ejabberd" "/etc/ejabberd/" 2> /dev/null || true
+	#chmod 750 "/etc/ejabberd/" 2> /dev/null || true
 
-	### "/var/lib/ejabberd/"
+	### /var/lib/ejabberd/
 
-	chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/" 2> /dev/null || true
-	chmod -R 700 "/var/lib/ejabberd/" 2> /dev/null || true
+	#chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/" 2> /dev/null || true
+	#chmod -R 700 "/var/lib/ejabberd/" 2> /dev/null || true
 
-	chmod 2750 "/var/lib/ejabberd/uploads/" 2> /dev/null || true
+	if id "ejabberd" >/dev/null 2>&1
+	then
+		chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie"
+		chmod 2750 "/var/lib/ejabberd/uploads/"
+	fi
 
-	### /var/www/ejabberd/
+	### /var/www/ejabberd
 
-	chown -R "ejabberd:ejabberd" "/var/www/ejabberd/" 2> /dev/null || true
-	chmod -R 755 "/var/www/ejabberd/" 2> /dev/null || true
+	if id "ejabberd" >/dev/null 2>&1
+	then
+		chown -R "ejabberd:ejabberd" "/var/www/ejabberd/"
+		chmod -R 755 "/var/www/ejabberd/"
+	fi
 
 	### /var/log/ejabberd
 
-	chown -R "ejabberd:adm" "/var/log/ejabberd/" 2> /dev/null || true
-	chmod -R 755 "/var/log/ejabberd/" 2> /dev/null || true
+	if id "ejabberd" >/dev/null 2>&1
+	then
+		chown -R "ejabberd:adm" "/var/log/ejabberd/"
+		chmod -R 755 "/var/log/ejabberd/"
+	fi
 
 	### $tls_dir
 
-	chown -R "ejabberd:ejabberd" "${tls_dir}" 2> /dev/null || true
-	chmod -R 700 "${tls_dir}" 2> /dev/null || true
+	if id "ejabberd" >/dev/null 2>&1
+	then
+		chown -R "ejabberd:ejabberd" "${tls_dir}"
+		chmod -R 700 "${tls_dir}"
 
 	### ~/.ssh/
 
@@ -447,7 +459,7 @@ aenigma-set_permissions() {
 	chmod 755 "/root/.ssh/" 2> /dev/null || true
 	chmod 600 "/root/.ssh/authorized_keys" 2> /dev/null || true
 
-	dna-echo -m "${g-}Finished setting permissions on ejabberd directories."
+	dna-echo -m "${g-}Finished setting permissions."
 
 }
 
@@ -464,7 +476,6 @@ aenigma-create_ejabberd_locations() {
 	if [ -f "${conf_cluster_dir}/.erlang.cookie" ]
 	then
 		cp "${conf_cluster_dir}/.erlang.cookie" "/var/lib/ejabberd/"
-		chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie" 2> /dev/null || true
 	fi
 
 	### Create HTTP uploads directory
@@ -476,8 +487,8 @@ aenigma-create_ejabberd_locations() {
 	### Create logfile
 
 	dna-echo -m "Now creating logfile..."
-	mkdir -p /var/log/ejabberd/
-	touch /var/log/ejabberd/www_access.log
+	mkdir -p "/var/log/ejabberd/"
+	touch "/var/log/ejabberd/www_access.log"
 	dna-echo -m "${g-}Finished creating logfile."
 
 	### Set permissions
@@ -1499,7 +1510,7 @@ perform_installation() {
 		if [ ! -f /var/lib/ejabberd/LATEST.LOG ]
 		then
 
-			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the /etc/default/ejabberd config file and wiping the data directory after installing ejabberd.
 
 			set_erlang_node_to_hostname=ok
 			wipe_var_lib_ejabberd=ok
@@ -1512,12 +1523,12 @@ perform_installation() {
 
 			### Check to see if config file already exists.
 
-			if [ -f /etc/ejabberd/ejabberdctl.cfg ]
+			if [ -f /etc/default/ejabberd ]
 			then
 
 				### The config file is in place. Check to see if the ERLANG_NODE value is already correct.
 
-				if grep -q "^ERLANG_NODE=ejabberd@${hostname}$" /etc/ejabberd/ejabberdctl.cfg
+				if grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/etc/default/ejabberd"
 				then
 
 					### The configuration is already correct, the existing data in /var/lib/ejabberd will work fine.
@@ -1528,12 +1539,12 @@ perform_installation() {
 
 					### Check to see if the ERLANG_NODE line exists
 
-					if ! grep -q "ERLANG_NODE=ejabberd@" /etc/ejabberd/ejabberdctl.cfg
+					if ! grep -q "ERLANG_NODE=ejabberd@" "/etc/default/ejabberd"
 					then
 
-						dna-echo -m "${r-}There is an error in your existing | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
+						dna-echo -m "${r-}There is an error in your existing | ${n-}/etc/default/ejabberd${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
 						dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/ejabberd/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/default/ejabberd${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
 						dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
 						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
 						read -rp "${b-}Press enter to continue...${x-}"
@@ -1545,14 +1556,14 @@ perform_installation() {
 
 						### Check to see if the ERLANG_NODE line is commented or its value is set to localhost
 
-						if grep -q "#ERLANG_NODE=ejabberd@" /etc/ejabberd/ejabberdctl.cfg || grep -q "^ERLANG_NODE=ejabberd@localhost$" /etc/ejabberd/ejabberdctl.cfg
+						if grep -q "#ERLANG_NODE=ejabberd@" "/etc/default/ejabberd" || grep -q "^ERLANG_NODE=ejabberd@localhost$" "/etc/default/ejabberd"
 						then
 
-							dna-echo -m "${r-}Your existing | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance with a previous version of $short_name."
+							dna-echo -m "${r-}Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance with a previous version of $short_name."
 
 						else
 
-							dna-echo -m "${r-}Your existing | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance of $short_name with a different hostname than the current one."
+							dna-echo -m "${r-}Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance of $short_name with a different hostname than the current one."
 
 						fi
 
@@ -1576,9 +1587,9 @@ perform_installation() {
 
 					### An installation was actually completed at some point. Proceed with warning the user.
 
-					dna-echo -m "${r-}The | ${n-}/etc/ejabberd/ejabberdctl.cfg${r-} | configuration file of this existing installation of $short_name is missing."
+					dna-echo -m "${r-}The | ${n-}/etc/default/ejabberd${r-} | configuration file of this existing installation of $short_name is missing."
 					dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/ejabberd/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/default/ejabberd${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
 					dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
 					dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
 					read -rp "${b-}Press enter to continue...${x-}"
@@ -1603,25 +1614,25 @@ perform_installation() {
 
 	############################################################################
 
-	### Install the aenigma ejabberd config
+	### Install the aenigma ejabberd config.
 
 	aenigma-install_ejabberd_config
 
-	### Prepare APT for ejabberd installation
+	### Prepare APT for ejabberd installation.
 
 	aenigma-add_ejabberd_repo
 
-	### Ensure DPKG is available before proceeding
+	### Ensure DPKG is available before proceeding.
 
 	dna-check_dpkg_availability
 
-	### Actually install ejabberd
+	### Actually install ejabberd.
 
 	aenigma-install_ejabberd
 
 	############################################################################
 
-	### Stop ejabberd to perform config changes
+	### Stop ejabberd to perform config changes.
 
 	echo "${b-}Now stopping ejabberd...${x-}"
 	echo
@@ -1630,7 +1641,11 @@ perform_installation() {
 	echo "${b-}Finished stopping ejabberd.${x-}"
 	echo
 
-	### Perform some changes on the ejabberd config files
+	### Set permissions now that user ejabberd exists.
+
+	aenigma-set_permissions
+
+	### Perform some changes on the ejabberd config files.
 
 	sed -i "s/xe.@/xe${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 	sed -i "s/xi.@/xi${node_number}.@/g" /etc/ejabberd/ejabberd.yml
@@ -1652,8 +1667,6 @@ perform_installation() {
 		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
 
 	fi
-
-	aenigma-create_ejabberd_locations
 
 	echo "${b-}Now finally starting ejabberd back up again...${x-}"
 	/usr/sbin/service ejabberd start
