@@ -170,7 +170,7 @@ then
 	touch "${nodes_db_numbered_path}"
 fi
 
-array_iter=0
+array_iter=1
 IFS=$'\n'
 set -f
 for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")

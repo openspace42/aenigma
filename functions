@@ -412,8 +412,11 @@ aenigma-set_permissions() {
 
 	### /etc/ejabberd/
 
-	chown -R "ejabberd:ejabberd" "/etc/ejabberd/" 2> /dev/null || true
-	chmod -R 700 "/etc/ejabberd/" 2> /dev/null || true
+	chown -R "root:root" "/etc/ejabberd/" 2> /dev/null || true
+	chown "ejabberd:ejabberd" "/etc/ejabberd/ejabberd.yml" 2> /dev/null || true
+
+	chown "root:ejabberd" "/etc/ejabberd/" 2> /dev/null || true
+	chmod 750 "/etc/ejabberd/" 2> /dev/null || true
 
 	### "/var/lib/ejabberd/"
 
