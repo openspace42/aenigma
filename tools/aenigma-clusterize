@@ -162,23 +162,7 @@ else
 	echo
 fi
 
-### Create a node-numbered version of "nodes_db"
-
-if [ -f "${nodes_db_numbered_path}" ]
-then
-	rm "${nodes_db_numbered_path}"
-	touch "${nodes_db_numbered_path}"
-fi
-
-array_iter=1
-IFS=$'\n'
-set -f
-for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
-do
-	array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
-	echo -e "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
-	array_iter=$((array_iter + 1))
-done
+aenigma-create_nodes_db_numbered
 
 ################################################################################
 
