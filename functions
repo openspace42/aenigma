@@ -424,6 +424,8 @@ aenigma-set_permissions() {
 	chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/" 2> /dev/null || true
 	chmod -R 700 "/var/lib/ejabberd/" 2> /dev/null || true
 
+	chmod 2750 "/var/lib/ejabberd/uploads/" 2> /dev/null || true
+
 	### /var/www/ejabberd/
 
 	chown -R "ejabberd:ejabberd" "/var/www/ejabberd/" 2> /dev/null || true
@@ -1647,15 +1649,11 @@ perform_installation() {
 	then
 
 		/usr/sbin/service ejabberd stop 2> /dev/null || true
-		/usr/bin/killall ejabberd 2> /dev/null || true
-
-		if [ -d "/var/lib/ejabberd" ]
-		then
-			rm -rf "/var/lib/ejabberd/"
-			aenigma-create_ejabberd_locations
-		fi
+		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
 
 	fi
+
+	aenigma-create_ejabberd_locations
 
 	echo "${b-}Now finally starting ejabberd back up again...${x-}"
 	/usr/sbin/service ejabberd start
