@@ -1870,6 +1870,12 @@ perform_installation() {
 		read -rp "${b-}[press enter to continue reading...]${x-}"
 		clear
 
+	else
+
+		### Actually join the cluster by connecting to the primary node
+
+		/usr/sbin/ejabberdctl --no-timeout join_cluster "ejabberd@ae01.${domain}"
+
 	fi
 
 	### Generate aenigma-specific DHparam file
