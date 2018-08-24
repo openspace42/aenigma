@@ -1287,14 +1287,15 @@ perform_installation() {
 
 		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
 
-		dna-echo -m "${r-}Proceeding with this installation as a secondary node will wipe any and everything is already present on this server."
-		dna-echo -m "Please ensure there is no valuable data on this machine."
+		dna-echo -m "${r-}Proceeding with this installation as a secondary node will wipe any and everything is already present on this [only this] server."
+		dna-echo -m "If this node is currently part of a cluster, data on other nodes will NOT be affected, and this node will re-obtain all cluster data from other nodes upon completion of the installation."
+		dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine."
 
-		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server now?"
+		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
 		dna-ask_for_boolean_def_no
 		if [ "$ask_for_boolean_output" = "y" ]
 		then
-			dna-echo -m "Ok, proceeding with ejabberd wipe..."
+			dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
 		else
 			dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
 			dna-exit
@@ -1695,7 +1696,7 @@ perform_installation() {
 	sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 	sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 
-	sed -i "s/\#INET_DIST_INTERFACE=127.0.0.1/INET_DIST_INTERFACE=${this_ipv4}/g" /etc/default/ejabberd
+	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${this_ipv4}" /etc/default/ejabberd
 
 	if [ "${set_erlang_node_to_hostname}" = "ok" ]
 	then
