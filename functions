@@ -475,13 +475,6 @@ aenigma-create_ejabberd_locations() {
 	mkdir -p "/var/lib/ejabberd/uploads/"
 	dna-echo -m "${g-}Finished creating uploads directory."
 
-	### .erlang.cookie
-
-	if [ -f "${conf_cluster_dir}/.erlang.cookie" ]
-	then
-		cp "${conf_cluster_dir}/.erlang.cookie" "/var/lib/ejabberd/"
-	fi
-
 	### Create HTTP uploads directory
 
 	dna-echo -m "Now creating HTTP fileserver directory..."
@@ -601,19 +594,19 @@ aenigma-update_routing_info() {
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
 
-	if ! grep -q "### aenigma cluster nodes list start" /etc/hosts
+	if ! grep -q "### aenigma nodes list start" /etc/hosts
 	then
 		echo >> /etc/hosts
-		echo "### aenigma cluster nodes list start" >> /etc/hosts
+		echo "### aenigma nodes list start" >> /etc/hosts
 	fi
 
-	if ! grep -Pzoq '### aenigma cluster nodes list start(?:.*\n)*?\K### aenigma cluster nodes list end' /etc/hosts
+	if ! grep -Pzoq '### aenigma nodes list start(?:.*\n)*?\K### aenigma nodes list end' /etc/hosts
 	then
-		echo "### aenigma cluster nodes list end" >> /etc/hosts
+		echo "### aenigma nodes list end" >> /etc/hosts
 	fi
 
-	sed -i '/### aenigma cluster nodes list start/,/### aenigma cluster nodes list end/{//!d}' /etc/hosts
-	sed -i "/### aenigma cluster nodes list start/ r ${nodes_db_numbered_path}" /etc/hosts
+	sed -i '/### aenigma nodes list start/,/### aenigma nodes list end/{//!d}' /etc/hosts
+	sed -i "/### aenigma nodes list start/ r ${nodes_db_numbered_path}" /etc/hosts
 
 }
 
@@ -656,7 +649,7 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
-	if [ -f "${nodes_db_numbered_path}" ]
+	if [ "${cluster_enabled-null}" = "cluster" ]
 	then
 
 		dna-echo -m "Performing DNS checks for the following nodes:"
@@ -1691,6 +1684,7 @@ perform_installation() {
 
 	if [ "${set_erlang_node_to_hostname}" = "ok" ]
 	then
+		sed -i "/# ERLANG_NODE/d" /etc/default/ejabberd
 		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
 	fi
 
