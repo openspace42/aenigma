@@ -621,7 +621,7 @@ aenigma-push_routing_info() {
 		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${secondary_node_ipv4}:${conf_cluster_dir}"
+			/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 		fi
 	done
 
