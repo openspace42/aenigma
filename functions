@@ -1139,8 +1139,6 @@ perform_installation() {
 
 		fi
 
-		aenigma-initialize_nodes_db_files
-
 		########################################################################
 
 		### Set xmpp domain
@@ -1266,6 +1264,14 @@ perform_installation() {
 		### Set node_number to 01 as this is the primary node
 
 		dna-set_option -o node_number -p cluster -s "01"
+
+		### Initialize nodes_db files
+
+		aenigma-initialize_nodes_db_files
+
+		### Update routing info
+
+		aenigma-update_routing_info
 
 	else
 
