@@ -1887,9 +1887,15 @@ perform_installation() {
 
 	else
 
-		### Actually join the cluster by connecting to the primary node
+		dna-echo -m "Now joining ejabberd cluster by connecting to the primary node..."
 
-		/usr/sbin/ejabberdctl --no-timeout join_cluster "ejabberd@ae01.${domain}"
+		if /usr/sbin/ejabberdctl --no-timeout join_cluster "ejabberd@ae01.${domain}"
+		then
+			dna-echo -m "${g-}The ejabberd cluster was successfully joined!"
+		else
+			dna-echo -m "${r-}The ejabberd cluster join operation failed."
+			dna-exit
+		fi
 
 	fi
 
