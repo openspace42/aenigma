@@ -612,9 +612,20 @@ aenigma-update_routing_info() {
 
 aenigma-push_routing_info() {
 
+	############################################################################
+
 	### Push nodes_db files to secondary node for /etc/hosts and ufw rules configuration
 
-	/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${secondary_node_ipv4}:${conf_cluster_dir}"
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		then
+			/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${secondary_node_ipv4}:${conf_cluster_dir}"
+		fi
+	done
+
+	############################################################################
 
 	aenigma-exec() {
 
@@ -625,6 +636,8 @@ aenigma-update_routing_info
 "
 
 	}
+
+	############################################################################
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
@@ -640,6 +653,8 @@ END
 		fi
 		echo
 	done
+
+	############################################################################
 
 }
 
