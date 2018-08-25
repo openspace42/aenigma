@@ -645,7 +645,7 @@ aenigma-update_routing_info
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 aenigma-exec
 exit
@@ -1378,7 +1378,7 @@ perform_installation() {
 		dna-echo -m " | ${g-}$this_ipv4${n-} | "
 		dna-echo -m "Enter it on the primary node when prompted to do so, then follow the instructions from there."
 
-		sleep 4
+		sleep 1
 
 		########################################################################
 
@@ -1410,10 +1410,6 @@ perform_installation() {
 
 		cluster_ssh_pubkey="${value}"
 
-		echo $cluster_ssh_pubkey
-
-		read -rp debug
-
 		if ! grep -q "${cluster_ssh_pubkey}" /root/.ssh/authorized_keys
 		then
 			echo "$cluster_ssh_pubkey" >> /root/.ssh/authorized_keys
@@ -1438,11 +1434,16 @@ perform_installation() {
 		echo "${b-}Its value is: | ${y-}$(cat /tmp/aenigma_cluster_token)${n-} |.${x-}"
 		echo
 
-		echo "${b-}Now continue setup on the primary node to ensure the SSH connection is working correctly.${x-}"
-		echo
-		echo "${b-}After that, complete the execution of the clusterize script and come back here when finished.${x-}"
-		echo
-		read -rp "${b-}[press enter to continue...]${x-}"
+		dna-echo "After that, continue the setup on the primary node and come back here when finished."
+
+		sleep 1
+
+		dna-echo "Now waiting for setup on the primary node to be complete..."
+
+		while [ ! -f "/tmp/aenigma_cluster_primary_node_setup_complete" ]
+		do
+			dna-wait -s 4
+		done
 
 		### Read newly received config
 
