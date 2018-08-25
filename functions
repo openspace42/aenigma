@@ -523,6 +523,7 @@ aenigma-create_nodes_db_numbered() {
 		echo -e "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 		array_iter=$((array_iter + 1))
 	done
+	unset node_ipv4
 
 }
 
@@ -590,6 +591,7 @@ aenigma-update_routing_info() {
 	do
 		/usr/sbin/ufw allow from "$node_ipv4"
 	done
+	unset node_ipv4
 	echo
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
@@ -624,6 +626,7 @@ aenigma-push_routing_info() {
 			/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 		fi
 	done
+	unset node_ipv4
 
 	############################################################################
 
@@ -653,6 +656,7 @@ END
 		fi
 		echo
 	done
+	unset node_ipv4
 
 	############################################################################
 
@@ -839,6 +843,7 @@ backup_locally_loop() {
 				/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
 			fi
 		done
+		unset node_ipv4
 	fi
 
 }

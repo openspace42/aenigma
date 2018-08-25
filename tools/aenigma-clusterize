@@ -190,7 +190,7 @@ then
 	dna-generate_ssh_keypair -n "aenigma_cluster"
 fi
 
-	ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
+ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 
 echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
 echo
@@ -300,11 +300,12 @@ echo
 
 ### SSH into the secondary node, and inform it that the setup here on the primary node has been completed.
 
-ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "exec bash -li" > /dev/null <<END
+ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
 touch "/tmp/aenigma-cluster_primary_node_setup_complete"
 exit
 END
+echo
 
 ### Prompt the user to finish the installation on secondary node by following the next steps on the other node
 
