@@ -298,14 +298,15 @@ echo
 
 ################################################################################
 
-### Prompt the user to finish the installation on secondary node by following the next steps on the other node
-
 ### SSH into the secondary node, and inform it that the setup here on the primary node has been completed.
-ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+
+ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
 touch "/tmp/aenigma_cluster_primary_node_setup_complete"
 exit
-END > /dev/null
+END
+
+### Prompt the user to finish the installation on secondary node by following the next steps on the other node
 
 echo "${g-}${b-}Primary_node-level configuration complete.${x-}"
 echo
