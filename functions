@@ -1376,9 +1376,9 @@ perform_installation() {
 
 		dna-echo -m "This is the public IPv4 for this machine:"
 		dna-echo -m " | ${g-}$this_ipv4${n-} | "
-		dna-echo -m "Enter it on the primary node when prompted to do so."
-		read -rp "${b-}[press enter when done to continue...]${x-}"
-		clear
+		dna-echo -m "Enter it on the primary node when prompted to do so, then follow the instructions from there."
+
+		sleep 4
 
 		########################################################################
 
@@ -1390,55 +1390,36 @@ perform_installation() {
 	        touch /root/.ssh/authorized_keys
 		fi
 
-		defined=n
-		until [ $defined = "y" ]
-		do
-			cluster_ssh_pubkey=""
-			until [ ! "$cluster_ssh_pubkey" = "" ]
-			do
-				read -rp "${b-}Now specify the public SSH key displayed on the primary node: ${x-}" cluster_ssh_pubkey
-				echo
-			done
-			valid=n
-			until [ $valid = "y" ]
-			do
-				read -n 1 -p "${b-}Is it correct? (Y/n/e[xit]) ${x-}" answer;
-				case $answer in
-				"")
-					echo
-					valid=y
-					defined=y
-					;;
-				y)
-					echo -e "\n"
-					valid=y
-					defined=y
-					;;
-				n)
-					echo -e "\n"
-					dna-echo -m "Ok, then please try again..."
-					valid=y
-					defined=n
-					;;
-				e)
-					echo -e "\n"
-					dna-echo -m "Exiting..."
-					exit
-					;;
-				*)
-					echo -e "\n"
-					dna-echo -m "${r-}Invalid option. Retry..."
-					valid=n
-					defined=n
-					;;
-				esac
-			done
-		done
+		################################################################################
+
+		validate_input() {
+
+			dna-validate_ssh_pubkey -s -k "${input}"
+
+			if [ "${key_is_valid}" = "y" ]
+			then
+				valid=y
+			else
+				dna-echo -m "${r-}The key you specified does NOT appear to be a valid SSH Public Key."
+				valid=n
+			fi
+
+		}
+
+		dna-set_value -d "Now specify the public SSH key displayed on the primary node:" -v y
+
+		cluster_ssh_pubkey="${value}"
+
+		echo $cluster_ssh_pubkey
+
+		read -rp debug
 
 		if ! grep -q "${cluster_ssh_pubkey}" /root/.ssh/authorized_keys
 		then
 			echo "$cluster_ssh_pubkey" >> /root/.ssh/authorized_keys
 		fi
+
+		################################################################################
 
 		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
 
