@@ -142,7 +142,7 @@ validate_input() {
 	then
 		valid=y
 	else
-		dna-echo "${r-}The value you specified does NOT appear to be a valid IPv4 address."
+		dna-echo -m "${r-}The value you specified does NOT appear to be a valid IPv4 address."
 		valid=n
 	fi
 
