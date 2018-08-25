@@ -1438,12 +1438,20 @@ perform_installation() {
 
 		sleep 1
 
-		dna-echo -m "Now waiting for setup on the primary node to be complete..."
+		########################################################################
 
-		while [ ! -f "/tmp/aenigma_cluster_primary_node_setup_complete" ]
-		do
-			dna-wait -s 4
-		done
+		check_condition() {
+
+			if [ -f "/tmp/aenigma_cluster_primary_node_setup_complete" ]
+			then
+				condition_verified=y
+			fi
+
+		}
+
+		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
+
+		########################################################################
 
 		### Read newly received config
 
