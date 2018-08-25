@@ -132,10 +132,30 @@ aenigma-initialize_nodes_db_files
 
 ### Now add the secondary node's IPv4 to nodes_db_ipv4
 
-read -rp "${b-}Now enter the public IPv4 address displayed on your secondary node: ${x-}"
-echo
+validate_input() {
 
-secondary_node_ipv4="${REPLY}"
+	dna-validate_ipv4 -s -i "${input}"
+
+	if [ "${ip_is_valid}" = "y" ]
+	then
+		valid=y
+	else
+		valid=n
+	fi
+
+}
+
+dna-set_value -d "Now enter the public IPv4 address displayed on your secondary node:" -v y
+
+echo $value
+
+read -rp debug
+
+
+
+
+
+secondary_node_ipv4="${value}"
 
 if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
 then
