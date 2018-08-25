@@ -202,14 +202,14 @@ then
 	### The aenigma_cluster SSH keypair was already generated during a previous clusterization.
 	### Check to see if a connection to the secondary node already succeeds [i.e. because of a previous provisioning of such node]
 
-	if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
+	if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit  &> /dev/null
 	then
 		ssh_connection_to_secondary_node_succeded="y"
 	fi
 
 fi
 
-if [ "${ssh_connection_to_secondary_node_succeded}" = "y" ]
+if [ "${ssh_connection_to_secondary_node_succeded-null}" = "y" ]
 then
 
 	### SSH back into the secondary node, and inform it that we are already able to connect to it.
@@ -230,12 +230,13 @@ else
 	echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
 	echo
 	echo "${y-}${b-}$(cat ${ssh_keypair_pubkey_path})${x-}"
+	echo
 
 	########################################################################
 
 	check_condition() {
 
-		if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
+		if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit &> /dev/null
 		then
 			condition_verified=y
 		fi

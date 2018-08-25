@@ -1412,7 +1412,9 @@ perform_installation() {
 				rm -r "/tmp/aenigma-cluster-ssh-connection-successful"
 			else
 				dna-echo -m "The primary node was not able to connect to this node with the SSH public key already saved on this machine."
-				dna-echo -m "You will now need to specify the SSH public key displayed on your primary node [or if it manages to connect in the mean time, simply type: | ${y-}skip${n-} |]."
+				dna-echo -m "You will now need to specify the SSH public key displayed on your primary node."
+				dna-echo -m "[or if it manages to connect in the mean time, simply type: | ${y-}skip${n-} |]"
+				primary_node_ssh_connection="attempted"
 			fi
 
 			####################################################################
@@ -1427,7 +1429,14 @@ perform_installation() {
 				if [ "${input}" = "skip" ]
 				then
 
-					valid=y
+					if [ -f "/tmp/aenigma-cluster-ssh-connection-successful" ]
+					then
+						valid=y
+					else
+						dna-echo -e "The primary node still does NOT appear to have been able to successfully connect to this node."
+						dna-echo -m "Ensure its connection to this machine has actually succeeded and, if not, specify the public SSH key it will display shortly."
+						valid=n
+					fi
 
 				else
 
@@ -1437,7 +1446,7 @@ perform_installation() {
 					then
 						valid=y
 					else
-						dna-echo -m "${r-}The key you specified does NOT appear to be a valid SSH Public Key."
+						dna-echo -e "The key you specified does NOT appear to be a valid SSH Public Key."
 						valid=n
 					fi
 
@@ -1445,13 +1454,23 @@ perform_installation() {
 
 			}
 
-			dna-set_value -d "Now specify the public SSH key [or write | | ${y-}skip${n-} | if it already connected successfully]:" -v y
+			if [ ! "${primary_node_ssh_connection-null}" = "attempted" ]
+			then
+				dna-set_value -d "Now specify the public SSH key [or write | ${y-}skip${n-} | if the connection was already successful]:" -v y
+			else
+				dna-set_value -d "Now specify the public SSH key:" -v y
+			fi
 
 			cluster_ssh_pubkey="${value}"
 
-			if ! grep -q "${cluster_ssh_pubkey}" /root/.ssh/authorized_keys
+			if [ ! "${value}" = "skip" ]
 			then
-				echo "$cluster_ssh_pubkey" >> /root/.ssh/authorized_keys
+
+				if ! grep -q "${cluster_ssh_pubkey}" /root/.ssh/authorized_keys
+				then
+					echo "$cluster_ssh_pubkey" >> /root/.ssh/authorized_keys
+				fi
+
 			fi
 
 		fi
