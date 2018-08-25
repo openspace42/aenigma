@@ -187,7 +187,7 @@ aenigma-create_nodes_db_numbered
 
 if [ -f "/root/.ssh/aenigma_cluster.pub" ]
 then
-	aenigma-cluster_ssh_keypair_preexisting="y"
+	aenigma_cluster_ssh_keypair_preexisting="y"
 else
 	dna-generate_ssh_keypair -n "aenigma_cluster"
 fi
@@ -196,7 +196,7 @@ ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 
 ################################################################################
 
-if [ "${aenigma-cluster_ssh_keypair_preexisting-null}" = "y" ]
+if [ "${aenigma_cluster_ssh_keypair_preexisting-null}" = "y" ]
 then
 
 	### The aenigma_cluster SSH keypair was already generated during a previous clusterization.
