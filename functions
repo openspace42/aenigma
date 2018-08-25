@@ -410,22 +410,11 @@ aenigma-set_permissions() {
 
 	dna-echo -m "Now setting permissions..."
 
-	### /etc/ejabberd/
-
-	#chown -R "root:root" "/etc/ejabberd/" 2> /dev/null || true
-	#chown "ejabberd:ejabberd" "/etc/ejabberd/ejabberd.yml" 2> /dev/null || true
-	#chown "root:ejabberd" "/etc/ejabberd/ejabberd.pem" 2> /dev/null || true
-
-	#chown "root:ejabberd" "/etc/ejabberd/" 2> /dev/null || true
-	#chmod 750 "/etc/ejabberd/" 2> /dev/null || true
-
 	### /var/lib/ejabberd/
-
-	#chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/" 2> /dev/null || true
-	#chmod -R 700 "/var/lib/ejabberd/" 2> /dev/null || true
 
 	if id "ejabberd" >/dev/null 2>&1
 	then
+		chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/uploads/"
 		chmod 2750 "/var/lib/ejabberd/uploads/"
 		if [ -f "/var/lib/ejabberd/.erlang.cookie" ]
 		then
@@ -1455,11 +1444,9 @@ perform_installation() {
 		}
 
 		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
-
 		rm -r "/tmp/aenigma-cluster_primary_node_setup_complete"
-
+		echo
 		dna-echo -m "${g-}Primary node setup complete. Now continuing installation..."
-
 		sleep 7
 
 		########################################################################

@@ -195,10 +195,6 @@ ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
 echo
 echo "${y-}${b-}$(cat ${ssh_keypair_pubkey_path})${x-}"
-echo
-
-
-
 
 ########################################################################
 
@@ -222,7 +218,7 @@ else
 	dna-exit
 fi
 
-sleep 7
+sleep 1
 
 ########################################################################
 
@@ -326,5 +322,5 @@ echo
 
 echo "${g-}${b-}Primary_node-level configuration complete.${x-}"
 echo
-echo "${b-}Please continue the installation on the secondary node by following the remaining steps on the installation.${x-}"
+echo "${b-}You can now return to your secondary node as it automatically finished running the installation from there.${x-}"
 echo
