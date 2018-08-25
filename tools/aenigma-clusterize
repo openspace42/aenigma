@@ -216,7 +216,7 @@ then
 
 	ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
-touch "/tmp/aenigma-cluster_ssh_connection_successful"
+touch "/tmp/aenigma-cluster-ssh-connection-successful"
 exit
 END
 	echo
@@ -261,7 +261,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma_cluster_token)"
+if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma-cluster-token)"
 then
 	echo "${g-}${b-}Token on secondary node found.${x-}"
 	echo
@@ -350,7 +350,7 @@ echo
 
 ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
-touch "/tmp/aenigma-cluster_primary_node_setup_complete"
+touch "/tmp/aenigma-cluster-primary-node-setup-complete"
 exit
 END
 echo

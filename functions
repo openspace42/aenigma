@@ -1396,22 +1396,23 @@ perform_installation() {
 
 			check_condition() {
 
-				if [ -f "/tmp/aenigma-cluster_ssh_connection_successful" ]
+				if [ -f "/tmp/aenigma-cluster-ssh-connection-successful" ]
 				then
 					condition_verified=y
 				fi
 
 			}
 
-			dna-wait_for -m 11 -d "Now looking to see if the primary node is already able to connect to this node..."
+			dna-wait_for -m 32 -d "Now looking to see if the primary node is already able to connect to this node..."
 
 			if [ "${wait_output}" = "ok" ]
 			then
 				dna-echo -m "${g-}Primary node SSH connection to this node succeeded. Continuing installation..."
 				primary_node_ssh_connection="ok"
-				rm -r "/tmp/aenigma-cluster_ssh_connection_successful"
+				rm -r "/tmp/aenigma-cluster-ssh-connection-successful"
 			else
 				dna-echo -m "The primary node was not able to connect to this node with the SSH public key already saved on this machine."
+				dna-echo -m "You will now need to specify the SSH public key displayed on your primary node [or if it manages to connect in the mean time, simply type: | ${y-}skip${n-} |]."
 			fi
 
 			####################################################################
@@ -1423,19 +1424,28 @@ perform_installation() {
 
 			validate_input() {
 
-				dna-validate_ssh_pubkey -s -k "${input}"
-
-				if [ "${key_is_valid}" = "y" ]
+				if [ "${input}" = "skip" ]
 				then
+
 					valid=y
+
 				else
-					dna-echo -m "${r-}The key you specified does NOT appear to be a valid SSH Public Key."
-					valid=n
+
+					dna-validate_ssh_pubkey -s -k "${input}"
+
+					if [ "${key_is_valid}" = "y" ]
+					then
+						valid=y
+					else
+						dna-echo -m "${r-}The key you specified does NOT appear to be a valid SSH Public Key."
+						valid=n
+					fi
+
 				fi
 
 			}
 
-			dna-set_value -d "Now specify the public SSH key displayed on the primary node:" -v y
+			dna-set_value -d "Now specify the public SSH key [or write | | ${y-}skip${n-} | if it already connected successfully]:" -v y
 
 			cluster_ssh_pubkey="${value}"
 
@@ -1452,17 +1462,17 @@ perform_installation() {
 
 		if [ $ipv6_avail = "y" ]
 		then
-			echo "${this_ipv6}" > /tmp/aenigma_cluster_token
+			echo "${this_ipv6}" > /tmp/aenigma-cluster-token
 		else
 			aenigma_cluster_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-			echo "${aenigma_cluster_token}" > /tmp/aenigma_cluster_token
+			echo "${aenigma_cluster_token}" > /tmp/aenigma-cluster-token
 		fi
 
 		echo "${b-}A token has been generated to verify a correct connection to this machine from the primary node.${x-}"
 		echo
 		echo "${b-}You'll be asked to verify it matches with the one that will shortly be displayed on the primary node.${x-}"
 		echo
-		echo "${b-}Its value is: | ${y-}$(cat /tmp/aenigma_cluster_token)${n-} |.${x-}"
+		echo "${b-}Its value is: | ${y-}$(cat /tmp/aenigma-cluster-token)${n-} |.${x-}"
 		echo
 
 		dna-echo -m "After that, continue the setup on the primary node and come back here when finished."
@@ -1473,7 +1483,7 @@ perform_installation() {
 
 		check_condition() {
 
-			if [ -f "/tmp/aenigma-cluster_primary_node_setup_complete" ]
+			if [ -f "/tmp/aenigma-cluster-primary-node-setup-complete" ]
 			then
 				condition_verified=y
 			fi
@@ -1481,7 +1491,7 @@ perform_installation() {
 		}
 
 		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
-		rm -r "/tmp/aenigma-cluster_primary_node_setup_complete"
+		rm -r "/tmp/aenigma-cluster-primary-node-setup-complete"
 		echo
 		dna-echo -m "${g-}Primary node setup complete. Now continuing installation..."
 		sleep 7
