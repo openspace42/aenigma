@@ -302,7 +302,7 @@ echo
 
 ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
-touch "/tmp/aenigma_cluster_primary_node_setup_complete"
+touch "/tmp/aenigma-cluster_primary_node_setup_complete"
 exit
 END
 

@@ -1442,7 +1442,7 @@ perform_installation() {
 
 		check_condition() {
 
-			if [ -f "/tmp/aenigma_cluster_primary_node_setup_complete" ]
+			if [ -f "/tmp/aenigma-cluster_primary_node_setup_complete" ]
 			then
 				condition_verified=y
 			fi
@@ -1450,6 +1450,10 @@ perform_installation() {
 		}
 
 		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
+
+		dna-echo -m "${g-}Primary node setup complete. Now continuing installation..."
+
+		rm -r "/tmp/aenigma-cluster_primary_node_setup_complete"
 
 		########################################################################
 
