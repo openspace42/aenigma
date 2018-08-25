@@ -185,48 +185,85 @@ aenigma-create_nodes_db_numbered
 
 ### Generate or read and print the clusterization SSH pubkey and prompt the user to configure it on the seondary node
 
-if [ ! -f "/root/.ssh/aenigma_cluster.pub" ]
+if [ -f "/root/.ssh/aenigma_cluster.pub" ]
 then
+	aenigma-cluster_ssh_keypair_preexisting="y"
+else
 	dna-generate_ssh_keypair -n "aenigma_cluster"
 fi
 
 ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 
-echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
-echo
-echo "${y-}${b-}$(cat ${ssh_keypair_pubkey_path})${x-}"
+################################################################################
 
-########################################################################
+if [ "${aenigma-cluster_ssh_keypair_preexisting-null}" = "y" ]
+then
 
-check_condition() {
+	### The aenigma_cluster SSH keypair was already generated during a previous clusterization.
+	### Check to see if a connection to the secondary node already succeeds [i.e. because of a previous provisioning of such node]
 
 	if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
 	then
-		condition_verified=y
+		ssh_connection_to_secondary_node_succeded="y"
 	fi
 
-}
-
-dna-wait_for -i "8" -d "Now waiting for successful connection to the secondary node..." -m "64" -e "Timeout exceed for SSH connection test to secondary node."
-
-if [ "${wait_output}"  = "ok" ]
-then
-	dna-echo -m "${g-}SSH connection to secondary node succeeded. Now continuing installation..."
-else
-	dna-echo -e "SSH connection to secondary node failed."
-	dna-echo -m "Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} |, that its SSH port is | ${y}42022${n-} |, and that its firewall isn't blocking connections on that port."
-	dna-exit
 fi
 
-sleep 1
+if [ "${ssh_connection_to_secondary_node_succeded}" = "y" ]
+then
 
-########################################################################
+	### SSH back into the secondary node, and inform it that we are already able to connect to it.
+
+	ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
+set -eu
+touch "/tmp/aenigma-cluster_ssh_connection_successful"
+exit
+END
+	echo
+
+	dna-echo -m "${g-}SSH connection to secondary node succeeded. Now continuing installation..."
+
+else
+
+	### The SSH pubkey must be specified by the user on the secondary node.
+
+	echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
+	echo
+	echo "${y-}${b-}$(cat ${ssh_keypair_pubkey_path})${x-}"
+
+	########################################################################
+
+	check_condition() {
+
+		if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit
+		then
+			condition_verified=y
+		fi
+
+	}
+
+	dna-wait_for -i "8" -d "Now waiting for successful connection to the secondary node..." -m "64" -e "Timeout exceed for SSH connection test to secondary node."
+
+	if [ "${wait_output}"  = "ok" ]
+	then
+		dna-echo -m "${g-}SSH connection to secondary node succeeded. Now continuing installation..."
+	else
+		dna-echo -e "SSH connection to secondary node failed."
+		dna-echo -m "Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} |, that its SSH port is | ${y}42022${n-} |, and that its firewall isn't blocking connections on that port."
+		dna-exit
+	fi
+
+	sleep 1
+
+	########################################################################
+
+fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
 if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma_cluster_token)"
 then
-	echo "${g-}${b-}Token on secondary node correctly found.${x-}"
+	echo "${g-}${b-}Token on secondary node found.${x-}"
 	echo
 	echo "${b-}Its value is: | ${y-}${secondary_node_token}${n-} |.${x-}"
 	echo
