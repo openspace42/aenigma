@@ -53,6 +53,25 @@ check_root
 
 ################################################################################
 
-dna-echo -m "${g-}You are now inside of the aenigma-env shell."
+dna-head_script
 
-export PS1="\u@aenigma-env:\[\e[32m\]~#\[\e[m\] "
+dna-read_conf_settings
+
+################################################################################
+
+if [ ! "${cluster_mode-null}" = "primary" ]
+then
+	dna-echo -e "This script must only be run on the primary node of your ${short_name} instance."
+	dna-exit
+fi
+
+################################################################################
+
+### Fetch IP addresses for this machine
+
+dna-get_public_ipv4
+dna-check_ipv6_connectivity
+
+### Push and update routing info on all secondary nodes to allow them to connect to each other correctly.
+
+aenigma-push_routing_info

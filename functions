@@ -1780,7 +1780,6 @@ perform_installation() {
 	### Stop ejabberd to perform config changes.
 
 	dna-echo -m "Now stopping ejabberd..."
-	echo
 	/usr/sbin/service ejabberd stop
 	dna-wait -s "11" -d "Now allowing ejabberd to shut down correctly..."
 	dna-echo -s "Finished stopping ejabberd."
