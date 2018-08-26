@@ -574,13 +574,15 @@ aenigma-update_routing_info() {
 
 	### Set UFW rules on this node according to the updated nodes_db
 
+	array_iter=1
 	IFS=$'\n'
 	set -f
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
-		/usr/sbin/ufw allow from "$node_ipv4"
+		/usr/sbin/ufw insert "${array_iter}" allow from "$node_ipv4"
+		array_iter=$((array_iter + 1))
 	done
-	unset node_ipv4
+	unset node_ipv4 array_iter
 	echo
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
@@ -639,8 +641,9 @@ aenigma-push_routing_info() {
 		then
 			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 			then
+				echo
 				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
-				dna-echo -m "It is NOT reccommended to continue the configuration as the node in question will not be informed of the new node we're setting up right now."
+				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue runing the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${short_name}-push_routing_info${n-} | "
 				ask_for_boolean_question="Continue with installation anyway?"
