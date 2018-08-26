@@ -1417,6 +1417,8 @@ perform_installation() {
 				primary_node_ssh_connection="attempted"
 			fi
 
+			unset wait_output
+
 			####################################################################
 
 		fi
@@ -1513,6 +1515,7 @@ perform_installation() {
 		rm -r "/tmp/aenigma-cluster-primary-node-setup-complete"
 		echo
 		dna-echo -m "${g-}Primary node setup complete. Now continuing installation..."
+		unset wait_output
 		sleep 7
 
 		########################################################################
