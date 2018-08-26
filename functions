@@ -488,8 +488,7 @@ aenigma-install_ejabberd() {
 	dna-echo -m "Now installing ejabberd..."
 	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
 	echo
-	dna-echo -m "Now allowing time to ejabberd to start up correctly..."
-	sleep 16
+	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
 	dna-echo -m "${g-}Finished installing ejabberd."
 }
 
@@ -857,7 +856,7 @@ restore_loop() {
 	        echo "${b-}Now starting ejabberd ...${x-}"
 	        /usr/sbin/service ejabberd start
 	        echo
-	        sleep 8
+	        dna-wait -s "8" -d "Now allowing ejabberd to start up correctly..."
 	        /usr/sbin/ejabberdctl
 	        echo
 	        sleep 1
@@ -871,7 +870,7 @@ restore_loop() {
 		rm /var/lib/ejabberd/ejabberd-mnesia-backup
 	        echo "${b-}Successfully restored ejabberd database...${x-}"
 	        echo
-	        sleep 8
+	        dna-wait -s "8" -d "Now allowing ejabberd sync the database..."
 	else
 	        echo "${r-}${b-}ERROR: ejabberd STILL NOT running. Unable to restore database from backup.${x-}"
 	        echo
@@ -884,7 +883,7 @@ restore_loop() {
 	echo "${b-}Now stopping ejabberd for directory restore...${x-}"
 	echo
 	/usr/sbin/service ejabberd stop
-	sleep 8
+	dna-wait -s "8" -d "Now allowing ejabberd to shut down correctly..."
 
 	echo "${b-}3] Now syncing ejabberd directories...${x-}"
 	echo
@@ -897,7 +896,7 @@ restore_loop() {
 	echo "${b-}Now starting ejabberd...${x-}"
 	/usr/sbin/service ejabberd start
 	echo
-	sleep 16
+	dna-wait -s "8" -d "Now allowing ejabberd to start up correctly..."
 	/usr/sbin/ejabberdctl status
 	echo
 	sleep 1
@@ -1411,7 +1410,7 @@ perform_installation() {
 				primary_node_ssh_connection="ok"
 				rm -r "/tmp/aenigma-cluster-ssh-connection-successful"
 			else
-				dna-echo -m "The primary node was not able to connect to this node with the SSH public key already saved on this machine."
+				dna-echo -e "The primary node was not able to connect to this node with the SSH public key already saved on this machine."
 				dna-echo -m "You will now need to specify the SSH public key displayed on your primary node."
 				dna-echo -m "[or if it manages to connect in the mean time, simply type: | ${y-}skip${n-} |]"
 				primary_node_ssh_connection="attempted"
@@ -1513,10 +1512,9 @@ perform_installation() {
 
 		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
 		rm -r "/tmp/aenigma-cluster-primary-node-setup-complete"
-		echo
 		dna-echo -m "${g-}Primary node setup complete. Now continuing installation..."
 		unset wait_output
-		sleep 7
+		sleep 1
 
 		########################################################################
 
@@ -1734,12 +1732,11 @@ perform_installation() {
 
 	### Stop ejabberd to perform config changes.
 
-	echo "${b-}Now stopping ejabberd...${x-}"
+	dna-echo -m "Now stopping ejabberd..."
 	echo
 	/usr/sbin/service ejabberd stop
-	sleep 11
-	echo "${b-}Finished stopping ejabberd.${x-}"
-	echo
+	dna-wait -s "11" -d "Now allowing ejabberd to shut down correctly..."
+	dna-echo -s "Finished stopping ejabberd."
 
 	### Set permissions now that user ejabberd exists.
 
@@ -1769,14 +1766,13 @@ perform_installation() {
 
 	fi
 
-	echo "${b-}Now finally starting ejabberd back up again...${x-}"
+	dna-echo -m "Now finally starting ejabberd back up again..."
 	/usr/sbin/service ejabberd start
 	echo
-	sleep 16
+	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
 	/usr/sbin/ejabberdctl status
 	echo
-	echo "${b-}Finished starting ejabberd back up.${x-}"
-	echo
+	dna-echo -s "Finished starting ejabberd back up."
 
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
@@ -1941,7 +1937,25 @@ perform_installation() {
 		fi
 
 		read -rp "${b-}[press enter to continue reading...]${x-}"
-		clear
+		echo
+
+		if [ "${cluster_mode}" = "cluster" ]
+		then
+
+			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding your secondary nodes."
+			ask_for_boolean_question="Are you ready to do so now?"
+            dna-ask_for_boolean_def_yes
+            if [ "$ask_for_boolean_output" = "y" ]
+            then
+				dna-echo -m "Ok, running the | ${o-}clusterize${n-} | script now..."
+				bash "${tools_dir}/${short_name}-clusterize"
+			else
+				dna-echo -m "Ok, you can run the | ${o-}clusterize${n-} | script at any time by executing:"
+				dna-echo -m " | ${y-}bash ${tools_dir}/${short_name}-clusterize${n-} | "
+				read -rp "${b-}[press enter to continue reading...]${x-}"
+				echo
+			fi
+		fi
 
 	else
 
