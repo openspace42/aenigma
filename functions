@@ -1814,7 +1814,6 @@ perform_installation() {
 
 	dna-echo -m "Now finally starting ejabberd back up again..."
 	/usr/sbin/service ejabberd start
-	echo
 	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
 	/usr/sbin/ejabberdctl status
 	echo
