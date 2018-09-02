@@ -384,13 +384,30 @@ aenigma-add_ejabberd_repo() {
 
 }
 
+aenigma-get_ejabberd_candidate_version() {
+
+	ejabberd_candidate_version="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+
+}
+
+aenigma-get_ejabberd_installed_version() {
+
+	if dpkg -s ejabberd &> /dev/null
+	then
+		ejabberd_installed_version="$(dpkg -s ejabberd | grep '^Version:' | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+	else
+		ejabberd_installed_version=none
+	fi
+
+}
+
 aenigma-install_ejabberd_config() {
 
 	dna-echo -m "Now creating ejabberd directory and setting custom aenigma config..."
 
-	ejab_cand_vers="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+	aenigma-get_ejabberd_candidate_version
 
-	source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-$ejab_cand_vers.yml"
+	source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-$ejabberd_candidate_version.yml"
 
 	if [ ! -f $source_ejab_conf_file ]
 	then
@@ -1062,6 +1079,27 @@ perform_installation() {
 	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
 	dna-echo -m $"${g-}Finished transferring files into installation directory."
+
+	################################################################################
+
+	### Prepare APT for ejabberd installation.
+
+	aenigma-add_ejabberd_repo
+
+	### Check if an ejabberd upgrade is going to be performed and if so upgrade ejabberd by non-interactively installing the new config files [which we'll the re-replace later in the installation anyway]
+
+	aenigma-get_ejabberd_candidate_version
+
+	aenigma-get_ejabberd_installed_version
+
+	if [ ! "${ejabberd_installed_version}" = "none" ]
+	then
+		if [ ! "${ejabberd_candidate_version}" = "${ejabberd_installed_version}" ]
+		then
+			dna-echo -m "A new version of ejabberd is available from the APT repository. Upgrading it now..."
+			export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" --force-yes --only-upgrade ejabberd || true
+		fi
+	fi
 
 	################################################################################
 
@@ -1758,10 +1796,6 @@ perform_installation() {
 
 	############################################################################
 
-	### Prepare APT for ejabberd installation.
-
-	aenigma-add_ejabberd_repo
-
 	### Install the aenigma ejabberd config.
 
 	aenigma-install_ejabberd_config
@@ -2024,6 +2058,7 @@ perform_installation() {
 	then
 		sed -i "s|### dhfile: 'DHFILE'|dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
 		sed -i "s|### s2s_dhfile: 'DHFILE'|s2s_dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
+		/usr/sbin/service ejabberd restart
 	fi
 
 	############################################################################
