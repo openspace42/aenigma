@@ -78,7 +78,7 @@ listen:
     module: ejabberd_c2s
     starttls: true
     protocol_options: 'TLSOPTS'
-    dhfile: 'DHFILE'
+    ### dhfile: 'DHFILE'
     ciphers: 'CIPHERS'
     starttls_required: true
     zlib: true
@@ -90,7 +90,7 @@ listen:
     ip: "::"
     module: ejabberd_c2s
     protocol_options: 'TLSOPTS'
-    dhfile: 'DHFILE'
+    ### dhfile: 'DHFILE'
     ciphers: 'CIPHERS'
     tls: true
     zlib: true
@@ -164,7 +164,7 @@ listen:
      "": mod_http_upload
    tls: true
    protocol_options: 'TLSOPTS'
-   dhfile: 'DHFILE'
+   ### dhfile: 'DHFILE'
    ciphers: 'CIPHERS'
 
 disable_sasl_mechanisms: "digest-md5"
@@ -173,7 +173,7 @@ disable_sasl_mechanisms: "digest-md5"
 ###'  S2S GLOBAL OPTIONS
 
 s2s_use_starttls: required
-s2s_dhfile: 'DHFILE'
+### s2s_dhfile: 'DHFILE'
 s2s_protocol_options: 'S2STLSOPTS'
 s2s_ciphers: 'S2SCIPHERS'
 
@@ -445,8 +445,6 @@ modules:
   mod_disco: {}
   mod_echo:
     host: "xe.@HOST@"
-  mod_irc:
-    host: "xi.@HOST@"
   mod_bosh: {}
   mod_http_fileserver:
     docroot: "/var/www/ejabberd/"

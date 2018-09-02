@@ -795,7 +795,6 @@ aenigma-perform_dns_checks() {
 
 			declare -a xmpp_service_array=(
 				"xe"
-				"xi"
 				"xm"
 				"xp"
 				"xu"
@@ -1791,7 +1790,6 @@ perform_installation() {
 	### Perform some changes on the ejabberd config files.
 
 	sed -i "s/xe.@/xe${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xi.@/xi${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 	sed -i "s/xm.@/xm${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 	sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
 	sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
@@ -2019,6 +2017,14 @@ perform_installation() {
 	### Generate aenigma-specific DHparam file
 
 	dna-generate_project_specific_dhparam
+
+	### If DHparam file was found or generated, amend the config file to include them:
+
+	if [ "${dh_param_status}" = "ok" ]
+	then
+		sed -i "s|### dhfile: 'DHFILE'|dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
+		sed -i "s|### s2s_dhfile: 'DHFILE'|s2s_dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
+	fi
 
 	############################################################################
 	############################################################################

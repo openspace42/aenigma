@@ -72,6 +72,12 @@ fi
 dna-get_public_ipv4
 dna-check_ipv6_connectivity
 
+### Insert IP changed warning here ###
+
+### Update routing info on this machine
+
+aenigma-update_routing_info
+
 ### Push and update routing info on all secondary nodes to allow them to connect to each other correctly.
 
 aenigma-push_routing_info
