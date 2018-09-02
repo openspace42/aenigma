@@ -411,8 +411,8 @@ aenigma-install_ejabberd_config() {
 
 	if [ ! -f $source_ejab_conf_file ]
 	then
-		### Fallback to ejabberd.yml for v17.08 in case the ejabberd candidate install version isn't among the ones we have config files for
-		source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-17.08.yml"
+		### Fallback to ejabberd.yml for v18.06 in case the ejabberd candidate install version isn't among the ones we have config files for
+		source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-18.06.yml"
 	fi
 
 	mkdir -p /etc/ejabberd/
@@ -420,7 +420,7 @@ aenigma-install_ejabberd_config() {
 	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
 
-	dna-echo -m "${g-}Finished creating ejabberd directory and setting custom aenigma config."
+	dna-echo -s "Finished creating ejabberd directory and setting custom aenigma config."
 
 }
 
@@ -503,11 +503,20 @@ aenigma-create_ejabberd_locations() {
 
 aenigma-install_ejabberd() {
 
+	### Ensure DPKG is available before proceeding.
+
+	dna-check_dpkg_availability
+
+	### Proceed
+
 	dna-echo -m "Now installing ejabberd..."
+
 	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
 	echo
+
 	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
-	dna-echo -m "${g-}Finished installing ejabberd."
+
+	dna-echo -s "Finished installing ejabberd."
 }
 
 aenigma-create_nodes_db_numbered() {
@@ -1079,31 +1088,6 @@ perform_installation() {
 	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
 	dna-echo -m $"${g-}Finished transferring files into installation directory."
-
-	################################################################################
-
-	### Prepare APT for ejabberd installation.
-
-	aenigma-add_ejabberd_repo
-
-	### Check if an ejabberd upgrade is going to be performed and if so upgrade ejabberd by non-interactively installing the new config files [which we'll the re-replace later in the installation anyway]
-
-	aenigma-get_ejabberd_candidate_version
-
-	aenigma-get_ejabberd_installed_version
-
-	if [ ! "${ejabberd_installed_version}" = "none" ]
-	then
-		if [ ! "${ejabberd_candidate_version}" = "${ejabberd_installed_version}" ]
-		then
-			dna-echo -m "A new version of ejabberd is available from the APT repository. Upgrading it now..."
-			export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" --force-yes --only-upgrade ejabberd || true
-		fi
-	fi
-
-	################################################################################
-
-	dna-apt_full_upgrade -e
 
 	dna-install_duplicity
 
@@ -1795,14 +1779,44 @@ perform_installation() {
 	fi
 
 	############################################################################
+	############################################################################
+
+	### Prepare APT for ejabberd installation.
+
+	aenigma-add_ejabberd_repo
+
+	############################################################################
+
+	### Check if an ejabberd upgrade is going to be performed.
+
+	aenigma-get_ejabberd_candidate_version
+
+	aenigma-get_ejabberd_installed_version
+
+	if [ ! "${ejabberd_installed_version}" = "none" ]
+	then
+		if [ ! "${ejabberd_candidate_version}" = "${ejabberd_installed_version}" ]
+		then
+
+			dna-echo -s "A new version of ejabberd is available from the APT repository. Upgrading it now..."
+
+			### Upgrade ejabberd by non-interactively installing the new config files
+			### [which we'll the re-replace later in the installation anyway].
+
+			export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confnew" --force-yes --only-upgrade ejabberd || true
+
+		fi
+	fi
+
+	############################################################################
 
 	### Install the aenigma ejabberd config.
 
 	aenigma-install_ejabberd_config
 
-	### Ensure DPKG is available before proceeding.
+	### Perform a full APT upgrade
 
-	dna-check_dpkg_availability
+	dna-apt_full_upgrade -e
 
 	### Actually install ejabberd.
 
