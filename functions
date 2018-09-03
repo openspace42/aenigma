@@ -40,6 +40,8 @@ define_vars() {
 	conf_cluster_dir="${conf_dir}/cluster"
 	conf_cluster_nodes_dir="${conf_cluster_dir}/nodes"
 
+	conf_xmpp_dir="${conf_dir}/xmpp"
+
 	### Set the paths to the nodes_db files
 
 	nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
@@ -507,6 +509,11 @@ aenigma-install_ejabberd() {
 
 	dna-check_dpkg_availability
 
+	### Inhibit ejabberd from starting after install as permissions won't be already correct
+
+	echo exit 101 > "/usr/sbin/policy-rc.d"
+	chmod +x "/usr/sbin/policy-rc.d"
+
 	### Proceed
 
 	dna-echo -m "Now installing ejabberd..."
@@ -514,7 +521,9 @@ aenigma-install_ejabberd() {
 	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
 	echo
 
-	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
+	### Remove autostart inhibition
+
+	rm "/usr/sbin/policy-rc.d"
 
 	dna-echo -s "Finished installing ejabberd."
 }
@@ -1787,14 +1796,17 @@ perform_installation() {
 
 	############################################################################
 
-	### Check if an ejabberd upgrade is going to be performed.
-
-	aenigma-get_ejabberd_candidate_version
+	### Check the current status of ejabberd on this machine
 
 	aenigma-get_ejabberd_installed_version
 
 	if [ ! "${ejabberd_installed_version}" = "none" ]
 	then
+
+		### ejabberd is currently installed. Check if an ejabberd upgrade is going to be performed.
+
+		aenigma-get_ejabberd_candidate_version
+
 		if [ ! "${ejabberd_candidate_version}" = "${ejabberd_installed_version}" ]
 		then
 
@@ -1806,6 +1818,16 @@ perform_installation() {
 			export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confnew" --force-yes --only-upgrade ejabberd || true
 
 		fi
+
+	else
+
+		### Remove the "ejabberd_admin_password_set" file if it exists as ejabberd was not currently installed
+
+		if [ -f "${conf_xmpp_dir}/ejabberd_admin_password_set" ]
+		then
+			rm "${conf_xmpp_dir}/ejabberd_admin_password_set"
+		fi
+
 	fi
 
 	############################################################################
@@ -1824,14 +1846,19 @@ perform_installation() {
 
 	############################################################################
 
-	### Stop ejabberd to perform config changes.
+	### Stop ejabberd if it's already running [i.e. because it was already installed]
 
-	dna-echo -m "Now stopping ejabberd..."
-	/usr/sbin/service ejabberd stop
-	dna-wait -s "11" -d "Now allowing ejabberd to shut down correctly..."
-	dna-echo -s "Finished stopping ejabberd."
+	if systemctl is-active --quiet ejabberd
+	then
 
-	### Set permissions now that user ejabberd exists.
+		dna-echo -m "Now stopping ejabberd..."
+		/usr/sbin/service ejabberd stop
+		dna-wait -s "4" -d "Now allowing ejabberd to shut down correctly..."
+		dna-echo -s "Finished stopping ejabberd."
+
+	fi
+
+	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
 
 	aenigma-set_permissions
 
@@ -1886,7 +1913,7 @@ perform_installation() {
 		echo
 		clear
 
-		if [ -f $conf_dir/ejab_admin_pw_set ]
+		if [ -f "${conf_xmpp_dir}/ejabberd_admin_password_set" ]
 		then
 		    read -rp "${b-}Leave ejabberd admin user password the same as previously set? (Y/n): ${x-}" -n 1
 		    echo
@@ -1903,7 +1930,7 @@ perform_installation() {
 		        ejab_admin_pwreset=y
 		    fi
 		else
-		    touch $conf_dir/ejab_admin_pw_set
+		    touch "${conf_xmpp_dir}/ejabberd_admin_password_set"
 		    ejab_admin_pwreset=y
 		fi
 
