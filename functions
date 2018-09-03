@@ -1100,8 +1100,6 @@ perform_installation() {
 
 	dna-echo -m $"${g-}Finished transferring files into installation directory."
 
-	dna-install_duplicity
-
 	mkdir -p "${tls_dir}"
 
 	mkdir -p "$temp_dir"
