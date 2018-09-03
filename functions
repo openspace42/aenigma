@@ -881,6 +881,8 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
+	unset dns_checks_outcome
+
 }
 
 backup_locally_loop() {
@@ -1885,7 +1887,7 @@ perform_installation() {
 
 	fi
 
-	dna-echo -m "Now finally starting ejabberd back up again..."
+	dna-echo -m "Now finally starting up ejabberd..."
 	/usr/sbin/service ejabberd start
 	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
 	/usr/sbin/ejabberdctl status
