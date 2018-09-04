@@ -53,6 +53,16 @@ check_root
 
 ################################################################################
 
-dna-echo -m "${g-}You are now inside of the aenigma-env shell."
+if [[ $- == *i* ]]
+then
+        dna-echo -m "${g-}You are now inside of the aenigma-env shell."
+        export PS1="\u@aenigma-env:\[\e[32m\]~#\[\e[m\] "
+else
+        dna-echo -e "This file is NOT intended to be run directly."
+        dna-echo -m "It is only intended to be sourced by the command:"
+        dna-echo -m " | ${y-}bash --init-file ${exec_dir}/${short_name}-env${n-} |"
+        dna-echo -m "to enter the developement environment of this project."
+        dna-exit
+fi
 
-export PS1="\u@aenigma-env:\[\e[32m\]~#\[\e[m\] "
+################################################################################
