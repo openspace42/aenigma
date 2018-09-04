@@ -349,7 +349,7 @@ aenigma-install_sslh() {
 	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
 	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
 	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	if [ $ipv6_avail = "y" ]
+	if [ $ipv6_available = "y" ]
 	then
 		sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
 		sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
@@ -581,7 +581,7 @@ aenigma-initialize_nodes_db_files() {
 
 		### File is not empty, alter first line.
 
-		if [ "${ipv6_avail}" = "y" ]
+		if [ "${ipv6_available}" = "y" ]
 		then
 			sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
 		else
@@ -592,7 +592,7 @@ aenigma-initialize_nodes_db_files() {
 
 		### File is empty, write to it.
 
-		if [ "${ipv6_avail}" = "y" ]
+		if [ "${ipv6_available}" = "y" ]
 		then
 			echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
 		else
@@ -1557,7 +1557,7 @@ perform_installation() {
 
 		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
 
-		if [ $ipv6_avail = "y" ]
+		if [ $ipv6_available = "y" ]
 		then
 			echo "${this_ipv6}" > /tmp/aenigma-cluster-token
 		else
