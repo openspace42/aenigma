@@ -1444,6 +1444,18 @@ perform_installation() {
 
 		########################################################################
 
+		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
+
+		if [ $ipv6_available = "y" ]
+		then
+			echo "${this_ipv6}" > "${temp_dir}/aenigma-cluster-token"
+		else
+			aenigma_cluster_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			echo "${aenigma_cluster_token}" > "${temp_dir}/aenigma-cluster-token"
+		fi
+
+		########################################################################
+
 		dna-echo -m "This is the public IPv4 for this machine:"
 		dna-echo -m " | ${g-}$this_ipv4${n-} | "
 		dna-echo -m "Enter it on the primary node when prompted to do so, then follow the instructions from there."
@@ -1555,15 +1567,7 @@ perform_installation() {
 
 		################################################################################
 
-		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
-
-		if [ $ipv6_available = "y" ]
-		then
-			echo "${this_ipv6}" > "${temp_dir}/aenigma-cluster-token"
-		else
-			aenigma_cluster_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-			echo "${aenigma_cluster_token}" > "${temp_dir}/aenigma-cluster-token"
-		fi
+		### Print clusterization token and instructions
 
 		echo "${b-}A token has been generated to verify a correct connection to this machine from the primary node.${x-}"
 		echo
