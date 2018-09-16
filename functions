@@ -276,64 +276,24 @@ aenigma-display_logo() {
 
 aenigma-xmpp_intro() {
 
-	echo "0] First of all, a little introduction on how XMPP actually works"
-	echo
-	echo "XMPP works a little bit like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains. In that case, a DNS MX record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
-	echo
-	echo "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at xmpp.amsterdamhacklab.xyz and a DNS SRV record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at xmpp.amsterdamhacklab.xyz."
-	echo
+	dna-echo -m "First of all, a little introduction on how XMPP actually works"
+	dna-echo -m "XMPP works very much like email. You can have a domain [amsterdamhacklab.xyz] and receive email for that domain on a server located at mx01.amsterdamhacklab.xyz, by using the appropriate DNS configuration, and also have other servers [webserver, mapserver, etc...] on other subdomains."
+	dna-echo -m "In that case, a DNS MX record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
+	dna-echo -m "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at ae01.amsterdamhacklab.xyz and a DNS SRV record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at ae01.amsterdamhacklab.xyz."
 	read -rp "${b-}[press enter to continue reading...]${x-}"
-	clear
 
-	echo "1] Now, if the domain for which you're setting up your new aenigma server is a domain connected to a bigger project, for which XMPP is just another way of getting in touch with you, definitely set things up like this by using the first option."
-	echo
-	echo "This will give you working @domain.tld xmpp account addresses, but the aenigma server will reside at subdomain.domain.tld, as in the following example."
-	echo
-	echo "Main domain:          amsterdamhacklab.xyz."
-	echo "Website:              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
-	echo "Your XMPP address:    mark@amsterdamhacklab.xyz."
-	echo "XMPP server:          xmpp.amsterdamhacklab.xyz"
-	echo
-	echo "PROs:                 a] clean addresses [no mark@xmpp.amsterdamhacklab.xyz stuff]"
-	echo "                      b] more logical setup."
-	echo "CONs:                 a] requires TLS [SSL] certificate for the top level domain [amsterdamhacklab.xyz]"
-	echo "                         to be copied over to your new aenigma server [not hard at all, can be automated, see below]"
-	echo
+	dna-echo -m "$short_name fully embraces this opportunity."
+	dna-echo -m "The domain for which you're setting up your new $short_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
+	dna-echo -m "This will give you working @amsterdamhacklab.xyz JIDs [XMPP account addresses], but the $short_name server will reside at ae01.amsterdamhacklab.xyz, as in the following example:"
+	dna-echo -m "${o-}Domain:${n-}               amsterdamhacklab.xyz."
+	dna-echo -m "${o-}Website:${n-}              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
+	dna-echo -m "${o-}Your JID format:${n-}      mark@amsterdamhacklab.xyz."
+	dna-echo -m "${o-}XMPP server:${n-}          xmpp.amsterdamhacklab.xyz"
 	read -rp "${b-}[press enter to continue reading...]${x-}"
-	clear
 
-	echo "2] If instead your domain [i.e. aenigmapod42.im] is only intended to be used for your shiny new aenigma server, and you don't need other, different servers [a webserver for instance] managing different aspects of your project, you can do as so:"
-	echo
-	echo "Set your aenigma server to be located directly at your top level domain, therefore responding directly to amsterdamhacklab.xyz."
-	echo
-	echo "Your server hostname:  aenigmapod42.im"
-	echo "Your addresses:        mark@aenigmapod42.im."
-	echo
-	echo "PROs:                  a] clean addresses"
-	echo "                       b] no separate TLS certificate needed."
-	echo "CONs:                  a] your domain must be logically dedicated to your aenigma server"
-	echo "                          and not to a wider project."
-	echo
-	read -rp "${b-}[press enter to continue reading...]${x-}"
-	clear
+	### Add cluster info here
 
-	echo "3] In a third, although NOT suggested case, if you have a domain tied to a wider project [i.e. amsterdamhacklab.xyz] but you don't mind having longer and more complex XMPP account addresses [like mark@xmpp.amsterdamhacklab.xyz], you can choose the third option."
-	echo
-	echo "Your server hostname:  subdomain.domain.tld"
-	echo "Your addresses:        mark@subdomain.domain.tld."
-	echo
-	echo "PROs:                  a] domain can be logically connected to other stuff and different servers"
-	echo "                          with no separate TLS certificate needed."
-	echo "CONs:                  a] longer and more complex addresses"
-	echo "                       b] not logically 'clean'."
-	echo
-	read -rp "${b-}[press enter to continue reading...]${x-}"
-	clear
-
-	echo "Now that you know how XMPP works, make your choice and let's get your brand new aenigma server up and running!"
-	echo
-	echo "----------------"
-	echo
+	dna-echo -m "Now that you know how XMPP works, let's get your brand new $short_name server up and running!"
 
 }
 
@@ -1335,7 +1295,6 @@ perform_installation() {
 		    echo
 		    exit
 		fi
-		clear
 
 		########################################################################
 
@@ -1608,8 +1567,6 @@ perform_installation() {
 		echo "ae${node_number}.${domain}" > /etc/hostname
 
 		hostname="$(cat /etc/hostname)"
-
-		clear
 
 		########################################################################
 
@@ -1915,7 +1872,6 @@ perform_installation() {
 		/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
 		echo "${b-}Finished registering ejabberd admin user.${x-}"
 		echo
-		clear
 
 		if [ -f "${conf_xmpp_dir}/ejabberd_admin_password_set" ]
 		then
@@ -1960,7 +1916,6 @@ perform_installation() {
 		/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
 		echo "${b-}Finished creating shared roster groups.${x-}"
 		echo
-		clear
 
 	fi
 
@@ -1985,7 +1940,6 @@ perform_installation() {
 	    read -rp "${b-}[press enter to continue reading...]${x-}"
 	fi
 	set -e
-	clear
 
 	### Run an nginx restart to catch its output and alert the user if something has gone wrong
 
@@ -2008,7 +1962,6 @@ perform_installation() {
 	    read -rp "${b-}[press enter to continue reading...]${x-}"
 	fi
 	set -e
-	clear
 
 	### Run an sslh restart to catch its output and alert the user if something has gone wrong
 
@@ -2031,7 +1984,6 @@ perform_installation() {
 	    read -rp "${b-}[press enter to continue reading...]${x-}"
 	fi
 	set -e
-	clear
 
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
