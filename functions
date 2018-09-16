@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-### openspace synthia bootstrap framework v0.2.1 [https://github.com/openspace42/synthia]
+### openspace synthia bootstrap framework v0.3.0 [https://github.com/openspace42/synthia]
 
-os_dna_version=0.2.6
+os_dna_version=0.3.1
 
 ################################################################################
 
@@ -643,8 +643,6 @@ aenigma-create_nodes_db_online() {
 	### This function will always get invoked at the beginning push_routing_info() in the later event that an existing node cannot be reached at the time of running a new clusterization.
 	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed fromit, for use by subsequent functions, until the end of the clusterize script.
 
-	mkdir -p "${temp_dir}"
-
 	if [ -f "${nodes_db_online_path}" ]
 	then
 		rm "${nodes_db_online_path}"
@@ -1100,9 +1098,11 @@ perform_installation() {
 
 	dna-echo -m $"${g-}Finished transferring files into installation directory."
 
-	mkdir -p "${tls_dir}"
+	################################################################################
 
-	mkdir -p "$temp_dir"
+	dna-touch_temp_dir
+
+	mkdir -p "${tls_dir}"
 
 	################################################################################
 
@@ -1472,7 +1472,7 @@ perform_installation() {
 
 			check_condition() {
 
-				if [ -f "/tmp/aenigma-cluster-ssh-connection-successful" ]
+				if [ -f "${temp_dir}/aenigma-cluster-ssh-connection-successful" ]
 				then
 					condition_verified=y
 				fi
@@ -1485,7 +1485,7 @@ perform_installation() {
 			then
 				dna-echo -m "${g-}Primary node SSH connection to this node succeeded. Continuing installation..."
 				primary_node_ssh_connection="ok"
-				rm -r "/tmp/aenigma-cluster-ssh-connection-successful"
+				rm -r "${temp_dir}/aenigma-cluster-ssh-connection-successful"
 			else
 				dna-echo -e "The primary node was not able to connect to this node with the SSH public key already saved on this machine."
 				dna-echo -m "You will now need to specify the SSH public key displayed on your primary node."
@@ -1507,7 +1507,7 @@ perform_installation() {
 				if [ "${input}" = "skip" ]
 				then
 
-					if [ -f "/tmp/aenigma-cluster-ssh-connection-successful" ]
+					if [ -f "${temp_dir}/aenigma-cluster-ssh-connection-successful" ]
 					then
 						valid=y
 					else
@@ -1559,17 +1559,17 @@ perform_installation() {
 
 		if [ $ipv6_available = "y" ]
 		then
-			echo "${this_ipv6}" > /tmp/aenigma-cluster-token
+			echo "${this_ipv6}" > "${temp_dir}/aenigma-cluster-token"
 		else
 			aenigma_cluster_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-			echo "${aenigma_cluster_token}" > /tmp/aenigma-cluster-token
+			echo "${aenigma_cluster_token}" > "${temp_dir}/aenigma-cluster-token"
 		fi
 
 		echo "${b-}A token has been generated to verify a correct connection to this machine from the primary node.${x-}"
 		echo
 		echo "${b-}You'll be asked to verify it matches with the one that will shortly be displayed on the primary node.${x-}"
 		echo
-		echo "${b-}Its value is: | ${y-}$(cat /tmp/aenigma-cluster-token)${n-} |.${x-}"
+		echo "${b-}Its value is: | ${y-}$(cat ${temp_dir}/aenigma-cluster-token)${n-} |.${x-}"
 		echo
 
 		dna-echo -m "After that, continue the setup on the primary node and come back here when finished."
@@ -1580,7 +1580,7 @@ perform_installation() {
 
 		check_condition() {
 
-			if [ -f "/tmp/aenigma-cluster-primary-node-setup-complete" ]
+			if [ -f "${temp_dir}/aenigma-cluster-primary-node-setup-complete" ]
 			then
 				condition_verified=y
 			fi
@@ -1588,7 +1588,7 @@ perform_installation() {
 		}
 
 		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
-		rm -r "/tmp/aenigma-cluster-primary-node-setup-complete"
+		rm -r "${temp_dir}/aenigma-cluster-primary-node-setup-complete"
 		dna-echo -m "${g-}Primary node setup complete. Now continuing installation..."
 		unset wait_output
 		sleep 1

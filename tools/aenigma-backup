@@ -58,11 +58,11 @@ dna-read_conf_settings
 while getopts ":s" arguments; do
     case $arguments in
 		s)	skip_install_complete_check="-s"
-		;;
+			;;
 		\?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
-		echo
-		dna-exit
-		;;
+			echo
+			dna-exit
+			;;
 	esac
 done
 OPTIND=1

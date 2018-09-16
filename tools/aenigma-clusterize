@@ -57,6 +57,10 @@ dna-read_conf_settings
 
 ################################################################################
 
+dna-touch_temp_dir
+
+################################################################################
+
 ### Check / enable clusterization
 
 if [ ! "${cluster_enabled-null}" = "cluster" ]
@@ -216,7 +220,7 @@ then
 
 	ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
-touch "/tmp/aenigma-cluster-ssh-connection-successful"
+touch "/tmp/aenigma/aenigma-cluster-ssh-connection-successful"
 exit
 END
 	echo
@@ -263,7 +267,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma-cluster-token)"
+if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma/aenigma-cluster-token)"
 then
 	echo "${g-}${b-}Token on secondary node found.${x-}"
 	echo
@@ -300,12 +304,12 @@ fi
 
 #### If token is an IPv6 address then import it here and add it to nodes_db_ipv6 otherwise specify lack thereof
 
-echo "${secondary_node_token}" > "/tmp/secondary_node_token"
+echo "${secondary_node_token}" > "${tmp_dir}/secondary_node_token"
 
-if grep -q ":" "/tmp/secondary_node_token"
+if grep -q ":" "${tmp_dir}/secondary_node_token"
 then
 	### The secondary node is IPv6 enabled, add this to nodes_db_ipv6
-	secondary_node_ipv6="$(cat /tmp/secondary_node_token)"
+	secondary_node_ipv6="$(cat ${tmp_dir}/secondary_node_token)"
 	sed -i "${secondary_node_number}s/.*/${secondary_node_ipv6}/" "${nodes_db_ipv6_path}"
 else
 	### The secondary node is NOT IPv6 enabled, specify this in nodes_db_ipv6
@@ -332,8 +336,8 @@ aenigma-perform_dns_checks
 
 ### Push node_number to secondary node
 
-echo "${secondary_node_number}" > /tmp/aenigma_cluster_secondary_node_number
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/tmp/aenigma_cluster_secondary_node_number" "root@${secondary_node_ipv4}:${conf_cluster_dir}/node_number"
+echo "${secondary_node_number}" > "/${tmp_dir}/aenigma_cluster_secondary_node_number"
+/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/${tmp_dir}/aenigma_cluster_secondary_node_number" "root@${secondary_node_ipv4}:${conf_cluster_dir}/node_number"
 
 ### Push config to secondary node
 
@@ -352,7 +356,7 @@ echo
 
 ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
-touch "/tmp/aenigma-cluster-primary-node-setup-complete"
+touch "/tmp/aenigma/aenigma-cluster-primary-node-setup-complete"
 exit
 END
 echo
