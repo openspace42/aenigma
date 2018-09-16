@@ -367,3 +367,9 @@ echo "${g-}${b-}Primary_node-level configuration complete.${x-}"
 echo
 echo "${b-}You can now return to your secondary node as it automatically finished running the installation from there.${x-}"
 echo
+
+############################################################################
+
+dna-remove_temp_dir
+
+############################################################################
