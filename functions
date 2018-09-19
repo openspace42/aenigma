@@ -2018,7 +2018,7 @@ perform_installation() {
             dna-ask_for_boolean_def_yes
             if [ "$ask_for_boolean_output" = "y" ]
             then
-				dna-echo -m "Ok, running the | ${o-}clusterize${n-} | script now..."
+				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 				bash "${tools_dir}/${short_name}-clusterize"
 			else
 				dna-echo -m "Ok, you can run the | ${o-}clusterize${n-} | script at any time by executing:"
