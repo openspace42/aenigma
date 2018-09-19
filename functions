@@ -1061,6 +1061,8 @@ perform_installation() {
 
 	aenigma-display_logo
 
+	sleep 1
+
 	################################################################################
 
 	dna-check_sslh_connection
@@ -1285,9 +1287,9 @@ perform_installation() {
 		dna-echo -m "1] Your | ${o-}XMPP domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
 		dna-echo -m " | ${y-}$domain${n-} | "
 		dna-echo -m "2] And therefore your | ${o-}JIDs [XMPP account addresses]${n-} | will look as follows:"
-		dna-echo -m " | ${y-}mark@$domain${n-} | "
+		dna-echo -m " | ${y-}aurora@$domain${n-} | "
 		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
-		dna-echo -m " | ${g-}$hostname${n-} | "
+		dna-echo -m " | ${y-}$hostname${n-} | "
 		dna-echo -m "4] And therefore your | ${o-}${short_name} admin panel${n-} | will be located at:"
 		dna-echo -m " | ${y-}https://$hostname${n-} | "
 
@@ -1878,12 +1880,10 @@ perform_installation() {
 
 		### Register ejabberd admin user
 
-		echo "${b-}Now registering ejabberd admin user [if it doesn't yet exist]...${x-}"
-		echo
+		dna-echo -m "Now registering ejabberd admin user [if it doesn't yet exist]..."
 		ejab_admin_pw="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
 		/usr/sbin/ejabberdctl register admin "$domain" "$ejab_admin_pw" &> /dev/null || true
-		echo "${b-}Finished registering ejabberd admin user.${x-}"
-		echo
+		dna-echo -s "Finished registering ejabberd admin user."
 
 		if [ -f "${conf_xmpp_dir}/ejabberd_admin_password_set" ]
 		then
@@ -1891,43 +1891,37 @@ perform_installation() {
 		    echo
 		    if [[ ! $REPLY =~ ^[Nn]$ ]]
 		    then
-		        echo "${b-}Skipping ejabberd admin user password reset.${x-}"
-		        echo
-		        ejab_admin_pwreset=n
+		        dna-echo -m "Skipping ejabberd admin user password reset."
+		        ejab_admin_pwreset="n"
 		    else
 		        echo
-		        echo "${b-}Ok, resetting ejabberd admin user password to: | $ejab_admin_pw | ${x-}"
-		        echo
-		        /usr/sbin/ejabberdctl change_password admin "$domain" "$ejab_admin_pw"
-		        ejab_admin_pwreset=y
+		        dna-echo -m "Ok, resetting ejabberd admin user password to: | ${y-}${ejab_admin_pw}${n-} |."
+		        /usr/sbin/ejabberdctl change_password admin "${domain}" "${ejab_admin_pw}"
+		        ejab_admin_pwreset="y"
 		    fi
 		else
 		    touch "${conf_xmpp_dir}/ejabberd_admin_password_set"
-		    ejab_admin_pwreset=y
+		    ejab_admin_pwreset="y"
 		fi
 
 		### Update ejabberd's module repo
 
-		echo "${b-}Now updating ejabberd's module repo...${x-}"
-		echo
+		dna-echo -m "Now updating ejabberd's module repo..."
 		set +e
 		/usr/sbin/ejabberdctl modules_update_specs
 		set -e
-		echo "${b-}Finished updating ejabberd's module repo...${x-}"
-		echo
+		dna-echo -s "Finished updating ejabberd's module repo..."
 
 		### Create shared roster groups
 
-		echo "${b-}Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@$domain can see 'everybody' and 'all online']...${x-}"
-		echo
+		dna-echo -m "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@${domain} can see 'everybody' and 'all online']..."
 		/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
 		/usr/sbin/ejabberdctl srg-user-add @all@ localhost everybody "$domain"
 		/usr/sbin/ejabberdctl srg_create online "$domain" "online [$domain]" "This aenigma group includes every user who is online on this domain" ""
 		/usr/sbin/ejabberdctl srg-user-add @online@ localhost online "$domain"
 		/usr/sbin/ejabberdctl srg_create admin "$domain" admin "This is a shared roster group set by aenigma" "everybody\\nonline"
 		/usr/sbin/ejabberdctl srg-user-add admin "$domain" admin "$domain"
-		echo "${b-}Finished creating shared roster groups.${x-}"
-		echo
+		dna-echo -s "Finished creating shared roster groups."
 
 	fi
 
