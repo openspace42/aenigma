@@ -6,8 +6,17 @@
 
 set -eu
 
-### Add padding to output
+### Start fresh
 
+clear
+
+### Define formatting
+
+define_formatting
+
+### Head install
+
+echo "${g-}${b-}Initiating setup...${x-}"
 echo
 
 ### Determine script execution directory, install directory, and source local functions file
@@ -25,7 +34,9 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "${r-}${b-}Functions file not found in any second or third level parent directory of: | ${n-}${exec_dir}${r-} |.${x-}"
+		echo
+		echo "${b-}Exiting...${x-}"
 		echo
         exit 1
 	fi
@@ -46,9 +57,11 @@ do
 	        ;;
 		p)	export custom_project_version="$OPTARG"
 	        ;;
-        \?)	echo "Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |."
+        \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 	        echo
-	        exit
+			echo "${b-}Exiting...${x-}"
+			echo
+	        exit 1
 	        ;;
     esac
 done
@@ -59,18 +72,18 @@ OPTIND=1
 if [ ! -z "${custom_dna_version-}" ]
 then
 	case $custom_dna_version in
-		b)	echo "Fetching bleeding-edge dna version as per | -d b |."
+		b)	echo "${b-}Fetching bleeding-edge dna version as per | -d b |.${x-}"
 			echo
 			download_os_dna
 			;;
-		l)	echo "Disabling dna fetch and using local version as per | -d l |."
+		l)	echo "${b-}Disabling dna fetch and using local version as per | -d l |.${x-}"
 			echo
 			;;
-		*)	echo "Invalid content for | custom_dna_version | in function | ${FUNCNAME[0]} |."
+		*)	echo "${r-}${b-}Invalid content for | ${n-}custom_dna_version${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
 			echo "Exiting..."
 			echo
-			exit
+			exit 1
 			;;
 	esac
 fi

@@ -22,10 +22,6 @@ fi
 
 ################################################################################
 
-### Add padding to output
-
-echo
-
 ### Determine script execution directory, install directory, and source local functions file
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
