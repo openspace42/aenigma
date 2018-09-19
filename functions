@@ -1996,20 +1996,15 @@ perform_installation() {
 
 		### Pring login information and credentials
 
-		echo "${g-}${b-}You can finally log in:${x-}"
-		echo
-		echo "${b-}https://${hostname}${x-}"
-		echo
-		echo "${b-}admin@${domain}${x-}"
-		echo
+		dna-echo -s "You can finally log in to your web administration panel:"
+		dna-echo -m " | ${y-}https://${hostname}${n-} | "
+		dna-echo -m " | ${y-}admin@${domain}${n-} | "
 
 		if [ $ejab_admin_pwreset = "y" ]
 		then
-		    echo "${b-}$ejab_admin_pw${x-}"
-		    echo
+		    dna-echo -m " | ${y-}${ejab_admin_pw}${n-} | "
 		else
-		    echo "${b-}[your previously set password]${x-}"
-		    echo
+		    dna-echo -m " | ${y-}[your previously set password]${n-} | "
 		fi
 
 		read -rp "${b-}[press enter to continue reading...]${x-}"
