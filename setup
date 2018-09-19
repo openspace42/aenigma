@@ -54,13 +54,16 @@ do
 done
 OPTIND=1
 
+### Download openspace dna
+
 if [ ! -z "${custom_dna_version-}" ]
 then
 	case $custom_dna_version in
-		b)	echo "Using bleeding-edge dna version as per | -d b |."
+		b)	echo "Fetching bleeding-edge dna version as per | -d b |."
 			echo
+			download_os_dna
 			;;
-		l)	echo "Disabling dna download and using local version as per | -d l |."
+		l)	echo "Disabling dna fetch and using local version as per | -d l |."
 			echo
 			;;
 		*)	echo "Invalid content for | custom_dna_version | in function | ${FUNCNAME[0]} |."
@@ -72,29 +75,7 @@ then
 	esac
 fi
 
-if [ ! -z "${custom_project_version-}" ]
-then
-	case $custom_project_version in
-		b)	echo "Using bleeding-edge project version as per | -p b |."
-			echo
-			;;
-		*)	echo "Invalid content for | custom_project_version | in function | ${FUNCNAME[0]} |."
-			echo
-			echo "Exiting..."
-			echo
-			exit
-			;;
-	esac
-fi
-
-### Download and source openspace dna
-
-if [ ! "${custom_dna_version-null}" = "l" ]
-then
-
-    download_os_dna
-
-fi
+### Source openspace dna
 
 source_os_dna
 
