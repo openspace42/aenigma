@@ -1943,16 +1943,14 @@ perform_installation() {
 
 	### Run an nginx restart to catch its output and alert the user if something has gone wrong
 
-	echo "${b-}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x-}"
+	echo "${b-}Now performing a final restart of NGINX to ensure all related installations have completed successfully...${x-}"
 	echo
 	set +e
 	if service nginx restart
 	then
-	    echo
 	    echo "${g-}${b-}All nginx installations completed successfully...${x-}"
 	    echo
 	else
-	    echo
 	    echo "${r-}${b-}An error has occured during nginx operations.${x-}"
 	    echo
 	    echo "${b-}This was the last step in this installation, so it's possible your end result is at least partially working.${x-}"
@@ -1965,16 +1963,14 @@ perform_installation() {
 
 	### Run an sslh restart to catch its output and alert the user if something has gone wrong
 
-	echo "${b-}Now performing a final restart of nginx to ensure all related installations have completed successfully...${x-}"
+	echo "${b-}Now performing a final restart of SSLH to ensure all related installations have completed successfully...${x-}"
 	echo
 	set +e
 	if service sslh restart
 	then
-	    echo
 	    echo "${g-}${b-}All sslh installations completed successfully...${x-}"
 	    echo
 	else
-	    echo
 	    echo "${r-}${b-}An error has occured during sslh operations.${x-}"
 	    echo
 	    echo "${b-}This was the last step in this installation, so it's possible your end result is at least partially working.${x-}"
