@@ -302,10 +302,10 @@ aenigma-xmpp_intro() {
 	dna-echo -m "$short_name fully embraces this opportunity."
 	dna-echo -m "The domain for which you're setting up your new $short_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
 	dna-echo -m "This will give you working @amsterdamhacklab.xyz JIDs [XMPP account addresses], but the $short_name server will reside at ae01.amsterdamhacklab.xyz, as in the following example:"
-	dna-echo -m "${o-}Domain:${n-}               amsterdamhacklab.xyz."
-	dna-echo -m "${o-}Website:${n-}              amsterdamhacklab.xyz / www.amsterdamhacklab.xyz [hosted by another server]."
-	dna-echo -m "${o-}Your JID format:${n-}      mark@amsterdamhacklab.xyz."
-	dna-echo -m "${o-}XMPP server:${n-}          xmpp.amsterdamhacklab.xyz"
+	dna-echo -m "${o-}Domain:${n-}               ${y-}amsterdamhacklab.xyz.${n-}"
+	dna-echo -m "${o-}Website:${n-}              ${y-}amsterdamhacklab.xyz${n-} / ${y-}www.amsterdamhacklab.xyz${n-} [hosted by another server]."
+	dna-echo -m "${o-}Your JID format:${n-}      ${y-}mark@amsterdamhacklab.xyz.${n-}"
+	dna-echo -m "${o-}XMPP server:${n-}          ${y-}xmpp.amsterdamhacklab.xyz${n-}"
 
 	read -rp "${b-}[press enter to continue reading...]${x-}"
 	clear
@@ -1279,28 +1279,19 @@ perform_installation() {
 
 		### Review domain and hostname to see if the user approves
 
-		echo "----------------"
-		echo
-		echo "${b-}To make sure everything is correct:${x-}"
-		echo
-		echo "1] Your ${b-}XMPP domain${x-} [the part after the @ in your XMPP account addresses] will be:"
-		echo
-		echo "${b-} | ${g-}$domain${x-}${b-} | ${x-}"
-		echo
-		echo "2] And therefore an ${b-}XMPP account address${x-} will look as follows:"
-		echo
-		echo "${b-} | ${g-}mark@$domain${x-}${b-} | ${x-}"
-		echo
-		echo "3] Your ${b-}hostname${x-}, the location on the internet of this server, will be:"
-		echo
-		echo "${b-} | ${g-}$hostname${x-}${b-} | ${x-}"
-		echo
-		echo "4] And therefore your ${b-}aenigma admin panel${x-} will be located at:"
-		echo
-		echo "${b-} | ${g-}https://$hostname${x-}${b-} | ${x-}"
-		echo
-		echo "----------------"
-		echo
+		dna-echo -m "----------------------------------------------------------------"
+
+		dna-echo -m "To make sure everything is correct:"
+		dna-echo -m "1] Your | ${o-}XMPP domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
+		dna-echo -m " | ${y-}$domain${n-} | "
+		dna-echo -m "2] And therefore your | ${o-}JIDs [XMPP account addresses]${n-} | will look as follows:"
+		dna-echo -m " | ${y-}mark@$domain${n-} | "
+		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
+		dna-echo -m " | ${g-}$hostname${n-} | "
+		dna-echo -m "4] And therefore your | ${o-}${short_name} admin panel${n-} | will be located at:"
+		dna-echo -m " | ${y-}https://$hostname${n-} | "
+
+		dna-echo -m "----------------------------------------------------------------"
 
 		read -rp "${b-}Does everything look all right? (Y/n): ${x-}" -n 1
 		echo
