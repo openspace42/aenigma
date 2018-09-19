@@ -2010,7 +2010,7 @@ perform_installation() {
 		read -rp "${b-}[press enter to continue reading...]${x-}"
 		echo
 
-		if [ "${cluster_mode}" = "cluster" ]
+		if [ "${cluster_mode-null}" = "primary" ]
 		then
 
 			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding your secondary nodes."
