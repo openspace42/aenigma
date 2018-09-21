@@ -86,11 +86,22 @@ schedule_ejabberd_restart() {
     if ! $(atq | grep -q $ft)
     then
 
-            dna-send_mail -s "aenigma: ejabberd cluster partitioned" \
-            -b "aenigma detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
-            -r "${admin_mail}"
+        ### A positive result has been found. ejabberd is running in partitioned state.
 
-            echo "/usr/sbin/service ejabberd restart" | at $ft
+        ### Send an alert email
+
+        dna-send_mail -s "aenigma: ejabberd cluster partitioned" \
+        -b "aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
+        -r "${admin_mail}"
+
+        ### Edit all instances of "running_partitioned_network" so that we won't generate false positives at the next run
+
+        sed -i "s|running_partitioned_network|running-partitioned-network|g" "/var/log/ejabberd/error.log"
+
+        ### Schedule an ejabberd restart
+
+        echo "/usr/sbin/service ejabberd restart" | at $ft
+
     fi
 
 }
@@ -100,5 +111,6 @@ while read LOGLINE
 do
 
     [[ "${LOGLINE}" == *"running_partitioned_network"* ]] && schedule_ejabberd_restart
+    sleep 42
 
 done
