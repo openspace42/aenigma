@@ -104,7 +104,7 @@ schedule_ejabberd_restart() {
 
         ### Schedule an ejabberd restart.
 
-        echo "/usr/sbin/service ejabberd restart" | at $ft
+        echo "sleep `head /dev/urandom | tr -dc "0123456789" | head -c2` && /usr/sbin/service ejabberd restart" | at $ft
 
     fi
 
