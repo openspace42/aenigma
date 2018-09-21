@@ -71,6 +71,12 @@ then
     dna-exit
 fi
 
+### Edit all previous instances of "running_partitioned_network" in the logfile so that we won't generate false positives at this run.
+
+sed -i "s|running_partitioned_network|running-partitioned-network|g" "/var/log/ejabberd/error.log"
+
+################################################################################
+
 schedule_ejabberd_restart() {
 
     ### A positive result has been found. ejabberd is running in partitioned state.
@@ -95,14 +101,6 @@ schedule_ejabberd_restart() {
         dna-send_mail -s "aenigma: ejabberd cluster partitioned" \
         -b "aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
         -r "${admin_mail}"
-
-        ### Edit all instances of "running_partitioned_network" in the logfile so that we won't generate false positives at the next run.
-
-        sed -i "s|running_partitioned_network|running-partitioned-network|g" "/var/log/ejabberd/error.log"
-
-        ### Inject an aenigma alert in the logfile to remind the sysadmin that we're watching it and taking action
-
-        echo "[logfile injection by aenigma] aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." >> "/var/log/ejabberd/error.log"
 
         ### Schedule an ejabberd restart.
 
