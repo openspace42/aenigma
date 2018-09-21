@@ -58,7 +58,7 @@ dna-read_conf_settings
 if [[ "${@#--return-check}" = "$@" ]]
 then
     dna-echo -e "This script must not be run directly."
-    dna-echo -m "It is only intended to be started at reboot by cron and it should be already running on this machine in the background right now if this node is part of a cluster."
+    dna-echo -m "It is only intended to be started at boot time by cron and it should be already running right now on this machine in the background if this node is part of a cluster."
     dna-echo -m "You can see its runtime log at this location: | ${y-}/root/logs/${short_name}-resync_cluster${n-} | and you should get email notifications in case of a | ${r-}running_partitioned_network${n-} | error message appearance."
     dna-exit
 fi
@@ -73,6 +73,10 @@ fi
 
 schedule_ejabberd_restart() {
 
+    ### A positive result has been found. ejabberd is running in partitioned state.
+
+    ### Define time parameters to schedule an ejabberd reboot in two minutes from now and only once per minute at maximum.
+
     nh="$(date +"%H")"
     nm="$(date +"%-M")"
     fm=$(( $nm + 2 ))
@@ -86,19 +90,21 @@ schedule_ejabberd_restart() {
     if ! $(atq | grep -q $ft)
     then
 
-        ### A positive result has been found. ejabberd is running in partitioned state.
-
-        ### Send an alert email
+        ### Send an alert email.
 
         dna-send_mail -s "aenigma: ejabberd cluster partitioned" \
         -b "aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
         -r "${admin_mail}"
 
-        ### Edit all instances of "running_partitioned_network" so that we won't generate false positives at the next run
+        ### Edit all instances of "running_partitioned_network" in the logfile so that we won't generate false positives at the next run.
 
         sed -i "s|running_partitioned_network|running-partitioned-network|g" "/var/log/ejabberd/error.log"
 
-        ### Schedule an ejabberd restart
+        ### Inject an aenigma alert in the logfile to remind the sysadmin that we're watching it and taking action
+
+        echo "[logfile injection by aenigma] aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." >> "/var/log/ejabberd/error.log"
+
+        ### Schedule an ejabberd restart.
 
         echo "/usr/sbin/service ejabberd restart" | at $ft
 
@@ -111,6 +117,5 @@ while read LOGLINE
 do
 
     [[ "${LOGLINE}" == *"running_partitioned_network"* ]] && schedule_ejabberd_restart
-    sleep 42
 
 done
