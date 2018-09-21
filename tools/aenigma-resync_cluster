@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+### Set bash environment error management
+
+set -eu
+
+### Add padding to output
+
+echo
+
+### Determine script execution directory, install directory, and source local functions file
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
+then
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo
+        exit 1
+	fi
+fi
+
+. "$exec_dir_root/functions"
+
+### Source openspace functions file
+
+source_os_dna
+
+### Define formatting
+
+dna-define_formatting
+
+### Define variables
+
+define_vars
+
+################################################################################
+
+check_root
+
+dna-log_script
+
+dna-read_conf_settings
+
+################################################################################
+
+if [[ "${@#--return-check}" = "$@" ]]
+then
+    dna-echo -e "This script must not be run directly."
+    dna-echo -m "It is only intended to be started at reboot by cron and it should be already running on this machine in the background right now if this node is part of a cluster."
+    dna-echo -m "You can see its runtime log at this location: | ${y-}/root/logs/${short_name}-resync_cluster${n-} | and you should get email notifications in case of a | ${r-}running_partitioned_network${n-} | error message appearance."
+    dna-exit
+fi
+
+################################################################################
+
+if [ ! -f "/var/log/ejabberd/error.log" ]
+then
+    dna-echo -e "ejabberd error logfile | ${n-}/var/log/ejabberd/error.log${r-} | not found."
+    dna-exit
+fi
+
+schedule_ejabberd_restart() {
+
+    nh="$(date +"%H")"
+    nm="$(date +"%-M")"
+    fm=$(( $nm + 2 ))
+    if [ $fm -lt 10 ]
+    then
+            fm=0$fm
+    fi
+    nt="$nh:$nm"
+    ft="$nh:$fm"
+
+    if ! $(atq | grep -q $ft)
+    then
+
+            dna-send_mail -s "aenigma: ejabberd cluster partitioned" \
+            -b "aenigma detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
+            -r "${admin_mail}"
+
+            echo "/usr/sbin/service ejabberd restart" | at $ft
+    fi
+
+}
+
+tail -f "/var/log/ejabberd/error.log" |
+while read LOGLINE
+do
+
+    [[ "${LOGLINE}" == *"running_partitioned_network"* ]] && schedule_ejabberd_restart
+
+done

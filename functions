@@ -1176,6 +1176,11 @@ perform_installation() {
                 dna-exit
             fi
 		fi
+
+		### Add cronjob for resync_cluster script
+
+		dna-add_cron_job -n "${short_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${short_name}/tools/${short_name}-resync_cluster --return-check"
+
 	fi
 
 	############################################################################
@@ -1868,7 +1873,7 @@ perform_installation() {
 
 		### Add backup script to crontab
 
-		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * * " -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
+		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
 
 		### Register ejabberd admin user
 
