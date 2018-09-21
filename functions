@@ -1177,10 +1177,6 @@ perform_installation() {
             fi
 		fi
 
-		### Add cronjob for resync_cluster script
-
-		dna-add_cron_job -n "${short_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${short_name}/tools/${short_name}-resync_cluster --return-check"
-
 	fi
 
 	############################################################################
@@ -1370,6 +1366,17 @@ perform_installation() {
 	### Create the necessary files and directories for ejabberd
 
 	aenigma-create_ejabberd_locations
+
+	############################################################################
+
+	if [ "${cluster_enabled}" = "cluster" ]
+	then
+
+		### Add cronjob for resync_cluster script
+
+		dna-add_cron_job -n "${short_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${short_name}/tools/${short_name}-resync_cluster --return-check"
+
+	fi
 
 	############################################################################
 
