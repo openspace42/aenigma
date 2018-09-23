@@ -102,7 +102,7 @@ schedule_ejabberd_restart() {
         -b "aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
         -r "${admin_mail}"
 
-        ### Schedule an ejabberd restart.
+        ### Schedule an ejabberd restart in [0-100] seconds from now.
 
         echo "sleep `head /dev/urandom | tr -dc "0123456789" | head -c2` && /usr/sbin/service ejabberd restart" | at $ft
 

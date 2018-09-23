@@ -12,16 +12,16 @@ define_vars() {
 	#################### Insert your initial variables here ####################
 	############################################################################
 
-	proj_name="aenigma"
-	short_name="aenigma"
-	author_name="openspace42"
-	git_host="https://github.com/"
+	export proj_name="aenigma"
+	export short_name="aenigma"
+	export author_name="openspace42"
+	export git_host="https://github.com"
 
 	### Set this to `y` if your project stores no data on end users' machines that could go lost during a re-install or update
-	skip_install_time_backup=n
+	export skip_install_time_backup="n"
 
 	### Set this to the directory that has the most impactful size when performing a backup [such as `/var/www/` for nginx-related projects]
-	backup_ref_dir="/var/lib/ejabberd"
+	export backup_ref_dir="/var/lib/ejabberd"
 
 	############################################################################
 	############################################################################
@@ -37,17 +37,17 @@ define_vars() {
 
 	### Set the paths to the cluster / nodes conf dirs
 
-	conf_cluster_dir="${conf_dir}/cluster"
-	conf_cluster_nodes_dir="${conf_cluster_dir}/nodes"
+	export conf_cluster_dir="${conf_dir}/cluster"
+	export conf_cluster_nodes_dir="${conf_cluster_dir}/nodes"
 
-	conf_xmpp_dir="${conf_dir}/xmpp"
+	export conf_xmpp_dir="${conf_dir}/xmpp"
 
 	### Set the paths to the nodes_db files
 
-	nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
-	nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
-	nodes_db_numbered_path="${conf_cluster_nodes_dir}/nodes_db_numbered"
-	nodes_db_online_path="${temp_dir}/nodes_db_online"
+	export nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
+	export nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
+	export nodes_db_numbered_path="${conf_cluster_nodes_dir}/nodes_db_numbered"
+	export nodes_db_online_path="${temp_dir}/nodes_db_online"
 
 	############################################################################
 	############################################################################
@@ -994,10 +994,10 @@ restore_loop() {
 	        else
 	                echo
 	                echo "${b-}Sorry about that, please collect all evidence you can find so and simply file an issue report at:${x-}"
-	        	echo
-	        	echo "${b-} | https://github.com/openspace42/aenigma/issues |${x-}"
-	        	echo
-	        	echo "${b-}Thank you in advance!${x-}"
+		        	echo
+		        	echo "${b-} | ${git_host}/${author_name}/${project_name}/issues |${x-}"
+		        	echo
+		        	echo "${b-}Thank you in advance!${x-}"
 	                echo
 	        fi
 
