@@ -2,7 +2,7 @@
 
 ### openspace synthia bootstrap framework v0.3.0 [https://github.com/openspace42/synthia]
 
-os_dna_version=0.3.1
+os_dna_version="0.3.1"
 
 ################################################################################
 
@@ -141,13 +141,25 @@ aenigma-display_logo() {
 	if [ "${columns_number}" -ge "93" ] && [ "${rows_number}" -ge "24" ]
 	then
 
-	    ### Determine terminal window center
+	    ### Determine terminal window horizontal center
 
 	    columns_median="$(echo $((columns_number / 2)))"
 
 	    ### The aenigma logo is 45 pixels and therefore 90 columns wide, therefore...
 
 	    base_column="$(echo $((columns_median - 45)))"
+
+		### Determine terminal window vertical center
+
+	    rows_median="$(echo $((rows_number / 2)))"
+
+	    ### The aenigma logo is 17 rows tall, therefore...
+
+	    base_row="$(echo $((rows_median - 8)))"
+
+		### Determine bottom padding
+
+		bottom_padding="$(echo $((base_row - 2)))"
 
 	    ### Set colors
 
@@ -259,6 +271,14 @@ aenigma-display_logo() {
 	    eval p{01..17}01='$b'
 	    eval p{01..17}45='$b'
 
+		### Clear
+
+		clear
+
+		### Print top padding
+
+		yes '' | sed ${base_row}q
+
 	    ### Print
 
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p01{01..45}██ | tr -d ' ')"
@@ -279,11 +299,25 @@ aenigma-display_logo() {
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p16{01..45}██ | tr -d ' ')"
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p17{01..45}██ | tr -d ' ')"
 
+		### Reset formatting
+
 	    echo ${x}
 
 		unset b w l x z
 
 		dna-define_formatting
+
+		### Print bottom padding
+
+		yes '' | sed ${bottom_padding}q
+
+		### Add delay
+
+		sleep 2
+
+		### Clear
+
+		clear
 
 	fi
 
@@ -1060,8 +1094,6 @@ perform_installation() {
 	### Display aenigma logo
 
 	aenigma-display_logo
-
-	sleep 1
 
 	################################################################################
 
