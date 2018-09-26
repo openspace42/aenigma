@@ -131,6 +131,10 @@ synthia-source_dna() {
 
 aenigma-display_logo() {
 
+	### Add delay for previous outputs
+
+	sleep 1
+
 	### Determine terminal window size
 
 	columns_number="$(tput cols)"
@@ -1105,25 +1109,19 @@ synthia-perform_installation() {
 
 	################################################################################
 
-	### Copy files to destination
-
-	rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
-
-	dna-echo -m $"${g-}Finished transferring files into installation directory."
-
-	################################################################################
-
 	dna-touch_temp_dir
 
 	mkdir -p "${tls_dir}"
 
 	################################################################################
 
-	### Skip intro if requested by user
+	### Display intro
 
-	if [ $skip_intro = "n" ]
+	if [ "${skip_intro}" = "n" ]
 	then
 	    aenigma-xmpp_intro
+	else
+		sleep 1
 	fi
 
 	############################################################################
