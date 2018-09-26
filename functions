@@ -85,7 +85,7 @@ synthia-check_root() {
 
 }
 
-synthia-download_os_dna() {
+synthia-download_dna() {
 
 	clone_host="https://github.com"
 	clone_author="openspace42"
@@ -114,7 +114,7 @@ synthia-download_os_dna() {
 
 }
 
-synthia-source_os_dna() {
+synthia-source_dna() {
 
 	for f in "/root/openspace42/dna/functions/*"
 	do
