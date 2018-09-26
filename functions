@@ -116,9 +116,9 @@ synthia-download_dna() {
 
 synthia-source_dna() {
 
-	for f in "/root/openspace42/dna/functions/*"
+	for f in /root/openspace42/dna/functions/*
 	do
-		. "${f}"
+		. $f
 	done
 
 }
