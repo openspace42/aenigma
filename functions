@@ -29,7 +29,7 @@ synthia-define_vars() {
 
 	### Do NOT edit the following line
 
-	dna-define_vars
+	dna-synthia-define_vars
 
 	############################################################################
 	################## Insert your additional variables here ###################
@@ -309,7 +309,7 @@ aenigma-display_logo() {
 
 		unset b w l x z
 
-		dna-define_formatting
+		synthia-define_formatting
 
 		### Print bottom padding
 

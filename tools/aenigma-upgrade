@@ -35,7 +35,7 @@ fi
 
 ### Check for root user runtime
 
-check_root
+synthia-check_root
 
 ### Evaluate command arguments for custom-version install
 
@@ -93,19 +93,19 @@ cd
 if [ ! "${custom_dna_version-null}" = "l" ]
 then
 
-    download_os_dna
+    download_dna
 
 fi
 
-source_os_dna
+source_dna
 
 ### Define formatting
 
-dna-define_formatting
+synthia-define_formatting
 
 ### Define variables
 
-define_vars
+synthia-define_vars
 
 ################################################################################
 

@@ -37,15 +37,15 @@ fi
 
 ### Source openspace functions file
 
-source_os_dna
+source_dna
 
 ### Define formatting
 
-dna-define_formatting
+synthia-define_formatting
 
 ### Define variables
 
-define_vars
+synthia-define_vars
 
 ################################################################################
 
