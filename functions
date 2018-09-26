@@ -29,7 +29,7 @@ synthia-define_vars() {
 
 	### Do NOT edit the following line
 
-	dna-synthia-define_vars
+	dna-define_vars
 
 	############################################################################
 	################## Insert your additional variables here ###################
