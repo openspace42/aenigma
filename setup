@@ -6,11 +6,15 @@
 
 set -eu
 
+################################################################################
+
 ### Start fresh
 
 clear
 
-### Determine script execution directory, install directory, and source local functions file
+################################################################################
+
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -33,20 +37,30 @@ else
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
+
+################################################################################
 
 ### Define formatting
 
-define_formatting
+synthia-define_formatting
 
-### Head install
+################################################################################
+
+### Check for root user runtime
+
+synthia-check_root
+
+################################################################################
+
+### Head setup
 
 echo "${g-}${b-}Initiating setup...${x-}"
 echo
 
-### Check for root user runtime
-
-check_root
+################################################################################
 
 ### Evaluate command arguments for custom-version install
 
@@ -67,14 +81,14 @@ do
 done
 OPTIND=1
 
-### Download openspace dna
+### Download dna
 
 if [ ! -z "${custom_dna_version-}" ]
 then
 	case $custom_dna_version in
 		b)	echo "${b-}Fetching bleeding-edge dna version as per | -d b |.${x-}"
 			echo
-			download_os_dna
+			synthia-download_dna
 			;;
 		l)	echo "${b-}Disabling dna fetch and using local version as per | -d l |.${x-}"
 			echo
@@ -88,20 +102,20 @@ then
 	esac
 fi
 
-### Source openspace dna
+### Source dna
 
-source_os_dna
+synthia-source_dna
 
-### Define formatting
-
-dna-define_formatting
+################################################################################
 
 ### Define variables
 
-define_vars
+synthia-define_vars
 
 ################################################################################
 
 ### Actually run the installer
 
 dna-run_install
+
+################################################################################

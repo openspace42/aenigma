@@ -22,7 +22,7 @@ fi
 
 ################################################################################
 
-### Determine script execution directory, install directory, and source local functions file
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -37,25 +37,60 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
 		echo
         exit 1
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
 
-### Source openspace functions file
-
-source_os_dna
+################################################################################
 
 ### Define formatting
 
-dna-define_formatting
+synthia-define_formatting
+
+################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Source dna
+
+synthia-source_dna
+
+################################################################################
 
 ### Define variables
 
-define_vars
+synthia-define_vars
 
 ################################################################################
 
@@ -63,14 +98,23 @@ define_vars
 
 dna-check_install_version
 
-### All ready for installation
+################################################################################
 
-echo "${b-}Initiating install...${x-}"
-echo
+### Install repo contents into destination dir
+
+dna-echo -m "Now installing repository contents into destination directory."
+
+rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
+
+dna-echo -m $"${g-}Finished installing repository contents into destination directory."
 
 ################################################################################
 
-perform_installation
+### Head install
+
+dna-echo -m "Initiating install..."
+
+synthia-perform_installation
 
 ################################################################################
 
