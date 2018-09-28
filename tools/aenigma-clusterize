@@ -65,7 +65,7 @@ dna-touch_temp_dir
 
 if [ ! "${cluster_enabled-null}" = "cluster" ]
 then
-	echo "${r-}${b-}${short_name} was not installed in cluster mode.${x-}"
+	echo "${r-}${b-}${proj_name} was not installed in cluster mode.${x-}"
 	echo
 	ask_for_boolean_question="Do you wish to turn this instance into a cluster one?"
 	dna-ask_for_boolean_def_yes
@@ -85,9 +85,9 @@ fi
 
 if [ -z "${cluster_mode-}" ]
 then
-	echo "${b-}This script must only be run on the primary node of ${short_name}.${x-}"
+	echo "${b-}This script must only be run on the primary node of ${proj_name}.${x-}"
 	echo
-	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your ${short_name} instance?"
+	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your ${proj_name} instance?"
 	dna-ask_for_boolean_def_no
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
@@ -95,33 +95,33 @@ then
 		echo
 		dna-set_option -o cluster_mode -p cluster -s "primary"
 	else
-		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
+		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 		echo
 		dna-exit
 	fi
 elif [ "${cluster_mode}" = "secondary" ]
 then
-	echo "${r-}${b-}This script must only be run on the primary node of ${short_name}.${x-}"
+	echo "${r-}${b-}This script must only be run on the primary node of ${proj_name}.${x-}"
 	echo
 	echo "${b-}You've previously specified during install that this will instead be a secondary node.${x-}"
 	echo
-	echo "${b-}If that's the case then all you need to do is run the standard ${short_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
+	echo "${b-}If that's the case then all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
 	echo
 	echo "${b-}Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted.${x-}"
 	echo
 else
-	echo "${g-}${b-}${short_name} clusterization mode already set to: | ${x-}${b-}primary${g-} |.${x-}"
+	echo "${g-}${b-}${proj_name} clusterization mode already set to: | ${x-}${b-}primary${g-} |.${x-}"
 	echo
 fi
 
-ask_for_boolean_question="Have you already started the ${short_name} installation on your secondary node?"
+ask_for_boolean_question="Have you already started the ${proj_name} installation on your secondary node?"
 dna-ask_for_boolean_def_yes
 if [ "$ask_for_boolean_output" = "y" ]
 then
 	echo "${b-}Ok, continuing...${x-}"
 	echo
 else
-	echo "${b-}Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | bash ${short_name}/setup | command.${x-}"
+	echo "${b-}Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | bash ${proj_name}/setup | command.${x-}"
 	echo
 	echo "${b-}When prompted to start this very script come back here and continue on.${x-}"
 	echo

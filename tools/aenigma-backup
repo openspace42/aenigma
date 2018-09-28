@@ -71,9 +71,9 @@ OPTIND=1
 
 ### Check for lockfile to avoid multiple simultaneous backups
 
-if [ -f /tmp/${short_name}-backup-running-lockfile ]
+if [ -f /tmp/${proj_name}-backup-running-lockfile ]
 then
-    echo "${r-}${b-}It appears a ${short_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted.${x-}"
+    echo "${r-}${b-}It appears a ${proj_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted.${x-}"
     echo
     echo "${b-}If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted.${x-}"
     echo
@@ -87,7 +87,7 @@ then
         then
             echo "${b-}Ok, continuing anyway...${x-}"
             echo
-            export lockfile_set="/tmp/${short_name}-backup-running-lockfile"
+            export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
         else
             echo "${b-}Ok, aborting...${x-}"
             echo
@@ -96,7 +96,7 @@ then
     else
         echo "${b-}If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted.${x-}"
         echo
-        echo "${b-}Alternatively, you can also log into this machine and | rm /tmp/${short_name}-backup-running-lockfile |.${x-}"
+        echo "${b-}Alternatively, you can also log into this machine and | rm /tmp/${proj_name}-backup-running-lockfile |.${x-}"
         echo
         echo "${r-}${b-}Aborting backup for now.${x-}"
         echo
@@ -104,7 +104,7 @@ then
     fi
 else
     ### set lockfile
-    export lockfile_set="/tmp/${short_name}-backup-running-lockfile"
+    export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
     touch $lockfile_set
 fi
 
@@ -169,9 +169,9 @@ fi
 
 dna-br_purge_dirs
 
-if [ -f "/tmp/${short_name}-backup-running-lockfile" ]
+if [ -f "/tmp/${proj_name}-backup-running-lockfile" ]
 then
-    rm /tmp/${short_name}-backup-running-lockfile
+    rm /tmp/${proj_name}-backup-running-lockfile
 fi
 
 if [ "${s3_restore_test_failed-null}" = "y" ]

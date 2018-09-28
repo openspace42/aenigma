@@ -76,7 +76,7 @@ then
 else
         dna-echo -e "This file is NOT intended to be run directly."
         dna-echo -m "It is only intended to be sourced by the command:"
-        dna-echo -m " | ${y-}bash --init-file ${exec_dir}/${short_name}-env${n-} |"
+        dna-echo -m " | ${y-}bash --init-file ${exec_dir}/${proj_name}-env${n-} |"
         dna-echo -m "to enter the developement environment of this project."
         dna-exit
 fi

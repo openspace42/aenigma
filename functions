@@ -13,7 +13,6 @@ synthia-define_vars() {
 	############################################################################
 
 	export proj_name="aenigma"
-	export short_name="aenigma"
 	export author_name="openspace42"
 	export git_host="https://github.com"
 
@@ -337,9 +336,9 @@ aenigma-xmpp_intro() {
 	read -rp "${b-}[press enter to continue reading...]${x-}"
 	clear
 
-	dna-echo -m "$short_name fully embraces this opportunity."
-	dna-echo -m "The domain for which you're setting up your new $short_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
-	dna-echo -m "This will give you working @amsterdamhacklab.xyz JIDs [XMPP account addresses], but the $short_name server will reside at ae01.amsterdamhacklab.xyz, as in the following example:"
+	dna-echo -m "$proj_name fully embraces this opportunity."
+	dna-echo -m "The domain for which you're setting up your new $proj_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
+	dna-echo -m "This will give you working @amsterdamhacklab.xyz JIDs [XMPP account addresses], but the $proj_name server will reside at ae01.amsterdamhacklab.xyz, as in the following example:"
 	dna-echo -m "${o-}Domain:${n-}               ${y-}amsterdamhacklab.xyz.${n-}"
 	dna-echo -m "${o-}Website:${n-}              ${y-}amsterdamhacklab.xyz${n-} / ${y-}www.amsterdamhacklab.xyz${n-} [hosted by another server]."
 	dna-echo -m "${o-}Your JID format:${n-}      ${y-}mark@amsterdamhacklab.xyz.${n-}"
@@ -350,7 +349,7 @@ aenigma-xmpp_intro() {
 
 	### Add cluster info here
 
-	dna-echo -m "Now that you know how XMPP works, let's get your brand new $short_name server up and running!"
+	dna-echo -m "Now that you know how XMPP works, let's get your brand new $proj_name server up and running!"
 
 }
 
@@ -695,7 +694,7 @@ aenigma-push_routing_info() {
 				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue runing the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
-				dna-echo -m " | ${y-}bash ${tools_dir}/${short_name}-push_routing_info${n-} | "
+				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
 				ask_for_boolean_question="Continue with installation anyway?"
 	            dna-ask_for_boolean_def_yes
 	            if [ "$ask_for_boolean_output" = "y" ]
@@ -1060,9 +1059,9 @@ restore_loop() {
 		rm -r "$restores_dir/local/"
 	fi
 
-	if [ -d "/root/${short_name}-restore/" ]
+	if [ -d "/root/${proj_name}-restore/" ]
 	then
-		rm -r "/root/${short_name}-restore/"
+		rm -r "/root/${proj_name}-restore/"
 	fi
 
 	if [ -d "$tmpdir" ]
@@ -1132,9 +1131,9 @@ synthia-perform_installation() {
 
 	describe_setting() {
 
-		echo "${b-}${short_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x-}"
+		echo "${b-}${proj_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x-}"
 		echo
-		echo "${b-}If you wish to setup ${short_name} in a cluster configuration, you must specify so now.${x-}"
+		echo "${b-}If you wish to setup ${proj_name} in a cluster configuration, you must specify so now.${x-}"
 		echo
 
 	}
@@ -1161,7 +1160,7 @@ synthia-perform_installation() {
 
 		describe_setting() {
 
-			echo "${b-}Having chosen to run ${short_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x-}"
+			echo "${b-}Having chosen to run ${proj_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x-}"
 			echo
 
 		}
@@ -1185,19 +1184,19 @@ synthia-perform_installation() {
 
 		if [ "${cluster_mode}" = "primary" ]
 		then
-			echo "${b-}Having chosen that this server will be your primary node for your ${short_name} installation, we can carry on with the standard installation.${x-}"
+			echo "${b-}Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation.${x-}"
 			echo
 		else
-			echo "${b-}Having chosen that this server will be a secondary node for your ${short_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x-}"
+			echo "${b-}Having chosen that this server will be a secondary node for your ${proj_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x-}"
 			echo
-			ask_for_boolean_question="Is the primary node for this ${short_name} already up and running and perfectly configured?"
+			ask_for_boolean_question="Is the primary node for this ${proj_name} already up and running and perfectly configured?"
             dna-ask_for_boolean_def_yes
             if [ "$ask_for_boolean_output" = "y" ]
             then
 				echo "${b-}Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node...${x-}"
 				echo
             else
-				echo "${b-}Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${short_name} install and selecting the | primary | node option when prompted.${x-}"
+				echo "${b-}Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${proj_name} install and selecting the | primary | node option when prompted.${x-}"
 				echo
 				echo "${b-}Only then will we be able to continue with the installation of this secondary node.${x-}"
 				echo
@@ -1285,7 +1284,7 @@ synthia-perform_installation() {
 	    else
 			echo "${b-}This machine's hostname must become: | ae01.${domain} |.${x-}"
 		    echo
-			echo "${b-}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${short_name} into a cluster should you ever choose to do so.${x-}"
+			echo "${b-}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${proj_name} into a cluster should you ever choose to do so.${x-}"
 			echo
 		    echo "${b-}Your current hostname is:${x-}"
 		    echo
@@ -1321,7 +1320,7 @@ synthia-perform_installation() {
 		dna-echo -m " | ${y-}aurora@$domain${n-} | "
 		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
 		dna-echo -m " | ${y-}$hostname${n-} | "
-		dna-echo -m "4] And therefore your | ${o-}${short_name} admin panel${n-} | will be located at:"
+		dna-echo -m "4] And therefore your | ${o-}${proj_name} admin panel${n-} | will be located at:"
 		dna-echo -m " | ${y-}https://$hostname${n-} | "
 
 		dna-echo -m "----------------------------------------------------------------"
@@ -1404,7 +1403,7 @@ synthia-perform_installation() {
 
 		### Add cronjob for resync_cluster script
 
-		dna-add_cron_job -n "${short_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${short_name}/tools/${short_name}-resync_cluster --return-check"
+		dna-add_cron_job -n "${proj_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-resync_cluster --return-check"
 
 	fi
 
@@ -1427,9 +1426,9 @@ synthia-perform_installation() {
 
 		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
-		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${short_name}_ejabberd"
+		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}_ejabberd"
 
-		bash "/etc/letsencrypt/renewal-hooks/post/${short_name}_ejabberd"
+		bash "/etc/letsencrypt/renewal-hooks/post/${proj_name}_ejabberd"
 
 	    if [ -f "${tls_dir}/${domain}.pem" ]
 	    then
@@ -1658,19 +1657,19 @@ synthia-perform_installation() {
 		rm "/etc/nginx/sites-enabled/default"
 	fi
 
-	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/sites-available/${short_name}"
+	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/sites-available/${proj_name}"
 
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${short_name}"
-	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/sites-available/${short_name}"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${proj_name}"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/sites-available/${proj_name}"
 
 	mkdir -p "/var/www/${hostname}/"
 	chown -R "www-data:www-data" "/var/www/${hostname}/"
 
 	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
 
-	if [ ! -L "/etc/nginx/sites-enabled/${short_name}" ]
+	if [ ! -L "/etc/nginx/sites-enabled/${proj_name}" ]
 	then
-		ln -s "/etc/nginx/sites-available/${short_name}" "/etc/nginx/sites-enabled/${short_name}"
+		ln -s "/etc/nginx/sites-available/${proj_name}" "/etc/nginx/sites-enabled/${proj_name}"
 	fi
 
 	service nginx reload || true
@@ -1732,7 +1731,7 @@ synthia-perform_installation() {
 						dna-echo -e "There is an error in your existing | ${n-}/etc/default/ejabberd${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
 						dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
 						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/default/ejabberd${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
-						dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
+						dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $proj_name into a cluster in the future."
 						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
 						read -rp "${b-}Press enter to continue...${x-}"
 						echo
@@ -1746,15 +1745,15 @@ synthia-perform_installation() {
 						if grep -q "#ERLANG_NODE=ejabberd@" "/etc/default/ejabberd" || grep -q "^ERLANG_NODE=ejabberd@localhost$" "/etc/default/ejabberd"
 						then
 
-							dna-echo -e "Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance with a previous version of ${short_name}."
+							dna-echo -e "Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance with a previous version of ${proj_name}."
 
 						else
 
-							dna-echo -e "Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance of ${short_name} with a different hostname than the current one."
+							dna-echo -e "Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance of ${proj_name} with a different hostname than the current one."
 
 						fi
 
-						dna-echo -m "If you choose to continue with the upgrade/re-install, the installation will continue without any issues, but it will be impossible to turn this instance of $short_name into a cluster in the future."
+						dna-echo -m "If you choose to continue with the upgrade/re-install, the installation will continue without any issues, but it will be impossible to turn this instance of $proj_name into a cluster in the future."
 						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
 						read -rp "${b-}Press enter to continue...${x-}"
 						echo
@@ -1774,10 +1773,10 @@ synthia-perform_installation() {
 
 					### An installation was actually completed at some point. Proceed with warning the user.
 
-					dna-echo -e "The | ${n-}/etc/default/ejabberd${r-} | configuration file of this existing installation of ${short_name} is missing."
+					dna-echo -e "The | ${n-}/etc/default/ejabberd${r-} | configuration file of this existing installation of ${proj_name} is missing."
 					dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
 					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/default/ejabberd${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
-					dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $short_name into a cluster in the future."
+					dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $proj_name into a cluster in the future."
 					dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
 					read -rp "${b-}Press enter to continue...${x-}"
 					echo
@@ -1913,7 +1912,7 @@ synthia-perform_installation() {
 
 		### Add backup script to crontab
 
-		dna-add_cron_job -n ${short_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${short_name}/tools/${short_name}-backup"
+		dna-add_cron_job -n ${proj_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-backup"
 
 		### Register ejabberd admin user
 
@@ -2056,10 +2055,10 @@ synthia-perform_installation() {
             if [ "$ask_for_boolean_output" = "y" ]
             then
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
-				bash "${tools_dir}/${short_name}-clusterize"
+				bash "${tools_dir}/${proj_name}-clusterize"
 			else
 				dna-echo -m "Ok, you can run the | ${o-}clusterize${n-} | script at any time by executing:"
-				dna-echo -m " | ${y-}bash ${tools_dir}/${short_name}-clusterize${n-} | "
+				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-clusterize${n-} | "
 				read -rp "${b-}[press enter to continue reading...]${x-}"
 				echo
 			fi

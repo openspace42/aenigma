@@ -11,7 +11,7 @@
 
 ## [...]
 
-## v0.47 [currently in beta - 2018-01-16]
+## v0.47 [2018-01-16]
 
 1. Added testing mode for Ubuntu 17.10 [artful] [and therefore - currently - ejabberd 18.01 as per the repo we use] to prepare for Ubuntu 18.04 and ejabberd 18.xx:
 1.1: Re-introduced per-ejabberd-version ejabberd.yml config files [falls back to v17.08 config file if ejabberd version being installed doesn't have a version-specific aenigma config file]
