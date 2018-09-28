@@ -97,7 +97,7 @@ then
 
 fi
 
-source_dna
+synthia-source_dna
 
 ### Define formatting
 

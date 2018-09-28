@@ -37,7 +37,7 @@ fi
 
 ### Source openspace functions file
 
-source_dna
+synthia-source_dna
 
 ### Define formatting
 
