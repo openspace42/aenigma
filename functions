@@ -1634,9 +1634,9 @@ synthia-perform_installation() {
 	echo
 	dna-echo -s "Finished setting UFW rules."
 
-	### Install and if necessary upgrade EasyEngine
+	### Install nginx and configure ejabberd admin panel reverse proxy site
 
-	dna-install_easyengine
+	dna-install_dependencies -e -p "nginx"
 
 	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
 
@@ -1646,29 +1646,19 @@ synthia-perform_installation() {
 
 	### Create and configure the $hostname website
 
-	dna-echo -m "Now creating EasyEngine site for ${hostname}..."
-	ee site create "${hostname}" || true
-	echo
-	dna-echo -s "Finished creating EasyEngine site for ${hostname}."
+	if [ -f "/etc/nginx/sites-available/default" ]
+	then
+		rm "/etc/nginx/sites-available/default"
+	fi
 
-	dna-echo -m "Now setting custom nginx config for ${hostname}..."
-	cp "${source_dir}/conf/nginx/hostname.conf" "/etc/nginx/sites-available/${hostname}"
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${hostname}"
-	dna-echo -s "Finished setting custom nginx config for ${hostname}."
+	cp "${source_dir}/conf/nginx/nginx-new-1" "/etc/nginx/sites-available/${short_name}"
+
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${short_name}"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/sites-available/${short_name}"
 
 	dna-echo -m "Now setting index.html in docroot for ${hostname}..."
 	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/htdocs/"
 	dna-echo -s "Finished setting index.html in docroot for ${hostname}."
-
-	dna-echo -m "${b-}Now adding HTTPS and IPv6 support to the ${hostname} site..."
-	cp "${source_dir}/conf/nginx/ssl-hostname.conf" "/var/www/${hostname}/conf/nginx/ssl.conf"
-	sed -i "s/domain.xyz/${domain}/g" "/var/www/${hostname}/conf/nginx/ssl.conf"
-	dna-echo -s "Finished adding HTTPS and IPv6 support to the ${hostname} site..."
-
-	dna-echo -m "Now adding HTTPS redirect for the ${hostname} site..."
-	cp "${source_dir}/conf/nginx/force-ssl-hostname.conf" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/force-ssl-${hostname}.conf"
-	dna-echo -s "Finished adding HTTPS redirect for the ${hostname} site..."
 
 	service nginx reload || true
 
