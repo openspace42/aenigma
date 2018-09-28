@@ -45,6 +45,7 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 3. Entirely new DNS checks now part of dna.
 4. New DNS provider functionality [also part of dna] for automated DNS record configuration from the aforementioned DNS checks function.
 5. aenigma is now clusterizable in a simple and straightforward fashion. Every new instance installed is ready to clusterized in the future from now on. This is known as multi-master multi-server functionality.
+6. Removed reliance on EasyEngine and instead directly provision the wildcard LE cert and configure hostname website
 
 ## Donate to keep the project running
 
@@ -60,11 +61,7 @@ And don't forget to spread the word with your fellow friends, family, activists,
 
 ## Install
 
-The only supported distro is **Ubuntu**.
-
-* Requirements: LTS release [because of EasyEngine]
-* Tested on: 16.04, 18.04
-* Recommended: **18.04** [as EasyEngine now fully supports it]
+The only supported distro is **Ubuntu 18**.
 
 Want to test aenigma out on Debian? That would be great, and things should already mostly work! Edit out the checks in the installer and please report back on how everything works! Thank you!
 
