@@ -1668,7 +1668,10 @@ synthia-perform_installation() {
 
 	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
 
-	ln -s "/etc/nginx/sites-available/${short_name}" "/etc/nginx/sites-enabled/${short_name}"
+	if [ ! -L "/etc/nginx/sites-enabled/${short_name}" ]
+	then
+		ln -s "/etc/nginx/sites-available/${short_name}" "/etc/nginx/sites-enabled/${short_name}"
+	fi
 
 	service nginx reload || true
 
