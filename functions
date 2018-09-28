@@ -1634,13 +1634,15 @@ synthia-perform_installation() {
 	echo
 	dna-echo -s "Finished setting UFW rules."
 
+	############################################################################
+
+	### Stop SSLH to avoid conflicts with any brand new nginx installation
+
+	/usr/sbin/service sslh stop &> /dev/null || true
+
 	### Install nginx and configure ejabberd admin panel reverse proxy site
 
 	dna-install_dependencies -e -p "nginx"
-
-	### Stop SSLH to avoid conflicts between the time new EE sites are created + TLS-provisioned and the time they're made SSLH-compliant
-
-	/usr/sbin/service sslh stop &> /dev/null || true
 
 	############################################################################
 
@@ -1656,9 +1658,9 @@ synthia-perform_installation() {
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${short_name}"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/sites-available/${short_name}"
 
-	dna-echo -m "Now setting index.html in docroot for ${hostname}..."
-	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/htdocs/"
-	dna-echo -s "Finished setting index.html in docroot for ${hostname}."
+	mkdir -p "/var/www/${hostname}/"
+	chown -R "www-data:www-data" "/var/www/${hostname}/"
+	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
 
 	service nginx reload || true
 
