@@ -1,3 +1,0 @@
-host_config:
-  "domain.xyz":
-    domain_certfile: "pathtofile"

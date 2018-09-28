@@ -1427,13 +1427,13 @@ synthia-perform_installation() {
 
 		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
-		cp "${source_dir}/conf/nginx/letsencrypt-ejabberd-post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post"
+		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${short_name}_ejabberd"
 
-		bash "/etc/letsencrypt/renewal-hooks/post/letsencrypt-ejabberd-post-renewal-hook"
+		bash "/etc/letsencrypt/renewal-hooks/post/${short_name}_ejabberd"
 
-	    if [ -f $tls_dir/$domain.pem ]
+	    if [ -f "${tls_dir}/${domain}.pem" ]
 	    then
-	        dna-echo -s "External TLS certificate for ${domain} found in | $tls_dir/$domain.pem |."
+	        dna-echo -s "External TLS certificate for ${domain} found in | ${n-}${tls_dir}/${domain}.pem${g-} |."
 			sleep 1
 	    else
 	        dna-echo -e "Something went wrong provisioning the wildcard TLS certificate for ${domain}."
@@ -1653,14 +1653,22 @@ synthia-perform_installation() {
 		rm "/etc/nginx/sites-available/default"
 	fi
 
-	cp "${source_dir}/conf/nginx/nginx-new-1" "/etc/nginx/sites-available/${short_name}"
+	if [ -L "/etc/nginx/sites-enabled/default" ]
+	then
+		rm "/etc/nginx/sites-enabled/default"
+	fi
+
+	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/sites-available/${short_name}"
 
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/sites-available/${short_name}"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/sites-available/${short_name}"
 
 	mkdir -p "/var/www/${hostname}/"
 	chown -R "www-data:www-data" "/var/www/${hostname}/"
+
 	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
+
+	ln -s "/etc/nginx/sites-available/${short_name}" "/etc/nginx/sites-enabled/${short_name}"
 
 	service nginx reload || true
 
