@@ -1100,6 +1100,15 @@ synthia-perform_installation() {
 
 	################################################################################
 
+	### Display intro
+
+	if [ "${skip_intro}" = "n" ]
+	then
+	    aenigma-xmpp_intro
+	fi
+
+	################################################################################
+
 	dna-check_sslh_connection
 
 	dna-check_distro_ubuntu_18
@@ -1112,15 +1121,6 @@ synthia-perform_installation() {
 
 	mkdir -p "${tls_dir}"
 
-	################################################################################
-
-	### Display intro
-
-	if [ "${skip_intro}" = "n" ]
-	then
-	    aenigma-xmpp_intro
-	fi
-
 	############################################################################
 
 	clear
@@ -1129,10 +1129,8 @@ synthia-perform_installation() {
 
 	describe_setting() {
 
-		echo "${b-}${proj_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing.${x-}"
-		echo
-		echo "${b-}If you wish to setup ${proj_name} in a cluster configuration, you must specify so now.${x-}"
-		echo
+		dna-echo -m "${proj_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing."
+		dna-echo -m "If you wish to setup ${proj_name} in a cluster configuration, you must specify so now."
 
 	}
 
@@ -1140,66 +1138,57 @@ synthia-perform_installation() {
 
 		case $input in
 			single)		valid="y"
-			;;
+						;;
 			cluster)	valid="y"
-			;;
-			*)	echo "${r-}${b-}Invalid setting for | ${n-}cluster_enabled${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
-			echo
-			valid="n"
-			;;
+						;;
+			*)			dna-echo -e "Invalid setting for | ${n-}cluster_enabled${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |."
+						valid="n"
+						;;
 		esac
 
 	}
 
-	dna-set_option -o "cluster_enabled" -p "cluster" -d y -c "[single/cluster]" -v y
+	dna-set_option -o "cluster_enabled" -p "cluster" -d "y" -c "[single/cluster]" -v "y"
 
 	if [ "${cluster_enabled}" = "cluster" ]
 	then
 
 		describe_setting() {
 
-			echo "${b-}Having chosen to run ${proj_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster.${x-}"
-			echo
+			dna-echo -m "Having chosen to run ${proj_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster."
 
 		}
 
 		validate_input() {
 
 			case $input in
-				primary)		valid="y"
-				;;
-				secondary)		valid="y"
-				;;
-				*)	echo "${r-}${b-}Invalid setting for | ${n-}cluster_mode${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
-				echo
-				valid="n"
-				;;
+				primary)	valid="y"
+							;;
+				secondary)	valid="y"
+							;;
+				*)			dna-echo -e "Invalid setting for | ${n-}cluster_enabled${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |."
+							valid="n"
+							;;
 			esac
 
 		}
 
-		dna-set_option -o "cluster_mode" -p "cluster" -d y -c "[primary/secondary]" -v y
+		dna-set_option -o "cluster_mode" -p "cluster" -d "y" -c "[primary/secondary]" -v "y"
 
 		if [ "${cluster_mode}" = "primary" ]
 		then
-			echo "${b-}Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation.${x-}"
-			echo
+			dna-echo -m "Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation."
 		else
-			echo "${b-}Having chosen that this server will be a secondary node for your ${proj_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured.${x-}"
-			echo
+			dna-echo -m "Having chosen that this server will be a secondary node for your ${proj_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured."
 			ask_for_boolean_question="Is the primary node for this ${proj_name} already up and running and perfectly configured?"
             dna-ask_for_boolean_def_yes
             if [ "$ask_for_boolean_output" = "y" ]
             then
-				echo "${b-}Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node...${x-}"
-				echo
+				dna-echo -m "Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node..."
             else
-				echo "${b-}Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${proj_name} install and selecting the | primary | node option when prompted.${x-}"
-				echo
-				echo "${b-}Only then will we be able to continue with the installation of this secondary node.${x-}"
-				echo
-				echo "${b-}Aborting installation for now.${x-}"
-				echo
+				dna-echo -m "Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${proj_name} install and selecting the | ${y-}primary${n-} | node option when prompted."
+				dna-echo -m "Only then will we be able to continue with the installation of this secondary node."
+				dna-echo -m "Aborting installation for now."
                 dna-exit
             fi
 		fi
@@ -1234,8 +1223,7 @@ synthia-perform_installation() {
 
 	    describe_setting() {
 
-	        echo "${b-}Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:${x-}"
-	        echo
+	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:"
 
 	    }
 
@@ -1243,30 +1231,25 @@ synthia-perform_installation() {
 
 	    if [ $previous_value_outcome = "not-kept" ]
 	    then
-	        echo "${b-}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x-}"
-	        echo
-	        echo "${r-}${b-}WARNING:${x-}"
-	        echo
-	        echo "${r-}${b-}Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install.${x-}"
-	        echo
-	        echo "${b-}In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet.${x-}"
-	        echo
-	        echo "${b-}If you abort the domain change operation now, nothing will be deleted.${x-}"
-	        echo
-	        echo "${b-}- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -${x-}"
-	        echo
-	        read -rp "${b-}Are you absolutely sure you want to change the XMPP domain now? (y/N): ${x-}" -n 1
-	        echo
-	        if [[ $REPLY =~ ^[Yy]$ ]]
-	        then
-	            echo "${b-}Ok, proceeding...${x-}"
-	            echo
+
+	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+	        dna-echo -e "WARNING:"
+	        dna-echo -e "Changing domains will not preserve any user accounts or data. It will revert this server to a fresh install."
+	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+	        dna-echo -m "If you abort the domain change operation now, nothing will be deleted."
+	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+
+			ask_for_boolean_question="Are you absolutely sure you want to change the XMPP domain now?"
+            dna-ask_for_boolean_def_no
+            if [ "$ask_for_boolean_output" = "y" ]
+            then
+	            dna-echo -m "Ok, proceeding..."
 	        else
-	            echo "${b-}Ok, setting your domain back to the previous value | $previous_value |...${x-}"
-	            echo
-	            domain="$previous_value"
-	            echo "$previous_value" > "$opt_path"
+	            dna-echo -m "Ok, setting your domain back to the previous value | ${y-}${previous_value}${n-} |..."
+	            domain="${previous_value}"
+	            echo "${previous_value}" > "${opt_path}"
 	        fi
+
 	    fi
 
 		########################################################################
@@ -1275,32 +1258,28 @@ synthia-perform_installation() {
 
 		curr_host_name="$(cat /etc/hostname)"
 
-	    if [ "$curr_host_name" = "ae01.${domain}" ]
+	    if [ "${curr_host_name}" = "ae01.${domain}" ]
 	    then
-	        echo "${g-}${b-}Your hostname is already correctly set to: | ${x-}${b-}ae01.${domain}${g-} |.${x-}"
-	        echo
-	    else
-			echo "${b-}This machine's hostname must become: | ae01.${domain} |.${x-}"
-		    echo
-			echo "${b-}This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${proj_name} into a cluster should you ever choose to do so.${x-}"
-			echo
-		    echo "${b-}Your current hostname is:${x-}"
-		    echo
-		    echo " | $curr_host_name |"
-	        echo
-	        read -rp "${b-}Do you want to correctly set your hostname automatically? (Y/n): ${x-}" -n 1
-	        echo
-	        if [[ ! $REPLY =~ ^[Nn]$ ]]
-	        then
-	            echo "${b-}Ok, setting hostname to: | ae01.${domain} |.${x-}"
-	            echo
-	            echo "ae01.${domain}" > /etc/hostname
-	        else
-	            echo
-	            echo "${b-}Ok, not changing hostname.${x-}"
-	            echo
+
+			dna-echo -s "Your hostname is already correctly set to: | ${n-}ae01.${domain}${g-} |."
+
+		else
+
+			dna-echo -m "This machine's hostname must become: | ${y-}ae01.${domain}${n-} |."
+			dna-echo -m "This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${proj_name} into a cluster should you ever choose to do so."
+			dna-echo -m "Your current hostname is:"
+			dna-echo -m " | ${y-}${curr_host_name}${n-} | "
+			ask_for_boolean_question="Do you want to correctly set your hostname automatically?"
+            dna-ask_for_boolean_def_yes
+            if [ "$ask_for_boolean_output" = "y" ]
+            then
+			    dna-echo -m "Ok, setting hostname to: | ${y-}ae01.${domain}${n-} |."
+			    echo "ae01.${domain}" > "/etc/hostname"
+			else
+			    dna-echo -m "Ok, not changing hostname."
 				dna-exit
-	        fi
+			fi
+
 	    fi
 
 		hostname="$(cat /etc/hostname)"
@@ -1323,17 +1302,14 @@ synthia-perform_installation() {
 
 		dna-echo -m "----------------------------------------------------------------"
 
-		read -rp "${b-}Does everything look all right? (Y/n): ${x-}" -n 1
-		echo
-		if [[ ! $REPLY =~ ^[Nn]$ ]]
+		ask_for_boolean_question="Does everything look all right?"
+		dna-ask_for_boolean_def_yes
+		if [ "$ask_for_boolean_output" = "y" ]
 		then
 		    dna-echo -m "Ok, continuing."
-		    touch $conf_dir/domain
-		    echo "$domain" > $conf_dir/domain
 		else
-		    echo
 		    dna-echo -m "Ok, no worries. You can re-run this script right now and make the correct choices. Exiting..."
-		    exit
+		    dna-exit
 		fi
 
 		########################################################################
