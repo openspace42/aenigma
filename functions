@@ -1119,8 +1119,6 @@ synthia-perform_installation() {
 	if [ "${skip_intro}" = "n" ]
 	then
 	    aenigma-xmpp_intro
-	else
-		sleep 1
 	fi
 
 	############################################################################
