@@ -6,11 +6,15 @@
 
 set -eu
 
+################################################################################
+
 ### Add padding to output
 
 echo
 
-### Determine script execution directory, install directory, and source local functions file
+################################################################################
+
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -25,21 +29,37 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
 		echo
         exit 1
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
 
-### Source openspace functions file
-
-synthia-source_dna
+################################################################################
 
 ### Define formatting
 
 synthia-define_formatting
+
+################################################################################
+
+### Check for root user runtime
+
+synthia-check_root
+
+################################################################################
+
+### Source dna
+
+synthia-source_dna
+
+################################################################################
 
 ### Define variables
 
@@ -47,9 +67,13 @@ synthia-define_vars
 
 ################################################################################
 
-synthia-check_root
+### Log script
 
 dna-log_script
+
+################################################################################
+
+### Read conf settings
 
 dna-read_conf_settings
 

@@ -6,11 +6,15 @@
 
 set -eu
 
-### Add padding to output
+################################################################################
 
-echo
+### Start fresh
 
-### Determine script execution directory, install directory, and source local functions file
+clear
+
+################################################################################
+
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -25,17 +29,38 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
 		echo
         exit 1
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
+
+################################################################################
+
+### Define formatting
+
+synthia-define_formatting
+
+################################################################################
 
 ### Check for root user runtime
 
 synthia-check_root
+
+################################################################################
+
+### Head upgrade
+
+echo "${g-}${b-}Initiating upgrade...${x-}"
+echo
+
+################################################################################
 
 ### Evaluate command arguments for custom-version install
 
@@ -46,62 +71,42 @@ do
 	        ;;
 		p)	export custom_project_version="$OPTARG"
 	        ;;
-        \?)	echo "Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |."
+        \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 	        echo
-	        exit
+			echo "${b-}Exiting...${x-}"
+			echo
+	        exit 1
 	        ;;
     esac
 done
 OPTIND=1
 
+### Download dna
+
 if [ ! -z "${custom_dna_version-}" ]
 then
 	case $custom_dna_version in
-		b)	echo "Using bleeding-edge dna version as per | -d b |."
+		b)	echo "${b-}Fetching bleeding-edge dna version as per | -d b |.${x-}"
+			echo
+			synthia-download_dna
+			;;
+		l)	echo "${b-}Disabling dna fetch and using local version as per | -d l |.${x-}"
 			echo
 			;;
-		l)	echo "Disabling dna download and using local version as per | -d l |."
-			;;
-		*)	echo "Invalid content for | custom_dna_version | in function | ${FUNCNAME[0]} |."
+		*)	echo "${r-}${b-}Invalid content for | ${n-}custom_dna_version${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
 			echo "Exiting..."
 			echo
-			exit
+			exit 1
 			;;
 	esac
 fi
 
-if [ ! -z "${custom_project_version-}" ]
-then
-	case $custom_project_version in
-		b)	echo "Using bleeding-edge project version as per | -p b |."
-			echo
-			;;
-		*)	echo "Invalid content for | custom_project_version | in function | ${FUNCNAME[0]} |."
-			echo
-			echo "Exiting..."
-			echo
-			exit
-			;;
-	esac
-fi
-
-cd
-
-### Download and source openspace dna
-
-if [ ! "${custom_dna_version-null}" = "l" ]
-then
-
-    download_dna
-
-fi
+### Source dna
 
 synthia-source_dna
 
-### Define formatting
-
-synthia-define_formatting
+################################################################################
 
 ### Define variables
 
@@ -116,6 +121,8 @@ then
         rm -r "${proj_name}/"
 fi
 
-git clone ${git_host}/${author_name}/${proj_name}
+git clone "${git_host}/${author_name}/${proj_name}"
 
 dna-run_install
+
+################################################################################

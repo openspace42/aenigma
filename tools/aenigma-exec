@@ -12,7 +12,9 @@ set -eu
 
 echo
 
-### Determine script execution directory, install directory, and source local functions file
+################################################################################
+
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -27,21 +29,37 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
 		echo
         exit 1
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
 
-### Source openspace functions file
-
-synthia-source_dna
+################################################################################
 
 ### Define formatting
 
 synthia-define_formatting
+
+################################################################################
+
+### Check for root user runtime
+
+synthia-check_root
+
+################################################################################
+
+### Source dna
+
+synthia-source_dna
+
+################################################################################
 
 ### Define variables
 
@@ -53,31 +71,26 @@ synthia-define_vars
 
 if [ $# -eq 0 ]
 then
-    echo "${r-}${b-}No argument supplied for function | ${FUNCNAME[0]} |.${x-}"
-    echo
-    echo "${b-}This script must not be run directly.${x-}"
-    echo
-    echo "${b-}It is only meant to be executed by other functions remotely.${x-}"
-    echo
+    dna-echo -e "No argument supplied for function | ${n-}${FUNCNAME[0]}${r-} |."
+    dna-echo -m "This script must not be run directly."
+    dna-echo -m "It is only meant to be executed by other functions remotely."
     dna-exit
 fi
 
 while getopts ":c:" arguments; do
     case $arguments in
         c)	commands="$OPTARG"
-        ;;
-        \?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
-        echo
-        dna-exit
-        ;;
+	        ;;
+        \?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+	        dna-exit
+	        ;;
     esac
 done
 OPTIND=1
 
 if [ -z "${commands-}" ]
 then
-    echo "${r-}${b-}Commands [option | -c |] must be supplied for function | ${FUNCNAME[0]} |.${x-}"
-    echo
+    dna-echo -e "Commands [option | ${n-}-c${r-} |] must be supplied for function | ${n-}${FUNCNAME[0]}${r-} |."
     dna-exit
 fi
 

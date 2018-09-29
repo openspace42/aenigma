@@ -6,11 +6,15 @@
 
 set -eu
 
+################################################################################
+
 ### Add padding to output
 
 echo
 
-### Determine script execution directory, install directory, and source local functions file
+################################################################################
+
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -25,33 +29,51 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
 		echo
         exit 1
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
 
-### Source openspace functions file
-
-synthia-source_dna
+################################################################################
 
 ### Define formatting
 
 synthia-define_formatting
 
-### Define variables
+################################################################################
 
-synthia-define_vars
-
-### Check for root execution
+### Check for root user runtime
 
 synthia-check_root
 
 ################################################################################
 
+### Source dna
+
+synthia-source_dna
+
+################################################################################
+
+### Define variables
+
+synthia-define_vars
+
+################################################################################
+
+### Head script
+
 dna-head_script
+
+################################################################################
+
+### Read conf settings
 
 dna-read_conf_settings
 
@@ -65,18 +87,15 @@ dna-touch_temp_dir
 
 if [ ! "${cluster_enabled-null}" = "cluster" ]
 then
-	echo "${r-}${b-}${proj_name} was not installed in cluster mode.${x-}"
-	echo
+	dna-echo -e "${proj_name} was not installed in cluster mode."
 	ask_for_boolean_question="Do you wish to turn this instance into a cluster one?"
 	dna-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b-}Ok, setting clusterization to enabled.${x-}"
-		echo
+		dna-echo -m "Ok, setting clusterization to enabled."
 		dna-set_option -o cluster_enabled -p cluster -s "cluster"
 	else
-		echo "${b-}Ok, leaving clusterization off for now.${x-}"
-		echo
+		dna-echo -m "Ok, leaving clusterization off for now."
 		dna-exit
 	fi
 fi
@@ -85,47 +104,36 @@ fi
 
 if [ -z "${cluster_mode-}" ]
 then
-	echo "${b-}This script must only be run on the primary node of ${proj_name}.${x-}"
-	echo
+	dna-echo -m "This script must only be run on the primary node of ${proj_name}."
 	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your ${proj_name} instance?"
 	dna-ask_for_boolean_def_no
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b-}Ok, proceeding...${x-}"
-		echo
+		dna-echo -m "Ok, proceeding..."
 		dna-set_option -o cluster_mode -p cluster -s "primary"
 	else
-		echo "${b-}Ok, no problem. If this is a secondary node all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
-		echo
+		dna-echo -m "Ok, no problem. If this is a secondary node all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup."
 		dna-exit
 	fi
 elif [ "${cluster_mode}" = "secondary" ]
 then
-	echo "${r-}${b-}This script must only be run on the primary node of ${proj_name}.${x-}"
-	echo
-	echo "${b-}You've previously specified during install that this will instead be a secondary node.${x-}"
-	echo
-	echo "${b-}If that's the case then all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup.${x-}"
-	echo
-	echo "${b-}Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted.${x-}"
-	echo
+	dna-echo -e "This script must only be run on the primary node of ${proj_name}."
+	dna-echo -m "You've previously specified during install that this will instead be a secondary node."
+	dna-echo -m "If that's the case then all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup."
+	dna-echo -m "Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted."
 else
-	echo "${g-}${b-}${proj_name} clusterization mode already set to: | ${x-}${b-}primary${g-} |.${x-}"
-	echo
+	dna-echo -s "${proj_name} | ${o-}clusterization mode${n-} | already set to: | ${n-}primary${g-} |."
 fi
 
 ask_for_boolean_question="Have you already started the ${proj_name} installation on your secondary node?"
 dna-ask_for_boolean_def_yes
 if [ "$ask_for_boolean_output" = "y" ]
 then
-	echo "${b-}Ok, continuing...${x-}"
-	echo
+	dna-echo -m "Ok, continuing..."
 else
-	echo "${b-}Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | bash ${proj_name}/setup | command.${x-}"
-	echo
-	echo "${b-}When prompted to start this very script come back here and continue on.${x-}"
-	echo
-	read -rp "${b-}[press enter to continue...]${x-}"
+	dna-echo -m "Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | ${o-}bash ${proj_name}/setup${n-} | command."
+	dna-echo -m "When prompted to start this very script come back here and continue on."
+	dna-press_to_continue
 fi
 
 ################################################################################
@@ -142,15 +150,15 @@ validate_input() {
 
 	if [ "${ip_is_valid}" = "y" ]
 	then
-		valid=y
+		valid="y"
 	else
-		dna-echo -m "${r-}The value you specified does NOT appear to be a valid IPv4 address."
-		valid=n
+		dna-echo -e "The value you specified does NOT appear to be a valid IPv4 address."
+		valid="n"
 	fi
 
 }
 
-dna-set_value -d "Now enter the public IPv4 address displayed on your secondary node:" -v y
+dna-set_value -d "Now enter the public IPv4 address displayed on your secondary node:" -v "y"
 
 secondary_node_ipv4="${value}"
 
@@ -162,25 +170,21 @@ if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
 then
 	### Specified secondary node is already registered
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	echo "${b-}The server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | is already registered as part of this cluster with node number | ${o-}${secondary_node_number}${n-} |.${x-}"
-	echo
+	dna-echo -m "The server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | is already registered as part of this cluster with node number | ${o-}${secondary_node_number}${n-} |."
 	ask_for_boolean_question="Would you like to re-provision it?"
 	dna-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b-}Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |...${x-}"
-		echo
+		dna-echo -m "Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |..."
 	else
-		echo "${b-}Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |.${x-}"
-		echo
+		dna-echo -m "Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |."
 		dna-exit
 	fi
 else
 	### Specified secondary node is new to this cluster
 	echo "${secondary_node_ipv4}" >> "${nodes_db_ipv4_path}"
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	echo "${b-}Ok, added server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | to this cluster with node number | ${o-}${secondary_node_number}${n-} |.${x-}"
-	echo
+	dna-echo -m "Ok, added server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | to this cluster with node number | ${o-}${secondary_node_number}${n-} |."
 fi
 
 aenigma-create_nodes_db_numbered
@@ -225,16 +229,14 @@ exit
 END
 	echo
 
-	dna-echo -m "${g-}SSH connection to secondary node succeeded. Now continuing installation..."
+	dna-echo -s "SSH connection to secondary node succeeded. Now continuing installation..."
 
 else
 
 	### The SSH pubkey must be specified by the user on the secondary node.
 
-	echo "${b-}Now, when prompted, enter the following SSH public key on the secondary node:${x-}"
-	echo
-	echo "${y-}${b-}$(cat ${ssh_keypair_pubkey_path})${x-}"
-	echo
+	dna-echo -m "Now, when prompted, enter the following SSH public key on the secondary node:"
+	dna-echo -m " | ${y-}$(cat ${ssh_keypair_pubkey_path})${n-} | "
 
 	########################################################################
 
@@ -251,7 +253,7 @@ else
 
 	if [ "${wait_output}"  = "ok" ]
 	then
-		dna-echo -m "${g-}SSH connection to secondary node succeeded. Now continuing installation..."
+		dna-echo -s "SSH connection to secondary node succeeded. Now continuing installation..."
 	else
 		dna-echo -e "SSH connection to secondary node failed."
 		dna-echo -m "Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} |, that its SSH port is | ${y}42022${n-} |, and that its firewall isn't blocking connections on that port."
@@ -269,26 +271,20 @@ fi
 
 if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma/aenigma-cluster-token)"
 then
-	echo "${g-}${b-}Token on secondary node found.${x-}"
-	echo
-	echo "${b-}Its value is: | ${y-}${secondary_node_token}${n-} |.${x-}"
-	echo
+	dna-echo -s "Token on secondary node found."
+	dna-echo -m "Its value is: | ${y-}${secondary_node_token}${n-} |."
 	ask_for_boolean_question="Does this token match what you see on the secondary node?"
 	dna-ask_for_boolean_def_yes
 	if [ "$ask_for_boolean_output" = "y" ]
 	then
-		echo "${b-}Ok, continuing...${x-}"
-		echo
+		dna-echo -m "Ok, continuing..."
 	else
-		echo "${b-}No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} | and try again.${x-}"
-		echo
+		dna-echo -m "No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} | and try again."
 		dna-exit
 	fi
 else
-	echo "${r-}${b-}Token on secondary node not found.${x-}"
-	echo
-	echo "${b-}Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again.${x-}"
-	echo
+	dna-echo -e "Token on secondary node not found."
+	dna-echo -m "Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again."
 	dna-exit
 fi
 
@@ -363,10 +359,8 @@ echo
 
 ### Prompt the user to finish the installation on secondary node by following the next steps on the other node
 
-echo "${g-}${b-}Primary_node-level configuration complete.${x-}"
-echo
-echo "${b-}You can now return to your secondary node as it automatically finished running the installation from there.${x-}"
-echo
+dna-echo -s "Primary_node-level configuration complete."
+dna-echo -m "You can now return to your secondary node as it automatically finished running the installation from there."
 
 ############################################################################
 

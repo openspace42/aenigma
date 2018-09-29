@@ -6,11 +6,15 @@
 
 set -eu
 
+################################################################################
+
 ### Add padding to output
 
 echo
 
-### Determine script execution directory, install directory, and source local functions file
+################################################################################
+
+### Determine script execution directory and install directory.
 
 exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -25,21 +29,37 @@ else
 	then
 		exec_dir_root="${exec_dir_trim_3}"
 	else
-		echo "Functions file not found in any second or third level parent directory of: | $exec_dir |"
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
 		echo
         exit 1
 	fi
 fi
 
+### Source local functions file.
+
 . "$exec_dir_root/functions"
 
-### Source openspace functions file
-
-synthia-source_dna
+################################################################################
 
 ### Define formatting
 
 synthia-define_formatting
+
+################################################################################
+
+### Check for root user runtime
+
+synthia-check_root
+
+################################################################################
+
+### Source dna
+
+synthia-source_dna
+
+################################################################################
 
 ### Define variables
 
@@ -47,9 +67,13 @@ synthia-define_vars
 
 ################################################################################
 
-synthia-check_root
+### Log script
 
 dna-log_script
+
+################################################################################
+
+### Read conf settings
 
 dna-read_conf_settings
 
@@ -59,8 +83,7 @@ while getopts ":s" arguments; do
     case $arguments in
 		s)	skip_install_complete_check="-s"
 			;;
-		\?)	echo "${r-}${b-}Invalid option | -$OPTARG | for function | ${FUNCNAME[0]} |.${x-}"
-			echo
+		\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
 			dna-exit
 			;;
 	esac
@@ -73,39 +96,40 @@ OPTIND=1
 
 if [ -f /tmp/${proj_name}-backup-running-lockfile ]
 then
-    echo "${r-}${b-}It appears a ${proj_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted.${x-}"
-    echo
-    echo "${b-}If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted.${x-}"
-    echo
-    echo "${b-}Running multiple simultaneous backups is absolutely not supported and will make both fail.${x-}"
-    echo
-    if [ $interactive = "y" ]
+
+    dna-echo -e "It appears a ${proj_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted."
+    dna-echo -m "If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted."
+    dna-echo -m "Running multiple simultaneous backups is absolutely not supported and will make both fail."
+
+	if [ "${interactive}" = "y" ]
     then
         ask_for_boolean_question="If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
         dna-ask_for_boolean_def_no
         if [ "$ask_for_boolean_output" = "y" ]
         then
-            echo "${b-}Ok, continuing anyway...${x-}"
-            echo
+            dna-echo -m "Ok, continuing anyway..."
             export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
         else
-            echo "${b-}Ok, aborting...${x-}"
-            echo
+            dna-echo -m "Ok, aborting..."
             dna-exit
         fi
+
     else
-        echo "${b-}If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted.${x-}"
-        echo
-        echo "${b-}Alternatively, you can also log into this machine and | rm /tmp/${proj_name}-backup-running-lockfile |.${x-}"
-        echo
-        echo "${r-}${b-}Aborting backup for now.${x-}"
-        echo
+
+        dna-echo -m "If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted."
+        dna-echo -m "Alternatively, you can also log into this machine and | ${o-}rm /tmp/${proj_name}-backup-running-lockfile${n-} |."
+        dna-echo -e "Aborting backup for now."
         dna-exit
+
     fi
+
 else
-    ### set lockfile
+
+    ### Set lockfile.
+
     export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
-    touch $lockfile_set
+    touch "${lockfile_set}"
+
 fi
 
 ################################################################################
@@ -141,8 +165,7 @@ then
     if [ "${s3_restore_test_failed-null}" = "y" ]
     then
 
-        echo "${r-}${b-}Skipping S3 backup because of a previous test restore failure.${x-}"
-        echo
+        dna-echo -e "Skipping S3 backup because of a previous test restore failure."
 
         rm -r "$tmp_backup_dir"
 
@@ -171,7 +194,7 @@ dna-br_purge_dirs
 
 if [ -f "/tmp/${proj_name}-backup-running-lockfile" ]
 then
-    rm /tmp/${proj_name}-backup-running-lockfile
+    rm "/tmp/${proj_name}-backup-running-lockfile"
 fi
 
 if [ "${s3_restore_test_failed-null}" = "y" ]
@@ -179,5 +202,4 @@ then
     dna-exit
 fi
 
-echo "${g-}${b-}Backup complete!${x-}"
-echo
+dna-echo -s "Backup complete!"
