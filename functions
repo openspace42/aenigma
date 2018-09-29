@@ -563,7 +563,7 @@ aenigma-create_nodes_db_numbered() {
 		echo -e "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 		array_iter=$((array_iter + 1))
 	done
-	unset node_ipv4
+	unset IFS node_ipv4
 
 }
 
@@ -1961,15 +1961,26 @@ synthia-perform_installation() {
 			[SSLH]="/usr/sbin/service sslh restart"
 		)
 
+	add_service_check_bottom_spacing() {
+
+		if [ "${service}" = "APT" ]
+		then
+			echo
+		fi
+
+	}
+
 	for service in "${!service_checker_array[@]}"
 	do
 
 		set +e
 
-		if "${service_checker_array[$service]}"
+		if ${service_checker_array[$service]}
 		then
+			add_service_check_bottom_spacing
 			dna-echo -s "All | ${n-}${service}${g-} | operations completed successfully."
 		else
+			add_service_check_bottom_spacing
 			dna-echo -e "An error has occured during | ${n-}${service}${g-} | operations."
 			dna-echo -m "This was one of the last steps in this installation, so it's possible that your end result is at least partially working."
 			dna-echo -m "Review the output above and try running the installation again."
