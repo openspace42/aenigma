@@ -94,4 +94,4 @@ do
                 ${line}
         fi
 done
-unset IFS ### Testing
+IFS=$' \t\n'
