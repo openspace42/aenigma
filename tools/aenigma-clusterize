@@ -122,7 +122,7 @@ then
 	dna-echo -m "If that's the case then all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup."
 	dna-echo -m "Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted."
 else
-	dna-echo -s "${proj_name} | ${o-}clusterization mode${n-} | already set to: | ${n-}primary${g-} |."
+	dna-echo -s "${proj_name} | ${n-}clusterization mode${g-} | already set to: | ${n-}primary${g-} |."
 fi
 
 ask_for_boolean_question="Have you already started the ${proj_name} installation on your secondary node?"

@@ -695,7 +695,7 @@ aenigma-push_routing_info() {
 				echo
 				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
-				dna-echo -m "However, you can continue runing the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
+				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
 				ask_for_boolean_question="Continue with installation anyway?"
 	            dna-ask_for_boolean_def_yes
