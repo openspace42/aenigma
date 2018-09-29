@@ -94,3 +94,4 @@ do
                 ${line}
         fi
 done
+unset IFS ### Testing

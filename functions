@@ -563,7 +563,7 @@ aenigma-create_nodes_db_numbered() {
 		echo -e "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 		array_iter=$((array_iter + 1))
 	done
-	unset IFS node_ipv4
+	unset IFS node_ipv4 ### Testing
 
 }
 
@@ -633,7 +633,7 @@ aenigma-update_routing_info() {
 		/usr/sbin/ufw insert "${array_iter}" allow from "$node_ipv4"
 		array_iter=$((array_iter + 1))
 	done
-	unset node_ipv4 array_iter
+	unset IFS node_ipv4 array_iter ### Testing
 	echo
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
@@ -710,7 +710,7 @@ aenigma-push_routing_info() {
 		fi
 		array_iter=$((array_iter + 1))
 	done
-	unset node_ipv4
+	unset IFS node_ipv4 ### Testing
 
 	############################################################################
 
@@ -805,7 +805,7 @@ aenigma-perform_dns_checks() {
 
 		done
 
-		unset array_iter
+		unset IFS array_iter ### Testing
 
 	done
 
@@ -860,7 +860,7 @@ aenigma-perform_dns_checks() {
 
 		done
 
-		unset array_iter
+		unset IFS array_iter ### Testing
 
 	done
 
