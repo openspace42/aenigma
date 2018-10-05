@@ -697,9 +697,8 @@ aenigma-push_routing_info() {
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
-				ask_for_boolean_question="Continue with installation anyway?"
-	            dna-ask_for_boolean_def_yes
-	            if [ "$ask_for_boolean_output" = "y" ]
+	            dna-ask_for_boolean -d "y" -q "Continue with installation anyway?"
+	            if [ "${boolean_output}" = "y" ]
 	            then
 					dna-echo -m "Ok, continuing..."
 					### Remove node from nodes_db_online
@@ -714,6 +713,113 @@ aenigma-push_routing_info() {
 	done
 	unset node_ipv4
 	IFS=$' \t\n'
+
+	############################################################################
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+        bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-update_routing_info
+"
+
+	}
+
+	############################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+aenigma-exec
+exit
+END
+		fi
+		echo
+	done
+	unset online_node_ipv4
+
+	############################################################################
+
+}
+
+aenigma-remove_offline_nodes() {
+
+	############################################################################
+
+	### Check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
+
+	aenigma-create_nodes_db_online
+
+	array_iter=1
+	IFS=$'\n'
+	set -f
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	do
+		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		then
+			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
+			then
+				echo
+				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -m "If you have decommissioned this server or intend to do so, you can remove this node from this primary node's configuration about the cluster."
+				dna-echo -m "Data on such secondary node will not be affected in any way, but this primary node won't consider it part of the cluster during future operations."
+				dna-echo -m "If somehow such secondary node is still running, even though we cannot reach it right now, it will still actually take part in the ejabberd cluster."
+	            dna-ask_for_boolean -d "y" -q "Would you like to remove this node from the cluster database now?"
+	            if [ "${boolean_output}" = "y" ]
+	            then
+					dna-echo -m "Ok, continuing..."
+					initial_nodes_number=$(wc -l < "${nodes_db_ipv4_path}")
+					### Remove node from nodes_db files
+					sed -i "${node_number}d" "${nodes_db_ipv4_path}"
+					sed -i "${node_number}d" "${nodes_db_ipv6_path}"
+					sed -i "${node_number}d" "${nodes_db_numbered_path}"
+					### Clear nodes_db_online
+					if [ -f "${nodes_db_online_path}" ]
+					then
+						rm "${nodes_db_online_path}"
+						touch "${nodes_db_online_path}"
+					fi
+					if [ "${node_number}" = "${initial_nodes_number}" ]
+					then
+						dna-echo -s "Deleted node was the last node in the list."
+						dna-echo -m "Therefore no node order rearrangment is required."
+					else
+						dna-echo -m "Deleted node has now left an empty space for node number | ${o-}${node_number}${n-} |."
+						dna-echo -m ""
+
+				else
+					dna-echo -m "Ok, aborting installation..."
+					dna-exit
+				fi
+			fi
+		fi
+		array_iter=$((array_iter + 1))
+	done
+	unset node_ipv4
+	IFS=$' \t\n'
+
+
+
+	############################################################################
+
+	dna-echo -m "Now pushing routing info to remaining online nodes to update them about this change."
+
+	aenigma-push_routing_info
+
+	############################################################################
+
+
+
+
 
 	############################################################################
 
@@ -1114,7 +1220,7 @@ synthia-perform_installation() {
 
 	################################################################################
 
-	dna-check_sslh_connection
+	dna-abort_on_sslh_session
 
 	dna-check_distro_ubuntu_18
 
@@ -1185,9 +1291,8 @@ synthia-perform_installation() {
 			dna-echo -m "Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation."
 		else
 			dna-echo -m "Having chosen that this server will be a secondary node for your ${proj_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured."
-			ask_for_boolean_question="Is the primary node for this ${proj_name} already up and running and perfectly configured?"
-            dna-ask_for_boolean_def_yes
-            if [ "$ask_for_boolean_output" = "y" ]
+            dna-ask_for_boolean -d "y" -q "Is the primary node for this ${proj_name} already up and running and perfectly configured?"
+            if [ "${boolean_output}" = "y" ]
             then
 				dna-echo -m "Ok, let's then continue on with the configuration of this secondary node and proceed to have it join the cluster lead by your already running primary node..."
             else
@@ -1245,9 +1350,8 @@ synthia-perform_installation() {
 	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 
-			ask_for_boolean_question="Are you absolutely sure you want to change the XMPP domain now?"
-            dna-ask_for_boolean_def_no
-            if [ "$ask_for_boolean_output" = "y" ]
+            dna-ask_for_boolean -d "n" -q "Are you absolutely sure you want to change the XMPP domain now?"
+            if [ "${boolean_output}" = "y" ]
             then
 	            dna-echo -m "Ok, proceeding..."
 	        else
@@ -1275,9 +1379,8 @@ synthia-perform_installation() {
 			dna-echo -m "This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${proj_name} into a cluster should you ever choose to do so."
 			dna-echo -m "Your current hostname is:"
 			dna-echo -m " | ${y-}${curr_host_name}${n-} | "
-			ask_for_boolean_question="Do you want to correctly set your hostname automatically?"
-            dna-ask_for_boolean_def_yes
-            if [ "$ask_for_boolean_output" = "y" ]
+            dna-ask_for_boolean -d "y" -q "Do you want to correctly set your hostname automatically?"
+            if [ "${boolean_output}" = "y" ]
             then
 			    dna-echo -m "Ok, setting hostname to: | ${y-}ae01.${domain}${n-} |."
 			    echo "ae01.${domain}" > "/etc/hostname"
@@ -1308,9 +1411,8 @@ synthia-perform_installation() {
 
 		dna-echo -m "----------------------------------------------------------------"
 
-		ask_for_boolean_question="Does everything look all right?"
-		dna-ask_for_boolean_def_yes
-		if [ "$ask_for_boolean_output" = "y" ]
+		dna-ask_for_boolean -d "y" -q "Does everything look all right?"
+		if [ "${boolean_output}" = "y" ]
 		then
 		    dna-echo -m "Ok, continuing."
 		else
@@ -1343,9 +1445,8 @@ synthia-perform_installation() {
 		dna-echo -m "If however you've previously used this machine to host a standalone installation or not-yet-clusterized data, this will be permanently lost."
 		dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine."
 
-		ask_for_boolean_question="Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
-		dna-ask_for_boolean_def_no
-		if [ "$ask_for_boolean_output" = "y" ]
+		dna-ask_for_boolean -d "n" -q "Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
+		if [ "${boolean_output}" = "y" ]
 		then
 			dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
 		else
@@ -1917,9 +2018,8 @@ synthia-perform_installation() {
 
 		if [ -f "${conf_xmpp_dir}/ejabberd_admin_password_set" ]
 		then
-			ask_for_boolean_question="Leave ejabberd admin user password the same as previously set?"
-            dna-ask_for_boolean_def_yes
-            if [ "$ask_for_boolean_output" = "y" ]
+            dna-ask_for_boolean -d "y" -q "Leave ejabberd admin user password the same as previously set?"
+            if [ "${boolean_output}" = "y" ]
             then
 		        dna-echo -m "Ok, skipping ejabberd admin user password reset."
 		        ejab_admin_pwreset="n"
@@ -2022,9 +2122,8 @@ synthia-perform_installation() {
 		then
 
 			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding your secondary nodes."
-			ask_for_boolean_question="Are you ready to do so now?"
-            dna-ask_for_boolean_def_yes
-            if [ "$ask_for_boolean_output" = "y" ]
+            dna-ask_for_boolean -d "y" -q "Are you ready to do so now?"
+            if [ "${boolean_output}" = "y" ]
             then
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 				bash "${tools_dir}/${proj_name}-clusterize"

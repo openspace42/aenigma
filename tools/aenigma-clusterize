@@ -79,6 +79,8 @@ dna-read_conf_settings
 
 ################################################################################
 
+### Touch temp dir
+
 dna-touch_temp_dir
 
 ################################################################################
@@ -88,9 +90,8 @@ dna-touch_temp_dir
 if [ ! "${cluster_enabled-null}" = "cluster" ]
 then
 	dna-echo -e "${proj_name} was not installed in cluster mode."
-	ask_for_boolean_question="Do you wish to turn this instance into a cluster one?"
-	dna-ask_for_boolean_def_yes
-	if [ "$ask_for_boolean_output" = "y" ]
+	dna-ask_for_boolean -d "y" -q "Do you wish to turn this instance into a cluster one?"
+	if [ "${boolean_output}" = "y" ]
 	then
 		dna-echo -m "Ok, setting clusterization to enabled."
 		dna-set_option -o cluster_enabled -p cluster -s "cluster"
@@ -100,14 +101,15 @@ then
 	fi
 fi
 
-### Check / set clusterization mode to primary
+################################################################################
+
+### Ensure cluster is enabled and this is the primary node.
 
 if [ -z "${cluster_mode-}" ]
 then
 	dna-echo -m "This script must only be run on the primary node of ${proj_name}."
-	ask_for_boolean_question="Do you confirm that this will in fact be the primary node for your ${proj_name} instance?"
-	dna-ask_for_boolean_def_no
-	if [ "$ask_for_boolean_output" = "y" ]
+	dna-ask_for_boolean -d "n" -q "Do you confirm that this will in fact be the primary node for your ${proj_name} instance?"
+	if [ "${boolean_output}" = "y" ]
 	then
 		dna-echo -m "Ok, proceeding..."
 		dna-set_option -o cluster_mode -p cluster -s "primary"
@@ -125,9 +127,10 @@ else
 	dna-echo -s "${proj_name} | ${n-}clusterization mode${g-} | already set to: | ${n-}primary${g-} |."
 fi
 
-ask_for_boolean_question="Have you already started the ${proj_name} installation on your secondary node?"
-dna-ask_for_boolean_def_yes
-if [ "$ask_for_boolean_output" = "y" ]
+################################################################################
+
+dna-ask_for_boolean -d "y" -q "Have you already started the ${proj_name} installation on your secondary node?"
+if [ "${boolean_output}" = "y" ]
 then
 	dna-echo -m "Ok, continuing..."
 else
@@ -171,9 +174,8 @@ then
 	### Specified secondary node is already registered
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
 	dna-echo -m "The server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | is already registered as part of this cluster with node number | ${o-}${secondary_node_number}${n-} |."
-	ask_for_boolean_question="Would you like to re-provision it?"
-	dna-ask_for_boolean_def_yes
-	if [ "$ask_for_boolean_output" = "y" ]
+	dna-ask_for_boolean -d "y" -q "Would you like to re-provision it?"
+	if [ "${boolean_output}" = "y" ]
 	then
 		dna-echo -m "Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |..."
 	else
@@ -273,9 +275,8 @@ if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChec
 then
 	dna-echo -s "Token on secondary node found."
 	dna-echo -m "Its value is: | ${y-}${secondary_node_token}${n-} |."
-	ask_for_boolean_question="Does this token match what you see on the secondary node?"
-	dna-ask_for_boolean_def_yes
-	if [ "$ask_for_boolean_output" = "y" ]
+	dna-ask_for_boolean -d "y" -q "Does this token match what you see on the secondary node?"
+	if [ "${boolean_output}" = "y" ]
 	then
 		dna-echo -m "Ok, continuing..."
 	else

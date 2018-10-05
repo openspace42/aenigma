@@ -103,9 +103,8 @@ then
 
 	if [ "${interactive}" = "y" ]
     then
-        ask_for_boolean_question="If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
-        dna-ask_for_boolean_def_no
-        if [ "$ask_for_boolean_output" = "y" ]
+        dna-ask_for_boolean -d "n" -q "If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
+        if [ "${boolean_output}" = "y" ]
         then
             dna-echo -m "Ok, continuing anyway..."
             export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"

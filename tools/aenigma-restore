@@ -109,11 +109,9 @@ then
 	echo "${b-}If this is not the case, you must run [or finish running] the install script first.${x-}"
 	echo
 
-	ask_for_boolean_question="Run this script in bootstrap mode to restore your previous instance from S3?"
+	dna-ask_for_boolean -d "n" -q "Run this script in bootstrap mode to restore your previous instance from S3?"
 
-	dna-ask_for_boolean_def_no
-
-	if [ "$ask_for_boolean_output" = "y" ]
+	if [ "${boolean_output}" = "y" ]
 	then
 		echo "${b-}Ok, continuing in bootstrap mode.${x-}"
 		echo

@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+### Set bash environment error management.
+
+set -eu
+
+################################################################################
+
+### Add padding to output.
+
+echo
+
+################################################################################
+
+### Determine script execution directory and install directory.
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
+then
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
+		echo
+        exit 1
+	fi
+fi
+
+### Source local functions file.
+
+. "$exec_dir_root/functions"
+
+################################################################################
+
+### Define formatting.
+
+synthia-define_formatting
+
+################################################################################
+
+### Check for root user runtime.
+
+synthia-check_root
+
+################################################################################
+
+### Source dna.
+
+synthia-source_dna
+
+################################################################################
+
+### Define variables.
+
+synthia-define_vars
+
+################################################################################
+
+### Head script.
+
+dna-head_script
+
+################################################################################
+
+### Read conf settings.
+
+dna-read_conf_settings
+
+################################################################################
+
+### Touch temp dir.
+
+dna-touch_temp_dir
+
+################################################################################
+
+### Ensure cluster is enabled and this is the primary node.
+
+if [ ! "${cluster_enabled-null}" = "cluster" ]
+then
+	dna-echo -e "${proj_name} was not installed in cluster mode."
+	dna-echo -m "This script is only useful when running in cluster mode."
+	dna-exit
+fi
+
+if [ "${cluster_mode-null}" = "secondary" ]
+then
+	dna-echo -e "This script must only be run on the primary node of ${proj_name}."
+	dna-exit
+fi
+
+################################################################################
+
+if [ ! -f "${nodes_db_ipv4_path}" ]
+then
+	dna-echo -e " | ${n-}nodes_db${r-} | file not found."
+	dna-echo -m "Either the initial installation was never completed or the file was somehow removed."
+	dna-echo -m "Re-run the installation to fix this."
+	dna-exit
+fi
+
+################################################################################
+
+dna-ask_for_boolean -d "y" -q "Would you like to run an automated test to check for any unresponsive nodes?"
+if [ "${boolean_output}" = "y" ]
+then
+	dna-echo -m "Ok, running automated test."
+	aenigma-create_nodes_db_online
+
+
+
+NUMOFLINES=$(wc -l < "${nodes_db_}")
