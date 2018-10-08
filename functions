@@ -393,6 +393,7 @@ aenigma-install_sslh() {
 
 aenigma-add_ejabberd_repo() {
 
+	dna-check_dpkg_availability
 	currdistro="$(lsb_release --codename | cut -f2)"
 	apt-get -y install apt-transport-https || true
 	echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
@@ -1657,6 +1658,8 @@ synthia-perform_installation() {
 				fi
 
 			fi
+
+			unset value
 
 		fi
 
