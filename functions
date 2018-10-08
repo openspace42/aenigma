@@ -426,16 +426,16 @@ aenigma-install_ejabberd_config() {
 
 	aenigma-get_ejabberd_candidate_version
 
-	source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-$ejabberd_candidate_version.yml"
+	source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-${ejabberd_candidate_version}.yml"
 
-	if [ ! -f $source_ejab_conf_file ]
+	if [ ! -f "${source_ejab_conf_file}" ]
 	then
-		### Fallback to ejabberd.yml for v18.06 in case the ejabberd candidate install version isn't among the ones we have config files for
-		source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-18.06.yml"
+		### Fallback to ejabberd.yml for v18.09 in case the ejabberd candidate install version isn't among the ones we have config files for
+		source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-18.09.yml"
 	fi
 
-	mkdir -p /etc/ejabberd/
-	cp "$source_ejab_conf_file" "/etc/ejabberd/ejabberd.yml"
+	mkdir -p "/etc/ejabberd/"
+	cp "${source_ejab_conf_file}" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
 
