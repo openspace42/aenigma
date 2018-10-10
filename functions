@@ -698,14 +698,14 @@ aenigma-push_routing_info() {
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
-	            dna-ask_for_boolean -d "y" -q "Continue with installation anyway?"
+	            dna-ask_for_boolean -d "y" -q "Continue anyway?"
 	            if [ "${boolean_output}" = "y" ]
 	            then
-					dna-echo -m "Ok, continuing..."
+					dna-echo -n -m "Ok, continuing..."
 					### Remove node from nodes_db_online
 					sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
 				else
-					dna-echo -m "Ok, aborting installation..."
+					dna-echo -m "Ok, aborting..."
 					dna-exit
 				fi
 			fi
@@ -783,7 +783,7 @@ aenigma-push_certs() {
 		            dna-ask_for_boolean -d "y" -q "Continue anyway with all other nodes now?"
 		            if [ "${boolean_output}" = "y" ]
 		            then
-						dna-echo -m "Ok, continuing..."
+						dna-echo -n -m "Ok, continuing..."
 						### Remove node from nodes_db_online
 						sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
 					else
@@ -813,6 +813,7 @@ aenigma-push_certs() {
         bash openspace42/aenigma/tools/aenigma-exec -c "
 chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
 chmod -R 700 "${ssl_project_dir}"
+dna-echo -m "Now restarting ejabberd..."
 /usr/sbin/service ejabberd restart
 "
 

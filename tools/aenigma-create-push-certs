@@ -180,6 +180,8 @@ fi
 
 ### Restart ejabberd
 
+dna-echo -m "Now restarting ejabberd..."
+
 /usr/sbin/service ejabberd restart
 
 ### Push certs to other nodes
