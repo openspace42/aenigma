@@ -69,7 +69,7 @@ synthia-define_vars
 
 ### Head script
 
-dna-head_script
+dna-log_script
 
 ################################################################################
 
@@ -82,6 +82,38 @@ dna-read_conf_settings
 if [ ! "${cluster_mode-null}" = "primary" ]
 then
 	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
+	dna-exit
+fi
+
+################################################################################
+
+### Fetch IP addresses for this machine
+
+dna-get_public_ipv4
+
+dna-check_ipv6_connectivity
+
+### Check to see if this machine's IPs have changed since last install / clusterization
+
+this_registered_ipv4="$(cat openspace42/aenigma/conf/cluster/nodes/nodes_db_ipv4 | head -1 | xargs)"
+
+this_registered_ipv6="$(cat openspace42/aenigma/conf/cluster/nodes/nodes_db_ipv6 | head -1 | xargs)"
+
+if [ ! "${this_ipv4}" = "${this_registered_ipv4}" ]
+then
+	dna-echo -e "The public IPv4 address for this machine appears to have changed since the last install or the last run of the clusterize script."
+	dna-echo -m "It now appears to be: | ${y-}${this_ipv4}${n-} |."
+	dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv4}${n-} |."
+	dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
+	dna-exit
+fi
+
+if [ ! "${this_ipv6}" = "${this_registered_ipv6}" ]
+then
+	dna-echo -e "The public IPv6 address for this machine appears to have changed since the last install or the last run of the clusterize script."
+	dna-echo -m "It now appears to be: | ${y-}${this_ipv6}${n-} |."
+	dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv6}${n-} |."
+	dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
 	dna-exit
 fi
 

@@ -962,6 +962,7 @@ aenigma-remove_offline_nodes() {
 					else
 						dna-echo -m "Deleted node has now left an empty space for node number | ${o-}${node_number}${n-} |."
 						dna-echo -m ""
+					fi
 
 				else
 					dna-echo -m "Ok, aborting installation..."
