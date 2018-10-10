@@ -772,7 +772,7 @@ aenigma-push_certs() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -ri /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_project_dir}"
+			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
 			then
 				echo
 				dna-echo -e "Node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
