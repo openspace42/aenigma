@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+### Set bash environment error management
+
+set -eu
+
+################################################################################
+
+### Add padding to output
+
+echo
+
+################################################################################
+
+### Determine script execution directory and install directory.
+
+exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
+then
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
+		echo
+        exit 1
+	fi
+fi
+
+### Source local functions file.
+
+. "$exec_dir_root/functions"
+
+################################################################################
+
+### Define formatting
+
+synthia-define_formatting
+
+################################################################################
+
+### Check for root user runtime
+
+synthia-check_root
+
+################################################################################
+
+### Source dna
+
+synthia-source_dna
+
+################################################################################
+
+### Define variables
+
+synthia-define_vars
+
+################################################################################
+
+### Head script
+
+dna-head_script
+
+################################################################################
+
+### Read conf settings
+
+dna-read_conf_settings
+
+################################################################################
+
+if [ ! "${cluster_mode-null}" = "primary" ]
+then
+	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
+	dna-exit
+fi
+
+################################################################################
+
+### Create all-in-one TLS certs for ejabberd
+
+operation_message="creating all-in-one TLS file from LetsEncrypt wildcard cert for ejabberd"
+
+dna-echo_operation -h
+
+for le_cert_domain_full in "$le_live_dir"/*
+do
+
+    le_cert_domain="$(echo ${le_cert_domain_full} | sed 's:.*/::')"
+
+    ############################################################################
+
+    dna-echo -m "Now creating all-in-one TLS certificate file for ${le_cert_domain}..."
+
+    touch "${ssl_project_dir}/${le_cert_domain}.pem"
+
+    cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${ssl_project_dir}/${le_cert_domain}.pem"
+    cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${ssl_project_dir}/${le_cert_domain}.pem"
+
+    dna-echo -s "Finished creating all-in-one TLS certificate file for ${le_cert_domain}."
+
+    ############################################################################
+
+    dna-echo -m "Now copying individual fullchain and privkey files for ${le_cert_domain}..."
+
+    mkdir -p "${ssl_project_dir}/${le_cert_domain}.d/"
+
+    cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
+    cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
+
+    dna-echo -s "Finished copying individual fullchain and privkey files for ${le_cert_domain}."
+
+    ############################################################################
+
+done
+
+### Set permissions
+
+chown -R "ejabberd:ejabberd" "${ssl_project_dir}" 2> /dev/null || true
+chmod -R 700 "${ssl_project_dir}"
+
+dna-echo_operation -t
+
+################################################################################
+
+### Verify output
+
+if [ -f "${ssl_project_dir}/${domain}.pem" ]
+then
+    dna-echo -s "TLS certificate for ${domain} found in | ${n-}${ssl_project_dir}/${domain}.pem${g-} |."
+    sleep 1
+else
+    dna-echo -e "Something went wrong provisioning the wildcard TLS certificate for ${domain}."
+    dna-exit
+fi
+
+################################################################################
+
+### Push certs to other nodes

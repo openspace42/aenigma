@@ -46,7 +46,7 @@ synthia-define_vars() {
 	export nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
 	export nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
 	export nodes_db_numbered_path="${conf_cluster_nodes_dir}/nodes_db_numbered"
-	export nodes_db_online_path="${temp_dir}/nodes_db_online"
+	export nodes_db_online_path="${tmp_project_dir}/nodes_db_online"
 
 	############################################################################
 	############################################################################
@@ -361,9 +361,9 @@ aenigma-install_sslh() {
 	/usr/sbin/service sslh stop &> /dev/null || true
 	ssh_port="$(cat $os_conf_dir/ssh_port)"
 	apt-get -y install libwrap0-dev libconfig-dev || true
-	rm -r "$temp_dir/sslh" &> /dev/null || true
-	git clone https://github.com/yrutschle/sslh "$temp_dir/sslh"
-	( cd "$temp_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
+	rm -r "$tmp_project_dir/sslh" &> /dev/null || true
+	git clone https://github.com/yrutschle/sslh "$tmp_project_dir/sslh"
+	( cd "$tmp_project_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
 	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
 	if [ $ipv6_available = "y" ]
 	then
@@ -382,7 +382,7 @@ aenigma-install_sslh() {
 	chmod +x /etc/init.d/sslh
 	update-rc.d sslh defaults
 	systemctl daemon-reload
-	rm -r "$temp_dir/sslh"
+	rm -r "$tmp_project_dir/sslh"
 	mkdir -p /var/run/sslh
 	touch /var/run/sslh/sslh.pid
 	service sslh restart || true
@@ -475,12 +475,12 @@ aenigma-set_permissions() {
 		chmod -R 755 "/var/log/ejabberd/"
 	fi
 
-	### $tls_dir
+	### $ssl_project_dir
 
 	if id "ejabberd" >/dev/null 2>&1
 	then
-		chown -R "ejabberd:ejabberd" "${tls_dir}"
-		chmod -R 700 "${tls_dir}"
+		chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
+		chmod -R 700 "${ssl_project_dir}"
 	fi
 
 	### ~/.ssh/
@@ -657,7 +657,7 @@ aenigma-update_routing_info() {
 
 }
 
-aenigma-create_nodes_db_online() {
+aenigma-touch_nodes_db_online() {
 
 	### This function will always get invoked at the beginning push_routing_info() in the later event that an existing node cannot be reached at the time of running a new clusterization.
 	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed fromit, for use by subsequent functions, until the end of the clusterize script.
@@ -679,16 +679,16 @@ aenigma-push_routing_info() {
 	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration
 	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
 
-	aenigma-create_nodes_db_online
+	aenigma-touch_nodes_db_online
 
 	array_iter=1
 	IFS=$'\n'
 	set -f
 
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
 		node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
@@ -731,7 +731,86 @@ aenigma-update_routing_info
 
 	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 	do
-		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+aenigma-exec
+exit
+END
+		fi
+		echo
+	done
+	unset online_node_ipv4
+
+	############################################################################
+
+}
+
+aenigma-push_routing_info_new() {
+
+	############################################################################
+
+
+
+	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration
+	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
+
+	aenigma-touch_nodes_db_online
+
+	array_iter=1
+	IFS=$'\n'
+	set -f
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
+	do
+		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		then
+			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
+			then
+				echo
+				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
+				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
+				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
+	            dna-ask_for_boolean -d "y" -q "Continue with installation anyway?"
+	            if [ "${boolean_output}" = "y" ]
+	            then
+					dna-echo -m "Ok, continuing..."
+					### Remove node from nodes_db_online
+					sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
+				else
+					dna-echo -m "Ok, aborting installation..."
+					dna-exit
+				fi
+			fi
+		fi
+		array_iter=$((array_iter + 1))
+	done
+	unset node_ipv4
+	IFS=$' \t\n'
+
+	############################################################################
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+        bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-update_routing_info
+"
+
+	}
+
+	############################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
@@ -755,16 +834,16 @@ aenigma-remove_offline_nodes() {
 
 	### Check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
 
-	aenigma-create_nodes_db_online
+	aenigma-touch_nodes_db_online
 
 	array_iter=1
 	IFS=$'\n'
 	set -f
 
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
 		node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
@@ -838,7 +917,7 @@ aenigma-update_routing_info
 
 	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 	do
-		### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
@@ -1033,7 +1112,7 @@ backup_locally_loop() {
 	then
 		for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 		do
-			### Ensure we don't try connecting to ourselves [therefore ignoring the first line of nodes_db_ipv4].
+			### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 			then
 				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
@@ -1229,9 +1308,9 @@ synthia-perform_installation() {
 
 	################################################################################
 
-	dna-touch_temp_dir
+	dna-touch_tmp_project_dir
 
-	mkdir -p "${tls_dir}"
+	mkdir -p "${ssl_project_dir}"
 
 	############################################################################
 
@@ -1509,20 +1588,15 @@ synthia-perform_installation() {
 
 		dna-provision_le_wildcard_cert -d "${domain}"
 
+		########################################################################
+
 		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
-		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}_ejabberd"
+		ln -s "${tools_dir}/${proj_name}-create-push-certs" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
 
-		bash "/etc/letsencrypt/renewal-hooks/post/${proj_name}_ejabberd"
+		### Execute the post-renewal script now to generate the all-in-one TLS cert for ejabberd
 
-	    if [ -f "${tls_dir}/${domain}.pem" ]
-	    then
-	        dna-echo -s "External TLS certificate for ${domain} found in | ${n-}${tls_dir}/${domain}.pem${g-} |."
-			sleep 1
-	    else
-	        dna-echo -e "Something went wrong provisioning the wildcard TLS certificate for ${domain}."
-	        dna-exit
-	    fi
+		bash "${tools_dir}/${proj_name}-create-push-certs"
 
 		clear
 
@@ -1540,14 +1614,23 @@ synthia-perform_installation() {
 
 		########################################################################
 
+		### Clear any letsencrypt post-renewal-hook if present from a previous installation in primary node mode
+
+		if [ -f "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs" ]
+		then
+			rm "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
+		fi
+
+		########################################################################
+
 		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking
 
 		if [ "${ipv6_available}" = "y" ]
 		then
-			echo "${this_ipv6}" > "${temp_dir}/aenigma-cluster-token"
+			echo "${this_ipv6}" > "${tmp_project_dir}/aenigma-cluster-token"
 		else
 			aenigma_cluster_token="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-			echo "${aenigma_cluster_token}" > "${temp_dir}/aenigma-cluster-token"
+			echo "${aenigma_cluster_token}" > "${tmp_project_dir}/aenigma-cluster-token"
 		fi
 
 		########################################################################
@@ -1580,7 +1663,7 @@ synthia-perform_installation() {
 
 			check_condition() {
 
-				if [ -f "${temp_dir}/aenigma-cluster-ssh-connection-successful" ]
+				if [ -f "${tmp_project_dir}/aenigma-cluster-ssh-connection-successful" ]
 				then
 					condition_verified="y"
 				fi
@@ -1593,7 +1676,7 @@ synthia-perform_installation() {
 			then
 				dna-echo -s "Primary node SSH connection to this node succeeded. Continuing installation..."
 				primary_node_ssh_connection="ok"
-				rm -r "${temp_dir}/aenigma-cluster-ssh-connection-successful"
+				rm -r "${tmp_project_dir}/aenigma-cluster-ssh-connection-successful"
 			else
 				dna-echo -e "The primary node was not able to connect to this node with the SSH public key already saved on this machine."
 				dna-echo -m "You will now need to specify the SSH public key displayed on your primary node."
@@ -1615,7 +1698,7 @@ synthia-perform_installation() {
 				if [ "${input}" = "skip" ]
 				then
 
-					if [ -f "${temp_dir}/aenigma-cluster-ssh-connection-successful" ]
+					if [ -f "${tmp_project_dir}/aenigma-cluster-ssh-connection-successful" ]
 					then
 						valid="y"
 					else
@@ -1669,7 +1752,7 @@ synthia-perform_installation() {
 
 		dna-echo -m "A token has been generated to verify a correct connection to this machine from the primary node."
 		dna-echo -m "You'll be asked to verify it matches with the one that will shortly be displayed on the primary node."
-		dna-echo -m "Its value is: | ${y-}$(cat ${temp_dir}/aenigma-cluster-token)${n-} |."
+		dna-echo -m "Its value is: | ${y-}$(cat ${tmp_project_dir}/aenigma-cluster-token)${n-} |."
 
 		dna-echo -m "After that, continue the setup on the primary node and come back here when finished."
 
@@ -1679,7 +1762,7 @@ synthia-perform_installation() {
 
 		check_condition() {
 
-			if [ -f "${temp_dir}/aenigma-cluster-primary-node-setup-complete" ]
+			if [ -f "${tmp_project_dir}/aenigma-cluster-primary-node-setup-complete" ]
 			then
 				condition_verified="y"
 			fi
@@ -1687,7 +1770,7 @@ synthia-perform_installation() {
 		}
 
 		dna-wait_for -d "Now waiting for setup on the primary node to be complete..."
-		rm -r "${temp_dir}/aenigma-cluster-primary-node-setup-complete"
+		rm -r "${tmp_project_dir}/aenigma-cluster-primary-node-setup-complete"
 		dna-echo -s "Primary node setup complete. Now continuing installation..."
 		unset wait_output
 		sleep 1
@@ -2172,7 +2255,7 @@ synthia-perform_installation() {
 
 	############################################################################
 
-	dna-remove_temp_dir
+	dna-remove_tmp_project_dir
 
 	############################################################################
 	############################################################################

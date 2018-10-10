@@ -81,7 +81,7 @@ dna-read_conf_settings
 
 ### Touch temp dir.
 
-dna-touch_temp_dir
+dna-touch_tmp_project_dir
 
 ################################################################################
 
@@ -116,7 +116,7 @@ dna-ask_for_boolean -d "y" -q "Would you like to run an automated test to check 
 if [ "${boolean_output}" = "y" ]
 then
 	dna-echo -m "Ok, running automated test."
-	aenigma-create_nodes_db_online
+	aenigma-touch_nodes_db_online
 
 
 
