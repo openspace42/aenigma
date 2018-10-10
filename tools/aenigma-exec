@@ -67,9 +67,19 @@ synthia-define_vars
 
 ################################################################################
 
-### Read arguments
+### Head script
 
-if [ $# -eq 0 ]
+dna-log_script
+
+################################################################################
+
+### Read conf settings
+
+dna-read_conf_settings
+
+################################################################################
+
+if [ ! "${cluster_mode-null}" = "primary" ]
 then
     dna-echo -e "No argument supplied for function | ${n-}${FUNCNAME[0]}${r-} |."
     dna-echo -m "This script must not be run directly."

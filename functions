@@ -737,6 +737,10 @@ aenigma-update_routing_info
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
 	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
 aenigma-exec
 exit
 END
@@ -783,7 +787,7 @@ aenigma-push_certs() {
 						### Remove node from nodes_db_online
 						sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
 					else
-						dna-echo -m "Ok, aborting installation..."
+						dna-echo -m "Ok, aborting..."
 						dna-exit
 					fi
 				else
@@ -807,7 +811,7 @@ aenigma-push_certs() {
 		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
 
         bash openspace42/aenigma/tools/aenigma-exec -c "
-chown -R "ejabberd:ejabberd" "${ssl_project_dir}" 2> /dev/null || true
+chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
 chmod -R 700 "${ssl_project_dir}"
 /usr/sbin/service ejabberd restart
 "
@@ -824,6 +828,10 @@ chmod -R 700 "${ssl_project_dir}"
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
 	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
 aenigma-exec
 exit
 END

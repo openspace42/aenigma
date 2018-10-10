@@ -178,6 +178,10 @@ fi
 
 ################################################################################
 
+### Restart ejabberd
+
+/usr/sbin/service ejabberd restart
+
 ### Push certs to other nodes
 
 aenigma-push_certs
