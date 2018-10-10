@@ -67,7 +67,7 @@ synthia-define_vars
 
 ################################################################################
 
-### Head script
+### Log script
 
 dna-log_script
 
@@ -79,7 +79,9 @@ dna-read_conf_settings
 
 ################################################################################
 
-if [ ! "${cluster_mode-null}" = "primary" ]
+### Read arguments
+
+if [ $# -eq 0 ]
 then
     dna-echo -e "No argument supplied for function | ${n-}${FUNCNAME[0]}${r-} |."
     dna-echo -m "This script must not be run directly."
@@ -87,9 +89,10 @@ then
     dna-exit
 fi
 
-while getopts ":c:" arguments; do
+while getopts ":c:" arguments
+do
     case $arguments in
-        c)	commands="$OPTARG"
+        c)	commands="${OPTARG}"
 	        ;;
         \?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
 	        dna-exit
