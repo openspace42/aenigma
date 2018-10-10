@@ -116,7 +116,7 @@ dna-ask_for_boolean -d "y" -q "Would you like to run an automated test to check 
 if [ "${boolean_output}" = "y" ]
 then
 	dna-echo -m "Ok, running automated test."
-	aenigma-touch_nodes_db_online
+	aenigma-refresh_nodes_db_online
 
 
 

@@ -632,7 +632,7 @@ aenigma-update_routing_info() {
 	set -f
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
-		/usr/sbin/ufw insert "${array_iter}" allow from "$node_ipv4"
+		/usr/sbin/ufw insert "${array_iter}" allow from "${node_ipv4}"
 		array_iter=$((array_iter + 1))
 	done
 	unset node_ipv4 array_iter
@@ -657,10 +657,10 @@ aenigma-update_routing_info() {
 
 }
 
-aenigma-touch_nodes_db_online() {
+aenigma-refresh_nodes_db_online() {
 
 	### This function will always get invoked at the beginning push_routing_info() in the later event that an existing node cannot be reached at the time of running a new clusterization.
-	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed fromit, for use by subsequent functions, until the end of the clusterize script.
+	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed from it, for use by subsequent functions, until the end of the clusterize script.
 
 	if [ -f "${nodes_db_online_path}" ]
 	then
@@ -676,10 +676,10 @@ aenigma-push_routing_info() {
 
 	############################################################################
 
-	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration
-	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
+	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration.
+	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online.
 
-	aenigma-touch_nodes_db_online
+	aenigma-refresh_nodes_db_online
 
 	array_iter=1
 	IFS=$'\n'
@@ -749,6 +749,93 @@ END
 
 }
 
+aenigma-push_certs() {
+
+	############################################################################
+
+	### Push LetsEncrypt TLS certificate files to all secondary nodes.
+	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online.
+
+	aenigma-refresh_nodes_db_online
+
+	array_iter=1
+	IFS=$'\n'
+	set -f
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
+	do
+		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		then
+			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -ri /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_project_dir}"
+			then
+				echo
+				dna-echo -e "Node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -m "Ensure such node is actually online and when it is execute this script again by running:"
+				dna-echo -m " | ${y-}${tools_dir}/${proj_name}-create-push-certs${n-} | "
+				if [ "${interactive}" = "y" ]
+				then
+		            dna-ask_for_boolean -d "y" -q "Continue anyway with all other nodes now?"
+		            if [ "${boolean_output}" = "y" ]
+		            then
+						dna-echo -m "Ok, continuing..."
+						### Remove node from nodes_db_online
+						sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
+					else
+						dna-echo -m "Ok, aborting installation..."
+						dna-exit
+					fi
+				else
+					dna-echo -e "Skipping node | ${n-}${node_number}${r-} | and continuing with all others now."
+					### Send an alert email.
+			        dna-send_mail -s "aenigma: node: | ${node_number} | offline" \
+			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [this current machine] and execute: | ${tools_dir}/${proj_name}-create-push-certs|." \
+			        -r "${admin_mail}"
+				fi
+			fi
+		fi
+		array_iter=$((array_iter + 1))
+	done
+	unset node_ipv4
+	IFS=$' \t\n'
+
+	############################################################################
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+        bash openspace42/aenigma/tools/aenigma-exec -c "
+chown -R "ejabberd:ejabberd" "${ssl_project_dir}" 2> /dev/null || true
+chmod -R 700 "${ssl_project_dir}"
+/usr/sbin/service ejabberd restart
+"
+
+	}
+
+	############################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+aenigma-exec
+exit
+END
+		fi
+		echo
+	done
+	unset online_node_ipv4
+
+	############################################################################
+
+}
+
 aenigma-push_routing_info_new() {
 
 	############################################################################
@@ -758,7 +845,7 @@ aenigma-push_routing_info_new() {
 	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration
 	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
 
-	aenigma-touch_nodes_db_online
+	aenigma-refresh_nodes_db_online
 
 	array_iter=1
 	IFS=$'\n'
@@ -834,7 +921,7 @@ aenigma-remove_offline_nodes() {
 
 	### Check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
 
-	aenigma-touch_nodes_db_online
+	aenigma-refresh_nodes_db_online
 
 	array_iter=1
 	IFS=$'\n'
