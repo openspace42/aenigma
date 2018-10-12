@@ -813,7 +813,6 @@ aenigma-push_certs() {
         bash openspace42/aenigma/tools/aenigma-exec -c "
 chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
 chmod -R 700 "${ssl_project_dir}"
-dna-echo -m "Now restarting ejabberd..."
 /usr/sbin/service ejabberd restart
 "
 
