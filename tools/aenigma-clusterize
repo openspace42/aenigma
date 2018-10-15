@@ -67,15 +67,15 @@ synthia-define_vars
 
 ################################################################################
 
-### Head script
-
-dna-head_script
-
-################################################################################
-
 ### Read conf settings
 
 dna-read_conf_settings
+
+################################################################################
+
+### Head script
+
+dna-head_script
 
 ################################################################################
 
@@ -212,7 +212,7 @@ then
 	### The aenigma_cluster SSH keypair was already generated during a previous clusterization.
 	### Check to see if a connection to the secondary node already succeeds [i.e. because of a previous provisioning of such node]
 
-	if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit  &> /dev/null
+	if ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit  &> /dev/null
 	then
 		ssh_connection_to_secondary_node_succeded="y"
 	fi
@@ -224,7 +224,7 @@ then
 
 	### SSH back into the secondary node, and inform it that we are already able to connect to it.
 
-	ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
+	ssh -tt -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
 touch "/tmp/aenigma/aenigma-cluster-ssh-connection-successful"
 exit
@@ -244,7 +244,7 @@ else
 
 	check_condition() {
 
-		if ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit &> /dev/null
+		if ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit &> /dev/null
 		then
 			condition_verified=y
 		fi
@@ -271,7 +271,7 @@ fi
 
 ### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
 
-if secondary_node_token="$(ssh -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma/aenigma-cluster-token)"
+if secondary_node_token="$(ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma/aenigma-cluster-token)"
 then
 	dna-echo -s "Token on secondary node found."
 	dna-echo -m "Its value is: | ${y-}${secondary_node_token}${n-} |."
@@ -334,16 +334,16 @@ aenigma-perform_dns_checks
 ### Push node_number to secondary node
 
 echo "${secondary_node_number}" > "/${tmp_project_dir}/aenigma_cluster_secondary_node_number"
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/${tmp_project_dir}/aenigma_cluster_secondary_node_number" "root@${secondary_node_ipv4}:${conf_cluster_dir}/node_number"
+/usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/${tmp_project_dir}/aenigma_cluster_secondary_node_number" "root@${secondary_node_ipv4}:${conf_cluster_dir}/node_number"
 
 ### Push config to secondary node
 
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:/var/lib/ejabberd/"
+/usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
+/usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:/var/lib/ejabberd/"
 
 ### Push wildcard LE TLS cert for $domain to secondary node
 
-/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${secondary_node_ipv4}:/etc/ssl/"
+/usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${secondary_node_ipv4}:/etc/ssl/"
 
 echo
 
@@ -351,7 +351,7 @@ echo
 
 ### SSH into the secondary node, and inform it that the setup here on the primary node has been completed.
 
-ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
+ssh -tt -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
 set -eu
 touch "/tmp/aenigma/aenigma-cluster-primary-node-setup-complete"
 exit

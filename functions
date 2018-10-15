@@ -691,7 +691,7 @@ aenigma-push_routing_info() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
+			if ! /usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 			then
 				echo
 				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
@@ -735,7 +735,7 @@ aenigma-update_routing_info
 		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+	        ssh -tt -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 . /root/openspace42/aenigma/functions
 synthia-source_dna
@@ -772,7 +772,7 @@ aenigma-push_certs() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
+			if ! /usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
 			then
 				echo
 				dna-echo -e "Node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
@@ -794,7 +794,7 @@ aenigma-push_certs() {
 					dna-echo -e "Skipping node | ${n-}${node_number}${r-} | and continuing with all others now."
 					### Send an alert email.
 			        dna-send_mail -s "aenigma: node: | ${node_number} | offline" \
-			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [this current machine] and execute: | ${tools_dir}/${proj_name}-create-push-certs|." \
+			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [the machine sending this very notification] and execute: | ${tools_dir}/${proj_name}-create-push-certs |." \
 			        -r "${admin_mail}"
 				fi
 			fi
@@ -826,7 +826,7 @@ chmod -R 700 "${ssl_project_dir}"
 		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+	        ssh -tt -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 . /root/openspace42/aenigma/functions
 synthia-source_dna
@@ -844,86 +844,12 @@ END
 
 }
 
-aenigma-push_routing_info_new() {
+aenigma-test_online_nodes() {
 
 	############################################################################
 
-
-
-	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration
-	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
-
-	aenigma-refresh_nodes_db_online
-
-	array_iter=1
-	IFS=$'\n'
-	set -f
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
-	do
-		node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
-		then
-			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
-			then
-				echo
-				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
-				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
-				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
-				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
-	            dna-ask_for_boolean -d "y" -q "Continue with installation anyway?"
-	            if [ "${boolean_output}" = "y" ]
-	            then
-					dna-echo -m "Ok, continuing..."
-					### Remove node from nodes_db_online
-					sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
-				else
-					dna-echo -m "Ok, aborting installation..."
-					dna-exit
-				fi
-			fi
-		fi
-		array_iter=$((array_iter + 1))
-	done
-	unset node_ipv4
-	IFS=$' \t\n'
-
-	############################################################################
-
-	aenigma-exec() {
-
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-update_routing_info
-"
-
-	}
-
-	############################################################################
-
-	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
-	do
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
-		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-aenigma-exec
-exit
-END
-		fi
-		echo
-	done
-	unset online_node_ipv4
-
-	############################################################################
-
-}
-
-aenigma-remove_offline_nodes() {
+	dna-echo -m "This function attempts to connect to every node in your cluster, and checks for consistency across all nodes' ejabberd's cluster synchronization state."
+	dna-echo -m "If a node is found to be offline, you will have the choice to remove it from your primary node [this machine]'s database of nodes."
 
 	############################################################################
 
@@ -941,7 +867,7 @@ aenigma-remove_offline_nodes() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
+			if ! /usr/bin/ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
 				echo
 				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
@@ -953,27 +879,52 @@ aenigma-remove_offline_nodes() {
 	            then
 					dna-echo -m "Ok, continuing..."
 					initial_nodes_number=$(wc -l < "${nodes_db_ipv4_path}")
-					### Remove node from nodes_db files
-					sed -i "${node_number}d" "${nodes_db_ipv4_path}"
-					sed -i "${node_number}d" "${nodes_db_ipv6_path}"
-					sed -i "${node_number}d" "${nodes_db_numbered_path}"
-					### Clear nodes_db_online
-					if [ -f "${nodes_db_online_path}" ]
-					then
-						rm "${nodes_db_online_path}"
-						touch "${nodes_db_online_path}"
-					fi
 					if [ "${node_number}" = "${initial_nodes_number}" ]
 					then
-						dna-echo -s "Deleted node was the last node in the list."
-						dna-echo -m "Therefore no node order rearrangment is required."
+						### Remove node from nodes_db files
+						sed -i "${node_number}d" "${nodes_db_ipv4_path}"
+						sed -i "${node_number}d" "${nodes_db_ipv6_path}"
+						aenigma-create_nodes_db_numbered
+						aenigma-push_routing_info
+						dna-echo -s "Node deleted successfully."
+						node_removed="y"
 					else
-						dna-echo -m "Deleted node has now left an empty space for node number | ${o-}${node_number}${n-} |."
-						dna-echo -m ""
+						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${node_number}${n-} |."
+						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: | [node number ${o-}${initial_nodes_number}${n-} | to take the place of the newly removed node."
+						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
+						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_nodes_number}${n-} | now?"
+						if [ "${boolean_output}" = "y" ]
+						then
+							last_node_number="${initial_nodes_number}"
+							dna-echo -m "Ok, proceeding."
+							### Get the last node in nodes_db_ipv4
+							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${last_node_number}"p)
+							### Copy its IPv4 to the line of the node to be removed
+							sed -i "${node_number}s/.*/${target_node_ipv4}/" "${nodes_db_ipv4_path}"
+							### Delete the reconfigured node's initial line
+							sed -i "${last_node_number}d" "${nodes_db_ipv4_path}"
+							### Get the last node in nodes_db_ipv6
+							target_node_ipv6=$(cat ${nodes_db_ipv6_path} | sed -n "${last_node_number}"p)
+							### Copy its IPv6 to the line of the node to be removed
+							sed -i "${node_number}s/.*/${target_node_ipv6}/" "${nodes_db_ipv6_path}"
+							### Delete the reconfigured node's initial line
+							sed -i "${last_node_number}d" "${nodes_db_ipv6_path}"
+							aenigma-create_nodes_db_numbered
+							dna-echo -s "Node number: | ${o-}${last_node_number}${n-} | successfully changed to number: | ${o-}${node_number}${n-} |."
+							node_removed="y"
+							launch_node_reinstallation="y"
+						else
+							dna-echo -m "Ok, aborting node removal."
+						fi
 					fi
-
+					if [ "${launch_node_reinstallation-null}" = "y" ]
+					then
+						dna-echo -m "Having re-ordered what is now node numer | ${o-}${node_number}${n-} | it's now time to re-configure it and notify it of the change."
+						dna-echo -m "Launching | ${c-}${proj_name}-clusterize${n-} | script now..."
+						bash "${tools_dir}/${proj_name}-clusterize"
+					fi
 				else
-					dna-echo -m "Ok, aborting installation..."
+					dna-echo -m "Ok, skipping node removal."
 					dna-exit
 				fi
 			fi
@@ -983,49 +934,11 @@ aenigma-remove_offline_nodes() {
 	unset node_ipv4
 	IFS=$' \t\n'
 
-
-
 	############################################################################
 
 	dna-echo -m "Now pushing routing info to remaining online nodes to update them about this change."
 
 	aenigma-push_routing_info
-
-	############################################################################
-
-
-
-
-
-	############################################################################
-
-	aenigma-exec() {
-
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-update_routing_info
-"
-
-	}
-
-	############################################################################
-
-	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
-	do
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
-		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-aenigma-exec
-exit
-END
-		fi
-		echo
-	done
-	unset online_node_ipv4
 
 	############################################################################
 
@@ -1037,7 +950,7 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
-	if [ "${cluster_enabled-null}" = "cluster" ]
+	if [ "${cluster_enabled}" = "cluster" ]
 	then
 
 		dna-echo -m "Performing DNS checks for the following nodes:"
@@ -1212,7 +1125,7 @@ backup_locally_loop() {
 			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 			then
 				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
-				/usr/bin/scp -P42022 -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
+				/usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
 			fi
 		done
 		unset node_ipv4

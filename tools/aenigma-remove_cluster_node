@@ -67,15 +67,15 @@ synthia-define_vars
 
 ################################################################################
 
-### Head script.
+### Read conf settings
 
-dna-head_script
+dna-read_conf_settings
 
 ################################################################################
 
-### Read conf settings.
+### Head script
 
-dna-read_conf_settings
+dna-head_script
 
 ################################################################################
 
@@ -87,16 +87,15 @@ dna-touch_tmp_project_dir
 
 ### Ensure cluster is enabled and this is the primary node.
 
-if [ ! "${cluster_enabled-null}" = "cluster" ]
+if [ "${cluster_enabled}" = "single" ]
 then
-	dna-echo -e "${proj_name} was not installed in cluster mode."
-	dna-echo -m "This script is only useful when running in cluster mode."
+	dna-echo -e "This script is only intended to be executed when running ${short_name} in a cluster of several nodes."
 	dna-exit
 fi
 
 if [ "${cluster_mode-null}" = "secondary" ]
 then
-	dna-echo -e "This script must only be run on the primary node of ${proj_name}."
+	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
 	dna-exit
 fi
 
