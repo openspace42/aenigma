@@ -904,7 +904,6 @@ aenigma-test_online_nodes() {
 		then
 			if /usr/bin/ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
-				echo
 				dna-echo -s "Node number: | ${n-}${node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
 			else
 				echo
@@ -916,10 +915,9 @@ aenigma-test_online_nodes() {
 	            if [ "${boolean_output}" = "y" ]
 	            then
 					dna-echo -m "Ok, removing node now..."
-					node_number_name="$(echo ${node_number} | xargs printf %02d)"
-					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number_name}.${domain}"
-					initial_nodes_number=$(wc -l < "${nodes_db_ipv4_path}")
-					if [ "${node_number}" = "${initial_nodes_number}" ]
+					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number}.${domain}"
+					initial_last_node_number=$(wc -l < "${nodes_db_ipv4_path}" | xargs printf %02d)
+					if [ "${node_number}" = "${initial_last_node_number}" ]
 					then
 						### Remove node from nodes_db files
 						sed -i "${node_number}d" "${nodes_db_ipv4_path}"
@@ -930,12 +928,12 @@ aenigma-test_online_nodes() {
 						node_removed="y"
 					else
 						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${node_number}${n-} |."
-						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: | [node number ${o-}${initial_nodes_number}${n-}] | to take the place of the newly removed node."
+						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: | [node number ${o-}${initial_last_node_number}${n-}] | to take the place of the newly removed node."
 						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
-						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_nodes_number}${n-} | now?"
+						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_last_node_number}${n-} | now?"
 						if [ "${boolean_output}" = "y" ]
 						then
-							last_node_number="${initial_nodes_number}"
+							last_node_number="${initial_last_node_number}"
 							dna-echo -m "Ok, proceeding."
 							### Get the last node in nodes_db_ipv4
 							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${last_node_number}"p)
