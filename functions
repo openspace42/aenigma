@@ -908,10 +908,12 @@ aenigma-test_online_nodes() {
 				dna-echo -m "If you have decommissioned this server or intend to do so, you can remove this node from this primary node's configuration about the cluster."
 				dna-echo -m "Data on such secondary node will not be affected in any way, but this primary node won't consider it part of the cluster during future operations."
 				dna-echo -m "If somehow such secondary node is still running, even though we cannot reach it right now, it will still actually take part in the ejabberd cluster."
-	            dna-ask_for_boolean -d "y" -q "Would you like to remove this node from the cluster database now?"
+	            dna-ask_for_boolean -d "n" -q "Would you like to remove this node from the cluster database now?"
 	            if [ "${boolean_output}" = "y" ]
 	            then
-					dna-echo -m "Ok, continuing..."
+					dna-echo -m "Ok, removing node now..."
+					node_number_name="$(echo ${node_number} | xargs printf %02d)"
+					if /usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number_name}.${domain}"
 					initial_nodes_number=$(wc -l < "${nodes_db_ipv4_path}")
 					if [ "${node_number}" = "${initial_nodes_number}" ]
 					then
@@ -924,7 +926,7 @@ aenigma-test_online_nodes() {
 						node_removed="y"
 					else
 						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${node_number}${n-} |."
-						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: | [node number ${o-}${initial_nodes_number}${n-} | to take the place of the newly removed node."
+						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: | [node number ${o-}${initial_nodes_number}${n-}] | to take the place of the newly removed node."
 						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
 						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_nodes_number}${n-} | now?"
 						if [ "${boolean_output}" = "y" ]
@@ -944,7 +946,7 @@ aenigma-test_online_nodes() {
 							### Delete the reconfigured node's initial line
 							sed -i "${last_node_number}d" "${nodes_db_ipv6_path}"
 							aenigma-create_nodes_db_numbered
-							dna-echo -s "Node number: | ${o-}${last_node_number}${n-} | successfully changed to number: | ${o-}${node_number}${n-} |."
+							dna-echo -s "Node number: | ${n-}${last_node_number}${g-} | successfully changed to number: | ${n-}${node_number}${g-} |."
 							node_removed="y"
 							launch_node_reinstallation="y"
 						else
@@ -953,8 +955,10 @@ aenigma-test_online_nodes() {
 					fi
 					if [ "${launch_node_reinstallation-null}" = "y" ]
 					then
-						dna-echo -m "Having re-ordered what is now node numer | ${o-}${node_number}${n-} | it's now time to re-configure it and notify it of the change."
-						dna-echo -m "Launching | ${c-}${proj_name}-clusterize${n-} | script now..."
+						dna-echo -m "Having re-ordered what is now node number | ${o-}${node_number}${n-} | it's time to re-configure it and notify it of the change."
+						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}|${n-}] and run the installer from there now. Then come back here."
+						dna-press_to_continue
+						dna-echo -n -m "Ok, now launching | ${c-}${proj_name}-clusterize${n-} | script..."
 						bash "${tools_dir}/${proj_name}-clusterize"
 					fi
 				else

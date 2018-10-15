@@ -73,15 +73,15 @@ dna-read_conf_settings
 
 ################################################################################
 
-### Head script
+### Touch temp dir
 
-dna-head_script
+dna-touch_tmp_project_dir
 
 ################################################################################
 
-### Touch temp dir.
+### Head script
 
-#dna-touch_tmp_project_dir
+dna-head_script
 
 ################################################################################
 
