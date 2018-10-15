@@ -1100,6 +1100,7 @@ aenigma-perform_dns_checks() {
 				"xm"
 				"xp"
 				"xu"
+				"xv"
 			)
 
 			for xmpp_service in "${xmpp_service_array[@]}"
