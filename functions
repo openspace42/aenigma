@@ -947,22 +947,22 @@ aenigma-test_online_nodes() {
 						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_last_node_number}${n-} | now?"
 						if [ "${boolean_output}" = "y" ]
 						then
-							last_node_number="${initial_last_node_number}"
-							dna-echo -m "Ok, proceeding."
+							dna-echo -m "Ok, reconfiguring node now..."
+							/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${initial_last_node_number}.${domain}" || true
 							### Get the last node in nodes_db_ipv4
-							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${last_node_number}"p)
+							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${initial_last_node_number}"p)
 							### Copy its IPv4 to the line of the node to be removed
 							sed -i "${node_number}s/.*/${target_node_ipv4}/" "${nodes_db_ipv4_path}"
 							### Delete the reconfigured node's initial line
-							sed -i "${last_node_number}d" "${nodes_db_ipv4_path}"
+							sed -i "${initial_last_node_number}d" "${nodes_db_ipv4_path}"
 							### Get the last node in nodes_db_ipv6
-							target_node_ipv6=$(cat ${nodes_db_ipv6_path} | sed -n "${last_node_number}"p)
+							target_node_ipv6=$(cat ${nodes_db_ipv6_path} | sed -n "${initial_last_node_number}"p)
 							### Copy its IPv6 to the line of the node to be removed
 							sed -i "${node_number}s/.*/${target_node_ipv6}/" "${nodes_db_ipv6_path}"
 							### Delete the reconfigured node's initial line
-							sed -i "${last_node_number}d" "${nodes_db_ipv6_path}"
+							sed -i "${initial_last_node_number}d" "${nodes_db_ipv6_path}"
 							aenigma-create_nodes_db_numbered
-							dna-echo -s "Node number: | ${n-}${last_node_number}${g-} | successfully changed to number: | ${n-}${node_number}${g-} |."
+							dna-echo -s "Node number: | ${n-}${initial_last_node_number}${g-} | successfully changed to number: | ${n-}${node_number}${g-} |."
 							node_removed="y"
 							launch_node_reinstallation="y"
 						else
