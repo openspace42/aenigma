@@ -2,13 +2,13 @@
 
 ################################################################################
 
-### Set bash environment error management.
+### Set bash environment error management
 
 set -eu
 
 ################################################################################
 
-### Add padding to output.
+### Add padding to output
 
 echo
 
@@ -43,25 +43,25 @@ fi
 
 ################################################################################
 
-### Define formatting.
+### Define formatting
 
 synthia-define_formatting
 
 ################################################################################
 
-### Check for root user runtime.
+### Check for root user runtime
 
 synthia-check_root
 
 ################################################################################
 
-### Source dna.
+### Source dna
 
 synthia-source_dna
 
 ################################################################################
 
-### Define variables.
+### Define variables
 
 synthia-define_vars
 
@@ -81,7 +81,7 @@ dna-head_script
 
 ### Touch temp dir.
 
-dna-touch_tmp_project_dir
+#dna-touch_tmp_project_dir
 
 ################################################################################
 
@@ -111,12 +111,4 @@ fi
 
 ################################################################################
 
-dna-ask_for_boolean -d "y" -q "Would you like to run an automated test to check for any unresponsive nodes?"
-if [ "${boolean_output}" = "y" ]
-then
-	dna-echo -m "Ok, running automated test."
-	aenigma-refresh_nodes_db_online
-
-
-
-NUMOFLINES=$(wc -l < "${nodes_db_}")
+aenigma-test_online_nodes

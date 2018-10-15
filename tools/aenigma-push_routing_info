@@ -95,35 +95,17 @@ fi
 
 ################################################################################
 
-### Fetch IP addresses for this machine
-
-dna-get_public_ipv4
-
-dna-check_ipv6_connectivity
-
-### Check to see if this machine's IPs have changed since last install / clusterization
-
-this_registered_ipv4="$(cat openspace42/aenigma/conf/cluster/nodes/nodes_db_ipv4 | head -1 | xargs)"
-
-this_registered_ipv6="$(cat openspace42/aenigma/conf/cluster/nodes/nodes_db_ipv6 | head -1 | xargs)"
-
-if [ ! "${this_ipv4}" = "${this_registered_ipv4}" ]
+if [ ! -f "${nodes_db_ipv4_path}" ]
 then
-	dna-echo -e "The public IPv4 address for this machine appears to have changed since the last install or the last run of the clusterize script."
-	dna-echo -m "It now appears to be: | ${y-}${this_ipv4}${n-} |."
-	dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv4}${n-} |."
-	dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
+	dna-echo -e " | ${n-}nodes_db${r-} | file not found."
+	dna-echo -m "Either the initial installation was never completed or the file was somehow removed."
+	dna-echo -m "Re-run the installation to fix this."
 	dna-exit
 fi
 
-if [ ! "${this_ipv6}" = "${this_registered_ipv6}" ]
-then
-	dna-echo -e "The public IPv6 address for this machine appears to have changed since the last install or the last run of the clusterize script."
-	dna-echo -m "It now appears to be: | ${y-}${this_ipv6}${n-} |."
-	dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv6}${n-} |."
-	dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
-	dna-exit
-fi
+################################################################################
+
+aenigma-check_ip_info_current
 
 ################################################################################
 
