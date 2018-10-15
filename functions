@@ -899,12 +899,14 @@ aenigma-test_online_nodes() {
 	do
 		node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		if [ "${node_ipv4}" = "${this_ipv4}" ]
 		then
+			dna-echo -s "Node number: | ${n-}${node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
+		else
 			if ! /usr/bin/ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
 				echo
-				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -e "Node number: | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "If you have decommissioned this server or intend to do so, you can remove this node from this primary node's configuration about the cluster."
 				dna-echo -m "Data on such secondary node will not be affected in any way, but this primary node won't consider it part of the cluster during future operations."
 				dna-echo -m "If somehow such secondary node is still running, even though we cannot reach it right now, it will still actually take part in the ejabberd cluster."
@@ -913,7 +915,7 @@ aenigma-test_online_nodes() {
 	            then
 					dna-echo -m "Ok, removing node now..."
 					node_number_name="$(echo ${node_number} | xargs printf %02d)"
-					if /usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number_name}.${domain}"
+					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number_name}.${domain}"
 					initial_nodes_number=$(wc -l < "${nodes_db_ipv4_path}")
 					if [ "${node_number}" = "${initial_nodes_number}" ]
 					then
@@ -974,7 +976,7 @@ aenigma-test_online_nodes() {
 
 	############################################################################
 
-	dna-echo -m "Now pushing routing info to remaining online nodes to update them about this change."
+	dna-echo -m "Now pushing routing info..."
 
 	aenigma-push_routing_info
 
