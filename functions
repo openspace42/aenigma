@@ -659,8 +659,18 @@ aenigma-update_routing_info() {
 
 aenigma-refresh_nodes_db_online() {
 
+	############################################################################
+
 	### This function will always get invoked at the beginning push_routing_info() in the later event that an existing node cannot be reached at the time of running a new clusterization.
 	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed from it, for use by subsequent functions, until the end of the clusterize script.
+
+	############################################################################
+
+	### Touch temp dir
+
+	dna-touch_tmp_project_dir
+
+	############################################################################
 
 	if [ -f "${nodes_db_online_path}" ]
 	then
@@ -668,7 +678,11 @@ aenigma-refresh_nodes_db_online() {
 		touch "${nodes_db_online_path}"
 	fi
 
+	############################################################################
+
 	cp "${nodes_db_ipv4_path}" "${nodes_db_online_path}"
+
+	############################################################################
 
 }
 
@@ -915,7 +929,7 @@ aenigma-test_online_nodes() {
 	            if [ "${boolean_output}" = "y" ]
 	            then
 					dna-echo -m "Ok, removing node now..."
-					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number}.${domain}"
+					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number}.${domain}" || true
 					initial_last_node_number=$(wc -l < "${nodes_db_ipv4_path}" | xargs printf %02d)
 					if [ "${node_number}" = "${initial_last_node_number}" ]
 					then
@@ -928,7 +942,7 @@ aenigma-test_online_nodes() {
 						node_removed="y"
 					else
 						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${node_number}${n-} |."
-						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: | [node number ${o-}${initial_last_node_number}${n-}] | to take the place of the newly removed node."
+						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: [number | ${o-}${initial_last_node_number}${n-} |] to take the place of the newly removed node."
 						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
 						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_last_node_number}${n-} | now?"
 						if [ "${boolean_output}" = "y" ]
@@ -958,7 +972,7 @@ aenigma-test_online_nodes() {
 					if [ "${launch_node_reinstallation-null}" = "y" ]
 					then
 						dna-echo -m "Having re-ordered what is now node number | ${o-}${node_number}${n-} | it's time to re-configure it and notify it of the change."
-						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}|${n-}] and run the installer from there now. Then come back here."
+						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}${n-} |] and run the installer from there now. Then come back here."
 						dna-press_to_continue
 						dna-echo -n -m "Ok, now launching | ${c-}${proj_name}-clusterize${n-} | script..."
 						bash "${tools_dir}/${proj_name}-clusterize"
