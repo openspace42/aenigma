@@ -930,6 +930,8 @@ aenigma-test_online_nodes() {
 	            then
 					dna-echo -m "Ok, removing node now..."
 					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number}.${domain}" || true
+					dna-echo -m "Now restarting ejabberd..."
+					/usr/sbin/service ejabberd restart
 					initial_last_node_number=$(wc -l < "${nodes_db_ipv4_path}" | xargs printf %02d)
 					if [ "${node_number}" = "${initial_last_node_number}" ]
 					then
@@ -949,6 +951,8 @@ aenigma-test_online_nodes() {
 						then
 							dna-echo -m "Ok, reconfiguring node now..."
 							/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${initial_last_node_number}.${domain}" || true
+							dna-echo -m "Now restarting ejabberd..."
+							/usr/sbin/service ejabberd restart
 							### Get the last node in nodes_db_ipv4
 							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${initial_last_node_number}"p)
 							### Copy its IPv4 to the line of the node to be removed
@@ -984,6 +988,13 @@ aenigma-test_online_nodes() {
 			fi
 		fi
 		array_iter=$((array_iter + 1))
+		if [ "${node_removed}" = "y" ]
+		then
+			dna-echo -e "Interrupting | ${n-}test_online_nodes${r-} | function execution."
+			dna-echo -m "Having removed a node, if you want to keep testing online nodes, given the new node arrangement, simply re-run the script."
+			dna-press_to_continue
+			break
+		fi
 	done
 	unset node_ipv4
 	IFS=$' \t\n'
