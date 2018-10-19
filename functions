@@ -1687,13 +1687,25 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+		if [ "${cluster_enabled}" = "cluster" ]
+		then
 
-		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
+			#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
-		### Execute the post-renewal script now to generate the all-in-one TLS cert for ejabberd
+			cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
 
-		bash "${tools_dir}/${proj_name}-create-push-certs"
+			### Execute the post-renewal script now to generate the all-in-one TLS cert for ejabberd
+
+			bash "${tools_dir}/${proj_name}-create-push-certs"
+
+		else
+
+			if [ -f "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs" ]
+			then
+				rm "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
+			fi
+
+		fi
 
 		clear
 

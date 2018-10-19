@@ -89,7 +89,7 @@ dna-head_script
 
 if [ "${cluster_enabled}" = "single" ]
 then
-	dna-echo -e "This script is only intended to be executed when running ${short_name} in a cluster of several nodes."
+	dna-echo -e "This script is only intended to be executed when running ${proj_name} in a cluster of several nodes."
 	dna-exit
 fi
 
