@@ -688,6 +688,12 @@ aenigma-refresh_nodes_db_online() {
 
 aenigma-check_ip_info_current() {
 
+	if [ ! -f "${nodes_db_ipv4_path}" ] || [ ! -f "${nodes_db_ipv6_path}" ]
+    then
+		dna-echo -m "Not all nodes_db files found or none at all. Skipping IP change checks."
+        return 0
+    fi
+
 	### Fetch IP addresses for this machine
 
 	dna-get_public_ipv4
@@ -696,9 +702,9 @@ aenigma-check_ip_info_current() {
 
 	### Check to see if this machine's IPs have changed since last install / clusterization
 
-	this_registered_ipv4="$(cat openspace42/aenigma/conf/cluster/nodes/nodes_db_ipv4 | head -1 | xargs)"
+	this_registered_ipv4="$(cat ${nodes_db_ipv4_path} | head -1 | xargs)"
 
-	this_registered_ipv6="$(cat openspace42/aenigma/conf/cluster/nodes/nodes_db_ipv6 | head -1 | xargs)"
+	this_registered_ipv6="$(cat ${nodes_db_ipv6_path} | head -1 | xargs)"
 
 	if [ ! "${this_ipv4}" = "${this_registered_ipv4}" ]
 	then
