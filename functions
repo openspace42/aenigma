@@ -1652,6 +1652,10 @@ synthia-perform_installation() {
 
 	aenigma-create_ejabberd_locations
 
+	### Create the $conf_xmpp_dir
+
+	mkdir -p "${conf_xmpp_dir}"
+
 	############################################################################
 
 	if [ "${cluster_enabled}" = "cluster" ]
