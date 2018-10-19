@@ -174,11 +174,7 @@ fi
 
 ################################################################################
 
-### Restart ejabberd
-
-dna-echo -m "Now restarting ejabberd..."
-
-/usr/sbin/service ejabberd restart
+aenigma-restart_ejabberd_if_running
 
 ### Push certs to other nodes
 

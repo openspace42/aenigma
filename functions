@@ -391,6 +391,18 @@ aenigma-install_sslh() {
 
 }
 
+aenigma-restart_ejabberd_if_running() {
+
+	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+	then
+		dna-echo -m "Now restarting ejabberd..."
+		/usr/sbin/service ejabberd restart
+	else
+		dna-echo -m "ejabberd not running. Skipping restart."
+	fi
+
+}
+
 aenigma-add_ejabberd_repo() {
 
 	dna-check_dpkg_availability
