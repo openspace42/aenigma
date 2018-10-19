@@ -358,6 +358,7 @@ aenigma-install_sslh() {
 	### Install SSLH
 
 	dna-echo -m "Now installing SSLH..."
+	dna-install_build_tools
 	/usr/sbin/service sslh stop &> /dev/null || true
 	ssh_port="$(cat $os_conf_dir/ssh_port)"
 	apt-get -y install libwrap0-dev libconfig-dev || true
