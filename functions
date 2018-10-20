@@ -1394,9 +1394,17 @@ synthia-perform_installation() {
 
 	################################################################################
 
-	dna-abort_on_sslh_session
+	if ! dna-check_distro_ubuntu_18 && ! dna-check_distro_debian_9
+	then
+		dna-echo -e "${proj_name} only runs on Ubuntu 18.04 LTS [bionic] or Debian 9 [stretch]."
+		dna-echo -m "This is due - among other factors - to the fact that the ejabberd version installed by our APT repo of choice on previous releases is too old."
+		dna-echo -m "You can edit out this check to proceed at your own risk."
+		dna-exit
+	fi
 
-	dna-check_distro_ubuntu_18
+	################################################################################
+
+	dna-abort_on_sslh_session
 
 	dna-inception
 
