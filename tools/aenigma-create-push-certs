@@ -85,13 +85,7 @@ dna-log_script
 
 ################################################################################
 
-### Ensure cluster is enabled and this is the primary node.
-
-if [ "${cluster_enabled}" = "single" ]
-then
-	dna-echo -e "This script is only intended to be executed when running ${proj_name} in a cluster of several nodes."
-	dna-exit
-fi
+### Ensure that this is the primary node in the event that cluster is enabled.
 
 if [ "${cluster_mode-null}" = "secondary" ]
 then
