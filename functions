@@ -115,14 +115,14 @@ synthia-download_dna() {
 
 	        export selected_vers="v0.0.1-custom-local" && \
 
-	        dna-echo -e "Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |."; \
+	        echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"; \
 
 	    elif [ "${custom_dna_version-null}" = "b" ]; \
 	    then \
 
 	        export selected_vers="${dna_latest_vers_bl_edge}" && \
 
-	        dna-echo -e "Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |." && \
+	        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}" && \
 
 	        git reset --hard origin/master; \
 
@@ -131,7 +131,7 @@ synthia-download_dna() {
 
 	        export selected_vers="${dna_latest_vers_tagged}" && \
 
-	        dna-echo -m "${o-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |." && \
+	        echo "${o-}${b-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}" && \
 
 	        git checkout "tags/${dna_latest_vers_tagged}"; \
 
@@ -140,7 +140,7 @@ synthia-download_dna() {
 
 	        export selected_vers="${dna_latest_vers_final}" && \
 
-	        dna-echo -m "Installing dna ${dna_latest_vers_final}" && \
+	        echo "${b-}Installing dna ${dna_latest_vers_final}${x-}" && \
 
 	        git checkout "tags/${dna_latest_vers_final}"; \
 
