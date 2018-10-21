@@ -133,7 +133,6 @@ synthia-download_dna() {
 
 				git fetch
 		        git reset --hard origin/master
-				echo
 
 			elif [[ "${custom_dna_version-null}" == *"v"* ]]
 			then
