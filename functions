@@ -95,83 +95,87 @@ synthia-download_dna() {
 
 	mkdir -p "${clone_base_dir}"
 
-	if [ -d "${clone_dir}" ]
+	if [ "${custom_dna_version-null}" = "l" ]
 	then
-		rm -r "${clone_dir:?}"
+
+		export dna_selected_vers="v0.0.1-custom-local"
+
+		echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"
+
+	else
+
+		if [ -d "${clone_dir}" ]
+		then
+			rm -r "${clone_dir:?}"
+		fi
+
+		( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && echo && cd "${clone_name}"
+
+			. ./functions/snippets
+
+			git config advice.detachedHead false
+
+			### Define latest version
+
+			export dna_latest_vers_final="$(semtag getfinal)"
+			export dna_latest_vers_tagged="$(semtag getlast)"
+			export dna_latest_vers_bl_edge="$(semtag getcurrent)"
+
+		    elif [ "${custom_dna_version-null}" = "b" ]
+		    then
+
+		        export dna_selected_vers="${dna_latest_vers_bl_edge}"
+
+		        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}"
+				echo
+
+		        git reset --hard origin/master
+
+			elif [[ "${custom_dna_version-null}" == *"v"* ]]
+			then
+
+				export dna_selected_vers="${custom_dna_version}"
+
+				echo "${c-}${b-}Installing | ${n-}version ${dna_selected_vers}${c-} | of | ${n-}dna${c-} | as per | ${n-}-d ${dna_selected_vers}${c-} |.${x-}"
+
+				git checkout "tags/${dna_selected_vers}"
+
+		    elif [ "${custom_dna_version-null}" = "t" ]
+		    then
+
+		        export dna_selected_vers="${dna_latest_vers_tagged}"
+
+		        echo "${o-}${b-}Installing | ${n-}latest-tagged version [${dna_selected_vers}]${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}"
+				echo
+
+		        git checkout "tags/${dna_latest_vers_tagged}"
+
+		    elif [ "${custom_dna_version-null}" = "f" ]
+			then
+
+		        export dna_selected_vers="${dna_latest_vers_final}"
+
+				echo "${y-}${b-}Installing | ${n-}latest-final version [${dna_selected_vers}]${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}"
+				echo
+
+		        git checkout "tags/${dna_latest_vers_final}"
+
+			else
+
+				export dna_selected_vers="${os_dna_version}"
+
+				echo "${b-}Installing | ${g-}version [${dna_selected_vers}]${n-} | of | ${g-}dna${n-} |.${x-}"
+				echo
+
+				git checkout "tags/${os_dna_version}"
+
+		    fi
+
+		)
+
+	echo "${dna_selected_vers}" > "./version_installed"
+
 	fi
-
-	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && echo && cd "${clone_name}"
-
-		. ./functions/snippets
-
-		git config advice.detachedHead false
-
-		### Define latest version
-
-		export dna_latest_vers_final="$(semtag getfinal)"
-		export dna_latest_vers_tagged="$(semtag getlast)"
-		export dna_latest_vers_bl_edge="$(semtag getcurrent)"
-
-		if [ "${custom_dna_version-null}" = "l" ]
-	    then
-
-	        export dna_selected_vers="v0.0.1-custom-local"
-
-	        echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"
-
-	    elif [ "${custom_dna_version-null}" = "b" ]
-	    then
-
-	        export dna_selected_vers="${dna_latest_vers_bl_edge}"
-
-	        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}"
-			echo
-
-	        git reset --hard origin/master
-
-		elif [[ "${custom_dna_version-null}" == *"v"* ]]
-		then
-
-			export dna_selected_vers="${custom_dna_version}"
-
-			echo "${c-}${b-}Installing | ${n-}version ${dna_selected_vers}${c-} | of | ${n-}dna${c-} | as per | ${n-}-d ${dna_selected_vers}${c-} |.${x-}"
-
-			git checkout "tags/${dna_selected_vers}"
-
-	    elif [ "${custom_dna_version-null}" = "t" ]
-	    then
-
-	        export dna_selected_vers="${dna_latest_vers_tagged}"
-
-	        echo "${o-}${b-}Installing | ${n-}latest-tagged version [${dna_selected_vers}]${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}"
-			echo
-
-	        git checkout "tags/${dna_latest_vers_tagged}"
-
-	    elif [ "${custom_dna_version-null}" = "f" ]
-		then
-
-	        export dna_selected_vers="${dna_latest_vers_final}"
-
-			echo "${y-}${b-}Installing | ${n-}latest-final version [${dna_selected_vers}]${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}"
-			echo
-
-	        git checkout "tags/${dna_latest_vers_final}"
-
-		else
-
-			export dna_selected_vers="${os_dna_version}"
-
-			echo "${b-}Installing | ${g-}version [${dna_selected_vers}]${n-} | of | ${g-}dna${n-} |.${x-}"
-			echo
-
-			git checkout "tags/${os_dna_version}"
-
-	    fi
-
-		echo "${dna_selected_vers}" > "./version_installed"
-
-	)
 
 #	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "${clone_name}" && \
 #		if [ ! "${custom_dna_version-null}" = "b" ]; \
