@@ -121,7 +121,7 @@ synthia-download_dna() {
 			export dna_latest_vers_tagged="$(semtag getlast)"
 			export dna_latest_vers_bl_edge="$(semtag getcurrent)"
 
-		    elif [ "${custom_dna_version-null}" = "b" ]
+		    if [ "${custom_dna_version-null}" = "b" ]
 		    then
 
 		        export dna_selected_vers="${dna_latest_vers_bl_edge}"
