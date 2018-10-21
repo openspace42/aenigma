@@ -104,6 +104,8 @@ synthia-download_dna() {
 
 		. ./functions/snippets && \
 
+		git config advice.detachedHead false && \
+
 		### Define latest version
 
 		export dna_latest_vers_final="$(semtag getfinal)" && \
