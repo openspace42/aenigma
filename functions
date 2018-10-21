@@ -130,6 +130,13 @@ synthia-download_dna() {
 
 	        git reset --hard origin/master; \
 
+		elif [[ "${custom_dna_version-null}" == *"v"* ]]; \
+		then \
+
+			export selected_vers="${custom_dna_version-null}" && \
+
+			echo "${c-}${b-}Installing | ${n-}version ${selected_vers}${c-} | of | ${n-}dna${c-} |  as per | ${n-}-d ${selected_vers}${c-} |.${x-}" && \
+
 	    elif [ "${custom_dna_version-null}" = "t" ]; \
 	    then \
 
@@ -145,7 +152,7 @@ synthia-download_dna() {
 
 	        export selected_vers="${dna_latest_vers_final}" && \
 
-	        echo "${b-}Installing dna ${dna_latest_vers_final}${x-}" && \
+			echo "${y-}${b-}Installing | ${n-}latest-final version${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}" && \
 			echo
 
 	        git checkout "tags/${dna_latest_vers_final}"; \
