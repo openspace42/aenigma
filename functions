@@ -2439,9 +2439,19 @@ synthia-perform_installation() {
 
 	if [ "${dh_param_status}" = "ok" ]
 	then
-		sed -i "s|### dhfile: 'DHFILE'|dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
-		sed -i "s|### s2s_dhfile: 'DHFILE'|s2s_dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
-		/usr/sbin/service ejabberd restart
+
+		if grep -q "### dhfile" "/etc/ejabberd/ejabberd.yml"
+		then
+
+			sed -i "s|### dhfile: 'DHFILE'|dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
+			sed -i "s|### s2s_dhfile: 'DHFILE'|s2s_dhfile: 'DHFILE'|g" "/etc/ejabberd/ejabberd.yml"
+
+			dna-echo -m "Now restarting ejabberd..."
+
+			/usr/sbin/service ejabberd restart
+
+		fi
+
 	fi
 
 	############################################################################
