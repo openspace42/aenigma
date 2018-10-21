@@ -100,16 +100,73 @@ synthia-download_dna() {
 		rm -r "${clone_dir:?}"
 	fi
 
-	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "$clone_name" && \
-		if [ ! "${custom_dna_version-null}" = "b" ]; \
+	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "${clone_name}" && \
+
+		. ./functions/snippets && \
+
+		### Define latest version
+
+		export dna_latest_vers_final="$(semtag getfinal)" && \
+		export dna_latest_vers_tagged="$(semtag getlast)" && \
+		export dna_latest_vers_bl_edge="$(semtag getcurrent)" && \
+
+		if [ "${custom_dna_version-null}" = "l" ]; \
+	    then \
+
+	        export selected_vers="v0.0.1-custom-local" && \
+
+	        dna-echo -e "Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |."; \
+
+	    elif [ "${custom_dna_version-null}" = "b" ]; \
+	    then \
+
+	        export selected_vers="${dna_latest_vers_bl_edge}" && \
+
+	        dna-echo -e "Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |." && \
+
+	        git reset --hard origin/master; \
+
+	    elif [ "${custom_dna_version-null}" = "t" ]; \
+	    then \
+
+	        export selected_vers="${dna_latest_vers_tagged}" && \
+
+	        dna-echo -m "${o-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |." && \
+
+	        git checkout "tags/${dna_latest_vers_tagged}"; \
+
+	    elif [ "${custom_dna_version-null}" = "f" ]; \
 		then \
-			git checkout "tags/v${os_dna_version}" && \
-			echo "${os_dna_version}" > "./version_installed"; \
+
+	        export selected_vers="${dna_latest_vers_final}" && \
+
+	        dna-echo -m "Installing dna ${dna_latest_vers_final}" && \
+
+	        git checkout "tags/${dna_latest_vers_final}"; \
+
 		else \
-			clone_latest_commit="$(git log -n 1 --pretty=format:"%H"  | cut -c1-7)" && \
-			echo "bleeding-edge-${clone_latest_commit}" > "./version_installed"; \
-		fi &> /dev/null \
+
+			export selected_vers="${os_dna_version}" && \
+
+			git checkout "tags/v${os_dna_version}"; \
+
+	    fi && \
+
+		echo "${selected_vers}" > "./version_installed";
+
 	)
+
+
+#	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "${clone_name}" && \
+#		if [ ! "${custom_dna_version-null}" = "b" ]; \
+#		then \
+#			git checkout "tags/v${os_dna_version}" && \
+#			echo "${os_dna_version}" > "./version_installed"; \
+#		else \
+#			clone_latest_commit="$(git log -n 1 --pretty=format:"%H"  | cut -c1-7)" && \
+#			echo "bleeding-edge-${clone_latest_commit}" > "./version_installed"; \
+#		fi &> /dev/null \
+#	)
 
 }
 

@@ -97,11 +97,11 @@ fi
 if [ ! -z "${custom_dna_version-}" ]
 then
 	case $custom_dna_version in
+		l)	echo "${r-}${b-}Disabling dna fetch and using local version as per | ${n-}-d l${r-} |.${x-}"
+			;;
 		b)	echo "${r-}${b-}Fetching bleeding-edge dna version as per | ${n-}-d b${r-} |.${x-}"
 			echo
 			synthia-download_dna
-			;;
-		l)	echo "${r-}${b-}Disabling dna fetch and using local version as per | ${n-}-d l${r-} |.${x-}"
 			;;
 		*)	echo "${r-}${b-}Invalid content for | ${n-}custom_dna_version${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 			echo
