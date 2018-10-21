@@ -67,9 +67,9 @@ echo
 while getopts ":d:p:" arguments
 do
     case $arguments in
-        d)	export custom_dna_version="$OPTARG"
+        d)	export custom_dna_version="${OPTARG}"
 	        ;;
-		p)	export custom_project_version="$OPTARG"
+		p)	export custom_project_version="${OPTARG}"
 	        ;;
         \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 	        echo
@@ -80,6 +80,17 @@ do
     esac
 done
 OPTIND=1
+
+### If not using local version of project repo...
+
+if [ ! "${custom_project_version}" = "l" ]
+then
+
+	### Reset the repo to HEAD before proceeding with anything
+
+	(cd "${source_dir}" && git reset --hard origin/master)
+
+fi
 
 ### Download dna
 
