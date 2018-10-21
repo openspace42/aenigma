@@ -116,6 +116,7 @@ synthia-download_dna() {
 	        export selected_vers="v0.0.1-custom-local" && \
 
 	        echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"; \
+			echo
 
 	    elif [ "${custom_dna_version-null}" = "b" ]; \
 	    then \
@@ -123,6 +124,7 @@ synthia-download_dna() {
 	        export selected_vers="${dna_latest_vers_bl_edge}" && \
 
 	        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}" && \
+			echo
 
 	        git reset --hard origin/master; \
 
@@ -132,6 +134,7 @@ synthia-download_dna() {
 	        export selected_vers="${dna_latest_vers_tagged}" && \
 
 	        echo "${o-}${b-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}" && \
+			echo
 
 	        git checkout "tags/${dna_latest_vers_tagged}"; \
 
@@ -141,6 +144,7 @@ synthia-download_dna() {
 	        export selected_vers="${dna_latest_vers_final}" && \
 
 	        echo "${b-}Installing dna ${dna_latest_vers_final}${x-}" && \
+			echo
 
 	        git checkout "tags/${dna_latest_vers_final}"; \
 
@@ -155,7 +159,6 @@ synthia-download_dna() {
 		echo "${selected_vers}" > "./version_installed";
 
 	)
-
 
 #	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "${clone_name}" && \
 #		if [ ! "${custom_dna_version-null}" = "b" ]; \
