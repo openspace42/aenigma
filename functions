@@ -131,7 +131,9 @@ synthia-download_dna() {
 		        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}"
 				echo
 
+				git fetch
 		        git reset --hard origin/master
+				echo
 
 			elif [[ "${custom_dna_version-null}" == *"v"* ]]
 			then
