@@ -88,7 +88,7 @@ then
 
 	### Reset the repo to HEAD before proceeding with anything
 
-	( cd "${exec_dir_root}" && git reset --hard origin/master > /dev/null )
+	( cd "${exec_dir_root}" && git fetch && git reset --hard origin/master > /dev/null )
 
 fi
 

@@ -102,6 +102,8 @@ synthia-download_dna() {
 
 		echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"
 
+		echo "${dna_selected_vers}" > "./version_installed"
+
 	else
 
 		if [ -d "${clone_dir}" ]
@@ -171,9 +173,9 @@ synthia-download_dna() {
 
 		    fi
 
-		)
+			echo "${dna_selected_vers}" > "./version_installed"
 
-	echo "${dna_selected_vers}" > "./version_installed"
+		)
 
 	fi
 
