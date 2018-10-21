@@ -180,17 +180,6 @@ synthia-download_dna() {
 
 	fi
 
-#	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "${clone_name}" && \
-#		if [ ! "${custom_dna_version-null}" = "b" ]; \
-#		then \
-#			git checkout "tags/v${os_dna_version}" && \
-#			echo "${os_dna_version}" > "./version_installed"; \
-#		else \
-#			clone_latest_commit="$(git log -n 1 --pretty=format:"%H"  | cut -c1-7)" && \
-#			echo "bleeding-edge-${clone_latest_commit}" > "./version_installed"; \
-#		fi &> /dev/null \
-#	)
-
 }
 
 synthia-source_dna() {
