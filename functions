@@ -2,7 +2,7 @@
 
 ### openspace synthia bootstrap framework v0.3.0 [https://github.com/openspace42/synthia]
 
-os_dna_version="0.3.1"
+os_dna_version="v0.3.1"
 
 ################################################################################
 
@@ -134,7 +134,7 @@ synthia-download_dna() {
 
 			export selected_vers="${custom_dna_version}"
 
-			echo "${c-}${b-}Installing | ${n-}version ${selected_vers}${c-} | of | ${n-}dna${c-} |  as per | ${n-}-d ${selected_vers}${c-} |.${x-}"
+			echo "${c-}${b-}Installing | ${n-}version ${selected_vers}${c-} | of | ${n-}dna${c-} | as per | ${n-}-d ${selected_vers}${c-} |.${x-}"
 
 			git checkout "tags/${selected_vers}"
 
@@ -143,7 +143,7 @@ synthia-download_dna() {
 
 	        export selected_vers="${dna_latest_vers_tagged}"
 
-	        echo "${o-}${b-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}"
+	        echo "${o-}${b-}Installing | ${n-}latest-tagged version [${selected_vers}]${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}"
 			echo
 
 	        git checkout "tags/${dna_latest_vers_tagged}"
@@ -153,7 +153,7 @@ synthia-download_dna() {
 
 	        export selected_vers="${dna_latest_vers_final}"
 
-			echo "${y-}${b-}Installing | ${n-}latest-final version${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}"
+			echo "${y-}${b-}Installing | ${n-}latest-final version [${selected_vers}]${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}"
 			echo
 
 	        git checkout "tags/${dna_latest_vers_final}"
@@ -162,7 +162,10 @@ synthia-download_dna() {
 
 			export selected_vers="${os_dna_version}"
 
-			git checkout "tags/v${os_dna_version}"
+			echo "${b-}Installing | ${g-}version [${selected_vers}]${n-} | of | ${g-}dna${n-} |.${x-}"
+			echo
+
+			git checkout "tags/${os_dna_version}"
 
 	    fi
 
