@@ -100,72 +100,73 @@ synthia-download_dna() {
 		rm -r "${clone_dir:?}"
 	fi
 
-	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && echo && cd "${clone_name}" && \
+	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && echo && cd "${clone_name}"
 
-		. ./functions/snippets && \
+		. ./functions/snippets
 
-		git config advice.detachedHead false && \
+		git config advice.detachedHead false
 
 		### Define latest version
 
-		export dna_latest_vers_final="$(semtag getfinal)" && \
-		export dna_latest_vers_tagged="$(semtag getlast)" && \
-		export dna_latest_vers_bl_edge="$(semtag getcurrent)" && \
+		export dna_latest_vers_final="$(semtag getfinal)"
+		export dna_latest_vers_tagged="$(semtag getlast)"
+		export dna_latest_vers_bl_edge="$(semtag getcurrent)"
 
-		if [ "${custom_dna_version-null}" = "l" ]; \
-	    then \
+		if [ "${custom_dna_version-null}" = "l" ]
+	    then
 
-	        export selected_vers="v0.0.1-custom-local" && \
+	        export selected_vers="v0.0.1-custom-local"
 
-	        echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"; \
+	        echo "${r-}${b-}Sourcing | ${n-}local version${r-} | of | ${n-}dna${r-} | respecting any local alteration performed as per | ${n-}-d l${r-} |.${x-}"
+
+	    elif [ "${custom_dna_version-null}" = "b" ]
+	    then
+
+	        export selected_vers="${dna_latest_vers_bl_edge}"
+
+	        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}"
 			echo
 
-	    elif [ "${custom_dna_version-null}" = "b" ]; \
-	    then \
+	        git reset --hard origin/master
 
-	        export selected_vers="${dna_latest_vers_bl_edge}" && \
+		elif [[ "${custom_dna_version-null}" == *"v"* ]]
+		then
 
-	        echo "${r-}${b-}Installing | ${n-}bleeding-edge version${r-} | of | ${n-}dna${r-} | up to latest git commit as per | ${n-}-d b${r-} |.${x-}" && \
+			export selected_vers="${custom_dna_version}"
+
+			echo "${c-}${b-}Installing | ${n-}version ${selected_vers}${c-} | of | ${n-}dna${c-} |  as per | ${n-}-d ${selected_vers}${c-} |.${x-}"
+
+			git checkout "tags/${selected_vers}"
+
+	    elif [ "${custom_dna_version-null}" = "t" ]
+	    then
+
+	        export selected_vers="${dna_latest_vers_tagged}"
+
+	        echo "${o-}${b-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}"
 			echo
 
-	        git reset --hard origin/master; \
+	        git checkout "tags/${dna_latest_vers_tagged}"
 
-		elif [[ "${custom_dna_version-null}" == *"v"* ]]; \
-		then \
+	    elif [ "${custom_dna_version-null}" = "f" ]
+		then
 
-			export selected_vers="${custom_dna_version-null}" && \
+	        export selected_vers="${dna_latest_vers_final}"
 
-			echo "${c-}${b-}Installing | ${n-}version ${selected_vers}${c-} | of | ${n-}dna${c-} |  as per | ${n-}-d ${selected_vers}${c-} |.${x-}" && \
-
-	    elif [ "${custom_dna_version-null}" = "t" ]; \
-	    then \
-
-	        export selected_vers="${dna_latest_vers_tagged}" && \
-
-	        echo "${o-}${b-}Installing | ${n-}latest-tagged version${o-} | of | ${n-}dna${o-} | [independently of its stability type] as per | ${n-}-d t${o-} |.${x-}" && \
+			echo "${y-}${b-}Installing | ${n-}latest-final version${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}"
 			echo
 
-	        git checkout "tags/${dna_latest_vers_tagged}"; \
+	        git checkout "tags/${dna_latest_vers_final}"
 
-	    elif [ "${custom_dna_version-null}" = "f" ]; \
-		then \
+		else
 
-	        export selected_vers="${dna_latest_vers_final}" && \
+			export selected_vers="${os_dna_version}"
 
-			echo "${y-}${b-}Installing | ${n-}latest-final version${y-} | of | ${n-}dna${y-} | as per | ${n-}-d f${y-} |.${x-}" && \
-			echo
+			git checkout "tags/v${os_dna_version}"
 
-	        git checkout "tags/${dna_latest_vers_final}"; \
+	    fi
 
-		else \
-
-			export selected_vers="${os_dna_version}" && \
-
-			git checkout "tags/v${os_dna_version}"; \
-
-	    fi && \
-
-		echo "${selected_vers}" > "./version_installed";
+		echo "${selected_vers}" > "./version_installed"
 
 	)
 
