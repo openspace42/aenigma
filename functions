@@ -100,7 +100,7 @@ synthia-download_dna() {
 		rm -r "${clone_dir:?}"
 	fi
 
-	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && cd "${clone_name}" && \
+	( cd "${clone_base_dir}" && git clone "${clone_host}/${clone_author}/${clone_name}" && echo && cd "${clone_name}" && \
 
 		. ./functions/snippets && \
 
