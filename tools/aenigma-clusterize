@@ -199,7 +199,7 @@ if [ -f "/root/.ssh/aenigma_cluster.pub" ]
 then
 	aenigma_cluster_ssh_keypair_preexisting="y"
 else
-	dna-generate_ssh_keypair -n "aenigma_cluster"
+	dna-generate_ssh_keypair -n "aenigma_cluster" -h "ae01.${domain}"
 fi
 
 ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
