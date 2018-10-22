@@ -948,7 +948,7 @@ aenigma-push_certs() {
 		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
 
         bash openspace42/aenigma/tools/aenigma-exec -c "
-chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
+chown -R "ejabberd:ejabberd" "${ssl_project_dir}" || true
 chmod -R 700 "${ssl_project_dir}"
 /usr/sbin/service ejabberd restart
 "
