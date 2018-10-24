@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-### openspace synthia bootstrap framework v0.3.1 [https://github.com/openspace42/synthia]
+### openspace synthia bootstrap framework
+### [https://github.com/openspace42/synthia]
+### v0.3.1
 
 os_dna_version="v0.3.2-beta.4"
 
@@ -2376,15 +2378,14 @@ synthia-perform_installation() {
 		dna-echo -m " | ${y-}https://${hostname}${n-} | "
 		dna-echo -m " | ${y-}admin@${domain}${n-} | "
 
-		if [ $ejab_admin_pwreset = "y" ]
+		if [ "${ejab_admin_pwreset}" = "y" ]
 		then
 		    dna-echo -m " | ${y-}${ejab_admin_pw}${n-} | "
 		else
 		    dna-echo -m " | ${y-}[your previously set password]${n-} | "
 		fi
 
-		read -rp "${b-}[press enter to continue reading...]${x-}"
-		echo
+		dna-press_to_continue
 
 		if [ "${cluster_mode-null}" = "primary" ]
 		then
@@ -2423,7 +2424,7 @@ synthia-perform_installation() {
 
 		### Restart fail2ban
 
-		/usr/sbin/service fail2ban stop
+		/usr/sbin/service fail2ban start
 
 		########################################################################
 
