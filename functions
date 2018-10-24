@@ -1480,7 +1480,7 @@ synthia-perform_installation() {
 
 	################################################################################
 
-	dna-touch_tmp_project_dir
+	dna-refresh_tmp_project_dir
 
 	mkdir -p "${ssl_project_dir}"
 
