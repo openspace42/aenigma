@@ -1811,6 +1811,12 @@ synthia-perform_installation() {
 
 		########################################################################
 
+		### Temporarily Stop fail2ban to avoid locking out the primary server during installation
+
+		/usr/sbin/service fail2ban stop
+
+		########################################################################
+
 		dna-echo -m "This is the public IPv4 for this machine:"
 		dna-echo -m " | ${y-}$this_ipv4${n-} | "
 		dna-echo -m "Enter it on the primary node when prompted to do so, then follow the instructions from there."
@@ -2400,6 +2406,8 @@ synthia-perform_installation() {
 
 	else
 
+		########################################################################
+
 		dna-echo -m "Now joining ejabberd cluster by connecting to the primary node..."
 
 		if /usr/sbin/ejabberdctl --no-timeout join_cluster "ejabberd@ae01.${domain}"
@@ -2410,6 +2418,14 @@ synthia-perform_installation() {
 			dna-echo -m "Inspect the | ${y-}/var/log/ejabberd/error.log${n-} | logfile for more information."
 			dna-exit
 		fi
+
+		########################################################################
+
+		### Restart fail2ban
+
+		/usr/sbin/service fail2ban stop
+
+		########################################################################
 
 	fi
 
