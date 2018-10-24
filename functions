@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-### openspace synthia bootstrap framework v0.3.0 [https://github.com/openspace42/synthia]
+### openspace synthia bootstrap framework v0.3.1 [https://github.com/openspace42/synthia]
 
-os_dna_version="v0.3.1"
+os_dna_version="v0.3.2-beta.4"
 
 ################################################################################
 
