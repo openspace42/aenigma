@@ -1813,9 +1813,9 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		### Temporarily Stop fail2ban to avoid locking out the primary server during installation
+		### Temporarily stop ufw to avoid locking out the primary node during installation
 
-		/usr/sbin/service fail2ban stop
+		/usr/sbin/ufw --force disable
 
 		########################################################################
 
@@ -1958,6 +1958,12 @@ synthia-perform_installation() {
 		dna-echo -s "Primary node setup complete. Now continuing installation..."
 		unset wait_output
 		sleep 1
+
+		########################################################################
+
+		### Re-enable ufw
+
+		/usr/sbin/ufw --force enable
 
 		########################################################################
 
@@ -2419,12 +2425,6 @@ synthia-perform_installation() {
 			dna-echo -m "Inspect the | ${y-}/var/log/ejabberd/error.log${n-} | logfile for more information."
 			dna-exit
 		fi
-
-		########################################################################
-
-		### Restart fail2ban
-
-		/usr/sbin/service fail2ban start
 
 		########################################################################
 
