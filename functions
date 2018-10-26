@@ -1818,6 +1818,7 @@ synthia-perform_installation() {
 		### Temporarily stop ufw to avoid locking out the primary node during installation
 
 		/usr/sbin/ufw --force disable
+		echo
 
 		########################################################################
 
@@ -1966,6 +1967,7 @@ synthia-perform_installation() {
 		### Re-enable ufw
 
 		/usr/sbin/ufw --force enable
+		echo
 
 		########################################################################
 
