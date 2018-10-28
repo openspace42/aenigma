@@ -67,9 +67,9 @@ echo
 while getopts ":d:p:" arguments
 do
     case $arguments in
-        d)	export custom_dna_version="$OPTARG"
+        d)	export custom_dna_version="${OPTARG}"
 	        ;;
-		p)	export custom_project_version="$OPTARG"
+		p)	export custom_project_version="${OPTARG}"
 	        ;;
         \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 	        echo
@@ -83,24 +83,7 @@ OPTIND=1
 
 ### Download dna
 
-if [ ! -z "${custom_dna_version-}" ]
-then
-	case $custom_dna_version in
-		b)	echo "${r-}${b-}Fetching bleeding-edge dna version as per | -d b |.${x-}"
-			echo
-			synthia-download_dna
-			;;
-		l)	echo "${r-}${b-}Disabling dna fetch and using local version as per | -d l |.${x-}"
-			echo
-			;;
-		*)	echo "${r-}${b-}Invalid content for | ${n-}custom_dna_version${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
-			echo
-			echo "Exiting..."
-			echo
-			exit 1
-			;;
-	esac
-fi
+synthia-download_dna
 
 ### Source dna
 

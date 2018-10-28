@@ -2,9 +2,9 @@
 
 ### openspace synthia bootstrap framework
 ### [https://github.com/openspace42/synthia]
-### v0.3.1
+### v0.3.2
 
-os_dna_version="v0.3.2"
+dna_version="v0.3.2"
 
 ################################################################################
 
@@ -168,12 +168,12 @@ synthia-download_dna() {
 
 			else
 
-				export dna_selected_vers="${os_dna_version}"
+				export dna_selected_vers="${dna_version}"
 
 				echo "${b-}Installing | ${g-}version [${dna_selected_vers}]${n-} | of | ${g-}dna${n-} |.${x-}"
 				echo
 
-				git checkout "tags/${os_dna_version}"
+				git checkout "tags/${dna_version}"
 
 		    fi
 
