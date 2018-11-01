@@ -77,8 +77,8 @@ dna-read_conf_settings
 
 if [[ $- == *i* ]]
 then
-        dna-echo -m "${g-}You are now inside of the aenigma-env shell."
-        export PS1="\u@aenigma-env:\[\e[32m\]~#\[\e[m\] "
+        dna-echo -m "${g-}You are now inside of the ${proj_name}-env shell."
+        export PS1="\u@${proj_name}-env:\[\e[32m\]~#\[\e[m\] "
 else
         dna-echo -e "This file is NOT intended to be run directly."
         dna-echo -m "It is only intended to be sourced by the command:"
