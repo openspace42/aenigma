@@ -37,7 +37,7 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## New features
 
-### v6.0.0
+### v0.6.x
 
 1. Completely restructured code. More neatly organized aenigma functions. More functions integrated into or sourced from dna.
 2. Removed the 3 installation options in favour of a single option [formerly #1] that works for everyone.
@@ -62,11 +62,13 @@ And don't forget to spread the word with your fellow friends, family, activists,
 
 ## Install
 
-The only supported distro is **Ubuntu 18**.
-
-Want to test aenigma out on Debian? That would be great, and things should already mostly work! Edit out the checks in the installer and please report back on how everything works! Thank you!
+The only supported distros are **Ubuntu 18 [bionic beaver]** and **Debian 9 [stretch]**.
 
 Any distro NOT based on Debian / Ubuntu will NEVER work because our bash-framework is entirely and fundamentally designed to work with these distros only.
+
+```
+[log in as root on your target machine]
+```
 
 ```
 apt update
@@ -75,11 +77,15 @@ apt install git
 
 ```
 git clone https://github.com/openspace42/aenigma
-sudo bash aenigma/setup
+bash aenigma/setup
 ```
 
 ## Restore a previous install on a fresh new machine:
 ### [either from S3 or another standalone backup from your old instance]
+
+```
+[log in as root on your target machine]
+```
 
 ```
 apt update
@@ -113,14 +119,16 @@ sudo bash aenigma/tools/aenigma-restore
 
 Very special thankyous to:
 
-Torn [autistici.org] for inspiring in me the idea of a federated messaging network
+**Torn [autistici.org]** for inspiring in me the idea of a federated messaging network.
 
-Gio [eigenlab / LibreMesh] for leading me towards XMPP instead after talking about related projects.
+**Gio [eigenlab / LibreMesh]** for leading me towards XMPP instead after talking about related projects.
 
-Palinuro + MiBoFra [frozenbox.org / parrotsec.org] for actually getting me started on XMPP.
+**Palinuro + MiBoFra [frozenbox.org / parrotsec.org]** for actually getting me started on XMPP.
 
-Daniel Gultsch + Holger Weiß for their excellent work and for their very precious advice and opinions about XMPP at large and its future.
+**Daniel Gultsch + Holger Weiß** for their excellent work and for their very precious advice and opinions about XMPP at large and its future.
 
-Also, anyone involved in the XMPP community, and aenigma beta testers of course!
+The LUG **unixMIB** [Milano Bicocca university] for hosting my presentation on Linux Day 2018 about aenigma.
+
+Also, anyone involved in the XMPP community, and aenigma users, beta testers, and contributors of course!
 
 Thanks to all of you. Let's make this happen. It's about time [finally].

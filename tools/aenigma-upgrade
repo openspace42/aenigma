@@ -99,12 +99,14 @@ synthia-define_vars
 
 ### Clone and upgrade
 
-if [ -d "./${proj_name}/" ]
+if [ -d "/root/${proj_name}/" ]
 then
-        rm -r "${proj_name}/"
+        rm -r "/root/${proj_name}/"
 fi
 
 echo
+
+cd
 
 git clone "${git_host}/${author_name}/${proj_name}"
 
