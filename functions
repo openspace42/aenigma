@@ -483,7 +483,7 @@ aenigma-add_ejabberd_repo() {
 	dna-check_dpkg_availability
 	currdistro="$(lsb_release --codename | cut -f2)"
 	apt-get -y install apt-transport-https || true
-	echo "deb https://apt.jabber.at $currdistro ejabberd" > /etc/apt/sources.list.d/jabber.at.list
+	echo "deb https://apt.jabber.at ${currdistro} ejabberd" > "/etc/apt/sources.list.d/jabber.at.list"
 	wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
 	apt-get update
 	echo
