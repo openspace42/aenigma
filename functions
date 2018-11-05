@@ -2025,15 +2025,15 @@ synthia-perform_installation() {
 
 	### Create and configure the $hostname website
 
-	if [ -f "/etc/nginx/conf.d/default" ]
+	if [ -f "/etc/nginx/conf.d/default.conf" ]
 	then
-		rm "/etc/nginx/conf.d/default"
+		rm "/etc/nginx/conf.d/default.conf"
 	fi
 
-	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/conf.d/${proj_name}"
+	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/conf.d/${proj_name}.conf"
 
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}"
-	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}.conf"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}.conf"
 
 	mkdir -p "/var/www/${hostname}/"
 	chown -R "www-data:www-data" "/var/www/${hostname}/"
