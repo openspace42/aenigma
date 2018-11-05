@@ -37,16 +37,7 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 
 ## New features
 
-### v0.6.x
-
-1. Completely restructured code. More neatly organized aenigma functions. More functions integrated into or sourced from dna.
-2. Removed the 3 installation options in favour of a single option [formerly #1] that works for everyone.
-2. Leverage the use of LetsEncrypt's new wildcard TLS certificates that works for every service we need. This massively simplify the codebase and the end-user setup itself.
-3. Entirely new DNS checks now part of dna.
-4. New DNS provider functionality [also part of dna] for automated DNS record configuration from the aforementioned DNS checks function.
-5. aenigma is now clusterizable in a simple and straightforward fashion. Every new instance installed is ready to clusterized in the future from now on. This is known as multi-master multi-server functionality.
-6. Removed reliance on EasyEngine and instead directly provision the wildcard LE cert, install nginx, and configure hostname website.
-7. aenigma can now finally be installed on Debian 9 [stretch] [in addition to Ubuntu 18.04 LTS]!
+[see the [changelog](CHANGELOG.md)]
 
 ## Donate to keep the project running
 
