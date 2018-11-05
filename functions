@@ -460,6 +460,7 @@ aenigma-install_sslh() {
 	rm -r "$tmp_project_dir/sslh"
 	mkdir -p /var/run/sslh
 	touch /var/run/sslh/sslh.pid
+	killall sslh
 	service sslh restart || true
 	echo
 	dna-echo -m "${g-}Finished installing SSLH."
