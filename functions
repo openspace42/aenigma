@@ -460,7 +460,7 @@ aenigma-install_sslh() {
 	rm -r "$tmp_project_dir/sslh"
 	mkdir -p /var/run/sslh
 	touch /var/run/sslh/sslh.pid
-	killall sslh
+	killall sslh 2> /dev/null || true
 	service sslh restart || true
 	echo
 	dna-echo -m "${g-}Finished installing SSLH."
@@ -2019,7 +2019,7 @@ synthia-perform_installation() {
 
 	### Install nginx and configure ejabberd admin panel reverse proxy site
 
-	dna-install_dependencies -e -p "nginx"
+	dna-install_nginx
 
 	############################################################################
 
@@ -2049,10 +2049,6 @@ synthia-perform_installation() {
 	then
 		ln -s "/etc/nginx/sites-available/${proj_name}" "/etc/nginx/sites-enabled/${proj_name}"
 	fi
-
-	### Reload nginx
-
-	service nginx reload || true
 
 	### Restart nginx
 
