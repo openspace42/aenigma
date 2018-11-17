@@ -2046,6 +2046,10 @@ synthia-perform_installation() {
 
 	############################################################################
 
+	### Install mail notifications
+
+	dna-install_mail_notifications
+
 	### Install SSLH
 
 	aenigma-install_sslh
