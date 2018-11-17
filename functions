@@ -1693,26 +1693,6 @@ synthia-perform_installation() {
 
 		aenigma-update_routing_info
 
-	else
-
-		########################################################################
-
-		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
-
-		dna-echo -e "Proceeding with this installation as a secondary node will wipe anything and everything that might already present on this [and only this] server."
-		dna-echo -m "If this node is currently part of a cluster, data on other nodes will NOT be affected, and this node will re-obtain all cluster data from other nodes upon completion of the installation."
-		dna-echo -m "If however you've previously used this machine to host a standalone installation or not-yet-clusterized data, this will be permanently lost."
-		dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine."
-
-		dna-ask_for_boolean -d "n" -q "Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
-		if [ "${boolean_output}" = "y" ]
-		then
-			dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
-		else
-			dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
-			dna-exit
-		fi
-
 		########################################################################
 
 	fi
@@ -2088,7 +2068,7 @@ synthia-perform_installation() {
 
 					### The configuration is already correct, the existing data in /var/lib/ejabberd will work fine.
 
-					set_erlang_node_to_hostname="no"
+					set_erlang_node_to_hostname="not_necessary"
 
 				else
 
@@ -2127,7 +2107,7 @@ synthia-perform_installation() {
 						read -rp "${b-}Press enter to continue...${x-}"
 						echo
 
-						set_erlang_node_to_hostname="no"
+						set_erlang_node_to_hostname="skip"
 
 					fi
 
@@ -2160,10 +2140,30 @@ synthia-perform_installation() {
 
 	else
 
-		### This is a secondary node install, the user has already consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
 
-		set_erlang_node_to_hostname="ok"
-		wipe_var_lib_ejabberd="ok"
+		dna-echo -e "Proceeding with this installation as a secondary node will wipe anything and everything that might already present on this [and only this] server."
+		dna-echo -m "If this node is currently part of a cluster, data on other nodes will NOT be affected, and this node will re-obtain all cluster data from other nodes upon completion of the installation."
+		dna-echo -m "If however you've previously used this machine to host a standalone installation or not-yet-clusterized data, this will be permanently lost."
+		dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine."
+
+		dna-ask_for_boolean -d "n" -q "Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
+		if [ "${boolean_output}" = "y" ]
+		then
+
+			### As the user has consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+
+			set_erlang_node_to_hostname="ok"
+			wipe_var_lib_ejabberd="ok"
+
+			dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
+
+		else
+
+			dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
+			dna-exit
+
+		fi
 
 	fi
 
@@ -2257,8 +2257,10 @@ synthia-perform_installation() {
 		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
 	fi
 
-	if [ "${wipe_var_lib_ejabberd}" = "ok" ]
+	if [ "${wipe_var_lib_ejabberd}" = "ok" ] && [ ! "${set_erlang_node_to_hostname}" = "not_necessary" ]
 	then
+
+		dna-echo -m "Now wiping ejabberd to prepare for the new installation..."
 
 		/usr/sbin/service ejabberd stop 2> /dev/null || true
 		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
