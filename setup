@@ -16,7 +16,23 @@ clear
 
 ### Determine script execution directory and install directory.
 
-exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ -L "${BASH_SOURCE}" ]
+then
+
+    ### This file is being executed via a symlink.
+    ### Identify the parent directory of the target file
+
+    link_target="$(readlink ${BASH_SOURCE})"
+    exec_dir="${link_target%/*}"
+
+else
+
+    ### This file is being directly executed.
+    ### Identify our parent directory.
+
+    exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+fi
 
 exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
 exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
