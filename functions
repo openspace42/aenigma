@@ -2142,26 +2142,41 @@ synthia-perform_installation() {
 
 		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
 
-		dna-echo -e "Proceeding with this installation as a secondary node will wipe anything and everything that might already present on this [and only this] server."
-		dna-echo -m "If this node is currently part of a cluster, data on other nodes will NOT be affected, and this node will re-obtain all cluster data from other nodes upon completion of the installation."
-		dna-echo -m "If however you've previously used this machine to host a standalone installation or not-yet-clusterized data, this will be permanently lost."
-		dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine."
-
-		dna-ask_for_boolean -d "n" -q "Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
-		if [ "${boolean_output}" = "y" ]
+		if [ -f "/etc/default/ejabberd" ]
 		then
 
-			### As the user has consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+			### This is a re-install, as the config file is already in place. Check to see if the ERLANG_NODE value is already correct.
 
-			set_erlang_node_to_hostname="ok"
-			wipe_var_lib_ejabberd="ok"
+			if ! grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/etc/default/ejabberd"
+			then
 
-			dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
+				### The ERLANG_NODE value is incorrect. Therefore, this instance was either previously installed in single [non-cluster] mode or was part of a different cluster. Alert the user of the imminent wipe.
 
-		else
+				dna-echo -e "It appears this machine has an existing ejabberd installation."
+				dna-echo -e "Proceeding with this installation as a secondary node will wipe anything and everything that might already present on this [and only this] server."
+				dna-echo -m "If this node is currently part of a cluster, data on other nodes will NOT be affected."
+				dna-echo -m "If however you've previously used this machine to host a standalone installation or not-yet-clusterized data, this will be permanently lost."
+				dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine before continuing."
 
-			dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
-			dna-exit
+				dna-ask_for_boolean -d "n" -q "Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
+				if [ "${boolean_output}" = "y" ]
+				then
+
+					### As the user has consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
+
+					set_erlang_node_to_hostname="ok"
+					wipe_var_lib_ejabberd="ok"
+
+					dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
+
+				else
+
+					dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
+					dna-exit
+
+				fi
+
+			fi
 
 		fi
 
@@ -2361,10 +2376,10 @@ synthia-perform_installation() {
 			dna-echo -s "All | ${n-}${service}${g-} | operations completed successfully."
 		else
 			add_service_check_bottom_spacing
-			dna-echo -e "An error has occured during | ${n-}${service}${g-} | operations."
+			dna-echo -e "An error has occured during | ${n-}${service}${r-} | operations."
 			dna-echo -m "This was one of the last steps in this installation, so it's possible that your end result is at least partially working."
 			dna-echo -m "Review the output above and try running the installation again."
-			read -rp "${b-}[press enter to continue reading...]${x-}"
+			dna-press_to_continue
 		fi
 
 		set -e
