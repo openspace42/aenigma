@@ -2185,6 +2185,8 @@ synthia-perform_installation() {
 
 			fi
 
+		else
+
 			### There is no existing ejabberd installation, therefore proceed with wiping any leftover data without asking.
 
 			set_erlang_node_to_hostname="ok"
