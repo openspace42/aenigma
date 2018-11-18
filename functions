@@ -2289,7 +2289,10 @@ synthia-perform_installation() {
 	if [ "${wipe_var_lib_ejabberd}" = "ok" ] && [ ! "${set_erlang_node_to_hostname}" = "not_necessary" ]
 	then
 
-		dna-echo -m "Now wiping ejabberd to prepare for the new installation..."
+		dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
+		dna-echo -e "This is your final warning: if you're not absolutely sure your data is safe, abort the installation now!"
+
+		dna-wait -s "11" -d "Counting down to full ejabberd wipe on this machine..."
 
 		/usr/sbin/service ejabberd stop 2> /dev/null || true
 		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
