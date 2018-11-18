@@ -2164,10 +2164,10 @@ synthia-perform_installation() {
 
 					### As the user has consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
 
+					dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
+
 					set_erlang_node_to_hostname="ok"
 					wipe_var_lib_ejabberd="ok"
-
-					dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
 
 				else
 
@@ -2176,7 +2176,19 @@ synthia-perform_installation() {
 
 				fi
 
+			else
+
+				### The existing configuration is already correct, therefore the existing data is compatible with this re-clusterization.
+
+				set_erlang_node_to_hostname="not_necessary"
+				wipe_var_lib_ejabberd="no"
+
 			fi
+
+			### There is no existing ejabberd installation, therefore proceed with wiping any leftover data without asking.
+
+			set_erlang_node_to_hostname="ok"
+			wipe_var_lib_ejabberd="ok"
 
 		fi
 
