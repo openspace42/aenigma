@@ -438,6 +438,8 @@ aenigma-install_sslh() {
 
 	cp "${source_dir}/conf/sslh/etc-sslh.cfg" "/etc/sslh.cfg"
 
+	dna-localize_sslh_install
+
 	sed -i "s|domain-var|${domain}|g" "/etc/sslh.cfg"
 	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
 	sed -i "s|xu.|xu${node_number}.|g" "/etc/sslh.cfg"
