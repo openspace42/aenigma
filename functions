@@ -637,6 +637,7 @@ aenigma-create_nodes_db_numbered() {
 	done
 	unset node_ipv4
 	IFS=$' \t\n'
+	set +f
 
 }
 
@@ -708,6 +709,7 @@ aenigma-update_routing_info() {
 	done
 	unset node_ipv4 array_iter
 	IFS=$' \t\n'
+	set +f
 	echo
 
 	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
@@ -839,6 +841,7 @@ aenigma-push_routing_info() {
 	done
 	unset node_ipv4
 	IFS=$' \t\n'
+	set +f
 
 	############################################################################
 
@@ -928,6 +931,7 @@ aenigma-push_certs() {
 	done
 	unset node_ipv4
 	IFS=$' \t\n'
+	set +f
 
 	############################################################################
 
@@ -1077,6 +1081,7 @@ aenigma-test_online_nodes() {
 	done
 	unset node_ipv4
 	IFS=$' \t\n'
+	set +f
 
 	############################################################################
 
@@ -1149,6 +1154,7 @@ aenigma-perform_dns_checks() {
 
 		unset array_iter
 		IFS=$' \t\n'
+		set +f
 
 	done
 
@@ -1206,6 +1212,7 @@ aenigma-perform_dns_checks() {
 
 		unset array_iter
 		IFS=$' \t\n'
+		set +f
 
 	done
 
