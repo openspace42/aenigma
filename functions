@@ -429,41 +429,22 @@ aenigma-xmpp_intro() {
 
 aenigma-install_sslh() {
 
-	### Install SSLH
+	dna-install_sslh
 
-	dna-echo -m "Now installing SSLH..."
-	dna-install_build_tools
-	/usr/sbin/service sslh stop &> /dev/null || true
-	ssh_port="$(cat $os_conf_dir/ssh_port)"
-	apt-get -y install libwrap0-dev libconfig-dev || true
-	rm -r "$tmp_project_dir/sslh" &> /dev/null || true
-	git clone https://github.com/yrutschle/sslh "$tmp_project_dir/sslh"
-	( cd "$tmp_project_dir/sslh" && make install && make && cp sslh-select /usr/local/sbin/sslh )
-	sed -i "s|this_ipv4-var|${this_ipv4}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	if [ $ipv6_available = "y" ]
-	then
-		sed -i "s|#ipv6_comma|,|g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|#ipv6_line||g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|this_ipv6-var|${this_ipv6}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	else
-		sed -i "s|#ipv6_comma||g" $source_dir/conf/sslh/etc-sslh.cfg
-		sed -i "s|#ipv6_line|#|g" $source_dir/conf/sslh/etc-sslh.cfg
-	fi
-	sed -i "s|domain-var|${domain}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	sed -i "s|ssh_port-var|${ssh_port}|g" $source_dir/conf/sslh/etc-sslh.cfg
-	sed -i "s|xu.@|xu${node_number}.@|g" $source_dir/conf/sslh/etc-sslh.cfg
-	cp $source_dir/conf/sslh/etc-sslh.cfg /etc/sslh.cfg
-	cp $source_dir/conf/sslh/etc-init.d.sslh /etc/init.d/sslh
-	chmod +x /etc/init.d/sslh
-	update-rc.d sslh defaults
-	systemctl daemon-reload
-	rm -r "$tmp_project_dir/sslh"
-	mkdir -p /var/run/sslh
-	touch /var/run/sslh/sslh.pid
-	killall sslh 2> /dev/null || true
-	service sslh restart || true
-	echo
-	dna-echo -m "${g-}Finished installing SSLH."
+	### Customize config file for aenigma
+
+	operation_message="customizing SSLH config for ${proj_name}"
+	dna-echo_operation -h
+
+	cp "${source_dir}/conf/sslh/etc-sslh.cfg" "/etc/sslh.cfg"
+
+	sed -i "s|domain-var|${domain}|g" "/etc/sslh.cfg"
+	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
+	sed -i "s|xu.|xu${node_number}.|g" "/etc/sslh.cfg"
+
+	/usr/sbin/service sslh restart
+
+	dna-echo_operation -t
 
 }
 
