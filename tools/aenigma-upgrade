@@ -113,6 +113,20 @@ synthia-define_vars
 
 ################################################################################
 
+if [[ "${custom_project_version-null}" == "l" ]]                                  ### Do NOT escape the string comparison
+then
+
+	echo
+    dna-echo -e "You're running the installation via the upgrade script."
+    dna-echo -m "Therefore the | ${r-}local${n-} | version of the ${proj_name} directory doesn't exist, as it's cloned automatically by the upgrade script itself."
+    dna-echo -m "If you want to make customizations to the project before installing it, clone it yourself while in the root directory of the root user and then run:"
+    dna-echo -m " | ${c-}bash ${proj_name}/setup -pl | "
+    dna-exit
+
+fi
+
+################################################################################
+
 ### Clone and upgrade
 
 if [ -d "/root/${proj_name}/" ]
