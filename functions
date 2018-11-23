@@ -1473,7 +1473,7 @@ synthia-perform_installation() {
 
 	dna-abort_on_sslh_session
 
-	dna-inception -h -p
+	dna-inception -h -m -p
 
 	################################################################################
 
