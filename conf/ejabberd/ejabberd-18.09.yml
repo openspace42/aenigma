@@ -334,8 +334,9 @@ modules:
       - allow
     custom_headers:
       "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Credentials": "true"
       "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT"
-      "Access-Control-Allow-Headers": "Content-Type"
+      "Access-Control-Allow-Headers": "Authorization, Content-Type"
   mod_http_upload_quota:
     max_days: 3650
   mod_last: {}
