@@ -332,6 +332,10 @@ modules:
     dir_mode: "2750"
     access:
       - allow
+    custom_headers:
+      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT"
+      "Access-Control-Allow-Headers": "Content-Type"
   mod_http_upload_quota:
     max_days: 120
   mod_last: {}
@@ -397,12 +401,9 @@ modules:
         This is the aenigma XMPP server at hostname.xyz hosting domain domain.xyz.
         The admin for this instance is admin@domain.xyz.
         https://aenigma.xyz
-
     registration_watchers:
        - "admin@domain.xyz"
-
     access_from: allow
-
     access: register
   mod_roster:
     versioning: true
