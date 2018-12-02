@@ -309,7 +309,12 @@ modules:
   mod_carboncopy: {}
   mod_client_state: {}
   mod_configure: {}
-  mod_disco: {}
+  mod_disco:
+    server_info:
+      -
+        modules: all
+        name: "abuse-addresses"
+        urls: ["mailto:admin_mail"]
   mod_fail2ban: {}
   mod_http_api: {}
   mod_echo:

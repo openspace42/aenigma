@@ -507,8 +507,6 @@ aenigma-install_ejabberd_config() {
 
 	mkdir -p "/etc/ejabberd/"
 	cp "${source_ejab_conf_file}" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
 
 	dna-echo -s "Finished creating ejabberd directory and setting custom aenigma config."
 
@@ -2266,12 +2264,17 @@ synthia-perform_installation() {
 
 	aenigma-set_permissions
 
-	### Perform some changes on the ejabberd config files.
+	### Perform customizations on the ejabberd config files.
 
-	sed -i "s/xe.@/xe${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xm.@/xm${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xp.@/xp${node_number}.@/g" /etc/ejabberd/ejabberd.yml
-	sed -i "s/xu.@/xu${node_number}.@/g" /etc/ejabberd/ejabberd.yml
+	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xu.@/xu${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${this_ipv4}" "/etc/default/ejabberd"
 
