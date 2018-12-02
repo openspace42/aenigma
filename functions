@@ -1233,10 +1233,8 @@ aenigma-perform_dns_checks() {
 
 	#### SRV client records
 
-	dna-check_dns_record -n "_xmpps-client._tcp.${domain}" -t "srv" -r "5 1 5223 ae.${domain}."
-	dna-check_dns_record -n "_xmpp-client._tcp.${domain}" -t "srv" -r "10 1 5222 ae.${domain}."
-	dna-check_dns_record -n "_xmpps-client._tcp.${domain}" -t "srv" -r "15 1 443 ae.${domain}."
-	dna-check_dns_record -n "_xmpp-client._tcp.${domain}" -t "srv" -r "20 1 443 ae.${domain}."
+	dna-check_dns_record -n "_xmpps-client._tcp.${domain}" -t "srv" -r "5 1 5223 ae.${domain}.,15 1 443 ae.${domain}."
+	dna-check_dns_record -n "_xmpp-client._tcp.${domain}" -t "srv" -r "10 1 5222 ae.${domain}.,20 1 443 ae.${domain}."
 
 	#### SRV server records
 
