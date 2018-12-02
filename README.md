@@ -17,7 +17,7 @@ As soon as you're up and running join our conference at os@xc.os.vu !
 * **One touch deployment**: just clone and run the setup script
 * Has a guided, **step-by-step install** that makes sure you get everything perfect on the first run
 * Always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server
-* Passes all of the [XEP-0375 compliance checks](https://github.com/iNPUTmice/ComplianceTester) and those performed by the Conversations client
+* Passes all of the [2018 XEP-0387 compliance checks](https://compliance.conversations.im/about/) and therefore those performed by the Conversations client
 * Natively supports **Signal-level encrypted conversations** with all the required modules for **OMEMO E2EE**
 * Allows you to and guides you through using your **top level domain as the xmpp domain [@domain.xyz]** while hosting the server on a subdomain [xmpp.domain.xyz] as its hostname by using SRV records without any XMPP client UI/UX or TLS conflicts.
 * **Supports IPv6** out of the box
