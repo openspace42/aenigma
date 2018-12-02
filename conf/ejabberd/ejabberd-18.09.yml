@@ -337,7 +337,7 @@ modules:
       "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT"
       "Access-Control-Allow-Headers": "Content-Type"
   mod_http_upload_quota:
-    max_days: 120
+    max_days: 3650
   mod_last: {}
   mod_mam:
     ## db_type: sql
