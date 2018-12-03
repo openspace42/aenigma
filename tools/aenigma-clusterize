@@ -377,7 +377,7 @@ echo
 ### Prompt the user to finish the installation on secondary node by following the next steps on the other node
 
 dna-echo -s "Primary_node-level configuration complete."
-dna-echo -m "You can now return to your secondary node as it automatically finished running the installation from there."
+dna-echo -m "You can now return to your secondary node and finish running the installation from there."
 
 ############################################################################
 
