@@ -18,6 +18,8 @@ As soon as you're up and running join our group chats at os@xc.os.vu and aenigma
 
 <a href='https://compliance.conversations.im/server/os.vu'><img src='https://compliance.conversations.im/badge/os.vu'></a>
 
+## News
+
 ## Features
 
 * **State of the art configuration**
