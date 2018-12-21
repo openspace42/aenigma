@@ -95,6 +95,15 @@ dna-check_install_version
 
 dna-echo -m "Now installing repository contents into destination directory."
 
+#### Install rsync if it isn't yet [like in Debian]
+
+if ! dpkg -s rsync &> /dev/null
+then
+    dna-install_dependencies -p "rsync"
+fi
+
+#### Proceed with rsync
+
 rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
 dna-echo -m $"${g-}Finished installing repository contents into destination directory."
