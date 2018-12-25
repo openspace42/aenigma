@@ -20,6 +20,10 @@ As soon as you're up and running join our group chats at os@xc.os.vu and aenigma
 
 ## News
 
+* [2018-12-25] Find us at 35C3 on 2018-12-27 16:00 | ChaosZone Stage for a talk about aenigma [link](https://cfp.chaoszone.cz/35c3/talk/GEBZBY/)
+
+* [2018-12-12] aenigma has been added on prism-break.org as the preferred option in the messaging servers section! [link](https://gitlab.com/prism-break/prism-break/merge_requests/2065)
+
 ## Features
 
 * **State of the art configuration**
