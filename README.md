@@ -14,7 +14,7 @@ Take a look at our actual running instance of aenigma - operated by our hackersp
 
 You can register your account right now from any modern XMPP app and dive right into this amazing world!
 
-As soon as you're up and running join our group chats at os@xc.os.vu and aenigma@xc.os.vu !
+As soon as you're up and running join our group chats at xmpp://os@xc.os.vu and xmpp://aenigma@xc.os.vu !
 
 <a href='https://compliance.conversations.im/server/os.vu'><img src='https://compliance.conversations.im/badge/os.vu'></a>
 
