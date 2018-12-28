@@ -116,6 +116,8 @@ sudo bash aenigma/tools/aenigma-restore
 
 * [Linux day 2018 @ unixMIB Milano](https://docs.google.com/presentation/d/1p6nkmWOBJ7xcWOE6tZIKmgsmYoW353SCv27TAvqDRH8/edit?usp=sharing) [in italian]
 
+* [35C3 @ chaoszone stage](https://docs.google.com/presentation/d/1pkJ25XLQRr4dGqM7SpMwBXrXmlU8cv0Ip-yGEoucXRw/edit?usp=sharing)
+
 ## Credits
 
 Very special thankyous to:
