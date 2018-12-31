@@ -109,9 +109,8 @@ sudo bash aenigma/tools/aenigma-restore
 **Dino** [still in beta | OMEMO only partially working] [[github](https://github.com/dino/dino)]
 
 ### For web
-#### [either as simply a web client to use for yourself or to integrate into your website]
 
-**Converse.JS** [[website](https://conversejs.org)]
+**Converse.JS** [[website](https://conversejs.org)] [either as simply a web client to use for yourself or to integrate into your website]
 
 ## Talks and keynotes
 
