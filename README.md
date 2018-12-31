@@ -2,9 +2,9 @@
 
 ![aenigma logo](logo/aenigma_logo.png?raw=true)
 
-**aenigma** provisions a **fully functional** and out-of-the-box **secure** **XMPP server** you can get running today.
+**aenigma** provisions a **fully functional** and **secure-out-of-the-box** **XMPP server** you can get running today.
 
-It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email, [Streisand](https://github.com/StreisandEffect/streisand) for VPNs, and [Easyengine](https://easyengine.io/) for wordpress.
+It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabox) has done for email, [Streisand](https://github.com/StreisandEffect/streisand) for VPNs, and [Easyengine](https://easyengine.io/) for wordpress / nginx sites hosting.
 
 The installation takes you on a 15 minute, clearly worded, step-by-step setup and takes care of everything automagically.
 
@@ -24,17 +24,17 @@ As soon as you're up and running join our group chats at xmpp:os@xc.os.vu and xm
 
 * **state of the art configuration** always updated with the latest functionalities and best practices for every ejabberd version
 * **latest and most robust security by default** in addition to a built-in first-boot system-wide hardening script
-* **One touch deployment**: just clone and run the setup script on one or multiple freshly installed machines
+* **one touch deployment**: just clone and run the setup script on one or multiple freshly installed machines
 * features a **simple, clear, step-by-step installer** that makes sure you get everything perfect on the first run
 * always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server [thanks to the jabber.at APT repository that allows your system to keep ejabberd up to date independently of aenigma]
-* provisions 100% compliant servers by passing all of the [2018 XEP-0387 compliance checks](https://compliance.conversations.im/about/) and therefore those performed by the Conversations client
+* provisions **100% compliant servers** by passing all of the [2018 XEP-0387 compliance checks](https://compliance.conversations.im/about/) and therefore those performed by the Conversations client
 * natively supports **[almost] signal-level encrypted conversations** with all the required modules for **OMEMO E2EE**
 * allows you to and guides you through using your **top level domain as the xmpp domain [@domain.xyz]** while hosting the server on a subdomain [xmpp.domain.xyz] as its hostname by using SRV records [without any XMPP client UI/UX complications or TLS conflicts]
 * **fully supports IPv6** out of the box meaning your client applications could hypothetically work on IPv6-only networks
 * listens for all of the required **XMPP c2s [client to server], HTTP_uploads, and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor [and sets SRV records for XMPP over TLS (XEP-0368) so that clients can find this server capability autonomously and automatically]
 * **validates all required IPv4 and IPv6 DNS settings including SRV records** [even those for specific modules such as pubsub] and tells you exactly the correct values for each record [work in progress: automatic DNS provisioning via API]
 * sets up the **system firewall and UFW rules** for all configured services
-* Installs nginx and makes the ejabberd **web admin interface securely available** at `https://[hostname]`
+* installs nginx and makes the ejabberd **web admin interface securely available** at `https://[hostname]`
 * provisions and automatically renews **free and fully valid LetsEncrypt wildcard TLS [SSL] certificates** and correctly configures all deployed services [ejabberd, nginx, etc...] accordingly
 * creates ejabberd **Shared Roster Groups** to easily allow admins to see all users registered on their own rosters and all users online at any given time
 * automatically **backups up** all configuration, the ejabberd database, and XMPP data storage **locally and [optionally] to S3 with strong encryption** via duplicity and includes a script for a **guided, consistent, and complete restore**
@@ -108,7 +108,8 @@ sudo bash aenigma/tools/aenigma-restore
 
 **Dino** [still in beta | OMEMO only partially working] [[github](https://github.com/dino/dino)]
 
-### For web [either as simply a web client to use for yourself or to integrate into your website]
+### For web
+#### [either as simply a web client to use for yourself or to integrate into your website]
 
 **Converse.JS** [[website](https://conversejs.org)]
 
