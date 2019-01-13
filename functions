@@ -2481,6 +2481,13 @@ synthia-perform_installation() {
 
 	### Generate aenigma-specific DHparam file
 
+	### legacy fix
+
+	if [ -f "${ssl_project_dir}/dh.pem" ]
+	then
+		rm "${ssl_project_dir}/dh.pem"
+	fi
+
 	dna-generate_dhparam
 
 	### If DHparam file was found or generated, amend the config file to include them:
