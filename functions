@@ -513,8 +513,8 @@ aenigma-install_ejabberd_config() {
 	if [ ! -f "${source_ejab_conf_file}" ]
 	then
 
-		### Fallback to ejabberd.yml for v18.09 in case the ejabberd candidate install version isn't among the ones we have config files for
-		source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-18.09.yml"
+		### Fallback to ejabberd.yml for v18.12 in case the ejabberd candidate install version isn't among the ones we have config files for
+		source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-18.12.yml"
 
 	fi
 
