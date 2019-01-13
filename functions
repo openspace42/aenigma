@@ -456,7 +456,12 @@ aenigma-restart_ejabberd_if_running() {
 	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 	then
 		dna-echo -m "Now restarting ejabberd..."
-		/usr/sbin/service ejabberd restart
+		if ! /usr/sbin/service ejabberd restart
+		then
+			dna-echo -e "ejabberd failed during restart"
+			dna-echo -m "Continuing anyway as this should fix itself automatically by the end of the installation."
+			sleep 3
+		fi
 	else
 		dna-echo -m "ejabberd not running. Skipping restart."
 	fi
