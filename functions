@@ -2465,7 +2465,7 @@ synthia-perform_installation() {
 
 	### Generate aenigma-specific DHparam file
 
-	dna-generate_project_specific_dhparam
+	dna-generate_dhparam
 
 	### If DHparam file was found or generated, amend the config file to include them:
 
