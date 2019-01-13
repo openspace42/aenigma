@@ -481,12 +481,6 @@ aenigma-add_ejabberd_repo() {
 
 }
 
-aenigma-get_ejabberd_candidate_version() {
-
-	ejabberd_candidate_version="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
-
-}
-
 aenigma-get_ejabberd_installed_version() {
 
 	if dpkg -s ejabberd &> /dev/null
@@ -498,13 +492,21 @@ aenigma-get_ejabberd_installed_version() {
 
 }
 
+aenigma-get_ejabberd_candidate_version() {
+
+	dna-apt_update
+
+	ejabberd_candidate_version="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+
+}
+
 aenigma-install_ejabberd_config() {
 
 	dna-echo -m "Now creating ejabberd directory and setting custom aenigma config..."
 
 	aenigma-get_ejabberd_candidate_version
 
-	ejabberd_candidate_config_version="$(echo ${ejabberd_installed_version} | head -c 5)"
+	ejabberd_candidate_config_version="$(echo ${ejabberd_candidate_version} | head -c 5)"
 
 	source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-${ejabberd_candidate_config_version}.yml"
 
