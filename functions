@@ -1485,12 +1485,6 @@ synthia-perform_installation() {
 
 	############################################################################
 
-	### globally allow APT to fail during the course of the installation until the final check round
-
-	export dna_global_allow_apt_errors="y"
-
-	############################################################################
-
 	dna-abort_on_sslh_session
 
 	dna-inception -h -m -p
@@ -1500,6 +1494,21 @@ synthia-perform_installation() {
 	dna-refresh_tmp_project_dir
 
 	mkdir -p "${ssl_project_dir}"
+
+	############################################################################
+
+	### globally allow APT to fail during the course of the installation until the final check round
+
+	export dna_global_allow_apt_errors="y"
+
+	############################################################################
+
+	### legacy fixes
+
+	if [ -f "${ssl_project_dir}/dh.pem" ]
+	then
+		rm "${ssl_project_dir}/dh.pem"
+	fi
 
 	############################################################################
 
@@ -2480,13 +2489,6 @@ synthia-perform_installation() {
 	############################################################################
 
 	### Generate aenigma-specific DHparam file
-
-	### legacy fix
-
-	if [ -f "${ssl_project_dir}/dh.pem" ]
-	then
-		rm "${ssl_project_dir}/dh.pem"
-	fi
 
 	dna-generate_dhparam
 
