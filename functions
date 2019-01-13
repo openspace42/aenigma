@@ -485,7 +485,7 @@ aenigma-get_ejabberd_installed_version() {
 
 	if dpkg -s ejabberd &> /dev/null
 	then
-		ejabberd_installed_version="$(dpkg -s ejabberd | grep '^Version:' | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+		ejabberd_installed_version="$(dpkg -s ejabberd | grep '^Version:' | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-' | head -c 5)"
 	else
 		ejabberd_installed_version=none
 	fi
