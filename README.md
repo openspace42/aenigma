@@ -20,6 +20,10 @@ As soon as you're up and running join our group chats at xmpp:os@xc.os.vu and xm
 
 ## News
 
+Follow our development updates together with the aenigma community on our chatroom at xmpp:aenigma@xc.os.vu.
+
+If you have an operational aenigma server, definitely subscribe for bugfix and patch release notifications.
+
 ## Features
 
 * **state of the art configuration** always updated with the latest functionalities and best practices for every ejabberd version
