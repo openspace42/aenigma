@@ -829,7 +829,7 @@ aenigma-push_routing_info() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if ! /usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
+			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 			then
 				echo
 				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
@@ -911,7 +911,7 @@ aenigma-push_certs() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if ! /usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
+			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
 			then
 				echo
 				dna-echo -e "Node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
@@ -1293,7 +1293,7 @@ backup_locally_loop() {
 			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 			then
 				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
-				/usr/bin/scp -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
+				/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
 			fi
 		done
 		unset node_ipv4
