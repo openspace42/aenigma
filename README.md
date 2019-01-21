@@ -22,7 +22,7 @@ As soon as you're up and running join our group chats at xmpp:os@xc.os.vu and xm
 
 Follow our development updates together with the aenigma community on our chatroom at xmpp:aenigma@xc.os.vu.
 
-If you have an operational aenigma server, definitely subscribe for bugfix and patch release notifications.
+If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
 ## Features
 
