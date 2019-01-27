@@ -2076,7 +2076,7 @@ synthia-perform_installation() {
 
 	### Install mail notifications
 
-	dna-install_mail_notifications
+	dna-install_mail_notifications -f
 
 	### Install SSLH
 
