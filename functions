@@ -49,6 +49,7 @@ synthia-define_vars() {
 	export nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
 	export nodes_db_numbered_path="${conf_cluster_nodes_dir}/nodes_db_numbered"
 	export nodes_db_online_path="${tmp_project_dir}/nodes_db_online"
+	export nodes_db_initial_path="${tmp_project_dir}/nodes_db_initial"
 
 	############################################################################
 	############################################################################
@@ -649,6 +650,23 @@ aenigma-create_nodes_db_numbered() {
 	unset node_ipv4
 	IFS=$' \t\n'
 	set +f
+
+}
+
+aenigma-create_nodes_db_initial() {
+
+	cp "${nodes_db_numbered_path}" "${nodes_db_initial_path}"
+
+}
+
+aenigma-compare_nodes_db_initial() {
+
+	if diff "${nodes_db_numbered_path}" "${nodes_db_initial_path}" > /dev/null
+	then
+	    export nodes_db_initial_diff="same"
+	else
+	    export nodes_db_initial_diff="diff"
+	fi
 
 }
 

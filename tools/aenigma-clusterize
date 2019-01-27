@@ -163,6 +163,12 @@ aenigma-initialize_nodes_db_files
 
 ################################################################################
 
+### Create a nodes_db_initial file so that we can absolutely detect if any nodes were actually added during this script [rather than simply re-provisioned or skipped]
+
+aenigma-create_nodes_db_initial
+
+################################################################################
+
 validate_input() {
 
 	dna-validate_ipv4 -s -i "${input}"
@@ -341,9 +347,16 @@ aenigma-push_routing_info
 
 ################################################################################
 
-### Perform updated DNS checks based on the newly registered information about the secondary node
+### Perform updated DNS checks based on the newly registered information about the secondary node [only if new nodes were actually added]
 
-aenigma-perform_dns_checks
+aenigma-compare_nodes_db_initial
+
+if [ "${nodes_db_initial_diff}" = "diff" ]
+then
+
+    aenigma-perform_dns_checks
+
+fi
 
 ################################################################################
 
