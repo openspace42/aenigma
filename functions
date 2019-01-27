@@ -2497,7 +2497,7 @@ synthia-perform_installation() {
 
 					else
 
-						dna-echo -n -m "Ok, exiting clusterization phase."
+						dna-echo -m "Ok, exiting clusterization phase."
 						exit_clusterization_loop="y"
 
 					fi
