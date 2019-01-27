@@ -2459,17 +2459,40 @@ synthia-perform_installation() {
 		if [ "${cluster_mode-null}" = "primary" ]
 		then
 
-			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding your secondary nodes."
-            dna-ask_for_boolean -d "y" -q "Are you ready to do so now?"
+			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding [or updating] your secondary nodes."
+            dna-ask_for_boolean -d "y" -q "Are you ready to do so now [definitely proceed if you've just updated]?"
             if [ "${boolean_output}" = "y" ]
             then
+
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 				bash "${tools_dir}/${proj_name}-clusterize"
+
+				while [ "${exit_clusterization_loop-}" = "y" ]
+				do
+
+					dna-ask_for_boolean -d "y" -q "Would you like to clusterize another node now?"
+					if [ "${boolean_output}" = "y" ]
+					then
+
+						dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script again now..."
+						bash "${tools_dir}/${proj_name}-clusterize"
+
+					else
+
+						dna-echo -n -m "Ok, exiting clusterization phase."
+						exit_clusterization_loop="y"
+
+					fi
+
+				done
+
 			else
+
 				dna-echo -m "Ok, you can run the | ${o-}clusterize${n-} | script at any time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-clusterize${n-} | "
 				read -rp "${b-}[press enter to continue reading...]${x-}"
 				echo
+
 			fi
 
 		fi
