@@ -2485,7 +2485,7 @@ synthia-perform_installation() {
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 				bash "${tools_dir}/${proj_name}-clusterize"
 
-				while [ "${exit_clusterization_loop-}" = "y" ]
+				while [ ! "${exit_clusterization_loop-}" = "y" ]
 				do
 
 					dna-ask_for_boolean -d "y" -q "Would you like to clusterize another node now?"
