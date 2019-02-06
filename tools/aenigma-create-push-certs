@@ -121,7 +121,15 @@ fi
 
 ################################################################################
 
+### Ensure public IPs are still the same as when the installer ran the last time
+
 aenigma-check_ip_info_current
+
+################################################################################
+
+### Ensure $ssl_project_dir exists
+
+mkdir -p "${ssl_project_dir}"
 
 ################################################################################
 
@@ -131,36 +139,31 @@ operation_message="creating all-in-one TLS file from LetsEncrypt wildcard cert f
 
 dna-echo_operation -h
 
-for le_cert_domain_full in "$le_live_dir"/*
-do
+le_cert_domain="${domain}"
 
-    le_cert_domain="$(echo ${le_cert_domain_full} | sed 's:.*/::')"
+############################################################################
 
-    ############################################################################
+dna-echo -m "Now creating all-in-one TLS certificate file for ${le_cert_domain}..."
 
-    dna-echo -m "Now creating all-in-one TLS certificate file for ${le_cert_domain}..."
+touch "${ssl_project_dir}/${le_cert_domain}.pem"
 
-    touch "${ssl_project_dir}/${le_cert_domain}.pem"
+cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${ssl_project_dir}/${le_cert_domain}.pem"
+cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${ssl_project_dir}/${le_cert_domain}.pem"
 
-    cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${ssl_project_dir}/${le_cert_domain}.pem"
-    cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${ssl_project_dir}/${le_cert_domain}.pem"
+dna-echo -s "Finished creating all-in-one TLS certificate file for ${le_cert_domain}."
 
-    dna-echo -s "Finished creating all-in-one TLS certificate file for ${le_cert_domain}."
+############################################################################
 
-    ############################################################################
+dna-echo -m "Now copying individual fullchain and privkey files for ${le_cert_domain}..."
 
-    dna-echo -m "Now copying individual fullchain and privkey files for ${le_cert_domain}..."
+mkdir -p "${ssl_project_dir}/${le_cert_domain}.d/"
 
-    mkdir -p "${ssl_project_dir}/${le_cert_domain}.d/"
+cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
+cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
 
-    cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
-    cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
+dna-echo -s "Finished copying individual fullchain and privkey files for ${le_cert_domain}."
 
-    dna-echo -s "Finished copying individual fullchain and privkey files for ${le_cert_domain}."
-
-    ############################################################################
-
-done
+############################################################################
 
 ### Set permissions
 
