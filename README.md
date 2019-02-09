@@ -8,21 +8,27 @@ It does for XMPP what [Mail-in-a-Box](https://github.com/mail-in-a-box/mailinabo
 
 The installation takes you on a 15 minute, clearly worded, step-by-step setup and takes care of everything automagically.
 
+All of the features offered by our project and the related installation instructions are detailed below.
+
 ## The openspace instance of aenigma
 
-Take a look at our actual running instance of aenigma - operated by our hackerspace - by registering a forever free account **@os.vu**.
+Take a look at our actual running instance of aenigma - operated by our hackerspace [openspace](https://openspace.xxx) - by registering a forever free account **@os.vu**.
 
-You can register your account right now from any modern XMPP app and dive right into this amazing world!
+You can register your account right now by specifying a `your-user@os.vu` JID [jabber user ID] during the new account creation fase [offered by virtually all XMPP app] and dive right into this amazing world!
 
-As soon as you're up and running join our group chats at xmpp:os@xc.os.vu and xmpp:aenigma@xc.os.vu !
+As soon as you're up and running join our group chat at xmpp:aenigma@xc.os.vu !
 
 <a href='https://compliance.conversations.im/server/os.vu'><img src='https://compliance.conversations.im/badge/os.vu'></a>
 
-## News
+## News and official chatroom
 
 Follow our development updates together with the aenigma community on our chatroom at xmpp:aenigma@xc.os.vu.
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
+
+## Support the project
+
+You can now become a Patreon supporter of the project starting at only $1/month, and access our priority support, custom features rapid development requests [then made available for eveyone of course], and help ensure that aenigma is always on the bleeding edge of features offered by ejabberd and the XMPP world. Help us out and join our Patreon community [here](https://www.patreon.com/aenigma_xmpp). Thank you in advance!
 
 ## Features
 
@@ -49,17 +55,27 @@ If you have an operational aenigma server, definitely subscribe for new release 
 
 * Keeps backwards compatibility with other, older, not 100% compliant, XMPP servers out there by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can break all bridges with the rest of the world and enable the latest ciphers suggested by cipherli.st [although really not recommended] by changing two lines in the config file
 
+## Future features
+
+* New and improved backup / restore logic that is cluster-aware and more robust when handling unusual user-level situations [Patreon $16/month goal](https://www.patreon.com/aenigma_xmpp)
+
+* Complete and total re-write of our synthia+dna framework [currently entirely in bash] into a fully modern and professional codebase designed with a modular and innovative approach and consisting of a nodejs core with an extensible and cross-language package and automation platform [Patreon $45/month goal](https://www.patreon.com/aenigma_xmpp)
+
 ## Donate to keep the project running
 
 **aenigma** takes a bunch of time to research, develop, maintain, and keep up to date with the latest features offered by everything in the XMPP world [ejabberd, OMEMO, and so on].
 
 Let's not make this project fall into deprecation-land like so many other great ones out there!
 
-**Help make aenigma always stable and state-of-the-art by donating a small amount.**
+**Help make aenigma always stable and state-of-the-art by donating a small amount every month towards its development.**
 
-And don't forget to spread the word with your fellow friends, family, activists, and geeks!
+You can become a [Patreon supporter](https://www.patreon.com/aenigma_xmpp) right now starting at only $1/month and help us make a difference!
+
+Otherwise you can also make a one-time donation via the following channels:
 
 **BTC:** [3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU](bitcoin:3L6rgbypntMxpbz2Yrzf6iZsFWvE1AgMSU) | **PayPal:** []
+
+Thank you very much in advance and don't forget to spread the word with your fellow friends, family, activists, and geeks!
 
 ## Install
 
