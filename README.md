@@ -61,7 +61,7 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 
 * Automated DNS record provisioning on any nameserver backend that has an API access [CloudFlare, mail-in-a-box, etc...] [[Patreon $24/month goal](https://www.patreon.com/aenigma_xmpp)]
 
-* Complete and total re-write of our synthia+dna framework [currently entirely in bash] into a fully modern and professional codebase designed with a modular and innovative approach and consisting of a nodejs core with an extensible and cross-language package and automation platform [Patreon $32/month goal](https://www.patreon.com/aenigma_xmpp)]
+* Complete and total re-write of our synthia+dna framework [currently entirely in bash] into a fully modern and professional codebase designed with a modular and innovative approach and consisting of a nodejs core with an extensible and cross-language package and automation platform [Patreon $48/month goal](https://www.patreon.com/aenigma_xmpp)]
 
 Add your feature requests in the issues section and consider becoming a Patreon supporter for access to rapid development and fast-tracking of your feature requests!
 
