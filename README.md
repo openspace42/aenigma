@@ -14,7 +14,7 @@ All of the features offered by our project and the related installation instruct
 
 Take a look at our actual running instance of aenigma - operated by our hackerspace [openspace](https://openspace.xxx) - by registering a forever free account **@os.vu**.
 
-You can register your account right now by specifying a `your-user@os.vu` JID [jabber user ID] during the new account creation fase [offered by virtually all XMPP app] and dive right into this amazing world!
+You can register your account right now by specifying a `your-user@os.vu` JID [jabber user ID] during the new account creation fase [offered by virtually all XMPP apps] and dive right into this amazing world!
 
 As soon as you're up and running join our group chat at xmpp:aenigma@xc.os.vu !
 
@@ -57,9 +57,13 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 
 ## Future features
 
-* New and improved backup / restore logic that is cluster-aware and more robust when handling unusual user-level situations [Patreon $16/month goal](https://www.patreon.com/aenigma_xmpp)
+* New and improved backup / restore logic that is cluster-aware and more robust when handling unusual user-level situations [[Patreon $16/month goal](https://www.patreon.com/aenigma_xmpp)]
 
-* Complete and total re-write of our synthia+dna framework [currently entirely in bash] into a fully modern and professional codebase designed with a modular and innovative approach and consisting of a nodejs core with an extensible and cross-language package and automation platform [Patreon $45/month goal](https://www.patreon.com/aenigma_xmpp)
+* Automated DNS record provisioning on any nameserver backend that has an API access [CloudFlare, mail-in-a-box, etc...] [[Patreon $24/month goal](https://www.patreon.com/aenigma_xmpp)]
+
+* Complete and total re-write of our synthia+dna framework [currently entirely in bash] into a fully modern and professional codebase designed with a modular and innovative approach and consisting of a nodejs core with an extensible and cross-language package and automation platform [Patreon $32/month goal](https://www.patreon.com/aenigma_xmpp)]
+
+Add your feature requests in the issues section and consider becoming a Patreon supporter for access to rapid development and fast-tracking of your feature requests!
 
 ## Donate to keep the project running
 
