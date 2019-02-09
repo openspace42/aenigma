@@ -87,6 +87,12 @@ The only supported distros are **Ubuntu 18 [bionic beaver]** and **Debian 9 [str
 
 Any distro NOT based on Debian / Ubuntu will currently never work because our framework is entirely and fundamentally designed to work with these distros only. In the future this will change.
 
+aenigma is only intended to be installed on **brand new fresh machines** with absolutely no previously installed services, as it makes changes to system and widely used package / services settings [such as SSH, UFW, NGINX, Postfix, etc...] which are absolutely aenigma-specific and could render either the existing services or the aenigma installation itself non-functional.
+
+Therefore **only install aenigma on fresh servers** [physical or virtual] with only the base operating system installed and nothing else! During install it will automatically take care of running you through a first-boot machine-hardening script called [inception](https://github.com/openspace42/inception) - without ever leaving the aenigma installer itself - that will guide you through all of the security and basic setup operations that every new server should have performed onto it before going ahead and doing anything else.
+
+That said, let's get started!
+
 ```
 [log in as root on your target machine]
 ```
