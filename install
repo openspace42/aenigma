@@ -83,6 +83,27 @@ synthia-define_formatting
 
 ################################################################################
 
+### Ensure that the dna version required hasn't changed due to a new version of this very project being installed
+
+if [ -z "${custom_dna_version-}" ]
+then
+
+    ### No custom dna version was requested upon running the setup script
+    ### Let's check if an upgrade to the project itself has changed the required dna version
+
+    if [ "${dna_version}" != "${dna_selected_vers}" ]
+    then
+
+        dna-echo -m "Now upgrading version of dna as required by the newly upgraded version of this very project which was just installed..."
+
+        synthia-download_dna
+
+    fi
+
+fi
+
+################################################################################
+
 ### Source dna
 
 synthia-source_dna
