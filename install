@@ -96,7 +96,7 @@ then
     if [ "${dna_version}" != "${dna_selected_vers}" ]
     then
 
-        echo "${l-}${b-}Now upgrading version of dna as required by the newly upgraded version of this very project which was just installed...${x-}"
+        echo "${l-}${b-}Now upgrading version of dna as required by the newly upgraded version of this very project which was just fetched...${x-}"
         echo
 
         synthia-download_dna
