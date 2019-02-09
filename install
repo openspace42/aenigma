@@ -101,6 +101,8 @@ then
 
         synthia-download_dna
 
+        echo
+
     fi
 
 fi
