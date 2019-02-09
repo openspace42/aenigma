@@ -91,6 +91,8 @@ then
     ### No custom dna version was requested upon running the setup script
     ### Let's check if an upgrade to the project itself has changed the required dna version
 
+    dna_selected_vers="$(cat "${os_base_dir}/dna/version_installed")"
+
     if [ "${dna_version}" != "${dna_selected_vers}" ]
     then
 
