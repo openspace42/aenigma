@@ -1891,11 +1891,16 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		### Provision the LetsEncrypt wildcard TLS certificate for $domain
+		### Provision the LetsEncrypt wildcard TLS certificate for $domain and each $additional_domains item
 
-	    dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} |."
+	    dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} | and for any additional domains you specified."
 
-		dna-provision_le_wildcard_cert -d "${domain}"
+		for this_domain in $(cat < "${domains_db_path}")
+		do
+
+			dna-provision_le_wildcard_cert -d "${this_domain}"
+
+		done
 
 		########################################################################
 
