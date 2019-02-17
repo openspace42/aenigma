@@ -446,6 +446,28 @@ aenigma-install_sslh() {
 	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
 	sed -i "s|xu.|xu${node_number}.|g" "/etc/sslh.cfg"
 
+	if [ -n "${additional_domains-}" ]
+	then
+
+		> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5444\"; sni_hostnames: [ \"xu${node_number}.${additional_domain}\"]; log_level: 0; }," >> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
+	    done
+
+		> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5223\"; sni_hostnames: [ \"ae${node_number}.${additional_domain}\" ]; log_level: 1; }," >> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
+	    done
+
+		sed -i "/xu/ r ${tmp_project_dir}/additional_domains_sslh_xu.txt" "/etc/sslh.cfg"
+		sed -i "/ae/ r ${tmp_project_dir}/additional_domains_sslh_ae.txt" "/etc/sslh.cfg"
+
+	fi
+
 	/usr/sbin/service sslh restart
 
 	dna-echo_operation -t
@@ -1637,7 +1659,7 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		### Set xmpp domain
+		### Set XMPP domain
 
 	    describe_setting() {
 
@@ -1647,7 +1669,7 @@ synthia-perform_installation() {
 
 	    dna-set_option -o "domain" -p "xmpp" -d "y" -v "n"
 
-	    if [ $previous_value_outcome = "not-kept" ]
+	    if [ "${previous_value_outcome}" = "not-kept" ]
 	    then
 
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
@@ -1663,6 +1685,41 @@ synthia-perform_installation() {
 	            dna-echo -m "Ok, proceeding..."
 	        else
 	            dna-echo -m "Ok, setting your domain back to the previous value | ${y-}${previous_value}${n-} |..."
+	            domain="${previous_value}"
+	            echo "${previous_value}" > "${opt_path}"
+	        fi
+
+	    fi
+
+		########################################################################
+
+		### Set additioanl XMPP domains
+
+	    describe_setting() {
+
+	        dna-echo -m "Now specify any additional domains, for which XMPP services will be provided alongside your main domain."
+			dna-echo -m "Domains must be inputted in space separated format, such as: | ${y-}abc.com xyz.org 123.net${n-} |."
+
+	    }
+
+	    dna-set_option -o "additional_domains" -p "xmpp" -d "y" -v "n"
+
+	    if [ "${previous_value_outcome}" = "not-kept" ]
+	    then
+
+	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+	        dna-echo -e "WARNING:"
+	        dna-echo -e "Changing additional domains will not preserve any user accounts or data. It will revert this ejabberd instance to a fresh install."
+	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
+	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+
+            dna-ask_for_boolean -d "n" -q "Are you absolutely sure you want to change your additional XMPP domains now?"
+            if [ "${boolean_output}" = "y" ]
+            then
+	            dna-echo -m "Ok, proceeding..."
+	        else
+	            dna-echo -m "Ok, setting your additional domains back to the previous value | ${y-}${previous_value}${n-} |..."
 	            domain="${previous_value}"
 	            echo "${previous_value}" > "${opt_path}"
 	        fi
@@ -2320,6 +2377,20 @@ synthia-perform_installation() {
 	aenigma-set_permissions
 
 	### Perform customizations on the ejabberd config files.
+
+	if [ -n "${additional_domains-}" ]
+	then
+
+		> "${tmp_project_dir}/additional_domains_ejabberd.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "  - \"${additional_domain}\"" >> "${tmp_project_dir}/additional_domains_ejabberd.txt"
+		done
+
+		sed -i "/  - \"domain.xyz\"/ r ${tmp_project_dir}/additional_domains_ejabberd.txt" "/etc/ejabberd/ejabberd.yml"
+
+	fi
 
 	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"

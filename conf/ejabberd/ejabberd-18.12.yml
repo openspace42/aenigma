@@ -399,9 +399,10 @@ modules:
       body: |-
         Hi there!
         Happy to see you onboard.
-        This is the aenigma XMPP server at hostname.xyz hosting domain domain.xyz.
+        This is the aenigma ejabberd XMPP server at hostname.xyz.
         The admin for this instance is admin@domain.xyz.
-        https://aenigma.xyz
+        Follow aenigma devs and community at xmpp:aenigma@xc.os.vu.
+        Find us online at: https://aenigma.xyz
     registration_watchers:
        - "admin@domain.xyz"
     access_from: allow

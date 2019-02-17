@@ -368,6 +368,7 @@ echo "${secondary_node_number}" > "/${tmp_project_dir}/aenigma_cluster_secondary
 ### Push config to secondary node
 
 /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
+/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/additional_domains" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
 /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null"  -i "/root/.ssh/aenigma_cluster" "/var/lib/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:/var/lib/ejabberd/"
 
 ### Push wildcard LE TLS cert for $domain to secondary node
