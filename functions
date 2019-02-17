@@ -1180,6 +1180,9 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
+	dna-echo -m "Performing DNS checks for the following XMPP domains:"
+	dna-echo -m "${y-}$(cat ${domains_db})"
+
 	if [ "${cluster_enabled}" = "cluster" ]
 	then
 
