@@ -1716,7 +1716,6 @@ synthia-perform_installation() {
 			else
 				dna-echo -m "Check the syntax to ensure it is in fact a top-level domain and try again."
 				valid=n
-				break
 			fi
 
 			unset silent
