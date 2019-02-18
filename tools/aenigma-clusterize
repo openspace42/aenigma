@@ -181,6 +181,8 @@ validate_input() {
 		valid="n"
 	fi
 
+    unset silent
+
 }
 
 dna-set_value -d "Now enter the public IPv4 address displayed on your secondary node:" -v "y"

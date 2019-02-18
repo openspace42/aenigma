@@ -2075,6 +2075,8 @@ synthia-perform_installation() {
 						valid="n"
 					fi
 
+					unset silent
+
 				fi
 
 			}
