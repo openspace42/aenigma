@@ -1700,7 +1700,9 @@ synthia-perform_installation() {
 
 	    describe_setting() {
 
-	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:"
+	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]."
+			dna-echo -m "In the next step you'll be able to specify additional domains for which all XMPP services will be fully provided just like this one."
+			dna-echo -m "The domain you'll be specifying right now will simply be the administrative domain for this and any other machines part of this ${short_name} instance."
 
 	    }
 
@@ -1736,6 +1738,7 @@ synthia-perform_installation() {
 
 	        dna-echo -m "Now specify any additional domains, for which XMPP services will be provided alongside your main domain."
 			dna-echo -m "Domains must be inputted in space separated format, such as: | ${y-}abc.com xyz.org 123.net${n-} |."
+			dna-echo -m "If you don't wish to specify any additional domains, simply type: | ${y-}none${n-} |."
 
 	    }
 
@@ -1762,6 +1765,12 @@ synthia-perform_installation() {
 	        fi
 
 	    fi
+
+		if [ "${additional_domains}" = "none" ]
+		then
+			unset additional_domains
+			rm "${conf_xmpp_dir}/additional_domains"
+		fi
 
 		########################################################################
 
