@@ -1760,7 +1760,6 @@ synthia-perform_installation() {
 					then
 						valid="y"
 					else
-						dna-echo -e "The domain | ${n-}${additional_domain}${r-} is NOT valid."
 						dna-echo -m "Check the syntax to ensure it is in fact a top-level domain and try again."
 						valid=n
 						break
