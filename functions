@@ -1764,6 +1764,9 @@ synthia-perform_installation() {
 						valid=n
 						break
 					fi
+
+					unset silent
+
 				done
 
 			fi
