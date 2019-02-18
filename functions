@@ -1180,7 +1180,7 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
-	dna-echo -m "Performing DNS checks for the following XMPP domains:"
+	dna-echo -m "Performing DNS checks for the following domains:"
 	dna-echo -m "${y-}$(cat ${domains_db_path})"
 
 	if [ "${cluster_enabled}" = "cluster" ]
@@ -1836,16 +1836,26 @@ synthia-perform_installation() {
 		dna-echo -m "----------------------------------------------------------------"
 
 		dna-echo -m "To make sure everything is correct:"
-		dna-echo -m "1] Your | ${o-}XMPP domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
-		dna-echo -m " | ${y-}$domain${n-} | "
+		dna-echo -m "1] Your primary | ${o-}domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
+		dna-echo -m " | ${y-}${domain}${n-} | "
 		dna-echo -m "2] And therefore your | ${o-}JIDs [XMPP account addresses]${n-} | will look as follows:"
-		dna-echo -m " | ${y-}aurora@$domain${n-} | "
+		dna-echo -m " | ${y-}aurora@${domain}${n-} | "
 		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
-		dna-echo -m " | ${y-}$hostname${n-} | "
+		dna-echo -m " | ${y-}${hostname}${n-} | "
 		dna-echo -m "4] And therefore your | ${o-}${proj_name} admin panel${n-} | will be located at:"
-		dna-echo -m " | ${y-}https://$hostname${n-} | "
+		dna-echo -m " | ${y-}https://${hostname}${n-} | "
 
 		dna-echo -m "----------------------------------------------------------------"
+
+		if [ ! "${additional_domains-}" = "none" ]
+		then
+
+			dna-echo -m "5] In addition, your | ${o-}additional domains${n-} | will be:"
+			dna-echo -m " | ${y-}${additional_domains}${n-} | "
+
+			dna-echo -m "----------------------------------------------------------------"
+
+		fi
 
 		dna-ask_for_boolean -d "y" -q "Does everything look all right?"
 		if [ "${boolean_output}" = "y" ]
