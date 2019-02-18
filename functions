@@ -1808,7 +1808,7 @@ synthia-perform_installation() {
 	            dna-echo -m "Ok, proceeding..."
 	        else
 	            dna-echo -m "Ok, setting your additional domains back to the previous value | ${y-}${previous_value}${n-} |..."
-	            domain="${previous_value}"
+	            additional_domains="${previous_value}"
 	            echo "${previous_value}" > "${opt_path}"
 	        fi
 
