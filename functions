@@ -1714,7 +1714,7 @@ synthia-perform_installation() {
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 	        dna-echo -e "WARNING:"
 	        dna-echo -e "Changing domains will not preserve any user accounts or data. It will revert this ejabberd instance to a fresh install."
-	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run this install and select the old domain, but this hasn't been thoroughly tested yet."
 	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 
@@ -1749,8 +1749,8 @@ synthia-perform_installation() {
 
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 	        dna-echo -e "WARNING:"
-	        dna-echo -e "Changing additional domains will not preserve any user accounts or data. It will revert this ejabberd instance to a fresh install."
-	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+	        dna-echo -e "Changing additional domains will not preserve any user accounts or data related to these domains."
+	        dna-echo -m "In the future, all user accounts and data for the previous domains might be recovered automatically if you ever re-run this install and specify the same additional domains as before, but this hasn't been thoroughly tested yet."
 	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 
@@ -1769,7 +1769,7 @@ synthia-perform_installation() {
 		if [ "${additional_domains}" = "none" ]
 		then
 			unset additional_domains
-			rm "${conf_xmpp_dir}/additional_domains"
+			> "${conf_xmpp_dir}/additional_domains"
 		fi
 
 		########################################################################
