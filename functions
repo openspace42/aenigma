@@ -450,7 +450,7 @@ aenigma-install_sslh() {
 	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
 	sed -i "s|xu.|xu${node_number}.|g" "/etc/sslh.cfg"
 
-	if [ -n "${additional_domains-}" ]
+	if [ ! "${additional_domains-}" = "none" ]
 	then
 
 		> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
@@ -667,7 +667,7 @@ aenigma-create_domains_db() {
 
 	echo "${domain}" > "${domains_db_path}"
 
-	if [ -n "${additional_domains-}" ]
+	if [ ! "${additional_domains-}" = "none" ]
 	then
 
 		additional_domains_array=(${additional_domains})
@@ -1742,6 +1742,35 @@ synthia-perform_installation() {
 
 	    }
 
+		validate_input() {
+
+			if [ "${input}" = "none" ]
+			then
+
+				valid="y"
+
+			else
+
+				additional_domains_array=(${input})
+				for additional_domain in "${additional_domains_array[@]}"
+			    do
+
+					dna-validate_domain -sd "${additional_domain}"
+					if [ "${domain_is_valid}" = "y" ]
+					then
+						valid="y"
+					else
+						dna-echo -e "The domain | ${n-}${additional_domain}${r-} is NOT valid."
+						dna-echo -m "Check the syntax to ensure it is in fact a top-level domain and try again."
+						valid=n
+						break
+					fi
+				done
+
+			fi
+
+		}
+
 	    dna-set_option -o "additional_domains" -p "xmpp" -d "y" -v "n"
 
 	    if [ "${previous_value_outcome}" = "not-kept" ]
@@ -1765,12 +1794,6 @@ synthia-perform_installation() {
 	        fi
 
 	    fi
-
-		if [ "${additional_domains}" = "none" ]
-		then
-			unset additional_domains
-			> "${conf_xmpp_dir}/additional_domains"
-		fi
 
 		########################################################################
 
@@ -2433,7 +2456,7 @@ synthia-perform_installation() {
 
 	### Perform customizations on the ejabberd config files.
 
-	if [ -n "${additional_domains-}" ]
+	if [ ! "${additional_domains-}" = "none" ]
 	then
 
 		> "${tmp_project_dir}/additional_domains_ejabberd.txt"
