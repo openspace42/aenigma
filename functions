@@ -1771,7 +1771,7 @@ synthia-perform_installation() {
 
 		}
 
-	    dna-set_option -o "additional_domains" -p "xmpp" -d "y" -v "n"
+	    dna-set_option -o "additional_domains" -p "xmpp" -d "y" -v "y"
 
 	    if [ "${previous_value_outcome}" = "not-kept" ]
 	    then
