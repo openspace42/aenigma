@@ -1756,6 +1756,7 @@ synthia-perform_installation() {
 			    do
 
 					dna-validate_domain -sd "${additional_domain}"
+
 					if [ "${domain_is_valid}" = "y" ]
 					then
 						valid="y"
@@ -1765,9 +1766,9 @@ synthia-perform_installation() {
 						break
 					fi
 
-					unset silent
-
 				done
+
+				unset silent
 
 			fi
 
