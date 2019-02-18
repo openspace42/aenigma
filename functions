@@ -1836,6 +1836,9 @@ synthia-perform_installation() {
 		dna-echo -m "----------------------------------------------------------------"
 
 		dna-echo -m "To make sure everything is correct:"
+
+		dna-echo -m "----------------------------------------------------------------"
+
 		dna-echo -m "1] Your primary | ${o-}domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
 		dna-echo -m " | ${y-}${domain}${n-} | "
 		dna-echo -m "2] And therefore your | ${o-}JIDs [XMPP account addresses]${n-} | will look as follows:"
