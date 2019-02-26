@@ -53,7 +53,7 @@ server {
 
     add_header X-Proxy-Cache $upstream_cache_status;
     location ^~ /admin {
-        proxy_pass http://127.0.0.1:5280/admin/;
+        proxy_pass http://127.0.0.1:5443/admin/;
         proxy_redirect      off;
         proxy_set_header    Host            $host;
         proxy_set_header    X-Real-IP       $remote_addr;
