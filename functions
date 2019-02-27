@@ -1702,7 +1702,7 @@ synthia-perform_installation() {
 
 	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]."
 			dna-echo -m "In the next step you'll be able to specify additional domains for which all XMPP services will be fully provided just like this one."
-			dna-echo -m "The domain you'll be specifying right now will simply be the administrative domain for this and any other machines part of this ${short_name} instance."
+			dna-echo -m "The domain you'll be specifying right now will simply be the administrative domain for this and any other machines part of this ${proj_name} instance."
 
 	    }
 
