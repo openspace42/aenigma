@@ -80,7 +80,7 @@ listen:
     max_stanza_size: 524288
     shaper: s2s_shaper
   -
-    port: 5280
+    port: 5443
     ip: "::"
     module: ejabberd_http
     request_handlers:
@@ -293,7 +293,7 @@ language: "en"
 
 ## captcha_cmd: "/opt/ejabberd-17.09/lib/ejabberd-17.09/priv/bin/captcha.sh"
 
-## captcha_host: "domain.xyz:5280"
+## captcha_host: "domain.xyz:5443"
 
 ## captcha_limit: 5
 
