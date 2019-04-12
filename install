@@ -8,6 +8,16 @@ set -eu
 
 ################################################################################
 
+if [ "${custom_output-}" = "v" ]
+then
+    echo
+    echo "Printing verbose output as per | -o v |."
+    echo
+    set -x
+fi
+
+################################################################################
+
 if [[ "${@#--return-check}" = "$@" ]]
 then
     echo
@@ -70,6 +80,32 @@ fi
 ### Define formatting
 
 synthia-define_formatting
+
+################################################################################
+
+### Ensure that the dna version required hasn't changed due to a new version of this very project being installed
+
+if [ -z "${custom_dna_version-}" ]
+then
+
+    ### No custom dna version was requested upon running the setup script
+    ### Let's check if an upgrade to the project itself has changed the required dna version
+
+    dna_selected_vers="$(cat "${os_base_dir}/dna/version_installed")"
+
+    if [ "${dna_version}" != "${dna_selected_vers}" ]
+    then
+
+        echo "${l-}${b-}Now upgrading version of dna as required by the newly upgraded version of this very project which was just fetched...${x-}"
+        echo
+
+        synthia-download_dna
+
+        echo
+
+    fi
+
+fi
 
 ################################################################################
 

@@ -4,7 +4,7 @@
 ### [https://github.com/openspace42/synthia]
 ### v0.3.2
 
-dna_version="v0.3.4"
+dna_version="v0.3.9"
 
 ################################################################################
 
@@ -43,12 +43,17 @@ synthia-define_vars() {
 
 	export conf_xmpp_dir="${conf_dir}/xmpp"
 
+	### Set the path to the domains_db file
+
+	export domains_db_path="${conf_xmpp_dir}/domains_db"
+
 	### Set the paths to the nodes_db files
 
 	export nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
 	export nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
 	export nodes_db_numbered_path="${conf_cluster_nodes_dir}/nodes_db_numbered"
 	export nodes_db_online_path="${tmp_project_dir}/nodes_db_online"
+	export nodes_db_initial_path="${tmp_project_dir}/nodes_db_initial"
 
 	############################################################################
 	############################################################################
@@ -445,6 +450,28 @@ aenigma-install_sslh() {
 	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
 	sed -i "s|xu.|xu${node_number}.|g" "/etc/sslh.cfg"
 
+	if [ ! "${additional_domains-}" = "none" ]
+	then
+
+		> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5444\"; sni_hostnames: [ \"xu${node_number}.${additional_domain}\"]; log_level: 0; }," >> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
+	    done
+
+		> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5223\"; sni_hostnames: [ \"ae${node_number}.${additional_domain}\" ]; log_level: 1; }," >> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
+	    done
+
+		sed -i "/xu/ r ${tmp_project_dir}/additional_domains_sslh_xu.txt" "/etc/sslh.cfg"
+		sed -i "/ae/ r ${tmp_project_dir}/additional_domains_sslh_ae.txt" "/etc/sslh.cfg"
+
+	fi
+
 	/usr/sbin/service sslh restart
 
 	dna-echo_operation -t
@@ -456,7 +483,13 @@ aenigma-restart_ejabberd_if_running() {
 	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 	then
 		dna-echo -m "Now restarting ejabberd..."
-		/usr/sbin/service ejabberd restart
+		if ! /usr/sbin/service ejabberd restart
+		then
+			echo
+			dna-echo -e "ejabberd failed during restart"
+			dna-echo -m "Continuing anyway as this should fix itself automatically by the end of the installation."
+			sleep 3
+		fi
 	else
 		dna-echo -m "ejabberd not running. Skipping restart."
 	fi
@@ -466,18 +499,15 @@ aenigma-restart_ejabberd_if_running() {
 aenigma-add_ejabberd_repo() {
 
 	dna-check_dpkg_availability
+	dna-install_dependencies -p "apt-transport-https"
 	currdistro="$(lsb_release --codename | cut -f2)"
-	apt-get -y install apt-transport-https || true
 	echo "deb https://apt.jabber.at ${currdistro} ejabberd" > "/etc/apt/sources.list.d/jabber.at.list"
-	wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
-	apt-get update
-	echo
 
-}
-
-aenigma-get_ejabberd_candidate_version() {
-
-	ejabberd_candidate_version="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+	if ! apt-key list 2> /dev/null | grep "jabber.at" &> /dev/null
+	then
+		wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
+		apt-get update
+	fi
 
 }
 
@@ -492,18 +522,30 @@ aenigma-get_ejabberd_installed_version() {
 
 }
 
+aenigma-get_ejabberd_candidate_version() {
+
+	dna-apt_update
+
+	ejabberd_candidate_version="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
+
+}
+
 aenigma-install_ejabberd_config() {
 
 	dna-echo -m "Now creating ejabberd directory and setting custom aenigma config..."
 
 	aenigma-get_ejabberd_candidate_version
 
-	source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-${ejabberd_candidate_version}.yml"
+	ejabberd_candidate_config_version="$(echo ${ejabberd_candidate_version} | head -c 5)"
+
+	source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-${ejabberd_candidate_config_version}.yml"
 
 	if [ ! -f "${source_ejab_conf_file}" ]
 	then
-		### Fallback to ejabberd.yml for v18.09 in case the ejabberd candidate install version isn't among the ones we have config files for
-		source_ejab_conf_file="$source_dir/conf/ejabberd/ejabberd-18.09.yml"
+
+		### Fallback to ejabberd.yml for v18.12 in case the ejabberd candidate install version isn't among the ones we have config files for
+		source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-18.12.yml"
+
 	fi
 
 	mkdir -p "/etc/ejabberd/"
@@ -615,6 +657,29 @@ aenigma-install_ejabberd() {
 	dna-echo -s "Finished installing ejabberd."
 }
 
+aenigma-create_domains_db() {
+
+	if [ -f "${domains_db_path}" ]
+	then
+		rm "${domains_db_path}"
+		touch "${domains_db_path}"
+	fi
+
+	echo "${domain}" > "${domains_db_path}"
+
+	if [ ! "${additional_domains-}" = "none" ]
+	then
+
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "${additional_domain}" >> "${domains_db_path}"
+		done
+
+	fi
+
+}
+
 aenigma-create_nodes_db_numbered() {
 
 	### Create a node-numbered version of "nodes_db"
@@ -637,6 +702,23 @@ aenigma-create_nodes_db_numbered() {
 	unset node_ipv4
 	IFS=$' \t\n'
 	set +f
+
+}
+
+aenigma-create_nodes_db_initial() {
+
+	cp "${nodes_db_numbered_path}" "${nodes_db_initial_path}"
+
+}
+
+aenigma-compare_nodes_db_initial() {
+
+	if diff "${nodes_db_numbered_path}" "${nodes_db_initial_path}" > /dev/null
+	then
+	    export nodes_db_initial_diff="same"
+	else
+	    export nodes_db_initial_diff="diff"
+	fi
 
 }
 
@@ -862,7 +944,7 @@ aenigma-update_routing_info
 		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+	        ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 . /root/openspace42/aenigma/functions
 synthia-source_dna
@@ -956,7 +1038,7 @@ chmod -R 700 "${ssl_project_dir}"
 		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+	        ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 . /root/openspace42/aenigma/functions
 synthia-source_dna
@@ -998,7 +1080,7 @@ aenigma-test_online_nodes() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
 		then
-			if /usr/bin/ssh -p42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
+			if /usr/bin/ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
 				dna-echo -s "Node number: | ${n-}${node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
 			else
@@ -1098,6 +1180,9 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
+	dna-echo -m "Performing DNS checks for the following domains:"
+	dna-echo -m "${y-}$(cat ${domains_db_path})"
+
 	if [ "${cluster_enabled}" = "cluster" ]
 	then
 
@@ -1108,150 +1193,157 @@ aenigma-perform_dns_checks() {
 
 	############################################################################
 
-	### Perform checks in both IPv4 and IPv6. If this node [or a node in case of a cluster] doesn't have IPv6 connectivity its IPv6 check will be ignored locally.
-
-	declare -a ip_version_array=(
-		"4"
-		"6"
-	)
-
-	aenigma-calculate_ip_version_vars() {
-
-		if [ "${ip_version}" = "4" ]
-		then
-			nodes_db_path="${nodes_db_ipv4_path}"
-			address_type="a"
-		elif [ "${ip_version}" = "6" ]
-		then
-			nodes_db_path="${nodes_db_ipv6_path}"
-			address_type="aaaa"
-		fi
-
-	}
-
-	############################################################################
-
-	### Check hostnames.
-
-	for ip_version in "${ip_version_array[@]}"
+	for this_domain in $(cat < "${domains_db_path}")
 	do
 
-		aenigma-calculate_ip_version_vars
+		### Perform checks in both IPv4 and IPv6. If this node [or a node in case of a cluster] doesn't have IPv6 connectivity its IPv6 check will be ignored locally.
 
-		array_iter=1
-		IFS=$'\n'
-		set -f
+		declare -a ip_version_array=(
+			"4"
+			"6"
+		)
 
-		for node_ip in $(cat < "${nodes_db_path}")
+		aenigma-calculate_ip_version_vars() {
+
+			if [ "${ip_version}" = "4" ]
+			then
+				nodes_db_path="${nodes_db_ipv4_path}"
+				address_type="a"
+			elif [ "${ip_version}" = "6" ]
+			then
+				nodes_db_path="${nodes_db_ipv6_path}"
+				address_type="aaaa"
+			fi
+
+		}
+
+		########################################################################
+
+		### Check hostnames.
+
+		for ip_version in "${ip_version_array[@]}"
 		do
 
-			node_number="$(echo ${array_iter} | xargs printf %02d)"
-			dna-check_dns_record -n "ae${node_number}.${domain}" -t "${address_type}" -r "${node_ip}"
-			array_iter=$((array_iter + 1))
+			aenigma-calculate_ip_version_vars
 
-		done
+			array_iter=1
+			IFS=$'\n'
+			set -f
 
-		unset array_iter
-		IFS=$' \t\n'
-		set +f
-
-	done
-
-	############################################################################
-
-	### Now check that "ae.$domain" points to all nodes in a round-robin fashion.
-
-	for ip_version in "${ip_version_array[@]}"
-	do
-
-		aenigma-calculate_ip_version_vars
-
-		dna-check_dns_record -n "ae.${domain}" -t "${address_type}" -r "${nodes_db_path}"
-
-	done
-
-	############################################################################
-
-	### Check XMPP services records
-
-	### First check services that need to point to each node respectively
-
-	for ip_version in "${ip_version_array[@]}"
-	do
-
-		aenigma-calculate_ip_version_vars
-
-		array_iter=1
-		IFS=$'\n'
-		set -f
-
-		for node_ip in $(cat < "${nodes_db_path}")
-		do
-
-			node_number="$(echo ${array_iter} | xargs printf %02d)"
-
-			declare -a xmpp_service_array=(
-				"xe"
-				"xm"
-				"xp"
-				"xu"
-				"xv"
-			)
-
-			for xmpp_service in "${xmpp_service_array[@]}"
+			for node_ip in $(cat < "${nodes_db_path}")
 			do
 
-				dna-check_dns_record -n "${xmpp_service}${node_number}.${domain}" -t "${address_type}" -r "${node_ip}"
+				node_number="$(echo ${array_iter} | xargs printf %02d)"
+				dna-check_dns_record -n "ae${node_number}.${this_domain}" -t "${address_type}" -r "${node_ip}"
+				array_iter=$((array_iter + 1))
 
 			done
 
-			array_iter=$((array_iter + 1))
+			unset array_iter
+			IFS=$' \t\n'
+			set +f
 
 		done
 
-		unset array_iter
-		IFS=$' \t\n'
-		set +f
+		########################################################################
+
+		### Now check that "ae.$this_domain" points to all nodes in a round-robin fashion.
+
+		for ip_version in "${ip_version_array[@]}"
+		do
+
+			aenigma-calculate_ip_version_vars
+
+			dna-check_dns_record -n "ae.${this_domain}" -t "${address_type}" -r "${nodes_db_path}"
+
+		done
+
+		########################################################################
+
+		### Check XMPP services records
+
+		### First check services that need to point to each node respectively
+
+		for ip_version in "${ip_version_array[@]}"
+		do
+
+			aenigma-calculate_ip_version_vars
+
+			array_iter=1
+			IFS=$'\n'
+			set -f
+
+			for node_ip in $(cat < "${nodes_db_path}")
+			do
+
+				node_number="$(echo ${array_iter} | xargs printf %02d)"
+
+				declare -a xmpp_service_array=(
+					"xe"
+					"xm"
+					"xp"
+					"xu"
+					"xv"
+				)
+
+				for xmpp_service in "${xmpp_service_array[@]}"
+				do
+
+					dna-check_dns_record -n "${xmpp_service}${node_number}.${this_domain}" -t "${address_type}" -r "${node_ip}"
+
+				done
+
+				array_iter=$((array_iter + 1))
+
+			done
+
+			unset array_iter
+			IFS=$' \t\n'
+			set +f
+
+		done
+
+		### Then check "xc.$this_domain" as it should not be a set of numbered records [xc01, xc02...] but instead be only one record pointing to all nodes in a round-robin fashion
+
+		for ip_version in "${ip_version_array[@]}"
+		do
+
+			aenigma-calculate_ip_version_vars
+
+			dna-check_dns_record -n "xc.${this_domain}" -t "${address_type}" -r "${nodes_db_path}"
+
+		done
+
+		########################################################################
+
+		### Check SRV records
+
+		#### SRV client records
+
+		dna-check_dns_record -n "_xmpps-client._tcp.${this_domain}" -t "srv" -r "5 1 5223 ae.${this_domain}.,15 1 443 ae.${this_domain}."
+		dna-check_dns_record -n "_xmpp-client._tcp.${this_domain}" -t "srv" -r "10 1 5222 ae.${this_domain}.,20 1 443 ae.${this_domain}."
+
+		#### SRV server records
+
+		declare -a srv_record_array=(
+			"_jabber._tcp"
+			"_xmpp-server._tcp"
+		)
+
+		for srv_record in "${srv_record_array[@]}"
+		do
+
+			dna-check_dns_record -n "${srv_record}.${this_domain}" -t "srv" -r "0 0 5269 ae.${this_domain}."
+
+		done
+
+		########################################################################
+
+		unset dns_checks_outcome
+
+		########################################################################
 
 	done
-
-	### Then check "xc.$domain" as it should not be a set of numbered records [xc01, xc02...] but instead be only one record pointing to all nodes in a round-robin fashion
-
-	for ip_version in "${ip_version_array[@]}"
-	do
-
-		aenigma-calculate_ip_version_vars
-
-		dna-check_dns_record -n "xc.${domain}" -t "${address_type}" -r "${nodes_db_path}"
-
-	done
-
-	############################################################################
-
-	### Check SRV records
-
-	#### SRV client records
-
-	dna-check_dns_record -n "_xmpps-client._tcp.${domain}" -t "srv" -r "5 1 5223 ae.${domain}.,15 1 443 ae.${domain}."
-	dna-check_dns_record -n "_xmpp-client._tcp.${domain}" -t "srv" -r "10 1 5222 ae.${domain}.,20 1 443 ae.${domain}."
-
-	#### SRV server records
-
-	declare -a srv_record_array=(
-		"_jabber._tcp"
-		"_xmpp-server._tcp"
-	)
-
-	for srv_record in "${srv_record_array[@]}"
-	do
-
-		dna-check_dns_record -n "${srv_record}.${domain}" -t "srv" -r "0 0 5269 ae.${domain}."
-
-	done
-
-	############################################################################
-
-	unset dns_checks_outcome
 
 }
 
@@ -1454,7 +1546,13 @@ synthia-perform_installation() {
 
 	aenigma-display_logo
 
-	################################################################################
+	############################################################################
+
+	### Link tools in $PATH
+
+	dna-link_tools
+
+	############################################################################
 
 	### Display intro
 
@@ -1463,7 +1561,7 @@ synthia-perform_installation() {
 	    aenigma-xmpp_intro
 	fi
 
-	################################################################################
+	############################################################################
 
 	if ! dna-check_distro_ubuntu_18 && ! dna-check_distro_debian_9
 	then
@@ -1473,17 +1571,32 @@ synthia-perform_installation() {
 		dna-exit
 	fi
 
-	################################################################################
+	############################################################################
 
 	dna-abort_on_sslh_session
 
 	dna-inception -h -m -p
 
-	################################################################################
+	############################################################################
 
 	dna-refresh_tmp_project_dir
 
 	mkdir -p "${ssl_project_dir}"
+
+	############################################################################
+
+	### globally allow APT to fail during the course of the installation until the final check round
+
+	export dna_global_allow_apt_errors="y"
+
+	############################################################################
+
+	### legacy fixes
+
+	if [ -f "${ssl_project_dir}/dh.pem" ]
+	then
+		rm "${ssl_project_dir}/dh.pem"
+	fi
 
 	############################################################################
 
@@ -1583,23 +1696,41 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		### Set xmpp domain
+		### Set XMPP domain
 
 	    describe_setting() {
 
-	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]:"
+	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]."
+			dna-echo -m "In the next step you'll be able to specify additional domains for which all XMPP services will be fully provided just like this one."
+			dna-echo -m "The domain you'll be specifying right now will simply be the administrative domain for this and any other machines part of this ${proj_name} instance."
 
 	    }
 
-	    dna-set_option -o "domain" -p "xmpp" -d "y" -v "n"
+		validate_input() {
 
-	    if [ $previous_value_outcome = "not-kept" ]
+			dna-validate_domain -std "${input}"
+
+			if [ "${domain_is_valid}" = "y" ]
+			then
+				valid="y"
+			else
+				dna-echo -m "Check the syntax to ensure it is in fact a top-level domain and try again."
+				valid=n
+			fi
+
+			unset silent
+
+		}
+
+	    dna-set_option -o "domain" -p "xmpp" -d "y" -v "y"
+
+	    if [ "${previous_value_outcome}" = "not-kept" ]
 	    then
 
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 	        dna-echo -e "WARNING:"
 	        dna-echo -e "Changing domains will not preserve any user accounts or data. It will revert this ejabberd instance to a fresh install."
-	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run the install and select the old domain, but this hasn't been thoroughly tested yet."
+	        dna-echo -m "In the future, all user accounts and data for the previous domain might be recovered automatically if you ever re-run this install and select the old domain, but this hasn't been thoroughly tested yet."
 	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 
@@ -1610,6 +1741,74 @@ synthia-perform_installation() {
 	        else
 	            dna-echo -m "Ok, setting your domain back to the previous value | ${y-}${previous_value}${n-} |..."
 	            domain="${previous_value}"
+	            echo "${previous_value}" > "${opt_path}"
+	        fi
+
+	    fi
+
+		########################################################################
+
+		### Set additioanl XMPP domains
+
+	    describe_setting() {
+
+	        dna-echo -m "Now specify any additional domains, for which XMPP services will be provided alongside your main domain."
+			dna-echo -m "Domains must be inputted in space separated format, such as: | ${y-}abc.com xyz.org 123.net${n-} |."
+			dna-echo -m "If you don't wish to specify any additional domains, simply type: | ${y-}none${n-} |."
+
+	    }
+
+		validate_input() {
+
+			if [ "${input}" = "none" ]
+			then
+
+				valid="y"
+
+			else
+
+				additional_domains_array=(${input})
+				for additional_domain in "${additional_domains_array[@]}"
+			    do
+
+					dna-validate_domain -std "${additional_domain}"
+
+					if [ "${domain_is_valid}" = "y" ]
+					then
+						valid="y"
+					else
+						dna-echo -m "Check the syntax to ensure it is in fact a top-level domain and try again."
+						valid=n
+						break
+					fi
+
+				done
+
+				unset silent
+
+			fi
+
+		}
+
+	    dna-set_option -o "additional_domains" -p "xmpp" -d "y" -v "y"
+
+	    if [ "${previous_value_outcome}" = "not-kept" ]
+	    then
+
+	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+	        dna-echo -e "WARNING:"
+	        dna-echo -e "Changing additional domains will not preserve any user accounts or data related to these domains."
+	        dna-echo -m "In the future, all user accounts and data for the previous domains might be recovered automatically if you ever re-run this install and specify the same additional domains as before, but this hasn't been thoroughly tested yet."
+	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
+	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
+
+            dna-ask_for_boolean -d "n" -q "Are you absolutely sure you want to change your additional XMPP domains now?"
+            if [ "${boolean_output}" = "y" ]
+            then
+	            dna-echo -m "Ok, proceeding..."
+	        else
+	            dna-echo -m "Ok, setting your additional domains back to the previous value | ${y-}${previous_value}${n-} |..."
+	            additional_domains="${previous_value}"
 	            echo "${previous_value}" > "${opt_path}"
 	        fi
 
@@ -1653,16 +1852,29 @@ synthia-perform_installation() {
 		dna-echo -m "----------------------------------------------------------------"
 
 		dna-echo -m "To make sure everything is correct:"
-		dna-echo -m "1] Your | ${o-}XMPP domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
-		dna-echo -m " | ${y-}$domain${n-} | "
-		dna-echo -m "2] And therefore your | ${o-}JIDs [XMPP account addresses]${n-} | will look as follows:"
-		dna-echo -m " | ${y-}aurora@$domain${n-} | "
-		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
-		dna-echo -m " | ${y-}$hostname${n-} | "
-		dna-echo -m "4] And therefore your | ${o-}${proj_name} admin panel${n-} | will be located at:"
-		dna-echo -m " | ${y-}https://$hostname${n-} | "
 
 		dna-echo -m "----------------------------------------------------------------"
+
+		dna-echo -m "1] Your primary | ${o-}domain${n-} | [the part after the @ in your XMPP account addresses] will be:"
+		dna-echo -m " | ${y-}${domain}${n-} | "
+		dna-echo -m "2] And therefore your | ${o-}JIDs [XMPP account addresses]${n-} | will look as follows:"
+		dna-echo -m " | ${y-}aurora@${domain}${n-} | "
+		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
+		dna-echo -m " | ${y-}${hostname}${n-} | "
+		dna-echo -m "4] And therefore your | ${o-}${proj_name} admin panel${n-} | will be located at:"
+		dna-echo -m " | ${y-}https://${hostname}${n-} | "
+
+		dna-echo -m "----------------------------------------------------------------"
+
+		if [ ! "${additional_domains-}" = "none" ]
+		then
+
+			dna-echo -m "5] In addition, your | ${o-}additional domains${n-} | will be:"
+			dna-echo -m " | ${y-}${additional_domains}${n-} | "
+
+			dna-echo -m "----------------------------------------------------------------"
+
+		fi
 
 		dna-ask_for_boolean -d "y" -q "Does everything look all right?"
 		if [ "${boolean_output}" = "y" ]
@@ -1733,17 +1945,26 @@ synthia-perform_installation() {
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
+		### Create domains_db
+
+		aenigma-create_domains_db
+
 		### Proceed with primary node installation
 
 		aenigma-perform_dns_checks
 
 		########################################################################
 
-		### Provision the LetsEncrypt wildcard TLS certificate for $domain
+		### Provision the LetsEncrypt wildcard TLS certificate for $domain and each $additional_domains item
 
-	    dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} |."
+	    dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} | and for any additional domains you specified."
 
-		dna-provision_le_wildcard_cert -d "${domain}"
+		for this_domain in $(cat < "${domains_db_path}")
+		do
+
+			dna-provision_le_wildcard_cert -d "${this_domain}"
+
+		done
 
 		########################################################################
 
@@ -1882,6 +2103,8 @@ synthia-perform_installation() {
 						dna-echo -e "The key you specified does NOT appear to be a valid SSH Public Key."
 						valid="n"
 					fi
+
+					unset silent
 
 				fi
 
@@ -2022,7 +2245,7 @@ synthia-perform_installation() {
 
 	### Install mail notifications
 
-	dna-install_mail_notifications
+	dna-install_mail_notifications -f
 
 	### Install SSLH
 
@@ -2267,6 +2490,20 @@ synthia-perform_installation() {
 
 	### Perform customizations on the ejabberd config files.
 
+	if [ ! "${additional_domains-}" = "none" ]
+	then
+
+		> "${tmp_project_dir}/additional_domains_ejabberd.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "  - \"${additional_domain}\"" >> "${tmp_project_dir}/additional_domains_ejabberd.txt"
+		done
+
+		sed -i "/  - \"domain.xyz\"/ r ${tmp_project_dir}/additional_domains_ejabberd.txt" "/etc/ejabberd/ejabberd.yml"
+
+	fi
+
 	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
 
@@ -2426,17 +2663,40 @@ synthia-perform_installation() {
 		if [ "${cluster_mode-null}" = "primary" ]
 		then
 
-			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding your secondary nodes."
-            dna-ask_for_boolean -d "y" -q "Are you ready to do so now?"
+			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding [or updating] your secondary nodes."
+            dna-ask_for_boolean -d "y" -q "Are you ready to do so now [definitely proceed if you've just updated]?"
             if [ "${boolean_output}" = "y" ]
             then
+
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 				bash "${tools_dir}/${proj_name}-clusterize"
+
+				while [ ! "${exit_clusterization_loop-}" = "y" ]
+				do
+
+					dna-ask_for_boolean -d "y" -q "Would you like to clusterize another node now?"
+					if [ "${boolean_output}" = "y" ]
+					then
+
+						dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script again now..."
+						bash "${tools_dir}/${proj_name}-clusterize"
+
+					else
+
+						dna-echo -m "Ok, exiting clusterization phase."
+						exit_clusterization_loop="y"
+
+					fi
+
+				done
+
 			else
+
 				dna-echo -m "Ok, you can run the | ${o-}clusterize${n-} | script at any time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-clusterize${n-} | "
 				read -rp "${b-}[press enter to continue reading...]${x-}"
 				echo
+
 			fi
 
 		fi
@@ -2465,7 +2725,7 @@ synthia-perform_installation() {
 
 	### Generate aenigma-specific DHparam file
 
-	dna-generate_project_specific_dhparam
+	dna-generate_dhparam
 
 	### If DHparam file was found or generated, amend the config file to include them:
 
@@ -2485,10 +2745,6 @@ synthia-perform_installation() {
 		fi
 
 	fi
-
-	############################################################################
-
-	dna-link_tools
 
 	############################################################################
 

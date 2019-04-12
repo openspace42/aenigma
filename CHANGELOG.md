@@ -1,5 +1,8 @@
 # aenigma changelog
 
+## Newer changes not listed.
+## See the [releases page](https://github.com/openspace42/aenigma/releases) for change tracking.
+
 ## v0.6.x [2018-10]
 
 1. Completely restructured code. More neatly organized aenigma functions. More functions integrated into or sourced from dna.
@@ -27,7 +30,6 @@
 4. Allowed APT to fail during installation up to the last step, where instead any errors are caught by the script as usual.
 This way the installation can proceed until the end and possibly fix any errors causing APT to previously fail, and - if that doesn't work - at least the user can attempt to fix things manually once the installation is actually complete, before running it again and making everything go back to normal.
 
-
 ## v0.46 [2017-12-19]
 
 1. Validate S3 connection details
@@ -39,7 +41,6 @@ This way the installation can proceed until the end and possibly fix any errors 
 7. Fixed and improved SRV records DNS checks
 8. All bash code audited with ShellCheck
 9. Improved backup / restore functionality by pulling the newest code from [easyengine-backup-restore](https://github.com/openspace42/easyengine-backup-restore)
-
 
 ## v0.45 [2017-11-18]
 
