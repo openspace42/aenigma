@@ -737,10 +737,10 @@ aenigma-initialize_nodes_db_files() {
 	if [ -s "${nodes_db_ipv4_path}" ]
 	then
 		### File is not empty, alter first line.
-		sed -i "1s/.*/${this_ipv4}/" "${nodes_db_ipv4_path}"
+		sed -i "1s/.*/${public_ipv4}/" "${nodes_db_ipv4_path}"
 	else
 		### File is empty, write to it.
-		echo "${this_ipv4}" > "${nodes_db_ipv4_path}"
+		echo "${public_ipv4}" > "${nodes_db_ipv4_path}"
 	fi
 
 	### IPv6
@@ -860,10 +860,10 @@ aenigma-check_ip_info_current() {
 
 	this_registered_ipv6="$(cat ${nodes_db_ipv6_path} | head -1 | xargs)"
 
-	if [ ! "${this_ipv4}" = "${this_registered_ipv4}" ]
+	if [ ! "${public_ipv4}" = "${this_registered_ipv4}" ]
 	then
 		dna-echo -e "The public IPv4 address for this machine appears to have changed since the last install or the last run of the clusterize script."
-		dna-echo -m "It now appears to be: | ${y-}${this_ipv4}${n-} |."
+		dna-echo -m "It now appears to be: | ${y-}${public_ipv4}${n-} |."
 		dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv4}${n-} |."
 		dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
 		dna-exit
@@ -897,7 +897,7 @@ aenigma-push_routing_info() {
 	do
 		node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 			then
@@ -941,7 +941,7 @@ aenigma-update_routing_info
 	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 	do
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
 	        ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
@@ -979,7 +979,7 @@ aenigma-push_certs() {
 	do
 		node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
 			then
@@ -1035,7 +1035,7 @@ chmod -R 700 "${ssl_project_dir}"
 	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 	do
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${online_node_ipv4}" = "${this_ipv4}" ]
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
 		then
 			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
 	        ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
@@ -1078,7 +1078,7 @@ aenigma-test_online_nodes() {
 	do
 		node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if /usr/bin/ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
@@ -1370,7 +1370,7 @@ backup_locally_loop() {
 		for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 		do
 			### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-			if [ ! "${node_ipv4}" = "${this_ipv4}" ]
+			if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 			then
 				mkdir -p "${tmp_backup_dir}"/data/${node_ipv4}/"
 				/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@ae${node_ipv4}:/var/lib/ejabberd/uploads/" "${tmp_backup_dir}"/data/${node_ipv4}/"
@@ -2021,7 +2021,7 @@ synthia-perform_installation() {
 		########################################################################
 
 		dna-echo -m "This is the public IPv4 for this machine:"
-		dna-echo -m " | ${y-}$this_ipv4${n-} | "
+		dna-echo -m " | ${y-}$public_ipv4${n-} | "
 		dna-echo -m "Enter it on the primary node when prompted to do so, then follow the instructions from there."
 
 		sleep 1
@@ -2514,7 +2514,7 @@ synthia-perform_installation() {
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xu.@/xu${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 
-	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${this_ipv4}" "/etc/default/ejabberd"
+	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
 
 	if [ "${set_erlang_node_to_hostname}" = "ok" ]
 	then
