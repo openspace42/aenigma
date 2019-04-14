@@ -726,7 +726,7 @@ aenigma-initialize_nodes_db_files() {
 
 	mkdir -p "${conf_cluster_nodes_dir}"
 
-	dna-get_public_ipv4
+	dna-get_public_ipv4 -s
 
 	dna-check_ipv6_connectivity -s
 
