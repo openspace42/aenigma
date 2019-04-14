@@ -2539,6 +2539,10 @@ synthia-perform_installation() {
 
 		dna-add_cron_job -n ${proj_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-backup"
 
+		### Add create_push_certs script to crontab for monthly LE autorenewal and distribution to other nodes
+
+		dna-add_cron_job -n ${proj_name}-backup -t "8 4 2 * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-create_push_certs"
+
 		### Register ejabberd admin user
 
 		dna-echo -m "Now registering ejabberd admin user [if it doesn't yet exist]..."
