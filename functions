@@ -1955,19 +1955,6 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		### Provision the LetsEncrypt wildcard TLS certificate for $domain and each $additional_domains item
-
-	    dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} | and for any additional domains you specified."
-
-		for this_domain in $(cat < "${domains_db_path}")
-		do
-
-			dna-provision_le_wildcard_cert -d "${this_domain}"
-
-		done
-
-		########################################################################
-
 		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
 		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
