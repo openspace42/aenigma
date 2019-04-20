@@ -1351,7 +1351,7 @@ aenigma-provision_tor() {
 
 	dna-install_tor
 
-	dna-enable_tor_hidden_service
+	dna-tor_enable_hidden_service
 
 	sed -i '/############### This section is just for location-hidden services ###/,/################ This section is just for relays #####################/{//!d}' "/etc/tor/torrc"
 	sed -i "/############### This section is just for location-hidden services ###/ r ${source_dir}/conf/tor/hidden_service" "/etc/tor/torrc"
