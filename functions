@@ -448,16 +448,16 @@ aenigma-install_sslh() {
 	sed -i "s|domain-var|${domain}|g" "/etc/sslh.cfg"
 	sed -i "s|hostname-var|${hostname}|g" "/etc/sslh.cfg"
 	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
-	sed -i "s|xu.|xu${node_number}.|g" "/etc/sslh.cfg"
+	sed -i "s|xh.|xh${node_number}.|g" "/etc/sslh.cfg"
 
 	if [ ! "${additional_domains-}" = "none" ]
 	then
 
-		> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
+		> "${tmp_project_dir}/additional_domains_sslh_xh.txt"
 		additional_domains_array=(${additional_domains})
 		for additional_domain in "${additional_domains_array[@]}"
 	    do
-			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5444\"; sni_hostnames: [ \"xu${node_number}.${additional_domain}\"]; log_level: 0; }," >> "${tmp_project_dir}/additional_domains_sslh_xu.txt"
+			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5444\"; sni_hostnames: [ \"xh${node_number}.${additional_domain}\"]; log_level: 0; }," >> "${tmp_project_dir}/additional_domains_sslh_xh.txt"
 	    done
 
 		> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
@@ -467,7 +467,7 @@ aenigma-install_sslh() {
 			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5223\"; sni_hostnames: [ \"ae${node_number}.${additional_domain}\" ]; log_level: 1; }," >> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
 	    done
 
-		sed -i "/xu/ r ${tmp_project_dir}/additional_domains_sslh_xu.txt" "/etc/sslh.cfg"
+		sed -i "/xh/ r ${tmp_project_dir}/additional_domains_sslh_xh.txt" "/etc/sslh.cfg"
 		sed -i "/ae/ r ${tmp_project_dir}/additional_domains_sslh_ae.txt" "/etc/sslh.cfg"
 
 	fi
@@ -1280,9 +1280,9 @@ aenigma-perform_dns_checks() {
 
 				declare -a xmpp_service_array=(
 					"xe"
+					"xh"
 					"xm"
 					"xp"
-					"xu"
 					"xv"
 				)
 
@@ -2512,9 +2512,10 @@ synthia-perform_installation() {
 	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/xu.@/xu${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
 

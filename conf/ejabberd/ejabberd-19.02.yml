@@ -324,9 +324,9 @@ modules:
     docroot: "/var/www/ejabberd/"
     accesslog: "/var/log/ejabberd/www_access.log"
   mod_http_upload:
-    host: "xu.@HOST@"
+    host: "xh.@HOST@"
     docroot: "@HOME@/uploads"
-    put_url: "https://xu.@HOST@:443/upload"
+    put_url: "https://xh.@HOST@:443/upload"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
     max_size: 262144000
     file_mode: "0640"
