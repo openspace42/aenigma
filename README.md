@@ -16,13 +16,13 @@ Take a look at our actual running instance of aenigma - operated by our hackersp
 
 You can register your account right now by specifying a `your-user@os.vu` JID [jabber user ID] during the new account creation fase [offered by virtually all XMPP apps] and dive right into this amazing world!
 
-As soon as you're up and running join our group chat at xmpp:aenigma@xc.os.vu !
+As soon as you're up and running join our group chat at [aenigma@xc.os.vu](xmpp:aenigma@xc.os.vu) !
 
 <a href='https://compliance.conversations.im/server/os.vu'><img src='https://compliance.conversations.im/badge/os.vu'></a>
 
 ## News and official chatroom
 
-Follow our development updates together with the aenigma community on our chatroom at xmpp:aenigma@xc.os.vu.
+Follow our development updates together with the aenigma community on our chatroom at [aenigma@xc.os.vu](xmpp:aenigma@xc.os.vu).
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
