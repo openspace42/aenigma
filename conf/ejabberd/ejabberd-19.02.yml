@@ -84,11 +84,10 @@ listen:
     ip: "::"
     module: ejabberd_http
     request_handlers:
-        "": mod_http_upload
-        "/api": mod_http_api
-        "/bosh": mod_bosh
-        "/upload": mod_http_upload
-        "/ws": ejabberd_http_ws
+      "/api": mod_http_api
+      "/bosh": mod_bosh
+      "/upload": mod_http_upload
+      "/ws": ejabberd_http_ws
     web_admin: true
     captcha: true
     http_bind: true
