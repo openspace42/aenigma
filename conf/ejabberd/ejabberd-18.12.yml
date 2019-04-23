@@ -84,6 +84,7 @@ listen:
     ip: "::"
     module: ejabberd_http
     request_handlers:
+        "": mod_http_upload
       "/api": mod_http_api
       "/bosh": mod_bosh
       "/upload": mod_http_upload
@@ -91,6 +92,11 @@ listen:
     web_admin: true
     captcha: true
     http_bind: true
+    tls: true
+    protocol_options: 'TLSOPTS'
+    ### dhfile: 'DHFILE'
+    ciphers: 'CIPHERS'
+    ## zlib: true ##re-enable if 1902 supports zlib here
 
   ## -
   ##   port: 8888
@@ -130,16 +136,17 @@ listen:
   ##       commands: all
   ##       options: []
 
-  -
-   port: 5444
-   ip: "::"
-   module: ejabberd_http
-   request_handlers:
-     "": mod_http_upload
-   tls: true
-   protocol_options: 'TLSOPTS'
-   ### dhfile: 'DHFILE'
-   ciphers: 'CIPHERS'
+s2s_use_starttls: required
+### s2s_dhfile: 'DHFILE'
+s2s_protocol_options: 'S2STLSOPTS'
+s2s_ciphers: 'S2SCIPHERS'
+
+## s2s_access: s2s
+
+## outgoing_s2s_families:
+##   - ipv4
+##   - ipv6
+## outgoing_s2s_timeout: 190
 
 disable_sasl_mechanisms: "digest-md5"
 
@@ -154,18 +161,6 @@ acl:
       - "127.0.0.0/8"
       - "::1/128"
       - "::FFFF:127.0.0.1/128"
-
-s2s_use_starttls: required
-### s2s_dhfile: 'DHFILE'
-s2s_protocol_options: 'S2STLSOPTS'
-s2s_ciphers: 'S2SCIPHERS'
-
-## s2s_access: s2s
-
-## outgoing_s2s_families:
-##   - ipv4
-##   - ipv6
-## outgoing_s2s_timeout: 190
 
 auth_method: internal
 
@@ -258,6 +253,7 @@ api_permissions:
     what:
       - "status"
       - "connected_users_number"
+
 ## registration_timeout: 600
 
 ## host_config:
@@ -325,7 +321,7 @@ modules:
   mod_http_upload:
     host: "xh.@HOST@"
     docroot: "@HOME@/uploads"
-    put_url: "https://xh.@HOST@:443"
+    put_url: "https://xh.@HOST@:443/upload"
     thumbnail: false # otherwise needs the identify command from ImageMagick installed
     max_size: 262144000
     file_mode: "0640"
@@ -392,7 +388,7 @@ modules:
     include_body: true
   mod_push_keepalive: {}
   mod_register:
-    ## captcha_protected: true
+    captcha_protected: true
     ## password_strength: 32
     welcome_message:
       subject: "Hello world"
