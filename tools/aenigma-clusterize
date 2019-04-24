@@ -204,7 +204,7 @@ then
 		dna-echo -m "Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |..."
 	else
 		dna-echo -m "Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |."
-		dna-exit
+		return 0
 	fi
 else
 	### Specified secondary node is new to this cluster
