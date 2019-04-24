@@ -1362,6 +1362,43 @@ aenigma-provision_tor() {
 
 }
 
+aenigma-provision_conversejs() {
+
+	### Install dependencies
+
+	dna-install_dependencies -p "npm"
+
+	npm install lerna
+
+	### Clone and build
+
+	git clone https://github.com/conversejs/converse.js "/var/www/${hostname}/xmpp/"
+
+	( cd "/var/www/${hostname}/xmpp/" && make dev && make dist )
+
+	### Remove analytics
+
+	sed -i "/inverse-analytics.js/d" "/var/www/${hostname}/xmpp/fullscreen.html"
+	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${hostname}/xmpp/fullscreen.html"
+
+	### Use our own BOSH service
+
+	sed -i "s|https://conversejs.org/http-bind/|https://xh${node_number}.${domain}/bosh/|g" "/var/www/${hostname}/xmpp/fullscreen.html"
+
+	### Move fullscreen.html to index.html
+
+	mv "/var/www/${hostname}/xmpp/fullscreen.html" "/var/www/${hostname}/xmpp/index.html"
+
+	### Install libsignal dependency
+
+	( cd "/var/www/${hostname}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
+
+	### Set permissions
+
+	chown -R www-data:www-data "/var/www/${hostname}/xmpp/"
+
+}
+
 backup_locally_loop() {
 
 	if [ "${cluster_mode-null}" = "secondary" ]
