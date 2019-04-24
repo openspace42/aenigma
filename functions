@@ -1372,6 +1372,11 @@ aenigma-provision_conversejs() {
 
 	### Clone and build
 
+	if [ -d "/var/www/${hostname}/xmpp/" ]
+	then
+		mv "/var/www/${hostname}/xmpp/" "/var/www/${hostname}/xmpp-old/"
+	fi
+
 	git clone https://github.com/conversejs/converse.js "/var/www/${hostname}/xmpp/"
 
 	( cd "/var/www/${hostname}/xmpp/" && make dev && make dist )
