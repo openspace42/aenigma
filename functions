@@ -1366,9 +1366,7 @@ aenigma-provision_conversejs() {
 
 	### Install dependencies
 
-	dna-install_dependencies -p "npm"
-
-	#npm install lerna
+	dna-install_nodejs
 
 	### Clone and build
 
@@ -1380,6 +1378,8 @@ aenigma-provision_conversejs() {
 	git clone https://github.com/conversejs/converse.js "/var/www/${hostname}/xmpp/"
 
 	( cd "/var/www/${hostname}/xmpp/" && make dev && make dist )
+
+	echo
 
 	### Remove analytics
 
@@ -2775,7 +2775,7 @@ synthia-perform_installation() {
 	### Provision Tor
 
 	dna-echo -m "aenigma can also provision a Tor hidden service on this machine to make it reachable inside the Tor network."
-	dna-echo -m "You can connect to the | ${o-}.onion${n-} | address that will be generated to access all services [XMPP, web, SSH, etc...]"
+	dna-echo -m "You will be able to connect to the | ${o-}.onion${n-} | address that will be generated to access all services [XMPP, web, SSH, etc...]"
 
 	dna-ask_for_boolean -d "y" -q "Would you like to provision Tor now?"
 
@@ -2789,7 +2789,8 @@ synthia-perform_installation() {
 	### Provision Converse.js
 
 	dna-echo -m "aenigma can also provision a Converse.js instance on this machine to allow you and this instance's users to have your own XMPP web client always available from anywhere."
-	dna-echo -m "You would be able to connect to it at | ${o-}https://${hostname}/xmpp/${n-} | from any device."
+	dna-echo -m "You will be able to connect to it at | ${o-}https://${hostname}/xmpp/${n-} | from any device."
+	dna-echo -m "This operation will take about 5 minutes to complete."
 
 	dna-ask_for_boolean -d "y" -q "Would you like to provision Converse.js now?"
 
