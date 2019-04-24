@@ -1398,6 +1398,8 @@ aenigma-provision_conversejs() {
 
 	( cd "/var/www/${hostname}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
 
+	echo
+
 	### Set permissions
 
 	chown -R www-data:www-data "/var/www/${hostname}/xmpp/"
