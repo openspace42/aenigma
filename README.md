@@ -30,10 +30,6 @@ If you have an operational aenigma server, definitely subscribe for new release 
 
 You can now become a Patreon supporter of the project starting at only $1/month, and access our priority support, custom features rapid development requests [then made available for eveyone of course], and help ensure that aenigma is always on the bleeding edge of features offered by ejabberd and the XMPP world. Help us out and join our Patreon community [here](https://www.patreon.com/aenigma_xmpp). Thank you in advance!
 
-* [2018-12-25] Find us at 35C3 on 2018-12-27 16:00 | ChaosZone Stage for a talk about aenigma [link](https://cfp.chaoszone.cz/35c3/talk/GEBZBY/)
-
-* [2018-12-12] aenigma has been added on prism-break.org as the preferred option in the messaging servers section! [link](https://gitlab.com/prism-break/prism-break/merge_requests/2065)
-
 ## Features
 
 * **state of the art configuration** always updated with the latest functionalities and best practices for every ejabberd version
@@ -45,7 +41,7 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 * natively supports **[almost] signal-level encrypted conversations** with all the required modules for **OMEMO E2EE**
 * allows you to and guides you through using your **top level domain as the xmpp domain [@domain.xyz]** while hosting the server on a subdomain [xmpp.domain.xyz] as its hostname by using SRV records [without any XMPP client UI/UX complications or TLS conflicts]
 * easily handles multiple XMPP domains on the same server / cluster with automatic ejabberd, LetsEncrypt, and SSLH provisioning + DNS tests
-* **fully supports IPv6** out of the box meaning your client applications could hypothetically work on IPv6-only networks
+* **fully supports IPv6** out of the box, meaning your client applications could hypothetically work on IPv6-only networks
 * listens for all of the required **XMPP c2s [client to server], HTTP_uploads, and SSH connections *also* on port 443** [thanks to SSLH] to allow XMPP clients and administrative workstations behind restrictive firewalls to connect without the need to circumvent the firewall with VPNs or Tor [and sets SRV records for XMPP over TLS (XEP-0368) so that clients can find this server capability autonomously and automatically]
 * **validates all required IPv4 and IPv6 DNS settings including SRV records** [even those for specific modules such as pubsub] and tells you exactly the correct values for each record [work in progress: automatic DNS provisioning via API]
 * sets up the **system firewall and UFW rules** for all configured services
@@ -55,6 +51,8 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 * automatically **backups up** all configuration, the ejabberd database, and XMPP data storage **locally and [optionally] to S3 with strong encryption** via duplicity and includes a script for a **guided, consistent, and complete restore**
 * allows you to easily run your aenigma instance on **multiple servers [a cluster]** for **robustness, load distribution / balancing, and failover**
 * **idempotent and self-versioning** to allow for easy re-installs, re-configurations, and upgrades
+* also provisions a **Tor hidden service** [optional] to make your server [or cluster] reachable entirely inside the Tor network via a .onion address for all services [XMPP, web, SSH, etc...].
+* also provisions an instance of **the Converse.js XMPP web client** [optional] to give you a fast and easy way to access your client account from anywhere!
 
 ## Non-features
 
@@ -90,7 +88,7 @@ Thank you very much in advance and don't forget to spread the word with your fel
 
 The only supported distros are **Ubuntu 18 [bionic beaver]** and **Debian 9 [stretch]**.
 
-Any distro NOT based on Debian / Ubuntu will currently never work because our framework is entirely and fundamentally designed to work with these distros only. In the future this will change.
+Any distro NOT based on Debian / Ubuntu will NOT currently work because - at the moment - our framework is entirely and fundamentally designed to work with these distros only. In the future this will change with the new nodejs core.
 
 aenigma is only intended to be installed on **brand new fresh machines** with absolutely no previously installed services, as it makes changes to system and widely used package / services settings [such as SSH, UFW, NGINX, Postfix, etc...] which are absolutely aenigma-specific and could render either the existing services or the aenigma installation itself non-functional.
 
@@ -145,7 +143,7 @@ sudo bash aenigma/tools/aenigma-restore
 
 ### For web
 
-**Converse.JS** [[website](https://conversejs.org)] [either as simply a web client to use for yourself or to integrate into your website]
+**Converse.JS** [[website](https://conversejs.org)] [also automatically provisioned by your aenigma instance if you choose to do so]
 
 ## Talks and keynotes
 
@@ -156,6 +154,12 @@ sudo bash aenigma/tools/aenigma-restore
 ## Credits
 
 Very special thankyous to:
+
+The [ProcessOne](https://process-one.net) team [and the community] for **[ejabberd](https://ejabberd.im)**
+
+The [Tor project](https://torproject.org) team [and the community] for **[Tor](https://torproject.org)**
+
+[JC Brand](https://github.com/jcbrand) [and the community] for **[Converse.js](https://github.com/conversejs/converse.js)**
 
 **Torn [autistici.org]** for inspiring in me the idea of a federated messaging network.
 
@@ -169,6 +173,6 @@ The LUG **unixMIB** [Milano Bicocca university] for hosting my presentation on L
 
 The hackerspace assembly **ChaosZone** for hosting my presentation at 35C3.
 
-Also, anyone involved in the XMPP community, and aenigma users, beta testers, and contributors of course!
+Also, anyone involved in the XMPP community, plus aenigma users, beta testers, and contributors of course!
 
 Thanks to all of you. Let's make this happen. It's about time [finally].

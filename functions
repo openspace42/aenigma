@@ -2776,7 +2776,7 @@ synthia-perform_installation() {
 
 	### Provision Tor
 
-	dna-echo -m "aenigma can also provision a Tor hidden service on this machine to make it reachable inside the Tor network."
+	dna-echo -m "aenigma can also provision a Tor hidden service on this machine to make it reachable entirely inside the Tor network."
 	dna-echo -m "You will be able to connect to the | ${o-}.onion${n-} | address that will be generated to access all services [XMPP, web, SSH, etc...]"
 
 	dna-ask_for_boolean -d "y" -q "Would you like to provision Tor now?"
