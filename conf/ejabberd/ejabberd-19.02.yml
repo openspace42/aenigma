@@ -291,11 +291,9 @@ language: "en"
 ##   "localhost":
 ##     language: "ru"
 
-## captcha_cmd: "/opt/ejabberd-17.09/lib/ejabberd-17.09/priv/bin/captcha.sh"
-
-## captcha_host: "domain.xyz:5443"
-
-## captcha_limit: 5
+captcha_cmd: "/etc/ejabberd/captcha.sh"
+captcha_host: "127.0.0.1:5443"
+captcha_limit: 5
 
 modules:
   mod_adhoc: {}

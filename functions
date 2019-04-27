@@ -532,6 +532,8 @@ aenigma-get_ejabberd_candidate_version() {
 
 aenigma-install_ejabberd_config() {
 
+	############################################################################
+
 	dna-echo -m "Now creating ejabberd directory and setting custom aenigma config..."
 
 	aenigma-get_ejabberd_candidate_version
@@ -550,6 +552,20 @@ aenigma-install_ejabberd_config() {
 
 	mkdir -p "/etc/ejabberd/"
 	cp "${source_ejab_conf_file}" "/etc/ejabberd/ejabberd.yml"
+
+	### Install captcha script
+
+	dna-install_dependencies -p "imagemagick"
+
+	if [ -f "/etc/ejabberd/captcha.sh" ]
+	then
+		rm "/etc/ejabberd/captcha.sh"
+	fi
+
+	curl "https://raw.githubusercontent.com/processone/ejabberd/master/tools/captcha.sh" > "/etc/ejabberd/captcha.sh"
+	chmod +x "/etc/ejabberd/captcha.sh"
+
+	############################################################################
 
 	dna-echo -s "Finished creating ejabberd directory and setting custom aenigma config."
 
@@ -1856,9 +1872,10 @@ synthia-perform_installation() {
 
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 	        dna-echo -e "WARNING:"
-	        dna-echo -e "Changing additional domains will not preserve any user accounts or data related to these domains."
+	        dna-echo -e "If you are removing any additional domains, this operation will not preserve any user accounts or data related to such domains."
 	        dna-echo -m "In the future, all user accounts and data for the previous domains might be recovered automatically if you ever re-run this install and specify the same additional domains as before, but this hasn't been thoroughly tested yet."
 	        dna-echo -m "If you answer no to the following question, nothing will be deleted."
+			dna-echo -m "This only applies to removed domains and you can ignore this warning entirely if you are NOT removing any domain [but only adding]."
 	        dna-echo -m "- * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! - * - !!! -"
 
             dna-ask_for_boolean -d "n" -q "Are you absolutely sure you want to change your additional XMPP domains now?"
