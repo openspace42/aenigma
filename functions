@@ -564,6 +564,7 @@ aenigma-install_ejabberd_config() {
 
 	curl "https://raw.githubusercontent.com/processone/ejabberd/master/tools/captcha.sh" > "/etc/ejabberd/captcha.sh"
 	chmod +x "/etc/ejabberd/captcha.sh"
+	echo
 
 	############################################################################
 
