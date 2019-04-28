@@ -2635,7 +2635,6 @@ synthia-perform_installation() {
 		        dna-echo -m "Ok, skipping ejabberd admin user password reset."
 		        ejab_admin_pwreset="n"
 		    else
-		        echo
 		        dna-echo -m "Ok, resetting ejabberd admin user password to: | ${y-}${ejab_admin_pw}${n-} |."
 		        /usr/sbin/ejabberdctl change_password admin "${domain}" "${ejab_admin_pw}"
 		        ejab_admin_pwreset="y"
