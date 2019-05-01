@@ -2036,6 +2036,10 @@ synthia-perform_installation() {
 
 		########################################################################
 
+		### Install certbot preemtively to then correctly place the post renewal hook
+
+		dna-install_certbot
+
 		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
 
 		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
