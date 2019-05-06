@@ -1364,7 +1364,7 @@ aenigma-perform_dns_checks() {
 
 }
 
-aenigma_configure_psql() {
+aenigma-install_postgresql() {
 
 	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
 
@@ -1386,6 +1386,7 @@ aenigma_configure_psql() {
 
 	ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
 	sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
+	dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
 
 	### Temporarily export the password for import operations
 
@@ -2526,6 +2527,12 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
+	### Install postgresql
+
+	aenigma-install_postgresql
+
+	############################################################################
+
 	### Prepare APT for ejabberd installation.
 
 	aenigma-add_ejabberd_repo
@@ -2624,6 +2631,8 @@ synthia-perform_installation() {
 	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/ejabberd-psql-user-password-var/${ejabberd_psql_user_password}/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
 
