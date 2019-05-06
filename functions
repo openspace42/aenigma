@@ -1398,7 +1398,7 @@ aenigma_configure_psql() {
 
 	### Import ejabberd psql schema
 
-	sudo -u postgres bash -c "PGPASSWORD=$(cat "/tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+	sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
 
 }
 
