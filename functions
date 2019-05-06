@@ -1364,6 +1364,44 @@ aenigma-perform_dns_checks() {
 
 }
 
+aenigma_configure_psql() {
+
+	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
+
+	### Allow direct psql user login
+
+	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "/etc/postgresql/10/main/pg_hba.conf"
+
+	service postgresql restart
+
+	### Create psql database
+
+	sudo -u postgres createdb ejabberd
+
+	### Create ejabberd psql user
+
+	sudo -u postgres createuser ejabberd
+
+	### Generate a random password for the new psql user
+
+	ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+	sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
+
+	### Temporarily export the password for import operations
+
+	echo "${ejabberd_psql_user_password}" > "${tmp_project_dir}/ejabberd_psql_user_password"
+
+	### Download ejabberd psql schema
+
+	curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
+	chmod 777 "${tmp_project_dir}/pg.new.sql"
+
+	### Import ejabberd psql schema
+
+	sudo -u postgres bash -c "PGPASSWORD=$(cat "/tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+
+}
+
 aenigma-provision_tor() {
 
 	dna-install_tor
