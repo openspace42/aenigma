@@ -1366,9 +1366,13 @@ aenigma-perform_dns_checks() {
 
 aenigma-install_postgresql() {
 
+	dna-echo -m "Now installing PostgreSQL"
+
 	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
 
 	### Allow direct psql user login
+
+	dna-echo -m "Allowing direct PSQL login"
 
 	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "/etc/postgresql/10/main/pg_hba.conf"
 
@@ -1378,6 +1382,7 @@ aenigma-install_postgresql() {
 
 	if ! sudo -u postgres psql -c "\l" 2> /dev/null | grep -q ejabberd
 	then
+		dna-echo -m "Creating PSQL database"
 		sudo -u postgres createdb ejabberd
 		psql_db_previous_state="nx"
 	fi
@@ -1386,6 +1391,7 @@ aenigma-install_postgresql() {
 
 	if ! sudo -u postgres psql -c "\du" 2> /dev/null | grep -q ejabberd
 	then
+		dna-echo -m "Creating PSQL user"
 		sudo -u postgres createuser ejabberd
 		psql_us_previous_state="nx"
 	fi
@@ -1394,6 +1400,7 @@ aenigma-install_postgresql() {
 
 	if [ -z "${ejabberd_psql_user_password-}" ]
 	then
+		dna-echo -m "Generating password to PSQL user"
 		ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
 		dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
 	fi
@@ -1402,6 +1409,7 @@ aenigma-install_postgresql() {
 
 	if [ "${psql_us_previous_state-}" = "nx" ]
 	then
+		dna-echo -m "Assigning password to PSQL user"
 		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
 	fi
 
@@ -1418,6 +1426,7 @@ aenigma-install_postgresql() {
 
 	if [ "${psql_db_previous_state-}" = "nx" ]
 	then
+		dna-echo -m "Importing PSQL default schema"
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
 	fi
 
