@@ -1376,17 +1376,34 @@ aenigma-install_postgresql() {
 
 	### Create psql database
 
-	sudo -u postgres createdb ejabberd
+	if ! sudo -u postgres psql -c "\l" 2> /dev/null | grep -q ejabberd
+	then
+		sudo -u postgres createdb ejabberd
+		psql_db_previous_state="nx"
+	fi
 
 	### Create ejabberd psql user
 
-	sudo -u postgres createuser ejabberd
+	if ! sudo -u postgres psql -c "\du" 2> /dev/null | grep -q ejabberd
+	then
+		sudo -u postgres createuser ejabberd
+		psql_us_previous_state="nx"
+	fi
 
 	### Generate a random password for the new psql user
 
-	ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-	sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
-	dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
+	if [ -z "${ejabberd_psql_user_password}" ]
+	then
+		ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+		dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
+	fi
+
+	### Assign the generated password to the user if we've just created it
+
+	if [ "${psql_us_previous_state}" = "nx" ]
+	then
+		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
+	fi
 
 	### Temporarily export the password for import operations
 
@@ -1397,9 +1414,12 @@ aenigma-install_postgresql() {
 	curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
 	chmod 777 "${tmp_project_dir}/pg.new.sql"
 
-	### Import ejabberd psql schema
+	### Import ejabberd psql schema if the db was just created
 
-	sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+	if [ "${psql_db_previous_state}" = "nx" ]
+	then
+		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+	fi
 
 }
 

@@ -167,7 +167,7 @@ acl:
       - "::1/128"
       - "::FFFF:127.0.0.1/128"
 
-auth_method: internal
+auth_method: sql
 
 auth_password_format: scram
 
@@ -178,14 +178,6 @@ sql_server: "localhost"
 sql_database: "ejabberd"
 sql_username: "ejabberd"
 sql_password: "ejabberd-psql-user-password-var"
-
-## fqdn: "server3.example.com"
-
-## auth_method: external
-## extauth_program: "/path/to/authentication/script"
-## auth_method: sql
-## auth_method: pam
-## pam_service: "pamservicename"
 
 ## auth_method: ldap
 ## ldap_servers:
@@ -348,10 +340,7 @@ modules:
     max_days: 3650
   mod_last: {}
   mod_mam:
-    ## Mnesia is limited to 2GB, better to use an SQL backend
-    ## For small servers SQLite is a good fit and is very easy
-    ## to configure. Uncomment this when you have SQL configured:
-    ## db_type: sql
+    db_type: sql
     assume_mam_usage: true
     default: always
     cache_size: 1048576
