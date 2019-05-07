@@ -1415,7 +1415,7 @@ aenigma-migrate-mnesia-postgresql() {
 	operation_message="importing data into PSQL"
 	dna-echo_operation -h
 
-	for export in /tmp/aenigma-ejabberd-export*.txt
+	for export in /tmp/aenigma-ejabberd-export*.sql
 	do
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
 	done
