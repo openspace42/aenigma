@@ -1364,7 +1364,70 @@ aenigma-perform_dns_checks() {
 
 }
 
+aenigma-migrate-mnesia-postgresql() {
+
+	### ! Only run this after install_postgresql !
+
+	### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
+
+	operation_message="applying new_sql_schema directive"
+	dna-echo_operation -h
+
+	sed -i "s|## fqdn: \"server3.example.com\"|new_sql_schema: true|g" "/etc/ejabberd/ejabberd.yml"
+
+	service ejabberd restart
+
+	dna-echo_operation -t
+
+	### Alert about migration
+
+	dna-echo -m "We're now migrating this ejabberd instance from using the mnesia DB to PostgreSQL."
+	dna-echo -m "We will now proceed with exporting and re-importing all ejabberd data on this instance."
+
+	### Close firewall ports to effectively terminate the service for users and avoid collecting data that would not be migrated if generated after the export
+
+	ufw delete allow 5222
+	ufw delete allow 5223
+	ufw delete allow 5444
+
+	### Export data for every ejabberd domain
+
+	operation_message="exporting data from ejabberd mnesia"
+	dna-echo_operation -h
+
+	ejabberdctl export2stl "${domain}" /tmp/aenigma-ejabberd-export-${domain}.sql
+
+	additional_domains_array=(${additional_domains})
+	for additional_domain in "${additional_domains_array[@]}"
+    do
+		ejabberdctl export2stl "${additional_domain}" "aenigma-ejabberd-export-${additional_domain}.sql"
+		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "/tmp/aenigma-ejabberd-export-${additional_domain}.sql"
+		chmod 777 "/tmp/aenigma-ejabberd-export-${additional_domain}.sql"
+	done
+
+	dna-echo_operation -t
+
+	### Import to psql
+
+	operation_message="importing data into PSQL"
+	dna-echo_operation -h
+
+	for export in /tmp/aenigma-ejabberd-export*.txt
+	do
+		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
+	done
+
+	dna-echo_operation -t
+
+	psql_migration_status="complete"
+
+}
+
 aenigma-install_postgresql() {
+
+	### Install psql
+
+	############################################################################
 
 	dna-echo -m "Now installing PostgreSQL"
 
@@ -1421,6 +1484,7 @@ aenigma-install_postgresql() {
 
 	curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
 	chmod 777 "${tmp_project_dir}/pg.new.sql"
+	echo
 
 	### Import ejabberd psql schema if the db was just created
 
@@ -1428,6 +1492,18 @@ aenigma-install_postgresql() {
 	then
 		dna-echo -m "Importing PSQL default schema"
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+	fi
+
+	############################################################################
+
+	### Migrate mnesia to psql if necessary
+
+	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+	then
+
+		### This is an old instance, start the migration
+		aenigma-migrate-mnesia-postgresql
+
 	fi
 
 }
@@ -2690,6 +2766,17 @@ synthia-perform_installation() {
 	/usr/sbin/ejabberdctl status
 	echo
 	dna-echo -s "Finished starting ejabberd back up."
+
+	############################################################################
+
+	### Only for psql migration
+
+	if [ "${psql_migration_status-}" = "complete" ]
+	then
+		ufw allow 5222
+		ufw allow 5223
+		ufw allow 5444
+	fi
 
 	############################################################################
 	############################################################################
