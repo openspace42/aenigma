@@ -1400,7 +1400,7 @@ aenigma-install_postgresql() {
 
 	### Assign the generated password to the user if we've just created it
 
-	if [ "${psql_us_previous_state}" = "nx" ]
+	if [ "${psql_us_previous_state-}" = "nx" ]
 	then
 		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
 	fi
@@ -1416,7 +1416,7 @@ aenigma-install_postgresql() {
 
 	### Import ejabberd psql schema if the db was just created
 
-	if [ "${psql_db_previous_state}" = "nx" ]
+	if [ "${psql_db_previous_state-}" = "nx" ]
 	then
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
 	fi
