@@ -209,7 +209,7 @@ sql_password: "ejabberd-psql-user-password-var"
 ##       - internal
 ##       - anonymous
 
-## pgsql_users_number_estimate: true
+pgsql_users_number_estimate: true
 
 access_rules:
   local:

@@ -1392,7 +1392,7 @@ aenigma-install_postgresql() {
 
 	### Generate a random password for the new psql user
 
-	if [ -z "${ejabberd_psql_user_password}" ]
+	if [ -z "${ejabberd_psql_user_password-}" ]
 	then
 		ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
 		dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
