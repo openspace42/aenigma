@@ -1366,64 +1366,69 @@ aenigma-perform_dns_checks() {
 
 aenigma-migrate-mnesia-postgresql() {
 
-	### ! Only run this after install_postgresql !
+	### ! Only run this after install_postgresql and on primary nodes !
 
-	### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
+	if [ ! "${cluster_mode-}" = "secondary" ]
+	then
 
-	operation_message="applying new_sql_schema directive"
-	dna-echo_operation -h
+		### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
 
-	sed -i "s|## fqdn: \"server3.example.com\"|new_sql_schema: true|g" "/etc/ejabberd/ejabberd.yml"
+		operation_message="applying new_sql_schema directive"
+		dna-echo_operation -h
 
-	service ejabberd restart
+		sed -i "s|## fqdn: \"server3.example.com\"|new_sql_schema: true|g" "/etc/ejabberd/ejabberd.yml"
 
-	dna-echo_operation -t
+		service ejabberd restart
 
-	### Alert about migration
+		dna-echo_operation -t
 
-	dna-echo -m "We're now migrating this ejabberd instance from using the mnesia DB to PostgreSQL."
-	dna-echo -m "We will now proceed with exporting and re-importing all ejabberd data on this instance."
+		### Alert about migration
 
-	### Close firewall ports to effectively terminate the service for users and avoid collecting data that would not be migrated if generated after the export
+		dna-echo -m "We're now migrating this ejabberd instance from using the mnesia DB to PostgreSQL."
+		dna-echo -m "We will now proceed with exporting and re-importing all ejabberd data on this instance."
 
-	ufw delete allow 5222
-	ufw delete allow 5223
-	ufw delete allow 5444
-	echo
+		### Close firewall ports to effectively terminate the service for users and avoid collecting data that would not be migrated if generated after the export
 
-	### Export data for every ejabberd domain
-
-	operation_message="exporting data from ejabberd mnesia"
-	dna-echo_operation -h
-
-	ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
-	mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
-	chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
-
-	additional_domains_array=(${additional_domains})
-	for additional_domain in "${additional_domains_array[@]}"
-	do
-		ejabberdctl export2sql "${additional_domain}" "aenigma-ejabberd-export-${additional_domain}.sql"
-		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
-		chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
-	done
-
-	dna-echo_operation -t
-
-	### Import to psql
-
-	operation_message="importing data into PSQL"
-	dna-echo_operation -h
-
-	for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
-	do
-		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
+		ufw delete allow 5222
+		ufw delete allow 5223
+		ufw delete allow 5444
 		echo
-	done
 
-	dna-echo_operation -t
+		### Export data for every ejabberd domain
 
-	psql_migration_status="complete"
+		operation_message="exporting data from ejabberd mnesia"
+		dna-echo_operation -h
+
+		ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
+		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
+		chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
+
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+		do
+			ejabberdctl export2sql "${additional_domain}" "aenigma-ejabberd-export-${additional_domain}.sql"
+			mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
+			chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
+		done
+
+		dna-echo_operation -t
+
+		### Import to psql
+
+		operation_message="importing data into PSQL"
+		dna-echo_operation -h
+
+		for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
+		do
+			sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
+			echo
+		done
+
+		dna-echo_operation -t
+
+		psql_migration_status="complete"
+
+	fi
 
 }
 
