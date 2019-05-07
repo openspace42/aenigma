@@ -1418,6 +1418,7 @@ aenigma-migrate-mnesia-postgresql() {
 	for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
 	do
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
+		echo
 	done
 
 	dna-echo_operation -t
@@ -1495,6 +1496,7 @@ aenigma-install_postgresql() {
 	then
 		dna-echo -m "Importing PSQL default schema"
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+		echo
 	fi
 
 	############################################################################
@@ -2779,6 +2781,7 @@ synthia-perform_installation() {
 		ufw allow 5222
 		ufw allow 5223
 		ufw allow 5444
+		echo
 	fi
 
 	############################################################################
