@@ -1389,6 +1389,7 @@ aenigma-migrate-mnesia-postgresql() {
 	ufw delete allow 5222
 	ufw delete allow 5223
 	ufw delete allow 5444
+	echo
 
 	### Export data for every ejabberd domain
 
