@@ -1442,11 +1442,15 @@ aenigma-install_postgresql() {
 
 	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
 
+	### Locate pg_hba file
+
+	pg_hba_file_path="$(find /etc/postgresql/ -name pg_hba.conf)"
+
 	### Allow direct psql user login
 
 	dna-echo -m "Allowing direct PSQL login"
 
-	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "/etc/postgresql/10/main/pg_hba.conf"
+	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "${pg_hba_file_path}"
 
 	service postgresql restart
 
