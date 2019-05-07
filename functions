@@ -1397,15 +1397,15 @@ aenigma-migrate-mnesia-postgresql() {
 	dna-echo_operation -h
 
 	ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
-	mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "/tmp/aenigma-ejabberd-export-${domain}.sql"
-	chmod 777 "/tmp/aenigma-ejabberd-export-${domain}.sql"
+	mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
+	chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
 
 	additional_domains_array=(${additional_domains})
 	for additional_domain in "${additional_domains_array[@]}"
     do
 		ejabberdctl export2sql "${additional_domain}" "aenigma-ejabberd-export-${additional_domain}.sql"
-		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "/tmp/aenigma-ejabberd-export-${additional_domain}.sql"
-		chmod 777 "/tmp/aenigma-ejabberd-export-${additional_domain}.sql"
+		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
+		chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
 	done
 
 	dna-echo_operation -t
@@ -1415,7 +1415,7 @@ aenigma-migrate-mnesia-postgresql() {
 	operation_message="importing data into PSQL"
 	dna-echo_operation -h
 
-	for export in /tmp/aenigma-ejabberd-export*.sql
+	for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
 	do
 		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
 	done
