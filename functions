@@ -1535,11 +1535,16 @@ aenigma-provision_tor() {
 
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/tor/torrc"
 
-	/usr/sbin/service tor restart
+	service tor restart
 
 	### Allow .onion JID registrations and federate with other XMPP servers hosted inside the Tor network on hidden services via Tor itself [https://www.grepular.com/Transparent_Access_to_Tor_Hidden_Services]
 
-	sed -i "/^hosts:$/a \  - ${tor_hidden_service_hostname}" "/etc/ejabberd/ejabberd.yml"
+	if ! grep -q "${tor_hidden_service_hostname}" "/etc/ejabberd/ejabberd.yml"
+	then
+		sed -i "/^hosts:$/a \  - \"${tor_hidden_service_hostname}\"" "/etc/ejabberd/ejabberd.yml"
+	fi
+
+	service ejabberd restart
 
 	### Tor
 
