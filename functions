@@ -1574,6 +1574,13 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
+	operation_message="restarting ufw"
+	dna-echo_operation -h
+
+	service ufw restart
+
+	dna-echo_operation -t
+
 	operation_message="restarting ejabberd"
 	dna-echo_operation -h
 
