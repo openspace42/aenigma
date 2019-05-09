@@ -1544,6 +1544,8 @@ aenigma-provision_tor() {
 		sed -i "/^hosts:$/a \  - \"${tor_hidden_service_hostname}\"" "/etc/ejabberd/ejabberd.yml"
 	fi
 
+	dna-echo -m "Now restarting ejabberd..."
+
 	service ejabberd restart
 
 	### Tor
