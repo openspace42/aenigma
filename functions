@@ -1551,10 +1551,10 @@ aenigma-provision_tor() {
 	if ! grep -q "DNSPort   0.0.0.0:5300" "/etc/tor/torrc"
     then
         cat <<EOF >> "/etc/tor/torrc"
-
 DNSPort   0.0.0.0:5300
 VirtualAddrNetworkIPv4 10.192.0.0/11
-AutomapHostsOnResolve 1"
+AutomapHostsOnResolve 1
+
 TransPort 9040
 EOF
     fi
