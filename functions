@@ -467,8 +467,8 @@ aenigma-install_sslh() {
 			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5223\"; sni_hostnames: [ \"ae${node_number}.${additional_domain}\" ]; log_level: 1; }," >> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
 	    done
 
-		sed -i "/xh/ r ${tmp_project_dir}/additional_domains_sslh_xh.txt" "/etc/sslh.cfg"
-		sed -i "/ae/ r ${tmp_project_dir}/additional_domains_sslh_ae.txt" "/etc/sslh.cfg"
+		sed -i "/\"xh/ r ${tmp_project_dir}/additional_domains_sslh_xh.txt" "/etc/sslh.cfg"
+		sed -i "/\"ae/ r ${tmp_project_dir}/additional_domains_sslh_ae.txt" "/etc/sslh.cfg"
 
 	fi
 
