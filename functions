@@ -1526,7 +1526,15 @@ aenigma-provision_tor() {
 
 	### Make server reachable via Tor
 
+	operation_message="installing Tor"
+	dna-echo_operation -h
+
 	dna-install_tor
+
+	dna-echo_operation -t
+
+	operation_message="enabling Tor Hidden Service"
+	dna-echo_operation -h
 
 	dna-tor_enable_hidden_service
 
@@ -1537,16 +1545,29 @@ aenigma-provision_tor() {
 
 	service tor restart
 
+	dna-echo_operation -t
+
 	### Allow .onion JID registrations and federate with other XMPP servers hosted inside the Tor network on hidden services via Tor itself [https://www.grepular.com/Transparent_Access_to_Tor_Hidden_Services]
+
+	operation_message="adding .onion hostname to ejabberd hosts"
+	dna-echo_operation -h
 
 	if ! grep -q "${tor_hidden_service_hostname}" "/etc/ejabberd/ejabberd.yml"
 	then
 		sed -i "/^hosts:$/a \  - \"${tor_hidden_service_hostname}\"" "/etc/ejabberd/ejabberd.yml"
 	fi
 
-	dna-echo -m "Now restarting ejabberd..."
+	dna-echo_operation -t
+
+	operation_message="restarting ejabberd"
+	dna-echo_operation -h
 
 	service ejabberd restart
+
+	dna-echo_operation -t
+
+	operation_message="enabling Tor DNS resolution for .onion domains"
+	dna-echo_operation -h
 
 	### Tor
 
@@ -1563,7 +1584,12 @@ EOF
 
 	service tor restart
 
+	dna-echo_operation -t
+
 	### Unbound
+
+	operation_message="installing unbound local DNS server"
+	dna-echo_operation -h
 
 	dna-install_dependencies -p "unbound"
 
@@ -1582,7 +1608,12 @@ EOF
 
 	service unbound restart
 
+	dna-echo_operation -t
+
 	### UFW / IPTABLES
+
+	operation_message="configuring IPtables for Tor routing"
+	dna-echo_operation -h
 
 	if ! grep -q "DNSPort   0.0.0.0:5300" "/etc/ufw/before.rules"
 	then
@@ -1602,6 +1633,8 @@ EOF
 	ufw disable && ufw --force enable
 
 	echo
+
+	dna-echo_operation -t
 
 }
 
