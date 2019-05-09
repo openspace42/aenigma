@@ -1559,6 +1559,16 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
+	operation_message="adding .onion hostname to SSLH config for xh. domain"
+	dna-echo_operation -h
+
+	if ! grep -q "${tor_hidden_service_hostname}" "/etc/sslh.cfg"
+	then
+		sed -i "/xmpp-client/a \    { name: \"tls\"; host: \"localhost\"; port: \"5443\"; sni_hostnames: [ \"xh01.$tor_hidden_service_hostname\" ]; log_level: 1; }," "/etc/sslh.cfg"
+	fi
+
+	dna-echo_operation -t
+
 	operation_message="restarting ejabberd"
 	dna-echo_operation -h
 
@@ -1635,6 +1645,8 @@ EOF
 	echo
 
 	dna-echo_operation -t
+
+	dna-echo -s "Tor successfully provisioned!"
 
 }
 
