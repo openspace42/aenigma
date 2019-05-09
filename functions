@@ -1524,6 +1524,8 @@ aenigma-install_postgresql() {
 
 aenigma-provision_tor() {
 
+	### Make server reachable via Tor
+
 	dna-install_tor
 
 	dna-tor_enable_hidden_service
@@ -1534,6 +1536,63 @@ aenigma-provision_tor() {
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/tor/torrc"
 
 	/usr/sbin/service tor restart
+
+	### Allow .onion JID registrations and federate with other XMPP servers hosted inside the Tor network on hidden services via Tor itself [https://www.grepular.com/Transparent_Access_to_Tor_Hidden_Services]
+
+	sed -i "/^hosts:$/a \  - ${tor_hidden_service_hostname}" "/etc/ejabberd/ejabberd.yml"
+
+	### Tor
+
+	if ! grep -q "DNSPort   0.0.0.0:5300" "/etc/tor/torrc"
+    then
+        cat <<EOF >> "/etc/tor/torrc"
+
+DNSPort   0.0.0.0:5300
+VirtualAddrNetworkIPv4 10.192.0.0/11
+AutomapHostsOnResolve 1"
+TransPort 9040
+EOF
+    fi
+
+	service tor restart
+
+	### Unbound
+
+	dna-install_dependencies -p "unbound"
+
+	cat <<EOF > "/etc/unbound/unbound.conf.d/tor.conf"
+server:
+
+domain-insecure: "onion"
+private-domain: "onion"
+do-not-query-localhost: no
+local-zone: "onion." nodefault
+
+forward-zone:
+    name: "onion"
+    forward-addr: 127.0.0.1@5300
+EOF
+
+	service unbound restart
+
+	### UFW / IPTABLES
+
+	if ! grep -q "DNSPort   0.0.0.0:5300" "/etc/ufw/before.rules"
+	then
+		cat <<EOF >> "/etc/ufw/before.rules"
+*nat
+-A INPUT      -p tcp --dport 9040     -j ACCEPT
+-A PREROUTING -p tcp -d 10.192.0.0/11 -j REDIRECT --to-port 9040
+-A OUTPUT     -p tcp -d 10.192.0.0/11 -j REDIRECT --to-port 9040
+COMMIT
+EOF
+	fi
+
+	service ufw restart
+
+	sleep 1
+
+	ufw disable && ufw --force enable
 
 }
 
