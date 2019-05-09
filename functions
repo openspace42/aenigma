@@ -457,7 +457,7 @@ aenigma-install_sslh() {
 		additional_domains_array=(${additional_domains})
 		for additional_domain in "${additional_domains_array[@]}"
 	    do
-			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5443\"; sni_hostnames: [ \"xh${node_number}.${additional_domain}\"]; log_level: 0; }," >> "${tmp_project_dir}/additional_domains_sslh_xh.txt"
+			echo "    { name: \"tls\"; host: \"localhost\"; port: \"5443\"; sni_hostnames: [ \"xh${node_number}.${additional_domain}\"]; log_level: 1; }," >> "${tmp_project_dir}/additional_domains_sslh_xh.txt"
 	    done
 
 		> "${tmp_project_dir}/additional_domains_sslh_ae.txt"
