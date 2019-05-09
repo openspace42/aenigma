@@ -1559,12 +1559,17 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
-	operation_message="adding .onion hostname to SSLH config for xh. domain"
+	operation_message="adding .onion hostname to SSLH config"
 	dna-echo_operation -h
 
-	if ! grep -q "${tor_hidden_service_hostname}" "/etc/sslh.cfg"
+	if ! grep -q "xh${node_number}.${tor_hidden_service_hostname}" "/etc/sslh.cfg"
 	then
-		sed -i "/xmpp-client/a \    { name: \"tls\"; host: \"localhost\"; port: \"5443\"; sni_hostnames: [ \"xh01.$tor_hidden_service_hostname\" ]; log_level: 1; }," "/etc/sslh.cfg"
+		sed -i "/xmpp-client/a \    { name: \"tls\"; host: \"localhost\"; port: \"5443\"; sni_hostnames: [ \"xh${node_number}.$tor_hidden_service_hostname\" ]; log_level: 1; }," "/etc/sslh.cfg"
+	fi
+
+	if ! grep -q "ae${node_number}.${tor_hidden_service_hostname}" "/etc/sslh.cfg"
+	then
+		sed -i "/spdy/a \    { name: \"tls\"; host: \"localhost\"; port: \"5223\"; sni_hostnames: [ \"ae${node_number}.$tor_hidden_service_hostname\" ]; log_level: 1; }," "/etc/sslh.cfg"
 	fi
 
 	dna-echo_operation -t
