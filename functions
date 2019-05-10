@@ -1522,6 +1522,202 @@ aenigma-install_postgresql() {
 
 }
 
+aenigma-cluster_postgresql() {
+
+	### Get public IPv4
+
+	dna-get_public_ipv4
+
+	############################################################################
+
+	### Disable psql as patroni will now be managing DBs
+
+	service postgresql stop
+	systemctl disable postgresql
+
+	### Link psql bins
+
+	psql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
+	ln -s ${psql_bin_dir_path}/* "/usr/sbin/"
+
+	### Install dependencies
+
+	dna-install_dependencies -p "python python-pip python-psycopg2 libpq-dev etcd haproxy"
+	pip install --upgrade setuptools
+	pip install python-etcd
+	pip install patroni
+
+	############################################################################
+
+	### ETCd
+
+	cat <<EOF > "/etc/default/etcd"
+ETCD_LISTEN_PEER_URLS="http://public_ipv4-var:2380"
+ETCD_LISTEN_CLIENT_URLS="http://localhost:2379,http://public_ipv4-var:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://public_ipv4-var:2380"
+ETCD_INITIAL_CLUSTER="etcd0=http://public_ipv4-var:2380,"
+ETCD_ADVERTISE_CLIENT_URLS="http://public_ipv4-var:2379"
+ETCD_INITIAL_CLUSTER_TOKEN="cluster1"
+ETCD_INITIAL_CLUSTER_STATE="new"
+EOF
+
+	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
+
+	systemctl restart etcd
+
+	############################################################################
+
+	### Patroni
+
+	cat <<EOF > "/etc/patroni.yml"
+scope: postgres
+namespace: /db/
+name: postgresql0
+
+restapi:
+    listen: public_ipv4-var:8008
+    connect_address: public_ipv4-var:8008
+
+etcd:
+    host: public_ipv4-var:2379
+
+bootstrap:
+    dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        postgresql:
+            use_pg_rewind: true
+
+    initdb:
+    - encoding: UTF8
+    - data-checksums
+
+    pg_hba:
+    - host replication replicator 127.0.0.1/32 md5
+    - host replication replicator public_ipv4-var/0 md5
+    - host all all 0.0.0.0/0 md5
+
+    users:
+        admin:
+            password: admin
+            options:
+                - createrole
+                - createdb
+
+postgresql:
+    listen: public_ipv4-var:5432
+    connect_address: public_ipv4-var:5432
+    data_dir: /data/patroni
+    pgpass: /tmp/pgpass
+    authentication:
+        replication:
+            username: replicator
+            password: rep-pass
+        superuser:
+            username: postgres
+            password: secretpassword
+    parameters:
+        unix_socket_directories: '.'
+
+tags:
+    nofailover: false
+    noloadbalance: false
+    clonefrom: false
+    nosync: false
+EOF
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	do
+		### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
+		then
+			sed -i "/replicator public_ipv4-var/a \    - host replication replicator ${node_ipv4}\/0 md5" "/etc/patroni.yml"
+		fi
+	done
+	unset node_ipv4
+
+	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
+
+	mkdir -p "/data/patroni/"
+	chown -R postgres:postgres "/data/"
+	chmod -R 700 "/data/"
+
+	cat <<EOF > "/etc/systemd/system/patroni.service"
+[Unit]
+Description=Runners to orchestrate a high-availability PostgreSQL
+After=syslog.target network.target
+
+[Service]
+Type=simple
+
+User=postgres
+Group=postgres
+
+ExecStart=/usr/local/bin/patroni /etc/patroni.yml
+
+KillMode=process
+
+TimeoutSec=30
+
+Restart=no
+
+[Install]
+WantedBy=multi-user.targ
+EOF
+
+	systemctl start patroni
+
+	############################################################################
+
+	### HAproxy
+
+	cat <<EOF > "/etc/haproxy/haproxy.cfg"
+global
+    maxconn 100
+
+defaults
+    log global
+    mode tcp
+    retries 2
+    timeout client 30m
+    timeout connect 4s
+    timeout server 30m
+    timeout check 5s
+
+listen stats
+    mode http
+    bind *:7000
+    stats enable
+    stats uri /
+
+listen postgres
+    bind *:5000
+    option httpchk
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
+    server postgresql_public_ipv4-var_5432 public_ipv4-var:5432 maxconn 100 check port 8008
+EOF
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	do
+		### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
+		then
+			sed -i "/5432 public_ipv4-var/a \server postgresql_${node_ipv4}_5432 ${node_ipv4}:5432 maxconn 100 check port 8008" "/etc/patroni.yml"
+		fi
+	done
+	unset node_ipv4
+
+	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/haproxy/haproxy.cfg"
+
+	systemctl restart haproxy
+
+	############################################################################
+
+}
+
 aenigma-provision_tor() {
 
 	### Make server reachable via Tor
