@@ -1672,7 +1672,7 @@ EOF
 
 	systemctl daemon-reload
 
-	systemctl enable patroni-service
+	systemctl enable patroni
 
 	systemctl start patroni
 
