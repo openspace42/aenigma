@@ -1564,6 +1564,8 @@ EOF
 
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
+	update-rc.d etcd enable
+
 	systemctl restart etcd
 
 	############################################################################
@@ -1665,10 +1667,12 @@ TimeoutSec=30
 Restart=no
 
 [Install]
-WantedBy=multi-user.targ
+WantedBy=multi-user.target
 EOF
 
 	systemctl daemon-reload
+
+	systemctl enable patroni-service
 
 	systemctl start patroni
 
