@@ -1705,7 +1705,7 @@ EOF
 		### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			sed -i "/5432 public_ipv4-var/a \server postgresql_${node_ipv4}_5432 ${node_ipv4}:5432 maxconn 100 check port 8008" "/etc/patroni.yml"
+			sed -i "/5432 public_ipv4-var/a \server postgresql_${node_ipv4}_5432 ${node_ipv4}:5432 maxconn 100 check port 8008" "/etc/haproxy/haproxy.cfg"
 		fi
 	done
 	unset node_ipv4
