@@ -1533,6 +1533,16 @@ aenigma-cluster_postgresql() {
 
 	############################################################################
 
+	### Assign new permissions to ssl_project_dir so that postgres too can read it
+
+	addgroup aenigma
+	usermod -aG ejabberd aenigma
+	usermod -aG postgres aenigma
+	chown -R ejabberd:aenigma "${ssl_project_dir}"
+	chmod -R 770 "${ssl_project_dir}"
+
+	############################################################################
+
 	### Disable psql as patroni will now be managing DBs
 
 	service postgresql stop
@@ -1585,16 +1595,16 @@ name: postgresql-node_number-var
 restapi:
   listen: public_ipv4-var:8008
   connect_address: public_ipv4-var:8008
-#  certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
-#  keyfile: /etc/ssl/private/ssl-cert-snakeoil.key
+  certfile: /etc/ssl/aenigma/domain-var.d/fullchain.pem
+  keyfile: /etc/ssl/aenigma/domain-var.d/privkey.pem
 #  authentication:
 #    username: username
 #    password: password
 
-# ctl:
-#   insecure: false # Allow connections to SSL sites without certs
-#   certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
-#   cacert: /etc/ssl/certs/ssl-cacert-snakeoil.pem
+ctl:
+  insecure: false # Allow connections to SSL sites without certs
+  certfile: /etc/ssl/aenigma/domain-var.d/fullchain.pem
+  keyfile: /etc/ssl/aenigma/domain-var.d/privkey.pem
 
 etcd:
   host: public_ipv4-var:2379
@@ -1618,7 +1628,7 @@ bootstrap:
 
   initdb:
   - encoding: UTF8
-  - data-checksums
+#  - data-checksums
 
   pg_hba:
   - host all dba all md5
@@ -1666,8 +1676,9 @@ EOF
 
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
 	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
+	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
 
-	mkdir -p "/data/patroni/"
+	mkdir -p "/data/"
 	chown -R postgres:postgres "/data/"
 	chmod -R 700 "/data/"
 
