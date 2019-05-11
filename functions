@@ -1579,62 +1579,79 @@ EOF
 	### Patroni
 
 	cat <<EOF > "/etc/patroni.yml"
-scope: postgres
-namespace: /db/
-name: postgresql0
+scope: aenigma
+name: postgresql-node_number-var
 
 restapi:
-    listen: public_ipv4-var:8008
-    connect_address: public_ipv4-var:8008
+  listen: public_ipv4-var:8008
+  connect_address: public_ipv4-var:8008
+#  certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#  keyfile: /etc/ssl/private/ssl-cert-snakeoil.key
+#  authentication:
+#    username: username
+#    password: password
+
+# ctl:
+#   insecure: false # Allow connections to SSL sites without certs
+#   certfile: /etc/ssl/certs/ssl-cert-snakeoil.pem
+#   cacert: /etc/ssl/certs/ssl-cacert-snakeoil.pem
 
 etcd:
-    host: public_ipv4-var:2379
+  host: public_ipv4-var:2379
 
 bootstrap:
-    dcs:
-        ttl: 30
-        loop_wait: 10
-        retry_timeout: 10
-        maximum_lag_on_failover: 1048576
-        postgresql:
-            use_pg_rewind: true
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    postgresql:
+      use_pg_rewind: true
+      use_slots: true
+      parameters:
+        wal_level: replica
+        hot_standby: "on"
+        wal_keep_segments: 8
+        max_wal_senders: 5
+        max_replication_slots: 5
+        checkpoint_timeout: 30
 
-    initdb:
-    - encoding: UTF8
-    - data-checksums
+  initdb:
+  - encoding: UTF8
+  - data-checksums
 
-    pg_hba:
-    - host replication replicator 127.0.0.1/32 md5
-    - host replication replicator public_ipv4-var/0 md5
-    - host all all 0.0.0.0/0 md5
+  pg_hba:
+  - host all dba all md5
+  - host replication repl all md5
+  - host replication replicator public_ipv4-var/32 md5
+  - host all all 0.0.0.0/0 md5
 
-    users:
-        admin:
-            password: admin
-            options:
-                - createrole
-                - createdb
+  users:
+    dba:
+      password: secret
+      options:
+        - createrole
+        - createdb
+    repl:
+      password: secret
+      options:
+        - replication
 
 postgresql:
-    listen: public_ipv4-var:5432
-    connect_address: public_ipv4-var:5432
-    data_dir: /data/patroni
-    pgpass: /tmp/pgpass
-    authentication:
-        replication:
-            username: replicator
-            password: rep-pass
-        superuser:
-            username: postgres
-            password: secretpassword
-    parameters:
-        unix_socket_directories: '.'
-
-tags:
-    nofailover: false
-    noloadbalance: false
-    clonefrom: false
-    nosync: false
+  listen: public_ipv4-var:5432
+  connect_address: public_ipv4-var:5432
+  data_dir: /data/postgresql
+  config_dir: /data/postgresql
+  bin_dir: /usr/lib/postgresql/10/bin
+  authentication:
+    replication:
+      username: repl
+      password: secret
+    superuser:
+      username: dba
+      password: secret
+  parameters:
+    unix_socket_directories: '/tmp'
 EOF
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
@@ -1648,6 +1665,7 @@ EOF
 	unset node_ipv4
 
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
+	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
 
 	mkdir -p "/data/patroni/"
 	chown -R postgres:postgres "/data/"
