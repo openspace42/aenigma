@@ -1434,6 +1434,8 @@ aenigma-migrate-mnesia-postgresql() {
 
 aenigma-install_postgresql() {
 
+	### https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
+
 	### Install psql
 
 	############################################################################
@@ -1487,6 +1489,7 @@ aenigma-install_postgresql() {
 	then
 		dna-echo -m "Assigning password to PSQL user"
 		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
+		echo
 	fi
 
 	### Temporarily export the password for import operations
@@ -1547,6 +1550,9 @@ aenigma-cluster_postgresql() {
 	pip install --upgrade setuptools
 	pip install python-etcd
 	pip install patroni
+	pip uninstall --yes requests
+	pip install requests
+	pip install docopt
 
 	############################################################################
 
