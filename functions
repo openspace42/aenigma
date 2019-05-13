@@ -1531,6 +1531,24 @@ aenigma-install_postgresql() {
 
 }
 
+aenigma-purge_etcd() {
+
+	### Stop ETCd if it's already installed and running
+
+	if systemctl is-active --quiet etcd
+	then
+		service etcd stop
+	fi
+
+	### Delete any previous ETCd data
+
+	if [ -d "/var/lib/etcd/default/" ]
+	then
+		rm -r "/var/lib/etcd/default/"
+	fi
+
+}
+
 aenigma-cluster_postgresql() {
 
 	### Get public IPv4
@@ -1579,22 +1597,10 @@ aenigma-cluster_postgresql() {
 
 	### ETCd
 
-	### Stop ETCd if it's already installed and running
-
-	if systemctl is-active --quiet ETCd
-	then
-		service etcd stop
-	fi
-
 	if [ ! "${cluster_mode}" = "secondary" ]
 	then
 
-		### Delete any previous ETCd data locally
-
-		if [ -d "/var/lib/etcd/default/" ]
-		then
-			rm -r "/var/lib/etcd/default/"
-		fi
+		aenigma-purge_etcd
 
 		### Delete any previous ETCd data on secondary nodes
 
@@ -1605,7 +1611,7 @@ aenigma-cluster_postgresql() {
 			### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
 
 	        bash openspace42/aenigma/tools/aenigma-exec -c "
-if [ -d /var/lib/etcd/default/ ]; then rm -r /var/lib/etcd/default/; fi
+aenigma-purge_etcd
 "
 
 		}
