@@ -1632,6 +1632,8 @@ EOF
 
 	### Replace vars in config file
 
+	dna-get_hostname
+
 	sed -i "s|hostname-var|${hostname}|g" "/etc/default/etcd"
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
