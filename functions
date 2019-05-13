@@ -793,6 +793,12 @@ aenigma-initialize_nodes_db_files() {
 
 }
 
+aenigma-get_cluster_size() {
+
+	ejabberd_cluster_size="$(wc -l < ${nodes_db_ipv4_path})"
+
+}
+
 aenigma-update_routing_info() {
 
 	### Set UFW rules on this node according to the updated nodes_db
@@ -1533,16 +1539,6 @@ aenigma-cluster_postgresql() {
 
 	############################################################################
 
-	### Assign new permissions to ssl_project_dir so that postgres too can read it
-
-	addgroup aenigma
-	usermod -aG ejabberd aenigma
-	usermod -aG postgres aenigma
-	chown -R ejabberd:aenigma "${ssl_project_dir}"
-	chmod -R 770 "${ssl_project_dir}"
-
-	############################################################################
-
 	### Disable psql as patroni will now be managing DBs
 
 	service postgresql stop
@@ -1566,18 +1562,77 @@ aenigma-cluster_postgresql() {
 
 	############################################################################
 
+	### Assign new permissions to ssl_project_dir so that postgres and etcd too can read it
+
+	if ! grep -q "aenigma" "/etc/group"
+	then
+		addgroup aenigma
+	fi
+
+	usermod -aG aenigma ejabberd
+	usermod -aG aenigma postgres
+	usermod -aG aenigma etcd
+	chown -R ejabberd:aenigma "${ssl_project_dir}"
+	chmod -R 770 "${ssl_project_dir}"
+
+	############################################################################
+
 	### ETCd
 
+	### Stop ETCd if it's already installed and running
+
+	if systemctl is-active --quiet ETCd
+	then
+		service etcd stop
+	fi
+
+	### Delete any previous ETCd data
+
+	if [ -d "/var/lib/etcd/default/" ]
+	then
+		rm -r "/var/lib/etcd/default/"
+	fi
+
+	### Set config file
+
 	cat <<EOF > "/etc/default/etcd"
-ETCD_LISTEN_PEER_URLS="http://public_ipv4-var:2380"
+ETCD_HEARTBEAT_INTERVAL="100"
+ETCD_ELECTION_TIMEOUT="1000"
+ETCD_LISTEN_PEER_URLS="https://public_ipv4-var:2380"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379,http://public_ipv4-var:2379"
-ETCD_INITIAL_ADVERTISE_PEER_URLS="http://public_ipv4-var:2380"
-ETCD_INITIAL_CLUSTER="etcd0=http://public_ipv4-var:2380,"
-ETCD_ADVERTISE_CLIENT_URLS="http://public_ipv4-var:2379"
-ETCD_INITIAL_CLUSTER_TOKEN="cluster1"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="https://public_ipv4-var:2380"
+#ETCD_INITIAL_CLUSTER="ae01.os.vu=https://ae01.os.vu:2380,ae02.os.vu=https://ae02.os.vu:2380,ae03.os.vu=https://ae03.os.vu:2380"
+ETCD_INITIAL_CLUSTER="ae01.os.vu=https://hostname-var:2380,"
 ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_INITIAL_CLUSTER_TOKEN="aenigma"
+ETCD_ADVERTISE_CLIENT_URLS="http://public_ipv4-var:2379"
+ETCD_PEER_CERT_FILE="/etc/ssl/aenigma/os.vu.d/fullchain.pem"
+ETCD_PEER_KEY_FILE="/etc/ssl/aenigma/os.vu.d/privkey.pem"
+#ETCD_CERT_FILE="/etc/ssl/aenigma/os.vu.d/fullchain.pem"
+#ETCD_KEY_FILE="/etc/ssl/aenigma/os.vu.d/privkey.pem"
 EOF
 
+	### Add cluster nodes to config file
+
+	aenigma-get_cluster_size
+
+	if [ ! "${ejabberd_cluster_size}" = "1" ]
+	then
+
+		for node in $(seq 2 $ejabberd_cluster_size)
+		do
+
+			node_number_padded="$(echo ${node} | xargs printf %02d)"
+
+			sed -i "s/,/,ae${node_number_padded}.${domain}=https:\/\/ae${node_number_padded}.${domain}:2380,/" "/etc/default/etcd"
+
+		done
+
+	fi
+
+	### Replace vars in config file
+
+	sed -i "s|hostname-var|${hostname}|g" "/etc/default/etcd"
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
 	update-rc.d etcd enable
@@ -1669,7 +1724,7 @@ EOF
 		### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			sed -i "/replicator public_ipv4-var/a \    - host replication replicator ${node_ipv4}\/0 md5" "/etc/patroni.yml"
+			sed -i "/replicator public_ipv4-var/a \  - host replication replicator ${node_ipv4}\/0 md5" "/etc/patroni.yml"
 		fi
 	done
 	unset node_ipv4
@@ -1739,7 +1794,7 @@ listen postgres
     option httpchk
     http-check expect status 200
     default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions
-    server postgresql_public_ipv4-var_5432 public_ipv4-var:5432 maxconn 100 check port 8008
+    server postgresql_public_ipv4-var_5432 public_ipv4-var:5432 maxconn 100 check check-ssl verify none port 8008
 EOF
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
@@ -1747,7 +1802,7 @@ EOF
 		### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			sed -i "/5432 public_ipv4-var/a \    server postgresql_${node_ipv4}_5432 ${node_ipv4}:5432 maxconn 100 check port 8008" "/etc/haproxy/haproxy.cfg"
+			sed -i "/5432 public_ipv4-var/a \    server postgresql_${node_ipv4}_5432 ${node_ipv4}:5432 maxconn 100 check check-ssl verify none port 8008" "/etc/haproxy/haproxy.cfg"
 		fi
 	done
 	unset node_ipv4
