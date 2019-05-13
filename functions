@@ -1370,168 +1370,18 @@ aenigma-perform_dns_checks() {
 
 }
 
-aenigma-migrate-mnesia-postgresql() {
+aenigma-install_postgresql_dependencies() {
 
-	### ! Only run this after install_postgresql and on primary nodes !
-
-	if [ ! "${cluster_mode-}" = "secondary" ]
-	then
-
-		### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
-
-		operation_message="applying new_sql_schema directive"
-		dna-echo_operation -h
-
-		sed -i "s|## fqdn: \"server3.example.com\"|new_sql_schema: true|g" "/etc/ejabberd/ejabberd.yml"
-
-		service ejabberd restart
-
-		dna-echo_operation -t
-
-		### Alert about migration
-
-		dna-echo -m "We're now migrating this ejabberd instance from using the mnesia DB to PostgreSQL."
-		dna-echo -m "We will now proceed with exporting and re-importing all ejabberd data on this instance."
-
-		### Close firewall ports to effectively terminate the service for users and avoid collecting data that would not be migrated if generated after the export
-
-		ufw delete allow 5222
-		ufw delete allow 5223
-		ufw delete allow 5444
-		echo
-
-		### Export data for every ejabberd domain
-
-		operation_message="exporting data from ejabberd mnesia"
-		dna-echo_operation -h
-
-		ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
-		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
-		chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
-
-		additional_domains_array=(${additional_domains})
-		for additional_domain in "${additional_domains_array[@]}"
-		do
-			ejabberdctl export2sql "${additional_domain}" "aenigma-ejabberd-export-${additional_domain}.sql"
-			mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
-			chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
-		done
-
-		dna-echo_operation -t
-
-		### Import to psql
-
-		operation_message="importing data into PSQL"
-		dna-echo_operation -h
-
-		for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
-		do
-			sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
-			echo
-		done
-
-		dna-echo_operation -t
-
-		psql_migration_status="complete"
-
-	fi
+	dna-install_dependencies -p "python python-pip python-psycopg2 libpq-dev"
+	pip install --upgrade setuptools
+	pip install python-etcd
+	pip uninstall --yes requests
+	pip install requests
+	pip install docopt
 
 }
 
-aenigma-install_postgresql() {
-
-	### https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
-
-	### Install psql
-
-	############################################################################
-
-	dna-echo -m "Now installing PostgreSQL"
-
-	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
-
-	### Locate pg_hba file
-
-	pg_hba_file_path="$(find /etc/postgresql/ -name pg_hba.conf)"
-
-	### Allow direct psql user login
-
-	dna-echo -m "Allowing direct PSQL login"
-
-	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "${pg_hba_file_path}"
-
-	service postgresql restart
-
-	### Create psql database
-
-	if ! sudo -u postgres psql -c "\l" 2> /dev/null | grep -q ejabberd
-	then
-		dna-echo -m "Creating PSQL database"
-		sudo -u postgres createdb ejabberd
-		psql_db_previous_state="nx"
-	fi
-
-	### Create ejabberd psql user
-
-	if ! sudo -u postgres psql -c "\du" 2> /dev/null | grep -q ejabberd
-	then
-		dna-echo -m "Creating PSQL user"
-		sudo -u postgres createuser ejabberd
-		psql_us_previous_state="nx"
-	fi
-
-	### Generate a random password for the new psql user
-
-	if [ -z "${ejabberd_psql_user_password-}" ]
-	then
-		dna-echo -m "Generating password to PSQL user"
-		ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-		dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
-	fi
-
-	### Assign the generated password to the user if we've just created it
-
-	if [ "${psql_us_previous_state-}" = "nx" ]
-	then
-		dna-echo -m "Assigning password to PSQL user"
-		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
-		echo
-	fi
-
-	### Temporarily export the password for import operations
-
-	echo "${ejabberd_psql_user_password}" > "${tmp_project_dir}/ejabberd_psql_user_password"
-
-	### Download ejabberd psql schema
-
-	curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
-	chmod 777 "${tmp_project_dir}/pg.new.sql"
-	echo
-
-	### Import ejabberd psql schema if the db was just created
-
-	if [ "${psql_db_previous_state-}" = "nx" ]
-	then
-		dna-echo -m "Importing PSQL default schema"
-		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
-		echo
-	fi
-
-	############################################################################
-
-	### Migrate mnesia to psql if necessary
-
-	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
-	then
-
-		### This is an old instance, start the migration
-		aenigma-migrate-mnesia-postgresql
-
-	fi
-
-}
-
-aenigma-purge_etcd() {
+aenigma-wipe_etcd() {
 
 	### Stop ETCd if it's already installed and running
 
@@ -1549,72 +1399,39 @@ aenigma-purge_etcd() {
 
 }
 
-aenigma-cluster_postgresql() {
+aenigma-install_etcd() {
 
-	### Get public IPv4
-
-	dna-get_public_ipv4
+	### !!! This function is only intended to be ran by the primary node !!! ###
 
 	############################################################################
 
-	### Stop and disable psql as patroni will now be managing DBs
+	### Install dependencies required for postgresql cluster
 
-	if systemctl is-active --quiet postgresql
-	then
-		service postgresql stop
-	fi
-
-	if [ -f "/etc/init.d/postgresql" ]
-	then
-		systemctl disable postgresql
-	fi
-
-	### Link psql bins
-
-	if [ -d "/usr/lib/postgresql/" ]
-	then
-		psql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
-		ln -s ${psql_bin_dir_path}/* "/usr/sbin/" || true
-		echo
-	fi
-
-	### Install dependencies
-
-	dna-install_dependencies -p "python python-pip python-psycopg2 libpq-dev etcd haproxy"
-	pip install --upgrade setuptools
-	pip install python-etcd
-	pip install patroni
-	pip uninstall --yes requests
-	pip install requests
-	pip install docopt
+	aenigma-install_postgresql_dependencies
 
 	############################################################################
 
-	### Assign new permissions to ssl_project_dir so that postgres and etcd too can read it
+	### Install etcd
 
-	if ! grep -q "aenigma" "/etc/group"
-	then
-		addgroup aenigma
-	fi
+	dna-install_dependencies -p "etcd"
 
-	if grep -q "postgres" "/etc/passwd"
-	then
-		usermod -aG aenigma postgres
-	fi
+	### Add etcd user to aenigma group for correct tls_project_dir permissions
 
-	usermod -aG aenigma ejabberd
 	usermod -aG aenigma etcd
-	chown -R ejabberd:aenigma "${ssl_project_dir}"
-	chmod -R 770 "${ssl_project_dir}"
 
 	############################################################################
 
-	### ETCd
+	### Delete all etcd data to start fresh
+
+	### This only applies to primary nodes, so that the wipe will occur only once
+	### at the same time during primary node installation / runtime.
+	### Secondary nodes will skip this when running on their own as the primary
+	### node will already have remotely performed this onto them as well.
 
 	if [ ! "${cluster_mode}" = "secondary" ]
 	then
 
-		aenigma-purge_etcd
+		aenigma-wipe_etcd
 
 		### Delete any previous ETCd data on secondary nodes
 
@@ -1625,7 +1442,7 @@ aenigma-cluster_postgresql() {
 			### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
 
 	        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-purge_etcd
+aenigma-wipe_etcd
 "
 
 		}
@@ -1712,7 +1529,308 @@ EOF
 
 	############################################################################
 
-	### Patroni
+}
+
+aenigma-install_etcd_cluster() {
+
+	if [ ! "${cluster_mode}" = "secondary" ]
+	then
+
+		### Install etcd all at once on all nodes
+
+		########################################################################
+
+		### Install etcd locally while performing a cluster-wide etcd wipe
+
+		aenigma-install_etcd
+
+		### At this point etcd will be installed locally on this primary node
+		### and we can proceed to install it on any secondary nodes.
+
+		########################################################################
+
+		aenigma-exec() {
+
+			### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+			bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-install_etcd
+"
+
+		}
+
+		########################################################################
+
+		for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+		do
+			### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+			if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
+			then
+				### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+				ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
+aenigma-exec
+exit
+END
+			fi
+			echo
+		done
+		unset online_node_ipv4
+
+		########################################################################
+
+}
+
+aenigma-migrate-mnesia-postgresql() {
+
+	### ! Only run this after install_postgresql and on primary nodes !
+
+	if [ ! "${cluster_mode-}" = "secondary" ]
+	then
+
+		### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
+
+		operation_message="applying new_sql_schema directive"
+		dna-echo_operation -h
+
+		sed -i "s|## fqdn: \"server3.example.com\"|new_sql_schema: true|g" "/etc/ejabberd/ejabberd.yml"
+
+		service ejabberd restart
+
+		dna-echo_operation -t
+
+		### Alert about migration
+
+		dna-echo -m "We're now migrating this ejabberd instance from using the mnesia DB to PostgreSQL."
+		dna-echo -m "We will now proceed with exporting and re-importing all ejabberd data on this instance."
+
+		### Close firewall ports to effectively terminate the service for users and avoid collecting data that would not be migrated if generated after the export
+
+		ufw delete allow 5222
+		ufw delete allow 5223
+		ufw delete allow 5444
+		echo
+
+		### Export data for every ejabberd domain
+
+		operation_message="exporting data from ejabberd mnesia"
+		dna-echo_operation -h
+
+		ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
+		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
+		chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
+
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+		do
+			ejabberdctl export2sql "${additional_domain}" "aenigma-ejabberd-export-${additional_domain}.sql"
+			mv "/var/lib/ejabberd/aenigma-ejabberd-export-${additional_domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
+			chmod 777 "${tmp_dir}/aenigma-ejabberd-export-${additional_domain}.sql"
+		done
+
+		dna-echo_operation -t
+
+		### Import to psql
+
+		operation_message="importing data into PSQL"
+		dna-echo_operation -h
+
+		for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
+		do
+			sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
+			echo
+		done
+
+		dna-echo_operation -t
+
+		psql_migration_status="complete"
+
+	fi
+
+}
+
+aenigma-install_postgresql() {
+
+	### https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
+
+	############################################################################
+
+	### Install dependencies required for postgresql cluster
+
+	aenigma-install_postgresql_dependencies
+
+	############################################################################
+
+	### Install psql
+
+	dna-echo -m "Now installing PostgreSQL"
+
+	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
+
+	### Locate pg_hba file
+
+	pg_hba_file_path="$(find /etc/postgresql/ -name pg_hba.conf)"
+
+	### Allow direct psql user login
+
+	dna-echo -m "Allowing direct PSQL login"
+
+	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "${pg_hba_file_path}"
+
+	service postgresql restart
+
+	### Create psql database
+
+	if ! sudo -u postgres psql -c "\l" 2> /dev/null | grep -q ejabberd
+	then
+		dna-echo -m "Creating PSQL database"
+		sudo -u postgres createdb ejabberd
+		psql_db_previous_state="nx"
+	fi
+
+	### Create ejabberd psql user
+
+	if ! sudo -u postgres psql -c "\du" 2> /dev/null | grep -q ejabberd
+	then
+		dna-echo -m "Creating PSQL user"
+		sudo -u postgres createuser ejabberd
+		psql_us_previous_state="nx"
+	fi
+
+	### Generate a random password for the new psql user
+
+	if [ -z "${ejabberd_psql_user_password-}" ]
+	then
+		dna-echo -m "Generating password to PSQL user"
+		ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+		dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
+	fi
+
+	### Assign the generated password to the user if we've just created it
+
+	if [ "${psql_us_previous_state-}" = "nx" ]
+	then
+		dna-echo -m "Assigning password to PSQL user"
+		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
+		echo
+	fi
+
+	### Temporarily export the password for import operations
+
+	echo "${ejabberd_psql_user_password}" > "${tmp_project_dir}/ejabberd_psql_user_password"
+
+	### Download ejabberd psql schema
+
+	curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
+	chmod 777 "${tmp_project_dir}/pg.new.sql"
+	echo
+
+	### Import ejabberd psql schema if the db was just created
+
+	if [ "${psql_db_previous_state-}" = "nx" ]
+	then
+		dna-echo -m "Importing PSQL default schema"
+		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+		echo
+	fi
+
+	############################################################################
+
+	### Migrate mnesia to psql if necessary
+
+	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+	then
+
+		### This is an old instance, start the migration
+		aenigma-migrate-mnesia-postgresql
+
+	fi
+
+}
+
+aenigma-apply_postgresql_permissions() {
+
+	### Assign new permissions to ssl_project_dir so that postgres and etcd too can read from it
+
+	if ! grep -q "aenigma" "/etc/group"
+	then
+		addgroup aenigma
+	fi
+
+	usermod -aG aenigma ejabberd
+
+	chown -R ejabberd:aenigma "${ssl_project_dir}"
+	chmod -R 770 "${ssl_project_dir}"
+
+}
+
+aenigma-install_postgresql_patroni() {
+
+	### Install postgresql and patroni
+
+	############################################################################
+
+	### Install dependencies required for postgresql cluster
+
+	aenigma-install_postgresql_dependencies
+
+	############################################################################
+
+	### Get public IPv4
+
+	dna-get_public_ipv4
+
+	############################################################################
+
+	### Install postgresql
+
+	operation_message="installing PostgreSQL"
+	dna-echo_operation -h
+
+	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
+
+	### Link psql bins
+
+	if [ -d "/usr/lib/postgresql/" ]
+	then
+		psql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
+		ln -s ${psql_bin_dir_path}/* "/usr/sbin/" || true
+		echo
+	fi
+
+	### Add postgres user to aenigma group for correct tls_project_dir permissions
+
+	usermod -aG aenigma postgres
+
+	### Finish
+
+	dna-echo_operation -t
+
+	############################################################################
+
+	### Stop and disable psql as patroni will now be managing DBs
+
+	if systemctl is-active --quiet postgresql
+	then
+		service postgresql stop
+	fi
+
+	if [ -f "/etc/init.d/postgresql" ]
+	then
+		systemctl disable postgresql
+	fi
+
+	############################################################################
+
+	### Install patroni
+
+	pip install patroni
+
+	### Apply patroni config
 
 	cat <<EOF > "/etc/patroni.yml"
 scope: aenigma
@@ -1733,7 +1851,8 @@ ctl:
   keyfile: /etc/ssl/aenigma/domain-var.d/privkey.pem
 
 etcd:
-  host: public_ipv4-var:2379
+#  host: public_ipv4-var:2379
+  host: 80.211.10.102:2379
 
 bootstrap:
   dcs:
@@ -1808,6 +1927,8 @@ EOF
 	chown -R postgres:postgres "/data/"
 	chmod -R 700 "/data/"
 
+	### Create patroni systemd service
+
 	cat <<EOF > "/etc/systemd/system/patroni.service"
 [Unit]
 Description=Runners to orchestrate a high-availability PostgreSQL
@@ -1839,7 +1960,25 @@ EOF
 
 	############################################################################
 
-	### HAproxy
+}
+
+aenigma-install_haproxy() {
+
+	############################################################################
+
+	### Install dependencies required for postgresql cluster
+
+	aenigma-install_postgresql_dependencies
+
+	############################################################################
+
+	### Install haproxy
+
+	dna-install_dependencies -p "haproxy"
+
+	############################################################################
+
+	### Apply haproxy config
 
 	cat <<EOF > "/etc/haproxy/haproxy.cfg"
 global
@@ -1883,46 +2022,6 @@ EOF
 	systemctl restart haproxy
 
 	############################################################################
-
-}
-
-aenigma-cluster_postgresql_remotely() {
-
-	########################################################################
-
-	aenigma-exec() {
-
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-		bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-cluster_postgresql
-"
-
-	}
-
-	########################################################################
-
-	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
-	do
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
-		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-. /root/openspace42/aenigma/functions
-synthia-source_dna
-synthia-define_vars
-dna-read_conf_settings
-aenigma-exec
-exit
-END
-		fi
-		echo
-	done
-	unset online_node_ipv4
-
-	########################################################################
 
 }
 
