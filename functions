@@ -1601,7 +1601,7 @@ ETCD_ELECTION_TIMEOUT="1000"
 ETCD_LISTEN_PEER_URLS="https://public_ipv4-var:2380"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379,http://public_ipv4-var:2379"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="https://public_ipv4-var:2380"
-ETCD_INITIAL_CLUSTER="ae01.os.vu=https://hostname-var:2380,"
+ETCD_INITIAL_CLUSTER="hostname-var=https://hostname-var:2380,"
 ETCD_INITIAL_CLUSTER_STATE="new"
 ETCD_INITIAL_CLUSTER_TOKEN="aenigma"
 ETCD_ADVERTISE_CLIENT_URLS="http://public_ipv4-var:2379"
@@ -1618,12 +1618,17 @@ EOF
 	if [ ! "${ejabberd_cluster_size}" = "1" ]
 	then
 
-		for node in $(seq 2 $ejabberd_cluster_size)
+		for node in $(seq 1 $ejabberd_cluster_size)
 		do
 
 			node_number_padded="$(echo ${node} | xargs printf %02d)"
 
-			sed -i "6s/.$/ae${node_number_padded}.${domain}=https:\/\/ae${node_number_padded}.${domain}:2380,&/" "/etc/default/etcd"
+			if [ ! "${node_number_padded}" = "${node_number}" ]
+			then
+
+				sed -i "6s/.$/ae${node_number_padded}.${domain}=https:\/\/ae${node_number_padded}.${domain}:2380,&/" "/etc/default/etcd"
+
+			fi
 
 		done
 
