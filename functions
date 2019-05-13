@@ -793,7 +793,7 @@ aenigma-initialize_nodes_db_files() {
 
 }
 
-aenigma-get_cluster_size() {
+aenigma-get_ejabberd_cluster_size() {
 
 	ejabberd_cluster_size="$(wc -l < ${nodes_db_ipv4_path})"
 
@@ -1601,7 +1601,6 @@ ETCD_ELECTION_TIMEOUT="1000"
 ETCD_LISTEN_PEER_URLS="https://public_ipv4-var:2380"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379,http://public_ipv4-var:2379"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="https://public_ipv4-var:2380"
-#ETCD_INITIAL_CLUSTER="ae01.os.vu=https://ae01.os.vu:2380,ae02.os.vu=https://ae02.os.vu:2380,ae03.os.vu=https://ae03.os.vu:2380"
 ETCD_INITIAL_CLUSTER="ae01.os.vu=https://hostname-var:2380,"
 ETCD_INITIAL_CLUSTER_STATE="new"
 ETCD_INITIAL_CLUSTER_TOKEN="aenigma"
@@ -1614,7 +1613,7 @@ EOF
 
 	### Add cluster nodes to config file
 
-	aenigma-get_cluster_size
+	aenigma-get_ejabberd_cluster_size
 
 	if [ ! "${ejabberd_cluster_size}" = "1" ]
 	then
@@ -1624,7 +1623,7 @@ EOF
 
 			node_number_padded="$(echo ${node} | xargs printf %02d)"
 
-			sed -i "s/,/,ae${node_number_padded}.${domain}=https:\/\/ae${node_number_padded}.${domain}:2380,/" "/etc/default/etcd"
+			sed -i "6s/.$/ae${node_number_padded}.${domain}=https:\/\/ae${node_number_padded}.${domain}:2380,&/" "/etc/default/etcd"
 
 		done
 
