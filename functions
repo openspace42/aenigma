@@ -1559,7 +1559,11 @@ aenigma-cluster_postgresql() {
 
 	### Disable psql as patroni will now be managing DBs
 
-	service postgresql stop
+	if systemctl is-active --quiet postgresql
+	then
+		service postgresql stop
+	fi
+
 	systemctl disable postgresql
 
 	### Link psql bins
