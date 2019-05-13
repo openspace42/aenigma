@@ -1642,6 +1642,8 @@ END
 
 	fi
 
+	############################################################################
+
 	### Set config file
 
 	cat <<EOF > "/etc/default/etcd"
@@ -1867,6 +1869,46 @@ EOF
 	systemctl restart haproxy
 
 	############################################################################
+
+}
+
+aenigma-cluster_postgresql_remotely() {
+
+	########################################################################
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+		bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-cluster_postgresql
+"
+
+	}
+
+	########################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
+aenigma-exec
+exit
+END
+		fi
+		echo
+	done
+	unset online_node_ipv4
+
+	########################################################################
 
 }
 
