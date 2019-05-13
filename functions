@@ -1853,8 +1853,7 @@ ctl:
   keyfile: /etc/ssl/aenigma/domain-var.d/privkey.pem
 
 etcd:
-#  host: public_ipv4-var:2379
-  host: 80.211.10.102:2379
+  host: public_ipv4-var:2379
 
 bootstrap:
   dcs:
