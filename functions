@@ -1507,10 +1507,10 @@ ETCD_INITIAL_CLUSTER="hostname-var=https://hostname-var:2380,"
 ETCD_INITIAL_CLUSTER_STATE="new"
 ETCD_INITIAL_CLUSTER_TOKEN="aenigma"
 ETCD_ADVERTISE_CLIENT_URLS="http://public_ipv4-var:2379"
-ETCD_PEER_CERT_FILE="/etc/ssl/aenigma/os.vu.d/fullchain.pem"
-ETCD_PEER_KEY_FILE="/etc/ssl/aenigma/os.vu.d/privkey.pem"
-#ETCD_CERT_FILE="/etc/ssl/aenigma/os.vu.d/fullchain.pem"
-#ETCD_KEY_FILE="/etc/ssl/aenigma/os.vu.d/privkey.pem"
+ETCD_PEER_CERT_FILE="/etc/ssl/aenigma/domain-var.d/fullchain.pem"
+ETCD_PEER_KEY_FILE="/etc/ssl/aenigma/domain-var.d/privkey.pem"
+#ETCD_CERT_FILE="/etc/ssl/aenigma/domain-var.d/fullchain.pem"
+#ETCD_KEY_FILE="/etc/ssl/aenigma/domain-var.d/privkey.pem"
 EOF
 
 	### Add cluster nodes to config file
@@ -1541,6 +1541,7 @@ EOF
 	dna-get_hostname
 
 	sed -i "s|hostname-var|${hostname}|g" "/etc/default/etcd"
+	sed -i "s|domain-var|${domain}|g" "/etc/default/etcd"
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
 	update-rc.d etcd enable
