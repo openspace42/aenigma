@@ -1629,6 +1629,8 @@ aenigma-install_etcd
 
 		########################################################################
 
+		aenigma-get_nodes_online
+
 		for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 		do
 			### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
@@ -1747,73 +1749,6 @@ aenigma-install_postgresql() {
 
 	#service postgresql restart
 
-	### Create psql database
-
-	if ! sudo -u postgres psql -c "\l" 2> /dev/null | grep -q ejabberd
-	then
-		dna-echo -m "Creating PSQL database"
-		sudo -u postgres createdb ejabberd
-		psql_db_previous_state="nx"
-	fi
-
-	### Create ejabberd psql user
-
-	if ! sudo -u postgres psql -c "\du" 2> /dev/null | grep -q ejabberd
-	then
-		dna-echo -m "Creating PSQL user"
-		sudo -u postgres createuser ejabberd
-		psql_us_previous_state="nx"
-	fi
-
-	### Generate a random password for the new psql user
-
-	if [ -z "${ejabberd_psql_user_password-}" ]
-	then
-		dna-echo -m "Generating password to PSQL user"
-		ejabberd_psql_user_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-		dna-set_option -o "ejabberd_psql_user_password" -p "postgres" -s "${ejabberd_psql_user_password}"
-	fi
-
-	### Assign the generated password to the user if we've just created it
-
-	if [ "${psql_us_previous_state-}" = "nx" ]
-	then
-		dna-echo -m "Assigning password to PSQL user"
-		sudo -u postgres -H psql -c "alter user ejabberd with password '$ejabberd_psql_user_password'"
-		echo
-	fi
-
-	### Temporarily export the password for import operations
-
-	echo "${ejabberd_psql_user_password}" > "${tmp_project_dir}/ejabberd_psql_user_password"
-
-	### Download ejabberd psql schema
-
-	curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
-	chmod 777 "${tmp_project_dir}/pg.new.sql"
-	echo
-
-	### Import ejabberd psql schema if the db was just created
-
-	if [ "${psql_db_previous_state-}" = "nx" ]
-	then
-		dna-echo -m "Importing PSQL default schema"
-		sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
-		echo
-	fi
-
-	############################################################################
-
-	### Migrate mnesia to psql if necessary
-
-	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
-	then
-
-		### This is an old instance, start the migration
-		aenigma-migrate-mnesia-postgresql
-
-	fi
-
 }
 
 aenigma-install_postgresql_patroni() {
@@ -1927,19 +1862,19 @@ bootstrap:
 #  - data-checksums
 
   pg_hba:
-  - host all dba all md5
+  - host all postgres all md5
   - host replication repl all md5
   - host replication replicator public_ipv4-var/32 md5
   - host all all 0.0.0.0/0 md5
 
   users:
-    dba:
-      password: secret
+    postgres:
+      password: patroni_postgres_password-var
       options:
         - createrole
         - createdb
     repl:
-      password: secret
+      password: patroni_repl_password-var
       options:
         - replication
 
@@ -1952,13 +1887,17 @@ postgresql:
   authentication:
     replication:
       username: repl
-      password: secret
+      password: patroni_repl_password-var
     superuser:
-      username: dba
-      password: secret
+      username: postgres
+      password: patroni_postgres_password-var
   parameters:
     unix_socket_directories: '/tmp'
 EOF
+
+	############################################################################
+
+	### Add other cluster nodes to the patroni config
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
@@ -1970,9 +1909,40 @@ EOF
 	done
 	unset node_ipv4
 
+	############################################################################
+
+	### Localize vars in patroni config
+
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
 	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
 	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
+
+	############################################################################
+
+	### Generate random passwords for the postgres/patroni config
+
+	### Generate a random password for the postgres psql user
+
+	if [ -z "${patroni_postgres_password-}" ]
+	then
+		dna-echo -m "Generating password for the postgresql/patroni postgres user"
+		patroni_postgres_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+		dna-set_option -o "patroni_postgres_password" -p "postgres" -s "${patroni_postgres_password}"
+	fi
+
+	### Generate a random password for the repl psql user
+
+	if [ -z "${patroni_repl_password-}" ]
+	then
+		dna-echo -m "Generating password for the postgresql/patroni repl user"
+		patroni_repl_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+		dna-set_option -o "patroni_repl_password" -p "postgres" -s "${patroni_repl_password}"
+	fi
+
+	sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
+	sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
+
+	############################################################################
 
 	mkdir -p "/data/"
 	chown -R postgres:postgres "/data/"
@@ -2010,6 +1980,96 @@ EOF
 	systemctl start patroni
 
 	############################################################################
+
+	if [ ! "${cluster_mode-}" = "secondary" ]
+	then
+
+		### Create the ejabberd role and database in postgres/patroni
+
+		########################################################################
+
+		### Generate a random password for the ejabberd psql user
+
+		if [ -z "${patroni_ejabberd_password-}" ]
+		then
+			dna-echo -m "Generating password for the ejabberd postgresql/patroni user"
+			patroni_ejabberd_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			dna-set_option -o "patroni_ejabberd_password" -p "postgres" -s "${patroni_ejabberd_password}"
+		fi
+
+		### Create ejabberd postgresql/patroni user
+
+		if ! PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "\du" 2> /dev/null | grep -q ejabberd
+		then
+			dna-echo -m "Creating the ejabberd postgresql/patroni user"
+			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create role ejabberd"
+			patroni_ejabbed_role_previous_state="nx"
+		fi
+
+		### Assign the generated password to the user if we've just created it
+
+		if [ "${patroni_ejabbed_role_previous_state-}" = "nx" ]
+		then
+			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
+			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter user ejabberd with encrypted password '$patroni_ejabberd_password'"
+			echo
+		fi
+
+		### Allow the ejabberd postgresql/patroni user to log in with password if we've just created it
+
+		if [ "${patroni_ejabbed_role_previous_state-}" = "nx" ]
+		then
+			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
+			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter role ejabberd with login"
+			echo
+		fi
+
+		### Create the ejabberd postgresql/patroni database
+
+		if ! PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "\l" 2> /dev/null | grep -q ejabberd
+		then
+			dna-echo -m "Creating PSQL database"
+			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create database ejabberd"
+			patroni_ejabbed_db_previous_state="nx"
+		fi
+
+
+
+
+
+
+
+
+		### Download ejabberd psql schema
+
+		curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
+		chmod 777 "${tmp_project_dir}/pg.new.sql"
+		echo
+
+		### Import ejabberd psql schema if the db was just created
+
+		if [ "${patroni_ejabbed_db_previous_state-}" = "nx" ]
+		then
+			dna-echo -m "Importing PSQL default schema"
+			sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+			echo
+		fi
+
+		########################################################################
+
+		### Migrate mnesia to psql if necessary
+
+		if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+		then
+
+			### This is an old instance, start the migration
+			aenigma-migrate-mnesia-postgresql
+
+		fi
+
+		########################################################################
+
+	fi
 
 }
 
