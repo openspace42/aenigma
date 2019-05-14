@@ -1428,7 +1428,7 @@ aenigma-install_etcd() {
 	### Secondary nodes will skip this when running on their own as the primary
 	### node will already have remotely performed this onto them as well.
 
-	if [ ! "${cluster_mode}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		aenigma-wipe_etcd
@@ -1533,7 +1533,7 @@ EOF
 
 aenigma-install_etcd_cluster() {
 
-	if [ ! "${cluster_mode}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		### Install etcd all at once on all nodes
@@ -1667,23 +1667,17 @@ aenigma-install_postgresql() {
 
 	############################################################################
 
-	### Install psql
-
-	dna-echo -m "Now installing PostgreSQL"
-
-	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
-
 	### Locate pg_hba file
 
-	pg_hba_file_path="$(find /etc/postgresql/ -name pg_hba.conf)"
+	#pg_hba_file_path="$(find /etc/postgresql/ -name pg_hba.conf)"
 
 	### Allow direct psql user login
 
-	dna-echo -m "Allowing direct PSQL login"
+	#dna-echo -m "Allowing direct PSQL login"
 
-	sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "${pg_hba_file_path}"
+	#sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "${pg_hba_file_path}"
 
-	service postgresql restart
+	#service postgresql restart
 
 	### Create psql database
 
@@ -2519,7 +2513,7 @@ synthia-perform_installation() {
 
 		dna-set_option -o "cluster_mode" -p "cluster" -d "y" -c "[primary/secondary]" -v "y"
 
-		if [ "${cluster_mode}" = "primary" ]
+		if [ "${cluster_mode-}" = "primary" ]
 		then
 			dna-echo -m "Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation."
 		else
