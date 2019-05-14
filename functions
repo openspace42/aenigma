@@ -1381,6 +1381,22 @@ aenigma-install_postgresql_dependencies() {
 
 }
 
+aenigma-apply_postgresql_permissions() {
+
+	### Assign new permissions to ssl_project_dir so that postgres and etcd too can read from it
+
+	if ! grep -q "aenigma" "/etc/group"
+	then
+		addgroup aenigma
+	fi
+
+	usermod -aG aenigma ejabberd
+
+	chown -R ejabberd:aenigma "${ssl_project_dir}"
+	chmod -R 770 "${ssl_project_dir}"
+
+}
+
 aenigma-wipe_etcd() {
 
 	### Stop ETCd if it's already installed and running
@@ -1408,6 +1424,10 @@ aenigma-install_etcd() {
 	### Install dependencies required for postgresql cluster
 
 	aenigma-install_postgresql_dependencies
+
+	### Apply permissions
+
+	aenigma-apply_postgresql_permissions
 
 	############################################################################
 
@@ -1748,22 +1768,6 @@ aenigma-install_postgresql() {
 
 }
 
-aenigma-apply_postgresql_permissions() {
-
-	### Assign new permissions to ssl_project_dir so that postgres and etcd too can read from it
-
-	if ! grep -q "aenigma" "/etc/group"
-	then
-		addgroup aenigma
-	fi
-
-	usermod -aG aenigma ejabberd
-
-	chown -R ejabberd:aenigma "${ssl_project_dir}"
-	chmod -R 770 "${ssl_project_dir}"
-
-}
-
 aenigma-install_postgresql_patroni() {
 
 	### Install postgresql and patroni
@@ -1773,6 +1777,10 @@ aenigma-install_postgresql_patroni() {
 	### Install dependencies required for postgresql cluster
 
 	aenigma-install_postgresql_dependencies
+
+	### Apply permissions
+
+	aenigma-apply_postgresql_permissions
 
 	############################################################################
 
