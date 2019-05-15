@@ -514,7 +514,7 @@ aenigma-add_ejabberd_repo() {
 		touch "/etc/apt/preferences"
 		if ! grep -q "apt.jabber.at" "/etc/apt/preferences"
 		then
-			cat <<EOF > "/etc/apt/preferences"
+			cat <<EOF >> "/etc/apt/preferences"
 Package: *
 Pin: origin "apt.jabber.at"
 Pin-Priority: 1000
