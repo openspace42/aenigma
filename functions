@@ -498,10 +498,31 @@ aenigma-restart_ejabberd_if_running() {
 
 aenigma-add_ejabberd_repo() {
 
+	### Add repo
+
 	dna-check_dpkg_availability
 	dna-install_dependencies -p "apt-transport-https"
 	currdistro="$(lsb_release --codename | cut -f2)"
 	echo "deb https://apt.jabber.at ${currdistro} ejabberd" > "/etc/apt/sources.list.d/jabber.at.list"
+
+	### Pin this repo at max priority in Debian in case testing/unstable repos are enabled
+
+	dna-get_distro_name
+
+	if [ "${distro_name}" = "debian" ]
+	then
+		touch "/etc/apt/preferences"
+		if ! grep -q "apt.jabber.at" "/etc/apt/preferences"
+		then
+			cat <<EOF > "/etc/apt/preferences"
+Package: *
+Pin: origin "apt.jabber.at"
+Pin-Priority: 1000
+EOF
+		fi
+	fi
+
+	### Add key
 
 	if ! apt-key list 2> /dev/null | grep "jabber.at" &> /dev/null
 	then
@@ -1760,7 +1781,19 @@ aenigma-install_postgresql_patroni() {
 	operation_message="installing PostgreSQL"
 	dna-echo_operation -h
 
-	dna-install_dependencies -p "postgresql postgresql-contrib erlang-p1-pgsql"
+	dna-install_dependencies -p "postgresql postgresql-contrib"
+
+	dna-get_distro_name
+
+	if [ "${distro_name}" = "ubuntu" ]
+	then
+		dna-install_dependencies -p "erlang-p1-pgsql"
+	elif [ "${distro_name}" = "debian" ]
+	then
+		apt-get -y install erlang-p1-pgsql -t stretch
+	fi
+
+	iferlang-p1-pgsql"
 
 	### Link psql bins
 
