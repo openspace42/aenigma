@@ -1480,7 +1480,7 @@ aenigma-install_etcd() {
 
 	### Install etcd
 
-	dna-install_dependencies -p "etcd"
+	dna-install_etcd
 
 	### Add etcd user to aenigma group for correct tls_project_dir permissions
 
@@ -1594,6 +1594,8 @@ EOF
 	update-rc.d etcd enable
 
 	systemctl restart etcd &
+
+	dna-wait -s "8" -d "Now allowing etcd to start up correctly..."
 
 	############################################################################
 
@@ -1743,6 +1745,10 @@ aenigma-install_postgresql_patroni() {
 
 	############################################################################
 
+	### Get hostname
+
+	dna-get_hostname
+
 	### Get public IPv4
 
 	dna-get_public_ipv4
@@ -1792,6 +1798,7 @@ aenigma-install_postgresql_patroni() {
 	### Install patroni
 
 	pip install patroni
+	echo
 
 	### Apply patroni config
 
