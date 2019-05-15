@@ -880,14 +880,14 @@ aenigma-get_nodes_online() {
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
-		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tmp_project_dir}/online_test_token" "root@${node_ipv4}:/tmp/aenigma/"
 			then
 				echo
-				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue running the installation now and re-run the installation script at at a later time."
 	            dna-ask_for_boolean -d "y" -q "Continue anyway?"
@@ -965,14 +965,14 @@ aenigma-push_routing_info() {
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
-		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
 			then
 				echo
-				dna-echo -e "Existing node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
 				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
@@ -1047,14 +1047,14 @@ aenigma-push_certs() {
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
-		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
 			then
 				echo
-				dna-echo -e "Node number | ${n-}${node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -e "Node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "Ensure such node is actually online and when it is execute this script again by running:"
 				dna-echo -m " | ${y-}${tools_dir}/${proj_name}-create-push-certs${n-} | "
 				if [ "${interactive}" = "y" ]
@@ -1070,10 +1070,10 @@ aenigma-push_certs() {
 						dna-exit
 					fi
 				else
-					dna-echo -e "Skipping node | ${n-}${node_number}${r-} | and continuing with all others now."
+					dna-echo -e "Skipping node | ${n-}${current_node_number}${r-} | and continuing with all others now."
 					### Send an alert email.
-			        dna-send_mail -s "aenigma: node: | ${node_number} | offline" \
-			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [the machine sending this very notification] and execute: | ${tools_dir}/${proj_name}-create-push-certs |." \
+			        dna-send_mail -s "aenigma: node: | ${current_node_number} | offline" \
+			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${current_node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [the machine sending this very notification] and execute: | ${tools_dir}/${proj_name}-create-push-certs |." \
 			        -r "${admin_mail}"
 				fi
 			fi
@@ -1146,16 +1146,16 @@ aenigma-test_online_nodes() {
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
-		node_number="$(echo ${array_iter} | xargs printf %02d)"
+		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
 			if /usr/bin/ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
-				dna-echo -s "Node number: | ${n-}${node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
+				dna-echo -s "Node number: | ${n-}${current_node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
 			else
 				echo
-				dna-echo -e "Node number: | ${n-}${node_number}${r-} | is NOT responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -e "Node number: | ${n-}${current_node_number}${r-} | is NOT responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "If you have decommissioned this server or intend to do so, you can remove this node from this primary node's configuration about the cluster."
 				dna-echo -m "Data on such secondary node will not be affected in any way, but this primary node won't consider it part of the cluster during future operations."
 				dna-echo -m "If somehow such secondary node is still running, even though we cannot reach it right now, it will still actually take part in the ejabberd cluster."
@@ -1163,21 +1163,21 @@ aenigma-test_online_nodes() {
 	            if [ "${boolean_output}" = "y" ]
 	            then
 					dna-echo -m "Ok, removing node now..."
-					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${node_number}.${domain}" || true
+					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${current_node_number}.${domain}" || true
 					dna-echo -m "Now restarting ejabberd..."
 					/usr/sbin/service ejabberd restart
 					initial_last_node_number=$(wc -l < "${nodes_db_ipv4_path}" | xargs printf %02d)
-					if [ "${node_number}" = "${initial_last_node_number}" ]
+					if [ "${current_node_number}" = "${initial_last_node_number}" ]
 					then
 						### Remove node from nodes_db files
-						sed -i "${node_number}d" "${nodes_db_ipv4_path}"
-						sed -i "${node_number}d" "${nodes_db_ipv6_path}"
+						sed -i "${current_node_number}d" "${nodes_db_ipv4_path}"
+						sed -i "${current_node_number}d" "${nodes_db_ipv6_path}"
 						aenigma-create_nodes_db_numbered
 						aenigma-push_routing_info
 						dna-echo -s "Node deleted successfully."
 						node_removed="y"
 					else
-						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${node_number}${n-} |."
+						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${current_node_number}${n-} |."
 						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: [number | ${o-}${initial_last_node_number}${n-} |] to take the place of the newly removed node."
 						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
 						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_last_node_number}${n-} | now?"
@@ -1190,17 +1190,17 @@ aenigma-test_online_nodes() {
 							### Get the last node in nodes_db_ipv4
 							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${initial_last_node_number}"p)
 							### Copy its IPv4 to the line of the node to be removed
-							sed -i "${node_number}s/.*/${target_node_ipv4}/" "${nodes_db_ipv4_path}"
+							sed -i "${current_node_number}s/.*/${target_node_ipv4}/" "${nodes_db_ipv4_path}"
 							### Delete the reconfigured node's initial line
 							sed -i "${initial_last_node_number}d" "${nodes_db_ipv4_path}"
 							### Get the last node in nodes_db_ipv6
 							target_node_ipv6=$(cat ${nodes_db_ipv6_path} | sed -n "${initial_last_node_number}"p)
 							### Copy its IPv6 to the line of the node to be removed
-							sed -i "${node_number}s/.*/${target_node_ipv6}/" "${nodes_db_ipv6_path}"
+							sed -i "${current_node_number}s/.*/${target_node_ipv6}/" "${nodes_db_ipv6_path}"
 							### Delete the reconfigured node's initial line
 							sed -i "${initial_last_node_number}d" "${nodes_db_ipv6_path}"
 							aenigma-create_nodes_db_numbered
-							dna-echo -s "Node number: | ${n-}${initial_last_node_number}${g-} | successfully changed to number: | ${n-}${node_number}${g-} |."
+							dna-echo -s "Node number: | ${n-}${initial_last_node_number}${g-} | successfully changed to number: | ${n-}${current_node_number}${g-} |."
 							node_removed="y"
 							launch_node_reinstallation="y"
 						else
@@ -1209,7 +1209,7 @@ aenigma-test_online_nodes() {
 					fi
 					if [ "${launch_node_reinstallation-null}" = "y" ]
 					then
-						dna-echo -m "Having re-ordered what is now node number | ${o-}${node_number}${n-} | it's time to re-configure it and notify it of the change."
+						dna-echo -m "Having re-ordered what is now node number | ${o-}${current_node_number}${n-} | it's time to re-configure it and notify it of the change."
 						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}${n-} |] and run the installer from there now. Then come back here."
 						dna-press_to_continue
 						dna-echo -n -m "Ok, now launching | ${c-}${proj_name}-clusterize${n-} | script..."
@@ -1303,8 +1303,8 @@ aenigma-perform_dns_checks() {
 			for node_ip in $(cat < "${nodes_db_path}")
 			do
 
-				node_number="$(echo ${array_iter} | xargs printf %02d)"
-				dna-check_dns_record -n "ae${node_number}.${this_domain}" -t "${address_type}" -r "${node_ip}"
+				current_node_number="$(echo ${array_iter} | xargs printf %02d)"
+				dna-check_dns_record -n "ae${current_node_number}.${this_domain}" -t "${address_type}" -r "${node_ip}"
 				array_iter=$((array_iter + 1))
 
 			done
@@ -1346,7 +1346,7 @@ aenigma-perform_dns_checks() {
 			for node_ip in $(cat < "${nodes_db_path}")
 			do
 
-				node_number="$(echo ${array_iter} | xargs printf %02d)"
+				current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 
 				declare -a xmpp_service_array=(
 					"xe"
@@ -1359,7 +1359,7 @@ aenigma-perform_dns_checks() {
 				for xmpp_service in "${xmpp_service_array[@]}"
 				do
 
-					dna-check_dns_record -n "${xmpp_service}${node_number}.${this_domain}" -t "${address_type}" -r "${node_ip}"
+					dna-check_dns_record -n "${xmpp_service}${current_node_number}.${this_domain}" -t "${address_type}" -r "${node_ip}"
 
 				done
 
@@ -1996,6 +1996,7 @@ EOF
 		then
 			dna-echo -m "Creating the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create role ejabberd"
+			echo
 			patroni_ejabbed_role_previous_state="nx"
 		fi
 
