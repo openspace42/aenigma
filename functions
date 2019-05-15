@@ -1659,7 +1659,7 @@ END
 
 aenigma-migrate-mnesia-postgresql() {
 
-	### ! Only run this after install_postgresql and on primary nodes !
+	### !!! Only run this after install_postgresql and on primary nodes !!! ####
 
 	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
@@ -1713,7 +1713,7 @@ aenigma-migrate-mnesia-postgresql() {
 
 		for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
 		do
-			sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < ${export}"
+			PGPASSWORD="${patroni_ejabberd_password}" psql -h "${hostname}" -p "5432" -U ejabberd ejabberd < "${export}"
 			echo
 		done
 
@@ -1725,33 +1725,9 @@ aenigma-migrate-mnesia-postgresql() {
 
 }
 
-aenigma-install_postgresql() {
-
-	### https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04
-
-	############################################################################
-
-	### Install dependencies required for postgresql cluster
-
-	aenigma-install_postgresql_dependencies
-
-	############################################################################
-
-	### Locate pg_hba file
-
-	#pg_hba_file_path="$(find /etc/postgresql/ -name pg_hba.conf)"
-
-	### Allow direct psql user login
-
-	#dna-echo -m "Allowing direct PSQL login"
-
-	#sed -i "s|local   all             all                                     peer|local   all             all                                     md5|g" "${pg_hba_file_path}"
-
-	#service postgresql restart
-
-}
-
 aenigma-install_postgresql_patroni() {
+
+	############################################################################
 
 	### Install postgresql and patroni
 
@@ -1921,6 +1897,8 @@ EOF
 
 	### Generate random passwords for the postgres/patroni config
 
+	############################################################################
+
 	### Generate a random password for the postgres psql user
 
 	if [ -z "${patroni_postgres_password-}" ]
@@ -1947,6 +1925,8 @@ EOF
 	mkdir -p "/data/"
 	chown -R postgres:postgres "/data/"
 	chmod -R 700 "/data/"
+
+	############################################################################
 
 	### Create patroni systemd service
 
@@ -1981,8 +1961,14 @@ EOF
 
 	############################################################################
 
+	dna-wait -s "11" -d "Now allowing patroni to start up correctly..."
+
+	############################################################################
+
 	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
+
+		########################################################################
 
 		### Create the ejabberd role and database in postgres/patroni
 
@@ -2033,12 +2019,11 @@ EOF
 			patroni_ejabbed_db_previous_state="nx"
 		fi
 
+		########################################################################
 
+		### Import ejabberd psql schema
 
-
-
-
-
+		########################################################################
 
 		### Download ejabberd psql schema
 
@@ -2051,13 +2036,15 @@ EOF
 		if [ "${patroni_ejabbed_db_previous_state-}" = "nx" ]
 		then
 			dna-echo -m "Importing PSQL default schema"
-			sudo -u postgres bash -c "PGPASSWORD=$(cat /tmp/aenigma/ejabberd_psql_user_password) psql -U ejabberd ejabberd < /tmp/aenigma/pg.new.sql"
+			PGPASSWORD="${patroni_ejabberd_password}" psql -h "${hostname}" -p "5432" -U ejabberd ejabberd < "/tmp/aenigma/pg.new.sql"
 			echo
 		fi
 
 		########################################################################
 
 		### Migrate mnesia to psql if necessary
+
+		########################################################################
 
 		if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
 		then
@@ -3490,7 +3477,7 @@ synthia-perform_installation() {
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 
-	sed -i "s/ejabberd-psql-user-password-var/${ejabberd_psql_user_password}/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
 
