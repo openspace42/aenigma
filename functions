@@ -1787,13 +1787,12 @@ aenigma-install_postgresql_patroni() {
 
 	dna-get_distro_name
 
-	if [ "${distro_name}" = "ubuntu" ]
+	if [ "${distro_name}" = "debian" ]
 	then
-		dna-install_dependencies -p "erlang-p1-pgsql"
-	elif [ "${distro_name}" = "debian" ]
-	then
-		apt-get -y install erlang-p1-pgsql
+		dna-enable_debian_testing_repo
 	fi
+
+	dna-install_dependencies -p "erlang-p1-pgsql"
 
 	### Link psql bins
 
