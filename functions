@@ -3414,7 +3414,7 @@ synthia-perform_installation() {
 
 	### Install postgresql
 
-	aenigma-install_postgresql
+	#aenigma-install_postgresql
 
 	############################################################################
 
