@@ -1783,7 +1783,7 @@ aenigma-install_postgresql_patroni() {
 	operation_message="installing PostgreSQL"
 	dna-echo_operation -h
 
-	dna-install_dependencies -p "postgresql postgresql-contrib"
+	dna-install_postgresql
 
 	### Install erlang-p1-pgsql
 
