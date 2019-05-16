@@ -1448,6 +1448,7 @@ aenigma-install_postgresql_dependencies() {
 	pip uninstall --yes requests
 	pip install requests
 	pip install docopt
+	echo
 
 }
 
@@ -1800,8 +1801,8 @@ aenigma-install_postgresql_patroni() {
 
 	if [ -d "/usr/lib/postgresql/" ]
 	then
-		psql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
-		ln -s ${psql_bin_dir_path}/* "/usr/sbin/" || true
+		postgresql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
+		ln -s ${postgresql_bin_dir_path}/* "/usr/sbin/" || true
 		echo
 	fi
 
@@ -1900,7 +1901,7 @@ postgresql:
   connect_address: public_ipv4-var:5432
   data_dir: /data/postgresql
   config_dir: /data/postgresql
-  bin_dir: /usr/lib/postgresql/10/bin
+  bin_dir: /usr/lib/postgresql/postgres_version-var/bin
   authentication:
     replication:
       username: repl
@@ -1933,6 +1934,7 @@ EOF
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
 	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
 	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
+	sed -i "s|postgres_version-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
 
 	############################################################################
 
