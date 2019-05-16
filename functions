@@ -1619,7 +1619,11 @@ EOF
 
 	systemctl restart etcd &
 
-	dna-wait -s "8" -d "Now allowing etcd to start up correctly..."
+	sleep 3
+
+	echo
+
+	dna-wait -s "4" -d "Now allowing etcd to start up correctly..."
 
 	############################################################################
 
