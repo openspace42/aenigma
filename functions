@@ -3524,6 +3524,8 @@ synthia-perform_installation() {
 	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
 
+	sed -i "s/public_ipv4-var/${public_ipv4}/g" "/etc/ejabberd/ejabberd.yml"
+
 	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
