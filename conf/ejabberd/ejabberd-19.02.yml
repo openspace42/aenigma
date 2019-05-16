@@ -174,7 +174,8 @@ auth_password_format: scram
 default_db: sql
 new_sql_schema: true
 sql_type: pgsql
-sql_server: "localhost"
+sql_server: "public_ipv4-var"
+sql_port: 5000
 sql_database: "ejabberd"
 sql_username: "ejabberd"
 sql_password: "ejabberd-psql-user-password-var"
