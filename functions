@@ -1685,7 +1685,7 @@ END
 
 aenigma-migrate-mnesia-postgresql() {
 
-	### !!! Only run this after install_postgresql and on primary nodes !!! ####
+	### !!! Only run this after install_patroni_postgresql and on the primary node !!! ####
 
 	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
@@ -1715,7 +1715,7 @@ aenigma-migrate-mnesia-postgresql() {
 
 		### Export data for every ejabberd domain
 
-		operation_message="exporting data from ejabberd mnesia"
+		operation_message="exporting data from the ejabberd mnesia database"
 		dna-echo_operation -h
 
 		ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
@@ -1938,27 +1938,38 @@ EOF
 
 	############################################################################
 
-	### Generate random passwords for the postgres/patroni config
+	### Generate random passwords for the postgres/patroni config if this is a primary node
 
 	############################################################################
 
-	### Generate a random password for the postgres psql user
-
-	if [ -z "${patroni_postgres_password-}" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
-		dna-echo -m "Generating password for the postgresql/patroni postgres user"
-		patroni_postgres_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-		dna-set_option -o "patroni_postgres_password" -p "postgres" -s "${patroni_postgres_password}"
+
+		### Generate a random password for the postgres psql user
+
+		if [ -z "${patroni_postgres_password-}" ]
+		then
+			dna-echo -m "Generating password for the postgresql/patroni postgres user"
+			patroni_postgres_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			dna-set_option -o "patroni_postgres_password" -p "postgres" -s "${patroni_postgres_password}"
+		fi
+
+		### Generate a random password for the repl psql user
+
+		if [ -z "${patroni_repl_password-}" ]
+		then
+			dna-echo -m "Generating password for the postgresql/patroni repl user"
+			patroni_repl_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			dna-set_option -o "patroni_repl_password" -p "postgres" -s "${patroni_repl_password}"
+		fi
+
 	fi
 
-	### Generate a random password for the repl psql user
+	############################################################################
 
-	if [ -z "${patroni_repl_password-}" ]
-	then
-		dna-echo -m "Generating password for the postgresql/patroni repl user"
-		patroni_repl_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-		dna-set_option -o "patroni_repl_password" -p "postgres" -s "${patroni_repl_password}"
-	fi
+	### Apply passwords to the postgres/patroni config
+
+	############################################################################
 
 	sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
 	sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
