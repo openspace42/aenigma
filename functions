@@ -1461,7 +1461,10 @@ aenigma-apply_postgresql_permissions() {
 		addgroup aenigma
 	fi
 
-	usermod -aG aenigma ejabberd
+	if grep -q "ejabberd" "/etc/passwd"
+	then
+		usermod -aG aenigma ejabberd
+	fi
 
 	chown -R ejabberd:aenigma "${ssl_project_dir}"
 	chmod -R 770 "${ssl_project_dir}"
