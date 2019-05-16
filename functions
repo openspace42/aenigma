@@ -1630,7 +1630,15 @@ aenigma-install_etcd_cluster() {
 	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
+		########################################################################
+
 		### Install etcd all at once on all nodes
+
+		########################################################################
+
+		### Get online nodes
+
+		aenigma-get_nodes_online
 
 		########################################################################
 
@@ -1654,8 +1662,6 @@ aenigma-install_etcd
 		}
 
 		########################################################################
-
-		aenigma-get_nodes_online
 
 		for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 		do
