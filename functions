@@ -1466,9 +1466,9 @@ aenigma-apply_postgresql_permissions() {
 	if grep -q "ejabberd" "/etc/passwd"
 	then
 		usermod -aG aenigma ejabberd
+		chown -R ejabberd:aenigma "${ssl_project_dir}"
 	fi
 
-	chown -R ejabberd:aenigma "${ssl_project_dir}"
 	chmod -R 770 "${ssl_project_dir}"
 
 }
@@ -1902,7 +1902,7 @@ bootstrap:
 
   users:
     postgres:
-      password: patroni_postgres_password-var
+      password: patroni_postgresql_password-var
       options:
         - createrole
         - createdb
@@ -1916,14 +1916,14 @@ postgresql:
   connect_address: public_ipv4-var:5432
   data_dir: /data/postgresql
   config_dir: /data/postgresql
-  bin_dir: /usr/lib/postgresql/postgres_version-var/bin
+  bin_dir: postgresql_bin_dir_path-var
   authentication:
     replication:
       username: repl
       password: patroni_repl_password-var
     superuser:
       username: postgres
-      password: patroni_postgres_password-var
+      password: patroni_postgresql_password-var
   parameters:
     unix_socket_directories: '/tmp'
 EOF
@@ -1949,7 +1949,7 @@ EOF
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
 	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
 	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
-	sed -i "s|postgres_version-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
+	sed -i "s|postgresql_bin_dir_path-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
 
 	############################################################################
 
@@ -1962,11 +1962,11 @@ EOF
 
 		### Generate a random password for the postgres psql user
 
-		if [ -z "${patroni_postgres_password-}" ]
+		if [ -z "${patroni_postgresql_password-}" ]
 		then
 			dna-echo -m "Generating password for the postgresql/patroni postgres user"
-			patroni_postgres_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
-			dna-set_option -o "patroni_postgres_password" -p "postgres" -s "${patroni_postgres_password}"
+			patroni_postgresql_password="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			dna-set_option -o "patroni_postgresql_password" -p "postgres" -s "${patroni_postgresql_password}"
 		fi
 
 		### Generate a random password for the repl psql user
@@ -1986,7 +1986,7 @@ EOF
 
 	############################################################################
 
-	sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
+	sed -i "s|patroni_postgresql_password-var|${patroni_postgresql_password}|g" "/etc/patroni.yml"
 	sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
 
 	############################################################################
@@ -2054,10 +2054,10 @@ EOF
 
 		### Create ejabberd postgresql/patroni user
 
-		if ! PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "\du" 2> /dev/null | grep -q ejabberd
+		if ! PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "\du" 2> /dev/null | grep -q ejabberd
 		then
 			dna-echo -m "Creating the ejabberd postgresql/patroni user"
-			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create role ejabberd"
+			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create role ejabberd"
 			echo
 			patroni_ejabbed_role_previous_state="nx"
 		fi
@@ -2067,7 +2067,7 @@ EOF
 		if [ "${patroni_ejabbed_role_previous_state-}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
-			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter user ejabberd with encrypted password '$patroni_ejabberd_password'"
+			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter user ejabberd with encrypted password '$patroni_ejabberd_password'"
 			echo
 		fi
 
@@ -2076,16 +2076,16 @@ EOF
 		if [ "${patroni_ejabbed_role_previous_state-}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
-			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter role ejabberd with login"
+			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter role ejabberd with login"
 			echo
 		fi
 
 		### Create the ejabberd postgresql/patroni database
 
-		if ! PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "\l" 2> /dev/null | grep -q ejabberd
+		if ! PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "\l" 2> /dev/null | grep -q ejabberd
 		then
 			dna-echo -m "Creating PSQL database"
-			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create database ejabberd"
+			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create database ejabberd"
 			patroni_ejabbed_db_previous_state="nx"
 		fi
 
