@@ -375,7 +375,7 @@ echo "${secondary_node_number}" > "/${tmp_project_dir}/aenigma_cluster_secondary
 
 ### Push postgresql/patroni passwords to the secondary node
 
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/postgresql/" "root@${secondary_node_ipv4}:${conf_dir}/"
+/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${conf_dir}/postgresql/" "root@${secondary_node_ipv4}:${conf_dir}/"
 
 ### Push wildcard LE TLS cert for $domain to the secondary node
 
