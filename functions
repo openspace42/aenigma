@@ -701,6 +701,10 @@ aenigma-localize_ejabberd_install() {
 
 	############################################################################
 
+	dna-get_hostname
+
+	############################################################################
+
 	### Stop ejabberd if it's already running [i.e. because it was already installed]
 
 	if systemctl is-active --quiet ejabberd
@@ -750,13 +754,13 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
 
-	if [ "${set_erlang_node_to_hostname}" = "ok" ]
+	if [ "${set_erlang_node_to_hostname-}" = "ok" ]
 	then
 		sed -i "/# ERLANG_NODE/d" /etc/default/ejabberd
 		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
 	fi
 
-	if [ "${wipe_var_lib_ejabberd}" = "ok" ] && [ ! "${set_erlang_node_to_hostname}" = "not_necessary" ]
+	if [ "${wipe_var_lib_ejabberd-}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-}" = "not_necessary" ]
 	then
 
 		dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
