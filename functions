@@ -697,6 +697,89 @@ aenigma-install_ejabberd() {
 	dna-echo -s "Finished installing ejabberd."
 }
 
+aenigma-localize_ejabberd_install() {
+
+	############################################################################
+
+	### Stop ejabberd if it's already running [i.e. because it was already installed]
+
+	if systemctl is-active --quiet ejabberd
+	then
+
+		dna-echo -m "Now stopping ejabberd..."
+		/usr/sbin/service ejabberd stop
+		dna-wait -s "4" -d "Now allowing ejabberd to shut down correctly..."
+		dna-echo -s "Finished stopping ejabberd."
+
+	fi
+
+	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
+
+	aenigma-set_permissions
+
+	### Perform customizations on the ejabberd config files.
+
+	if [ ! "${additional_domains-}" = "none" ]
+	then
+
+		> "${tmp_project_dir}/additional_domains_ejabberd.txt"
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+			echo "  - \"${additional_domain}\"" >> "${tmp_project_dir}/additional_domains_ejabberd.txt"
+		done
+
+		sed -i "/  - \"domain.xyz\"/ r ${tmp_project_dir}/additional_domains_ejabberd.txt" "/etc/ejabberd/ejabberd.yml"
+
+	fi
+
+	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/public_ipv4-var/${public_ipv4}/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
+
+	if [ "${set_erlang_node_to_hostname}" = "ok" ]
+	then
+		sed -i "/# ERLANG_NODE/d" /etc/default/ejabberd
+		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
+	fi
+
+	if [ "${wipe_var_lib_ejabberd}" = "ok" ] && [ ! "${set_erlang_node_to_hostname}" = "not_necessary" ]
+	then
+
+		dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
+		dna-echo -e "This is your final warning: if you're not absolutely sure your data is safe, abort the installation now!"
+
+		dna-wait -s "11" -d "Counting down to full ejabberd wipe on this machine..."
+
+		/usr/sbin/service ejabberd stop 2> /dev/null || true
+		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
+
+	fi
+
+	dna-echo -m "Now finally starting up ejabberd..."
+	/usr/sbin/service ejabberd start
+	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
+	/usr/sbin/ejabberdctl status
+	echo
+	dna-echo -s "Finished starting ejabberd back up."
+
+	############################################################################
+
+}
+
 aenigma-create_domains_db() {
 
 	if [ -f "${domains_db_path}" ]
@@ -2059,12 +2142,12 @@ EOF
 			dna-echo -m "Creating the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create role ejabberd"
 			echo
-			patroni_ejabbed_role_previous_state="nx"
+			patroni_ejabberd_role_previous_state="nx"
 		fi
 
 		### Assign the generated password to the user if we've just created it
 
-		if [ "${patroni_ejabbed_role_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_role_previous_state-}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter user ejabberd with encrypted password '$patroni_ejabberd_password'"
@@ -2073,7 +2156,7 @@ EOF
 
 		### Allow the ejabberd postgresql/patroni user to log in with password if we've just created it
 
-		if [ "${patroni_ejabbed_role_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_role_previous_state-}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter role ejabberd with login"
@@ -2086,7 +2169,7 @@ EOF
 		then
 			dna-echo -m "Creating PSQL database"
 			PGPASSWORD="${patroni_postgresql_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "create database ejabberd"
-			patroni_ejabbed_db_previous_state="nx"
+			patroni_ejabberd_db_previous_state="nx"
 		fi
 
 		########################################################################
@@ -2103,7 +2186,7 @@ EOF
 
 		### Import ejabberd psql schema if the db was just created
 
-		if [ "${patroni_ejabbed_db_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_db_previous_state-}" = "nx" ]
 		then
 			dna-echo -m "Importing PSQL default schema"
 			PGPASSWORD="${patroni_ejabberd_password}" psql -h "${hostname}" -p "5432" -U ejabberd ejabberd < "/tmp/aenigma/pg.new.sql"
@@ -3502,84 +3585,9 @@ synthia-perform_installation() {
 
 	aenigma-install_ejabberd
 
-	############################################################################
+	### Localize ejabberd configuration and restart it
 
-	### Stop ejabberd if it's already running [i.e. because it was already installed]
-
-	if systemctl is-active --quiet ejabberd
-	then
-
-		dna-echo -m "Now stopping ejabberd..."
-		/usr/sbin/service ejabberd stop
-		dna-wait -s "4" -d "Now allowing ejabberd to shut down correctly..."
-		dna-echo -s "Finished stopping ejabberd."
-
-	fi
-
-	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
-
-	aenigma-set_permissions
-
-	### Perform customizations on the ejabberd config files.
-
-	if [ ! "${additional_domains-}" = "none" ]
-	then
-
-		> "${tmp_project_dir}/additional_domains_ejabberd.txt"
-		additional_domains_array=(${additional_domains})
-		for additional_domain in "${additional_domains_array[@]}"
-	    do
-			echo "  - \"${additional_domain}\"" >> "${tmp_project_dir}/additional_domains_ejabberd.txt"
-		done
-
-		sed -i "/  - \"domain.xyz\"/ r ${tmp_project_dir}/additional_domains_ejabberd.txt" "/etc/ejabberd/ejabberd.yml"
-
-	fi
-
-	sed -i "s/domain.xyz/${domain}/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/ejabberd/ejabberd.yml"
-
-	sed -i "s/public_ipv4-var/${public_ipv4}/g" "/etc/ejabberd/ejabberd.yml"
-
-	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
-
-	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
-	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
-
-	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/etc/ejabberd/ejabberd.yml"
-
-	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
-
-	if [ "${set_erlang_node_to_hostname}" = "ok" ]
-	then
-		sed -i "/# ERLANG_NODE/d" /etc/default/ejabberd
-		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
-	fi
-
-	if [ "${wipe_var_lib_ejabberd}" = "ok" ] && [ ! "${set_erlang_node_to_hostname}" = "not_necessary" ]
-	then
-
-		dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
-		dna-echo -e "This is your final warning: if you're not absolutely sure your data is safe, abort the installation now!"
-
-		dna-wait -s "11" -d "Counting down to full ejabberd wipe on this machine..."
-
-		/usr/sbin/service ejabberd stop 2> /dev/null || true
-		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
-
-	fi
-
-	dna-echo -m "Now finally starting up ejabberd..."
-	/usr/sbin/service ejabberd start
-	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
-	/usr/sbin/ejabberdctl status
-	echo
-	dna-echo -s "Finished starting ejabberd back up."
-
-	############################################################################
+	aenigma-localize_ejabberd_install
 
 	### Only for psql migration
 
