@@ -2426,7 +2426,7 @@ aenigma-provision_conversejs() {
 
 	if [ -d "/var/www/${hostname}/xmpp/" ]
 	then
-		if [ -d "/var/www/${hostname}/xmpp-old/"]
+		if [ -d "/var/www/${hostname}/xmpp-old/" ]
 		then
 			rm -rf "/var/www/${hostname}/xmpp-old/"
 		fi
