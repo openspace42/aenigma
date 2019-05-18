@@ -2180,6 +2180,15 @@ EOF
 			patroni_ejabberd_db_previous_state="nx"
 		fi
 
+		### Make the ejabberd postgresql/patroni user the owner of its database
+
+		if [ "${patroni_ejabberd_role_previous_state-}" = "nx" ]
+		then
+			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
+			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter database ejabberd owner to ejabberd;"
+			echo
+		fi
+
 		########################################################################
 
 		### Import ejabberd psql schema
