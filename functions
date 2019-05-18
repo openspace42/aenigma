@@ -2199,7 +2199,7 @@ EOF
 
 		########################################################################
 
-		if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+		if [ "${psql_migration_required}" = "true" ]
 		then
 
 			### This is an old instance, start the migration
@@ -2708,11 +2708,16 @@ synthia-perform_installation() {
 
 	############################################################################
 
-	### legacy fixes
+	### Legacy fixes and migration detections
 
 	if [ -f "${ssl_project_dir}/dh.pem" ]
 	then
 		rm "${ssl_project_dir}/dh.pem"
+	fi
+
+	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+	then
+		export psql_migration_required="true"
 	fi
 
 	############################################################################
@@ -3588,6 +3593,30 @@ synthia-perform_installation() {
 	fi
 
 	############################################################################
+
+	if [ "${psql_migration_required}" = "true" ]
+	then
+
+		### Empty the /var/lib/ejabberd/ directory as we're now migrating to psql
+
+		### Stop ejabberd
+
+		service ejabberd stop
+
+		### Copy dir to backup location
+
+		rsync -aAXxz /var/lib/ejabberd/ /var/lib/ejabberd-before-psql-migration
+
+		### Empty the dir
+
+		rm -r /var/lib/ejabberd/*
+
+		### Restore the uploads dir
+
+		rsync -aAXxz /var/lib/ejabberd-before-psql-migration/uploads/ /var/lib/ejabberd/uploads/
+
+	fi
+
 
 	### Install the aenigma ejabberd config.
 

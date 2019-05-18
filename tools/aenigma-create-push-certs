@@ -210,7 +210,14 @@ fi
 
 ################################################################################
 
-aenigma-restart_ejabberd_if_running
+if [ ! "psql_migration_required" = "true" ]
+then
+
+    aenigma-restart_ejabberd_if_running
+
+fi
+
+################################################################################
 
 ### Push certs to other nodes
 
