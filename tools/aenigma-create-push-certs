@@ -210,7 +210,7 @@ fi
 
 ################################################################################
 
-if [ ! "psql_migration_required" = "true" ]
+if [ ! "${psql_migration_required-}" = "true" ]
 then
 
     aenigma-restart_ejabberd_if_running

@@ -2199,7 +2199,7 @@ EOF
 
 		########################################################################
 
-		if [ "${psql_migration_required}" = "true" ]
+		if [ "${psql_migration_required-}" = "true" ]
 		then
 
 			### This is an old instance, start the migration
@@ -3594,7 +3594,7 @@ synthia-perform_installation() {
 
 	############################################################################
 
-	if [ "${psql_migration_required}" = "true" ]
+	if [ "${psql_migration_required-}" = "true" ]
 	then
 
 		### Empty the /var/lib/ejabberd/ directory as we're now migrating to psql
