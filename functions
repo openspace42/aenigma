@@ -996,7 +996,7 @@ aenigma-get_nodes_online() {
 	IFS=$'\n'
 	set -f
 
-	touch "${tmp_project_dir}/online_test_token"
+	touch "${tmp_dir}/online_test_token"
 
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
 	do
@@ -1004,7 +1004,7 @@ aenigma-get_nodes_online() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tmp_project_dir}/online_test_token" "root@${node_ipv4}:/tmp/aenigma/"
+			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tmp_dir}/online_test_token" "root@${node_ipv4}:/tmp/aenigma/"
 			then
 				echo
 				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
