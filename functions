@@ -1602,13 +1602,14 @@ aenigma-install_etcd() {
 
 	### Delete all etcd data to start fresh
 
-	### This only applies to primary nodes, so that the wipe will occur only once
-	### at the same time during primary node installation / runtime.
-	### Secondary nodes will skip this when running on their own as the primary
-	### node will already have remotely performed this onto them as well.
-
 	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
+
+		### This only applies to primary nodes, so that an initial wipe will
+		### occur only once at the same time during primary node installation.
+		### Secondary nodes will skip this when running on their own as the
+		### primary node will already have remotely performed this onto them as
+		### well.
 
 		aenigma-wipe_etcd
 
@@ -1649,6 +1650,13 @@ END
 		unset online_node_ipv4
 
 		########################################################################
+
+	else
+
+		### This is a secondary node, wipe etcd locally before localizing it
+		### and starting it back up.
+
+		aenigma-wipe_etcd
 
 	fi
 
