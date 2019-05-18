@@ -384,6 +384,14 @@ echo "${secondary_node_number}" > "/${tmp_project_dir}/aenigma_cluster_secondary
 echo
 
 ################################################################################
+################################################################################
+
+### Re-run the etcd cluster installation now that we have a new node
+
+aenigma-install_etcd_cluster
+
+################################################################################
+################################################################################
 
 ### SSH into the secondary node, and inform it that the setup here on the primary node has been completed.
 

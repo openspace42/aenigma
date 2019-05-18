@@ -599,6 +599,13 @@ aenigma-set_permissions() {
 
 	dna-echo -m "Now setting permissions..."
 
+	### Create the aenigma group if it doesn't exist
+
+	if ! grep -q "aenigma" "/etc/group"
+	then
+		addgroup aenigma
+	fi
+
 	### /var/lib/ejabberd/
 
 	if id "ejabberd" >/dev/null 2>&1
@@ -615,6 +622,7 @@ aenigma-set_permissions() {
 
 	if id "ejabberd" >/dev/null 2>&1
 	then
+		usermod -aG aenigma ejabberd
 		chown -R "ejabberd:ejabberd" "/var/www/ejabberd/"
 		chmod -R 755 "/var/www/ejabberd/"
 	fi
@@ -629,10 +637,12 @@ aenigma-set_permissions() {
 
 	### $ssl_project_dir
 
+	### Assign new permissions to ssl_project_dir so that postgresql and etcd too can read from it
+
 	if id "ejabberd" >/dev/null 2>&1
 	then
-		chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
-		chmod -R 700 "${ssl_project_dir}"
+		chown -R "ejabberd:aenigma" "${ssl_project_dir}"
+		chmod -R 770 "${ssl_project_dir}"
 	fi
 
 	### ~/.ssh/
@@ -1529,6 +1539,11 @@ aenigma-perform_dns_checks() {
 
 }
 
+################################################################################
+################################################################################
+
+### Postgresql
+
 aenigma-install_postgresql_dependencies() {
 
 	dna-install_dependencies -p "python python-pip python-psycopg2 libpq-dev"
@@ -1538,25 +1553,6 @@ aenigma-install_postgresql_dependencies() {
 	pip install requests
 	pip install docopt
 	echo
-
-}
-
-aenigma-apply_postgresql_permissions() {
-
-	### Assign new permissions to ssl_project_dir so that postgresql and etcd too can read from it
-
-	if ! grep -q "aenigma" "/etc/group"
-	then
-		addgroup aenigma
-	fi
-
-	if grep -q "ejabberd" "/etc/passwd"
-	then
-		usermod -aG aenigma ejabberd
-		chown -R ejabberd:aenigma "${ssl_project_dir}"
-	fi
-
-	chmod -R 770 "${ssl_project_dir}"
 
 }
 
@@ -1590,7 +1586,7 @@ aenigma-install_etcd() {
 
 	### Apply permissions
 
-	aenigma-apply_postgresql_permissions
+	aenigma-set_permissions
 
 	############################################################################
 
@@ -1867,7 +1863,7 @@ aenigma-install_postgresql_patroni() {
 
 	### Apply permissions
 
-	aenigma-apply_postgresql_permissions
+	aenigma-set_permissions
 
 	############################################################################
 
@@ -3529,10 +3525,26 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Install postgresql
+	### Postgresql
 
-	#aenigma-install_postgresql
+	### Install etcd
 
+	if [ ! "${cluster_mode-}" = "secondary" ]
+	then
+
+		aenigma-install_etcd_cluster
+
+	fi
+
+	### Install PostgreSQL / Patroni
+
+	aenigma-install_postgresql_patroni
+
+	### Install haproxy
+
+	aenigma-install_haproxy
+
+	############################################################################
 	############################################################################
 
 	### Prepare APT for ejabberd installation.
