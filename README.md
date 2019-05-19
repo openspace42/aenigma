@@ -126,7 +126,7 @@ apt install git
 
 ```
 git clone https://github.com/openspace42/aenigma
-sudo bash aenigma/tools/aenigma-restore
+bash aenigma/tools/aenigma-restore
 ```
 
 ## Recommended clients:

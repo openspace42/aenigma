@@ -498,12 +498,24 @@ aenigma-restart_ejabberd_if_running() {
 
 aenigma-add_ejabberd_repo() {
 
+	############################################################################
+
+	### Install dependencies
+
+	dna-install_wget
+
+	############################################################################
+
 	### Add repo
 
 	dna-check_dpkg_availability
 	dna-install_dependencies -p "apt-transport-https"
-	currdistro="$(lsb_release --codename | cut -f2)"
-	echo "deb https://apt.jabber.at ${currdistro} ejabberd" > "/etc/apt/sources.list.d/jabber.at.list"
+
+	### Add the apt.jabber.at repo
+
+	dna-get_distro_codename
+
+	echo "deb https://apt.jabber.at ${distro_codename} ejabberd" > "/etc/apt/sources.list.d/jabber.at.list"
 
 	### Pin this repo at max priority in Debian in case testing/unstable repos are enabled
 
@@ -531,6 +543,8 @@ EOF
 		wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
 		apt-get update
 	fi
+
+	############################################################################
 
 }
 
