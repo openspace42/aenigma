@@ -1857,91 +1857,9 @@ aenigma-migrate-mnesia-postgresql() {
 
 }
 
-aenigma-install_postgresql_patroni() {
+aenigma-apply_patroni_config() {
 
-	############################################################################
-
-	### Install postgresql and patroni
-
-	############################################################################
-
-	### Install dependencies required for postgresql cluster
-
-	aenigma-install_postgresql_dependencies
-
-	### Apply permissions
-
-	aenigma-set_permissions
-
-	############################################################################
-
-	### Get hostname
-
-	dna-get_hostname
-
-	### Get public IPv4
-
-	dna-get_public_ipv4
-
-	############################################################################
-
-	### Install postgresql
-
-	operation_message="installing PostgreSQL"
-	dna-echo_operation -h
-
-	dna-install_postgresql
-
-	### Install erlang-p1-pgsql
-
-	dna-get_distro_name
-
-	if [ "${distro_name}" = "debian" ]
-	then
-		dna-enable_debian_testing_repo
-	fi
-
-	dna-install_dependencies -p "erlang-p1-pgsql"
-
-	### Link psql bins
-
-	if [ -d "/usr/lib/postgresql/" ]
-	then
-		postgresql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
-		ln -s ${postgresql_bin_dir_path}/* "/usr/sbin/" || true
-		echo
-	fi
-
-	### Add postgres user to aenigma group for correct tls_project_dir permissions
-
-	usermod -aG aenigma postgres
-
-	### Finish
-
-	dna-echo_operation -t
-
-	############################################################################
-
-	### Stop and disable psql as patroni will now be managing DBs
-
-	if systemctl is-active --quiet postgresql
-	then
-		service postgresql stop
-	fi
-
-	if [ -f "/etc/init.d/postgresql" ]
-	then
-		systemctl disable postgresql
-	fi
-
-	############################################################################
-
-	### Install patroni
-
-	pip install patroni
-	echo
-
-	### Apply patroni config
+	### Install patroni config
 
 	cat <<EOF > "/etc/patroni.yml"
 scope: aenigma
@@ -2041,6 +1959,100 @@ EOF
 	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
 	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
 	sed -i "s|postgresql_bin_dir_path-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
+
+	############################################################################
+
+}
+
+aenigma-install_postgresql_patroni() {
+
+	############################################################################
+
+	### Install postgresql and patroni
+
+	############################################################################
+
+	### Install dependencies required for postgresql cluster
+
+	aenigma-install_postgresql_dependencies
+
+	### Apply permissions
+
+	aenigma-set_permissions
+
+	############################################################################
+
+	### Get hostname
+
+	dna-get_hostname
+
+	### Get public IPv4
+
+	dna-get_public_ipv4
+
+	############################################################################
+
+	### Install postgresql
+
+	operation_message="installing PostgreSQL"
+	dna-echo_operation -h
+
+	dna-install_postgresql
+
+	### Install erlang-p1-pgsql
+
+	dna-get_distro_name
+
+	if [ "${distro_name}" = "debian" ]
+	then
+		dna-enable_debian_testing_repo
+	fi
+
+	dna-install_dependencies -p "erlang-p1-pgsql"
+
+	### Link psql bins
+
+	if [ -d "/usr/lib/postgresql/" ]
+	then
+		postgresql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
+		ln -s ${postgresql_bin_dir_path}/* "/usr/sbin/" || true
+		echo
+	fi
+
+	### Add postgres user to aenigma group for correct tls_project_dir permissions
+
+	usermod -aG aenigma postgres
+
+	### Finish
+
+	dna-echo_operation -t
+
+	############################################################################
+
+	### Stop and disable psql as patroni will now be managing DBs
+
+	if systemctl is-active --quiet postgresql
+	then
+		service postgresql stop
+	fi
+
+	if [ -f "/etc/init.d/postgresql" ]
+	then
+		systemctl disable postgresql
+	fi
+
+	############################################################################
+
+	### Install patroni
+
+	pip install patroni
+	echo
+
+	############################################################################
+
+	### Apply patroni config
+
+	aenigma-apply_patroni_config
 
 	############################################################################
 
@@ -2230,21 +2242,7 @@ EOF
 
 }
 
-aenigma-install_haproxy() {
-
-	############################################################################
-
-	### Install dependencies required for postgresql cluster
-
-	aenigma-install_postgresql_dependencies
-
-	############################################################################
-
-	### Install haproxy
-
-	dna-install_dependencies -p "haproxy"
-
-	############################################################################
+aenigma-apply_haproxy_config() {
 
 	### Apply haproxy config
 
@@ -2288,6 +2286,28 @@ EOF
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/haproxy/haproxy.cfg"
 
 	systemctl restart haproxy
+
+}
+
+aenigma-install_haproxy() {
+
+	############################################################################
+
+	### Install dependencies required for postgresql cluster
+
+	aenigma-install_postgresql_dependencies
+
+	############################################################################
+
+	### Install haproxy
+
+	dna-install_dependencies -p "haproxy"
+
+	############################################################################
+
+	### Apply haproxy config
+
+	aenigma-apply_haproxy_config
 
 	############################################################################
 

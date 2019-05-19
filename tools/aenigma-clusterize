@@ -390,6 +390,18 @@ echo
 
 aenigma-install_etcd_cluster
 
+### Update patroni config now that we have a new node
+
+aenigma-apply_patroni_config
+
+service patroni restart
+
+### Update haproxy config now that we have a new node
+
+aenigma-apply_haproxy_config
+
+service haproxy restart
+
 ################################################################################
 ################################################################################
 
