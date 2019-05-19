@@ -47,12 +47,14 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 * sets up the **system firewall and UFW rules** for all configured services
 * installs nginx and makes the ejabberd **web admin interface securely available** at `https://[hostname]`
 * provisions and automatically renews **free and fully valid LetsEncrypt wildcard TLS [SSL] certificates** and correctly configures all deployed services [ejabberd, nginx, etc...] accordingly
+* provisions a PostgreSQL instance [and clusters it if necessary with etcd, Patroni, and HAProxy] to provide a robust and high performance database backend to ejabberd and movim
 * creates ejabberd **Shared Roster Groups** to easily allow admins to see all users registered on their own rosters and all users online at any given time
 * automatically **backups up** all configuration, the ejabberd database, and XMPP data storage **locally and [optionally] to S3 with strong encryption** via duplicity and includes a script for a **guided, consistent, and complete restore**
 * allows you to easily run your aenigma instance on **multiple servers [a cluster]** for **robustness, load distribution / balancing, and failover**
 * **idempotent and self-versioning** to allow for easy re-installs, re-configurations, and upgrades
 * also provisions a **Tor hidden service** [optional] to make your server [or cluster] reachable entirely inside the Tor network via a .onion address for all services [XMPP, web, SSH, etc...].
 * also provisions an instance of **the Converse.js XMPP web client** [optional] to give you a fast and easy way to access your client account from anywhere!
+* also provisions an instance of a **Movim** pod [optional] to turn your XMPP experience into a social one! [work in progress]
 
 ## Non-features
 
@@ -173,6 +175,6 @@ The LUG **unixMIB** [Milano Bicocca university] for hosting my presentation on L
 
 The hackerspace assembly **ChaosZone** for hosting my presentation at 35C3.
 
-Also, anyone involved in the XMPP community, plus aenigma users, beta testers, and contributors of course!
+Also, anyone involved in the XMPP community, plus aenigma supporters, users, beta testers, and contributors of course!
 
 Thanks to all of you. Let's make this happen. It's about time [finally].
