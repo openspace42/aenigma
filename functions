@@ -2509,6 +2509,12 @@ aenigma-provision_conversejs() {
 
 	echo
 
+	### Localize sources
+
+	sed -i "s|https://cdn.conversejs.org/4.2.0/css/converse.min.css|dist/converse.min.css|g" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/3rdparty/libsignal-protocol.min.js|3rdparty/libsignal-protocol.min.js|g" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/4.2.0/dist/converse.min.js|dist/converse.min.js|g" "/var/www/${hostname}/xmpp/index.html"
+
 	### Set permissions
 
 	chown -R www-data:www-data "/var/www/${hostname}/xmpp/"
