@@ -1563,7 +1563,7 @@ aenigma-install_postgresql_dependencies() {
 	dna-install_dependencies -p "python python-pip python-psycopg2 libpq-dev"
 	pip install --upgrade setuptools
 	pip install python-etcd
-	pip uninstall --yes requests
+	pip uninstall --yes requests || true
 	pip install requests
 	pip install docopt
 	echo
