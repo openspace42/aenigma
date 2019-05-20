@@ -2495,9 +2495,9 @@ aenigma-provision_conversejs() {
 	sed -i "/inverse-analytics.js/d" "/var/www/${hostname}/xmpp/fullscreen.html"
 	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${hostname}/xmpp/fullscreen.html"
 
-	### Use our own BOSH service
+	### Use our own ejabberd websocket service
 
-	sed -i "s|https://conversejs.org/http-bind/|https://xh${node_number}.${domain}/bosh/|g" "/var/www/${hostname}/xmpp/fullscreen.html"
+	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${hostname}/xmpp/fullscreen.html"
 
 	### Move fullscreen.html to index.html
 
