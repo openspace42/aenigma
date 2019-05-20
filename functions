@@ -2490,30 +2490,31 @@ aenigma-provision_conversejs() {
 
 	echo
 
-	### Remove analytics
-
-	sed -i "/inverse-analytics.js/d" "/var/www/${hostname}/xmpp/fullscreen.html"
-	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${hostname}/xmpp/fullscreen.html"
-
-	### Use our own ejabberd websocket service
-
-	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${hostname}/xmpp/fullscreen.html"
-
-	### Move fullscreen.html to index.html
-
-	mv "/var/www/${hostname}/xmpp/fullscreen.html" "/var/www/${hostname}/xmpp/index.html"
-
 	### Install libsignal dependency
 
 	( cd "/var/www/${hostname}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
 
 	echo
 
+	### Move fullscreen.html to index.html
+
+	mv "/var/www/${hostname}/xmpp/fullscreen.html" "/var/www/${hostname}/xmpp/index.html"
+
 	### Localize sources
 
 	sed -i "s|https://cdn.conversejs.org/4.2.0/css/converse.min.css|dist/converse.min.css|g" "/var/www/${hostname}/xmpp/index.html"
 	sed -i "s|https://cdn.conversejs.org/3rdparty/libsignal-protocol.min.js|3rdparty/libsignal-protocol.js|g" "/var/www/${hostname}/xmpp/index.html"
 	sed -i "s|https://cdn.conversejs.org/4.2.0/dist/converse.min.js|dist/converse.min.js|g" "/var/www/${hostname}/xmpp/index.html"
+
+	### Remove analytics
+
+	sed -i "/inverse-analytics.js/d" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${hostname}/xmpp/index.html"
+
+	### Use our own ejabberd websocket service
+
+	sed -i "s|bosh_service_url|websocket_url|g" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${hostname}/xmpp/index.html"
 
 	### Set permissions
 
