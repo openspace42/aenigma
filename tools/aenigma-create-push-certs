@@ -127,9 +127,9 @@ aenigma-check_ip_info_current
 
 ################################################################################
 
-### Ensure $ssl_project_dir exists
+### Ensure $tls_project_dir exists
 
-mkdir -p "${ssl_project_dir}"
+mkdir -p "${tls_project_dir}"
 
 ########################################################################
 
@@ -164,10 +164,10 @@ do
 
         dna-echo -m "Now creating all-in-one TLS certificate file for ${le_cert_domain}..."
 
-        touch "${ssl_project_dir}/${le_cert_domain}.pem"
+        touch "${tls_project_dir}/${le_cert_domain}.pem"
 
-        cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${ssl_project_dir}/${le_cert_domain}.pem"
-        cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${ssl_project_dir}/${le_cert_domain}.pem"
+        cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${tls_project_dir}/${le_cert_domain}.pem"
+        cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${tls_project_dir}/${le_cert_domain}.pem"
 
         dna-echo -s "Finished creating all-in-one TLS certificate file for ${le_cert_domain}."
 
@@ -175,10 +175,10 @@ do
 
         dna-echo -m "Now copying individual fullchain and privkey files for ${le_cert_domain}..."
 
-        mkdir -p "${ssl_project_dir}/${le_cert_domain}.d/"
+        mkdir -p "${tls_project_dir}/${le_cert_domain}.d/"
 
-        cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
-        cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${ssl_project_dir}/${le_cert_domain}.d/"
+        cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${tls_project_dir}/${le_cert_domain}.d/"
+        cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${tls_project_dir}/${le_cert_domain}.d/"
 
         dna-echo -s "Finished copying individual fullchain and privkey files for ${le_cert_domain}."
 
@@ -190,8 +190,8 @@ done
 
 ### Set permissions
 
-chown -R "ejabberd:ejabberd" "${ssl_project_dir}" 2> /dev/null || true
-chmod -R 700 "${ssl_project_dir}"
+chown -R "ejabberd:ejabberd" "${tls_project_dir}" 2> /dev/null || true
+chmod -R 700 "${tls_project_dir}"
 
 dna-echo_operation -t
 
@@ -199,9 +199,9 @@ dna-echo_operation -t
 
 ### Verify output
 
-if [ -f "${ssl_project_dir}/${domain}.pem" ]
+if [ -f "${tls_project_dir}/${domain}.pem" ]
 then
-    dna-echo -s "TLS certificate for ${domain} found in | ${n-}${ssl_project_dir}/${domain}.pem${g-} |."
+    dna-echo -s "TLS certificate for ${domain} found in | ${n-}${tls_project_dir}/${domain}.pem${g-} |."
     sleep 1
 else
     dna-echo -e "Something went wrong provisioning the wildcard TLS certificate for ${domain}."

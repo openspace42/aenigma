@@ -17,7 +17,7 @@ server {
 
     server_name hostname.xyz   www.hostname.xyz;
 
-    access_log /var/log/nginx/hostname.xyz.access.log ;
+    access_log /var/log/nginx/hostname.xyz.access.log;
     error_log /var/log/nginx/hostname.xyz.error.log;
 
     root    /var/www/hostname.xyz;

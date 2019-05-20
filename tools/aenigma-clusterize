@@ -379,7 +379,7 @@ echo "${secondary_node_number}" > "/${tmp_project_dir}/aenigma_cluster_secondary
 
 ### Push wildcard LE TLS cert for $domain to the secondary node
 
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${ssl_project_dir}" "root@${secondary_node_ipv4}:/etc/ssl/"
+/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tls_project_dir}" "root@${secondary_node_ipv4}:/etc/ssl/"
 
 echo
 

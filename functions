@@ -649,14 +649,14 @@ aenigma-set_permissions() {
 		chmod -R 755 "/var/log/ejabberd/"
 	fi
 
-	### $ssl_project_dir
+	### $tls_project_dir
 
-	### Assign new permissions to ssl_project_dir so that postgresql and etcd too can read from it
+	### Assign new permissions to tls_project_dir so that postgresql and etcd too can read from it
 
 	if id "ejabberd" >/dev/null 2>&1
 	then
-		chown -R "ejabberd:aenigma" "${ssl_project_dir}"
-		chmod -R 770 "${ssl_project_dir}"
+		chown -R "ejabberd:aenigma" "${tls_project_dir}"
+		chmod -R 770 "${tls_project_dir}"
 	fi
 
 	### ~/.ssh/
@@ -1187,7 +1187,7 @@ aenigma-push_certs() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${ssl_project_dir}" "root@${node_ipv4}:${ssl_dir}"
+			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_project_dir}" "root@${node_ipv4}:${tls_dir}"
 			then
 				echo
 				dna-echo -e "Node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
@@ -1228,9 +1228,9 @@ aenigma-push_certs() {
 
         bash openspace42/aenigma/tools/aenigma-exec -c "
 set +e
-chown -R "ejabberd:ejabberd" "${ssl_project_dir}"
+chown -R "ejabberd:ejabberd" "${tls_project_dir}"
 set -e
-chmod -R 700 "${ssl_project_dir}"
+chmod -R 700 "${tls_project_dir}"
 /usr/sbin/service ejabberd restart
 "
 
@@ -2756,7 +2756,7 @@ synthia-perform_installation() {
 
 	dna-refresh_tmp_project_dir
 
-	mkdir -p "${ssl_project_dir}"
+	mkdir -p "${tls_project_dir}"
 
 	############################################################################
 
@@ -2768,9 +2768,9 @@ synthia-perform_installation() {
 
 	### Legacy fixes and migration detections
 
-	if [ -f "${ssl_project_dir}/dh.pem" ]
+	if [ -f "${tls_project_dir}/dh.pem" ]
 	then
-		rm "${ssl_project_dir}/dh.pem"
+		rm "${tls_project_dir}/dh.pem"
 	fi
 
 	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
