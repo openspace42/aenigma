@@ -3,9 +3,8 @@ server {
     listen 80 default_server;
     listen [::]:80 default_server;
 
-    server_name hostname.xyz   www.hostname.xyz;
+    server_name hostname.xyz www.hostname.xyz;
 
-    # return 301 https://hostname.xyz$request_uri;
     rewrite ^ https://$host$request_uri? permanent;
 
 }

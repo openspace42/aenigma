@@ -436,6 +436,10 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
+	dna-get_hostname
+
+	############################################################################
+
 	### Stop SSLH to avoid any conflicts with a brand new nginx installation
 
 	if systemctl is-active --quiet sslh
@@ -460,7 +464,7 @@ aenigma-provision_nginx() {
 		rm "/etc/nginx/conf.d/default.conf"
 	fi
 
-	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/conf.d/${proj_name}.conf"
+	cp "${source_dir}/conf/nginx/domain" "/etc/nginx/conf.d/${domain}.conf"
 
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}.conf"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}.conf"
