@@ -8,7 +8,7 @@ server {
     access_log /var/log/nginx/additional_domain-var.access.log;
     error_log /var/log/nginx/additional_domain-var.error.log;
 
-    root    /var/www/hostname.xyz;
+    root    /var/www/aenigma;
 
     index   index.html index.htm;
 

@@ -469,10 +469,10 @@ aenigma-provision_nginx() {
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}.conf"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}.conf"
 
-	mkdir -p "/var/www/${hostname}/"
-	chown -R "www-data:www-data" "/var/www/${hostname}/"
+	mkdir -p "/var/www/${proj_name}/"
+	chown -R "www-data:www-data" "/var/www/${proj_name}/"
 
-	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
 
 	############################################################################
 
