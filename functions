@@ -2871,6 +2871,11 @@ synthia-perform_installation() {
 		export psql_migration_required="true"
 	fi
 
+	if [ -f "/etc/nginx/conf.d/aenigma.conf" ]
+	then
+		rm "/etc/nginx/conf.d/aenigma.conf"
+	fi
+
 	############################################################################
 
 	clear
