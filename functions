@@ -432,6 +432,72 @@ aenigma-xmpp_intro() {
 
 }
 
+aenigma-provision_nginx() {
+
+	############################################################################
+
+	### Stop SSLH to avoid any conflicts with a brand new nginx installation
+
+	if systemctl is-active --quiet sslh
+	then
+
+		dna-echo -m "Now stopping SSLH..."
+		/usr/sbin/service sslh stop
+		dna-echo -s "Finished stopping SSLH."
+
+	fi
+
+	### Install nginx and configure ejabberd admin panel reverse proxy site
+
+	dna-install_nginx
+
+	############################################################################
+
+	### Create and configure the $hostname website
+
+	if [ -f "/etc/nginx/conf.d/default.conf" ]
+	then
+		rm "/etc/nginx/conf.d/default.conf"
+	fi
+
+	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/conf.d/${proj_name}.conf"
+
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}.conf"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}.conf"
+
+	mkdir -p "/var/www/${hostname}/"
+	chown -R "www-data:www-data" "/var/www/${hostname}/"
+
+	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
+
+	############################################################################
+
+	if [ ! "${additional_domains-}" = "none" ]
+	then
+
+		additional_domains_array=(${additional_domains})
+		for additional_domain in "${additional_domains_array[@]}"
+	    do
+
+			cp "${source_dir}/conf/nginx/additional_domain" "/etc/nginx/conf.d/${additional_domain}.conf"
+
+			sed -i "s/additional_domain-var/${additional_domain}/g" "/etc/nginx/conf.d/${additional_domain}.conf"
+
+			sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${additional_domain}.conf"
+			sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${additional_domain}.conf"
+
+	    done
+
+	fi
+
+	############################################################################
+
+	### Restart nginx
+
+	/usr/sbin/service nginx restart || true
+
+}
+
 aenigma-install_sslh() {
 
 	dna-install_sslh
@@ -2327,6 +2393,20 @@ aenigma-install_haproxy() {
 
 }
 
+aenigma-generate_onion_tls_certificate() {
+
+	### Provision self_signed wildcard certificate for $tor_hidden_service_hostname
+
+	dna-provision_self_signed_wildcard_cert -d "${tor_hidden_service_hostname}"
+
+	### Set permissions on for the new certs in $tls_project_dir
+
+	aenigma-set_permissions
+
+	### developing
+
+}
+
 aenigma-provision_tor() {
 
 	### Make server reachable via Tor
@@ -3360,9 +3440,14 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
+	### UFW
+
+	############################################################################
+
 	### Set UFW rules
 
-	dna-echo -m "Now setting UFW rules..."
+	operation_message="setting UFW rules"
+	dna-echo_operation -h
 
 	ufw allow 5222
 	ufw allow 5223
@@ -3373,46 +3458,16 @@ synthia-perform_installation() {
 
 	echo
 
-	############################################################################
-
-	### Stop SSLH to avoid any conflicts with a brand new nginx installation
-
-	if systemctl is-active --quiet sslh
-	then
-
-		dna-echo -m "Now stopping SSLH..."
-		/usr/sbin/service sslh stop
-		dna-echo -s "Finished stopping SSLH."
-
-	fi
-
-	### Install nginx and configure ejabberd admin panel reverse proxy site
-
-	dna-install_nginx
+	dna-echo_operation -t
 
 	############################################################################
+	############################################################################
 
-	### Create and configure the $hostname website
+	### NGINX
 
-	if [ -f "/etc/nginx/conf.d/default.conf" ]
-	then
-		rm "/etc/nginx/conf.d/default.conf"
-	fi
+	aenigma-provision_nginx
 
-	cp "${source_dir}/conf/nginx/hostname" "/etc/nginx/conf.d/${proj_name}.conf"
-
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}.conf"
-	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}.conf"
-
-	mkdir -p "/var/www/${hostname}/"
-	chown -R "www-data:www-data" "/var/www/${hostname}/"
-
-	cp "${source_dir}/conf/web/hostname/index.html" "/var/www/${hostname}/"
-
-	### Restart nginx
-
-	/usr/sbin/service nginx restart || true
-
+	############################################################################
 	############################################################################
 
 	### Install mail notifications
