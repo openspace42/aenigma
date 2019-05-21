@@ -2476,7 +2476,12 @@ aenigma-provision_tor() {
 
 	### Provision self_signed wildcard certificate for $tor_hidden_service_hostname
 
-	aenigma-provision_onion_tls_certificate
+	if [ ! -f "${tls_project_dir}/${tor_hidden_service_hostname}.cert.pem" ] || [ ! -f "${tls_project_dir}/${tor_hidden_service_hostname}.privkey.pem" ]
+	then
+
+		aenigma-provision_onion_tls_certificate
+
+	fi
 
 	############################################################################
 	############################################################################
