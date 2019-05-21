@@ -2442,12 +2442,7 @@ aenigma-provision_tor() {
 
 	### Install tor
 
-	operation_message="installing Tor"
-	dna-echo_operation -h
-
 	dna-install_tor
-
-	dna-echo_operation -t
 
 	operation_message="enabling Tor Hidden Service"
 	dna-echo_operation -h
@@ -2493,6 +2488,15 @@ aenigma-provision_tor() {
 
 	sed -i "s|443 default_server ssl|443 ssl|g" "/etc/nginx/conf.d/${domain}.conf"
 	sed -i "s|443 ssl|443 default_server ssl|g" "/etc/nginx/conf.d/onion.conf"
+
+	dna-echo_operation -t
+
+	### Restart nginx
+
+	operation_message="restarting NGINX"
+	dna-echo_operation -h
+
+	service nginx restart
 
 	dna-echo_operation -t
 
@@ -2611,6 +2615,8 @@ EOF
 
 	dna-echo -s "Tor successfully provisioned!"
 
+	############################################################################
+
 }
 
 aenigma-provision_conversejs() {
@@ -2621,50 +2627,50 @@ aenigma-provision_conversejs() {
 
 	### Clone and build
 
-	if [ -d "/var/www/${hostname}/xmpp/" ]
+	if [ -d "/var/www/${proj_name}/xmpp/" ]
 	then
-		if [ -d "/var/www/${hostname}/xmpp-old/" ]
+		if [ -d "/var/www/${proj_name}/xmpp-old/" ]
 		then
-			rm -rf "/var/www/${hostname}/xmpp-old/"
+			rm -rf "/var/www/${proj_name}/xmpp-old/"
 		fi
-		mv "/var/www/${hostname}/xmpp/" "/var/www/${hostname}/xmpp-old/"
+		mv "/var/www/${proj_name}/xmpp/" "/var/www/${proj_name}/xmpp-old/"
 	fi
 
-	git clone https://github.com/conversejs/converse.js "/var/www/${hostname}/xmpp/"
+	git clone https://github.com/conversejs/converse.js "/var/www/${proj_name}/xmpp/"
 
-	( cd "/var/www/${hostname}/xmpp/" && make dev && make dist )
+	( cd "/var/www/${proj_name}/xmpp/" && make dev && make dist )
 
 	echo
 
 	### Install libsignal dependency
 
-	( cd "/var/www/${hostname}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
+	( cd "/var/www/${proj_name}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
 
 	echo
 
 	### Move fullscreen.html to index.html
 
-	mv "/var/www/${hostname}/xmpp/fullscreen.html" "/var/www/${hostname}/xmpp/index.html"
+	mv "/var/www/${proj_name}/xmpp/fullscreen.html" "/var/www/${proj_name}/xmpp/index.html"
 
 	### Localize sources
 
-	sed -i "s|https://cdn.conversejs.org/4.2.0/css/converse.min.css|dist/converse.min.css|g" "/var/www/${hostname}/xmpp/index.html"
-	sed -i "s|https://cdn.conversejs.org/3rdparty/libsignal-protocol.min.js|3rdparty/libsignal-protocol.js|g" "/var/www/${hostname}/xmpp/index.html"
-	sed -i "s|https://cdn.conversejs.org/4.2.0/dist/converse.min.js|dist/converse.min.js|g" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/4.2.0/css/converse.min.css|dist/converse.min.css|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/3rdparty/libsignal-protocol.min.js|3rdparty/libsignal-protocol.js|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/4.2.0/dist/converse.min.js|dist/converse.min.js|g" "/var/www/${proj_name}/xmpp/index.html"
 
 	### Remove analytics
 
-	sed -i "/inverse-analytics.js/d" "/var/www/${hostname}/xmpp/index.html"
-	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "/inverse-analytics.js/d" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${proj_name}/xmpp/index.html"
 
 	### Use our own ejabberd websocket service
 
-	sed -i "s|bosh_service_url|websocket_url|g" "/var/www/${hostname}/xmpp/index.html"
-	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${hostname}/xmpp/index.html"
+	sed -i "s|bosh_service_url|websocket_url|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${proj_name}/xmpp/index.html"
 
 	### Set permissions
 
-	chown -R www-data:www-data "/var/www/${hostname}/xmpp/"
+	chown -R www-data:www-data "/var/www/${proj_name}/xmpp/"
 
 }
 
