@@ -445,9 +445,12 @@ aenigma-provision_nginx() {
 	if systemctl is-active --quiet sslh
 	then
 
-		dna-echo -m "Now stopping SSLH..."
-		/usr/sbin/service sslh stop
-		dna-echo -s "Finished stopping SSLH."
+		operation_message="stopping SSLH"
+		dna-echo_operation -h
+
+		service sslh stop
+
+		dna-echo_operation -t
 
 	fi
 
@@ -496,9 +499,25 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
-	### Restart nginx
+	### Start sslh back up
 
-	/usr/sbin/service nginx restart || true
+	operation_message="starting SSLH back up"
+	dna-echo_operation -h
+
+	service sslh start
+
+	dna-echo_operation -t
+
+	### Start nginx back up
+
+	operation_message="starting SSLH back up"
+	dna-echo_operation -h
+
+	service nginx restart || true
+
+	dna-echo_operation -t
+
+	############################################################################
 
 }
 
@@ -2413,7 +2432,15 @@ aenigma-generate_onion_tls_certificate() {
 
 aenigma-provision_tor() {
 
-	### Make server reachable via Tor
+	### Make server reachable via tor
+
+	############################################################################
+
+	dna-get_hostname
+
+	############################################################################
+
+	### Install tor
 
 	operation_message="installing Tor"
 	dna-echo_operation -h
@@ -2432,11 +2459,23 @@ aenigma-provision_tor() {
 
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/tor/torrc"
 
+	dna-echo_operation -t
+
+	operation_message="restarting Tor"
+	dna-echo_operation -h
+
 	service tor restart
 
 	dna-echo_operation -t
 
+	############################################################################
+
 	### NGINX
+
+	### Install conf for onion hostname
+
+	operation_message="applying NGINX config for Tor"
+	dna-echo_operation -h
 
 	cp "${source_dir}/conf/nginx/onion" "/etc/nginx/conf.d/onion.conf"
 
@@ -2444,6 +2483,20 @@ aenigma-provision_tor() {
 
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/onion.conf"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/onion.conf"
+
+	dna-echo_operation -t
+
+	### Make onion the default_server in nginx to avoid domain leaks in case of domains mismatches
+
+	operation_message="applying NGINX config for Tor"
+	dna-echo_operation -h
+
+	sed -i "s|443 default_server ssl|443 ssl|g" "/etc/nginx/conf.d/${domain}.conf"
+	sed -i "s|443 ssl|443 default_server ssl|g" "/etc/nginx/conf.d/onion.conf"
+
+	dna-echo_operation -t
+
+	############################################################################
 
 	### Allow .onion JID registrations and federate with other XMPP servers hosted inside the Tor network on hidden services via Tor itself [https://www.grepular.com/Transparent_Access_to_Tor_Hidden_Services]
 
