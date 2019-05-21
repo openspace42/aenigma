@@ -466,8 +466,8 @@ aenigma-provision_nginx() {
 
 	cp "${source_dir}/conf/nginx/domain" "/etc/nginx/conf.d/${domain}.conf"
 
-	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${proj_name}.conf"
-	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${proj_name}.conf"
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${domain}.conf"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${domain}.conf"
 
 	mkdir -p "/var/www/${proj_name}/"
 	chown -R "www-data:www-data" "/var/www/${proj_name}/"
