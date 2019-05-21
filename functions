@@ -2416,7 +2416,7 @@ aenigma-install_haproxy() {
 
 }
 
-aenigma-generate_onion_tls_certificate() {
+aenigma-provision_onion_tls_certificate() {
 
 	### Provision self_signed wildcard certificate for $tor_hidden_service_hostname
 
@@ -2476,7 +2476,7 @@ aenigma-provision_tor() {
 
 	### Provision self_signed wildcard certificate for $tor_hidden_service_hostname
 
-	aenigma-generate_onion_tls_certificate
+	aenigma-provision_onion_tls_certificate
 
 	############################################################################
 	############################################################################
