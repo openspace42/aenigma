@@ -2436,6 +2436,15 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
+	### NGINX
+
+	cp "${source_dir}/conf/nginx/onion" "/etc/nginx/conf.d/onion.conf"
+
+	sed -i "s/tor_hidden_service_hostname-var/${tor_hidden_service_hostname}/g" "/etc/nginx/conf.d/onion.conf"
+
+	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/onion.conf"
+	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/onion.conf"
+
 	### Allow .onion JID registrations and federate with other XMPP servers hosted inside the Tor network on hidden services via Tor itself [https://www.grepular.com/Transparent_Access_to_Tor_Hidden_Services]
 
 	operation_message="adding .onion hostname to ejabberd hosts"
