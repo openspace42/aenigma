@@ -460,7 +460,7 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
-	### Create locations and populate them
+	### Create web locations and populate it
 
 	mkdir -p "/var/www/${proj_name}/"
 	chown -R "www-data:www-data" "/var/www/${proj_name}/"
@@ -2661,13 +2661,33 @@ EOF
 	############################################################################
 	############################################################################
 
+	### Create alternate webroot for onion specific customizations and converse
+
+	############################################################################
+
+	### Create web locations and populate it
+
+	mkdir -p "/var/www/onion/"
+	chown -R "www-data:www-data" "/var/www/onion/"
+
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+
+	############################################################################
+	############################################################################
+
 }
 
 aenigma-provision_conversejs() {
 
+	### Provision conversejs
+
+	############################################################################
+
 	### Install dependencies
 
 	dna-install_nodejs
+
+	############################################################################
 
 	### Clone and build
 
@@ -2715,6 +2735,19 @@ aenigma-provision_conversejs() {
 	### Set permissions
 
 	chown -R www-data:www-data "/var/www/${proj_name}/xmpp/"
+
+	############################################################################
+
+	### Also make Converse available over Tor in its alternate webroot
+
+	rsync -aAXXz "/var/www/${proj_name}/xmpp/" "/var/www/onion/xmpp/"
+
+	### Use onion-specific websocket
+
+	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://xh${node_number}.${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
+
+	############################################################################
+	############################################################################
 
 }
 

@@ -8,7 +8,7 @@ server {
     access_log /var/log/nginx/tor_hidden_service_hostname-var.access.log;
     error_log /var/log/nginx/tor_hidden_service_hostname-var.error.log;
 
-    root    /var/www/aenigma;
+    root    /var/www/onion;
 
     index   index.html index.htm;
 
