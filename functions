@@ -460,6 +460,15 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
+	### Create locations and populate them
+
+	mkdir -p "/var/www/${proj_name}/"
+	chown -R "www-data:www-data" "/var/www/${proj_name}/"
+
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+
+	############################################################################
+
 	### Create and configure the $hostname website
 
 	if [ -f "/etc/nginx/conf.d/default.conf" ]
@@ -472,10 +481,20 @@ aenigma-provision_nginx() {
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${domain}.conf"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${domain}.conf"
 
-	mkdir -p "/var/www/${proj_name}/"
-	chown -R "www-data:www-data" "/var/www/${proj_name}/"
+	### Delete default_server setting in $domain nginx conf file in case .onion
+	### nginx conf is present and already has default_server setting itslef
 
-	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+	if [ -f "/etc/nginx/conf.d/onion.conf" ]
+	then
+
+		if grep -q "default_server" "/etc/nginx/conf.d/onion.conf"
+		then
+
+			sed -i "s|443 ssl|443 default_server ssl|g" "/etc/nginx/conf.d/${domain}.conf"
+
+		fi
+
+	fi
 
 	############################################################################
 
