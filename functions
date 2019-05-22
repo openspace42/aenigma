@@ -490,7 +490,7 @@ aenigma-provision_nginx() {
 		if grep -q "default_server" "/etc/nginx/conf.d/onion.conf"
 		then
 
-			sed -i "s|443 ssl|443 default_server ssl|g" "/etc/nginx/conf.d/${domain}.conf"
+			sed -i "s|443 default_server ssl|443 ssl|g" "/etc/nginx/conf.d/${domain}.conf"
 
 		fi
 
