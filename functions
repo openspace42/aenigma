@@ -3279,7 +3279,9 @@ synthia-perform_installation() {
 
 	    fi
 
-		hostname="$(cat /etc/hostname)"
+		dna-get_hostname
+
+		hostname -F "/etc/hostname"
 
 		########################################################################
 
