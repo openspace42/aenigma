@@ -2509,6 +2509,11 @@ aenigma-provision_tor() {
 
 	############################################################################
 
+	### Increase names_hash_bucket_size to 128 in nginx config
+	### as the .onion hostname is really long
+
+	dna-nginx_increase_names_hash_bucket_size_128
+
 	### Install conf for onion hostname
 
 	operation_message="applying NGINX config for Tor"
@@ -2732,6 +2737,10 @@ aenigma-provision_conversejs() {
 	sed -i "s|bosh_service_url|websocket_url|g" "/var/www/${proj_name}/xmpp/index.html"
 	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${proj_name}/xmpp/index.html"
 
+	### Remove test bosh service warning
+
+	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/${proj_name}/xmpp/index.html"
+
 	### Set permissions
 
 	chown -R www-data:www-data "/var/www/${proj_name}/xmpp/"
@@ -2745,6 +2754,10 @@ aenigma-provision_conversejs() {
 	### Use onion-specific websocket
 
 	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://xh${node_number}.${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
+
+	### Remove test bosh service warning from onion-specific config
+
+	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/onion/xmpp/index.html"
 
 	############################################################################
 	############################################################################
