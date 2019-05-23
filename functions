@@ -1987,6 +1987,12 @@ aenigma-migrate-mnesia-postgresql() {
 
 }
 
+aenigma-get_postgresql_bin_dir_path() {
+
+	postgresql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
+
+}
+
 aenigma-apply_patroni_config() {
 
 	### Install patroni config
@@ -2088,6 +2094,9 @@ EOF
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
 	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
 	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
+
+	aenigma-get_postgresql_bin_dir_path
+
 	sed -i "s|postgresql_bin_dir_path-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
 
 	############################################################################
@@ -2144,9 +2153,12 @@ aenigma-install_postgresql_patroni() {
 
 	if [ -d "/usr/lib/postgresql/" ]
 	then
-		postgresql_bin_dir_path="$(find /usr/lib/postgresql/ -name bin)"
+
+		aenigma-get_postgresql_bin_dir_path
+
 		ln -s ${postgresql_bin_dir_path}/* "/usr/sbin/" || true
 		echo
+
 	fi
 
 	### Add postgres user to aenigma group for correct tls_project_dir permissions
