@@ -103,7 +103,7 @@ dna-log_script
 
 ### Ensure that this is the primary node in the event that cluster is enabled.
 
-if [ "${cluster_mode-null}" = "secondary" ]
+if [ "${cluster_mode-}" = "secondary" ]
 then
 	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
 	dna-exit

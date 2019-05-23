@@ -138,7 +138,7 @@ then
 		dna-exit
 	fi
 
-	if [ ${bootstrap_mode-null} = "y" ]
+	if [ ${bootstrap_mode-} = "y" ]
 	then
 
 		dna-setup_backup_restore_s3 -s
@@ -229,7 +229,7 @@ dna-br_launch_restore
 
 ### Perform a [last] backup of this currently running installation just in case
 
-if [ ! "${skip_backup:-null}" = "y" ]
+if [ ! "${skip_backup:-}" = "y" ]
 then
 
 	dna-br_last_local_backup

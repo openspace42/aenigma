@@ -102,7 +102,7 @@ synthia-download_dna() {
 
 	mkdir -p "${clone_base_dir}"
 
-	if [ "${custom_dna_version-null}" = "l" ]
+	if [ "${custom_dna_version-}" = "l" ]
 	then
 
 		export dna_selected_vers="v0.0.1-custom-local"
@@ -130,7 +130,7 @@ synthia-download_dna() {
 			export dna_latest_vers_tagged="$(semtag getlast)"
 			export dna_latest_vers_bl_edge="$(semtag getcurrent)"
 
-		    if [ "${custom_dna_version-null}" = "b" ]
+		    if [ "${custom_dna_version-}" = "b" ]
 		    then
 
 		        export dna_selected_vers="${dna_latest_vers_bl_edge}"
@@ -141,7 +141,7 @@ synthia-download_dna() {
 				git fetch
 		        git reset --hard origin/master
 
-			elif [[ "${custom_dna_version-null}" == *"v"* ]]
+			elif [[ "${custom_dna_version-}" == *"v"* ]]
 			then
 
 				export dna_selected_vers="${custom_dna_version}"
@@ -151,7 +151,7 @@ synthia-download_dna() {
 
 				git checkout "tags/${dna_selected_vers}"
 
-		    elif [ "${custom_dna_version-null}" = "t" ]
+		    elif [ "${custom_dna_version-}" = "t" ]
 		    then
 
 		        export dna_selected_vers="${dna_latest_vers_tagged}"
@@ -161,7 +161,7 @@ synthia-download_dna() {
 
 		        git checkout "tags/${dna_latest_vers_tagged}"
 
-		    elif [ "${custom_dna_version-null}" = "f" ]
+		    elif [ "${custom_dna_version-}" = "f" ]
 			then
 
 		        export dna_selected_vers="${dna_latest_vers_final}"
@@ -1451,7 +1451,7 @@ aenigma-test_online_nodes() {
 							dna-echo -m "Ok, aborting node removal."
 						fi
 					fi
-					if [ "${launch_node_reinstallation-null}" = "y" ]
+					if [ "${launch_node_reinstallation-}" = "y" ]
 					then
 						dna-echo -m "Having re-ordered what is now node number | ${o-}${current_node_number}${n-} | it's time to re-configure it and notify it of the change."
 						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}${n-} |] and run the installer from there now. Then come back here."
@@ -2766,7 +2766,7 @@ aenigma-provision_conversejs() {
 
 backup_locally_loop() {
 
-	if [ "${cluster_mode-null}" = "secondary" ]
+	if [ "${cluster_mode-}" = "secondary" ]
 	then
 		echo "${r-}${b-}The backup script is only intended to run on the primary node.${x-}"
 		echo
@@ -3101,7 +3101,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		########################################################################
@@ -3370,7 +3370,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		### Create domains_db
@@ -3494,7 +3494,7 @@ synthia-perform_installation() {
 
 		fi
 
-		if [ ! "${primary_node_ssh_connection-null}" = "ok" ]
+		if [ ! "${primary_node_ssh_connection-}" = "ok" ]
 		then
 
 			validate_input() {
@@ -3529,7 +3529,7 @@ synthia-perform_installation() {
 
 			}
 
-			if [ "${primary_node_ssh_connection-null}" = "attempted" ]
+			if [ "${primary_node_ssh_connection-}" = "attempted" ]
 			then
 				dna-set_value -d "Now specify the public SSH key [or write | ${y-}skip${n-} | if the connection was already successful]:" -v "y"
 			else
@@ -3648,7 +3648,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		### Determine if this is a fresh install
@@ -3927,7 +3927,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		### Add backup script to crontab
@@ -4027,7 +4027,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-null}" = "secondary" ]
+	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
 		### Pring login information and credentials
@@ -4045,7 +4045,7 @@ synthia-perform_installation() {
 
 		dna-press_to_continue
 
-		if [ "${cluster_mode-null}" = "primary" ]
+		if [ "${cluster_enabled-}" = "cluster" ]
 		then
 
 			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding [or updating] your secondary nodes."
