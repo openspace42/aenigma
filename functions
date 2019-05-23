@@ -3023,9 +3023,12 @@ synthia-perform_installation() {
 		rm "${tls_project_dir}/dh.pem"
 	fi
 
-	if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+	if dpkg -s ejabberd &> /dev/null
 	then
-		export psql_migration_required="true"
+		if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+		then
+			export psql_migration_required="true"
+		fi
 	fi
 
 	if [ -f "/etc/nginx/conf.d/aenigma.conf" ]
