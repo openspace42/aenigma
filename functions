@@ -518,18 +518,23 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
-	### Start sslh back up
+	### Start sslh back up if it's already installed
 
 	operation_message="starting SSLH back up"
 	dna-echo_operation -h
 
-	service sslh start
+	if which sslh &> /dev/null
+	then
+
+		service sslh start
+
+	fi
 
 	dna-echo_operation -t
 
 	### Start nginx back up
 
-	operation_message="starting SSLH back up"
+	operation_message="starting NGINX back up"
 	dna-echo_operation -h
 
 	service nginx restart || true
