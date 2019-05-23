@@ -769,8 +769,11 @@ aenigma-set_permissions() {
 	if id "ejabberd" >/dev/null 2>&1
 	then
 		chown -R "ejabberd:aenigma" "${tls_project_dir}"
-		chmod -R 770 "${tls_project_dir}"
+	else
+		chown -R "root:aenigma" "${tls_project_dir}"
 	fi
+
+	chmod -R 770 "${tls_project_dir}"
 
 	### ~/.ssh/
 
