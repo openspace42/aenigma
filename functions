@@ -1099,7 +1099,7 @@ aenigma-wipe_old_ufw_cluster_rules() {
 			if ! grep -qr "${line}" "${conf_cluster_nodes_dir}"
 			then
 
-				ufw delete "$(ufw status | grep -E ' (ALLOW|LIMIT) ' | grep -n ${line} | cut -f1 -d":")"
+				ufw --force delete "$(ufw status | grep -E ' (ALLOW|LIMIT) ' | grep -n ${line} | cut -f1 -d":")"
 
 			fi
 
