@@ -724,7 +724,13 @@ aenigma-install_ejabberd_config() {
 
 aenigma-set_permissions() {
 
+	### Set permissions globally
+
+	############################################################################
+
 	dna-echo -m "Now setting permissions..."
+
+	############################################################################
 
 	### Create the aenigma group if it doesn't exist
 
@@ -732,6 +738,22 @@ aenigma-set_permissions() {
 	then
 		addgroup aenigma
 	fi
+
+	############################################################################
+	############################################################################
+
+	### ~/.ssh/
+
+	chown "root:root" "/root/.ssh/authorized_keys" 2> /dev/null || true
+	chmod 755 "/root/.ssh/" 2> /dev/null || true
+	chmod 600 "/root/.ssh/authorized_keys" 2> /dev/null || true
+
+	############################################################################
+	############################################################################
+
+	### ejabberd
+
+	############################################################################
 
 	### /var/lib/ejabberd/
 
@@ -762,9 +784,13 @@ aenigma-set_permissions() {
 		chmod -R 755 "/var/log/ejabberd/"
 	fi
 
+	############################################################################
+	############################################################################
+
 	### $tls_project_dir
 
-	### Assign new permissions to tls_project_dir so that postgresql and etcd too can read from it
+	### Assign new permissions to tls_project_dir so that postgresql and etcd
+	### too can read from it, if ejabberd doesn't exist yet at least set group.
 
 	if id "ejabberd" >/dev/null 2>&1
 	then
@@ -775,11 +801,17 @@ aenigma-set_permissions() {
 
 	chmod -R 770 "${tls_project_dir}"
 
-	### ~/.ssh/
+	############################################################################
+	############################################################################
 
-	chown "root:root" "/root/.ssh/authorized_keys" 2> /dev/null || true
-	chmod 755 "/root/.ssh/" 2> /dev/null || true
-	chmod 600 "/root/.ssh/authorized_keys" 2> /dev/null || true
+	### /data/
+
+	mkdir -p "/data/"
+	chown -R postgres:postgres "/data/"
+	chmod -R 700 "/data/"
+
+	############################################################################
+	############################################################################
 
 	dna-echo -m "${g-}Finished setting permissions."
 
@@ -2236,9 +2268,7 @@ aenigma-install_postgresql_patroni() {
 
 	############################################################################
 
-	mkdir -p "/data/"
-	chown -R postgres:postgres "/data/"
-	chmod -R 700 "/data/"
+	aenigma-set_permissions
 
 	############################################################################
 
