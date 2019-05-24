@@ -1081,7 +1081,43 @@ aenigma-get_ejabberd_cluster_size() {
 
 }
 
+aenigma-wipe_old_ufw_cluster_rules() {
+
+	### Get any and all "ufw allow from x.x.x.x" rules previously set by us
+
+	ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_project_dir}/ufw_previous_cluster_rules"
+
+	### Check every item from previous command output to see if those IPv4s
+	### are still part of the cluster and if not remove those rules
+
+	while read line
+	do
+
+		if [ ! "${line}" = "" ]
+		then
+
+			if ! grep -qr "${line}" "${conf_cluster_nodes_dir}"
+			then
+
+				ufw delete "$(ufw status | grep -E ' (ALLOW|LIMIT) ' | grep -n ${line} | cut -f1 -d":")"
+
+			fi
+
+		fi
+
+	done < "${tmp_project_dir}/ufw_previous_cluster_rules"
+
+	unset line
+
+	rm "${tmp_project_dir}/ufw_previous_cluster_rules"
+
+}
+
 aenigma-update_routing_info() {
+
+	### Wipe any old cluster-related UFW rule
+
+	aenigma-wipe_old_ufw_cluster_rules
 
 	### Set UFW rules on this node according to the updated nodes_db
 
