@@ -1781,11 +1781,11 @@ aenigma-install_postgresql_dependencies() {
 
 aenigma-wipe_etcd() {
 
-	### Stop ETCd if it's already installed and running
+	### Stop ETCd if it's already installed
 
-	if systemctl is-active --quiet etcd
+	if dpkg -s etcd &> /dev/null
 	then
-		service etcd stop
+		service etcd stop || true
 	fi
 
 	### Delete any previous ETCd data
