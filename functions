@@ -1823,31 +1823,6 @@ aenigma-install_etcd() {
 	############################################################################
 	############################################################################
 
-	### Perform the installation
-
-	############################################################################
-
-	### Inhibit etcd from starting after install as permissions won't be already
-	### correct
-
-	echo exit 101 > "/usr/sbin/policy-rc.d"
-	chmod +x "/usr/sbin/policy-rc.d"
-
-	### Proceed
-
-	dna-install_etcd
-
-	### Remove autostart inhibition
-
-	rm "/usr/sbin/policy-rc.d"
-
-	### Add etcd user to aenigma group for correct tls_project_dir permissions
-
-	usermod -aG aenigma etcd
-
-	############################################################################
-	############################################################################
-
 	### Delete all etcd data to start fresh
 
 	if [ ! "${cluster_mode-}" = "secondary" ]
@@ -1909,6 +1884,31 @@ END
 		aenigma-wipe_etcd
 
 	fi
+
+	############################################################################
+	############################################################################
+
+	### Perform the installation
+
+	############################################################################
+
+	### Inhibit etcd from starting after install as permissions won't be already
+	### correct
+
+	echo exit 101 > "/usr/sbin/policy-rc.d"
+	chmod +x "/usr/sbin/policy-rc.d"
+
+	### Proceed
+
+	dna-install_etcd
+
+	### Remove autostart inhibition
+
+	rm "/usr/sbin/policy-rc.d"
+
+	### Add etcd user to aenigma group for correct tls_project_dir permissions
+
+	usermod -aG aenigma etcd
 
 	############################################################################
 	############################################################################
