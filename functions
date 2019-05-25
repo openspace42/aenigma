@@ -432,6 +432,18 @@ aenigma-xmpp_intro() {
 
 }
 
+aenigma-set_secondary_node_hostname() {
+
+	### Set hostname according to the node_number from the newly received config
+
+	echo "ae${node_number}.${domain}" > "/etc/hostname"
+
+	hostname="$(cat /etc/hostname)"
+
+	hostname -F "/etc/hostname"
+
+}
+
 aenigma-provision_nginx() {
 
 	############################################################################
@@ -3858,11 +3870,7 @@ synthia-perform_installation() {
 
 		dna-read_conf_settings
 
-		### Set hostname according to the node_number from the newly received config
-
-		echo "ae${node_number}.${domain}" > "/etc/hostname"
-
-		hostname="$(cat /etc/hostname)"
+		aenigma-set_secondary_node_hostname
 
 		########################################################################
 

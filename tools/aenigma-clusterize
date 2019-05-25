@@ -386,6 +386,37 @@ echo
 ################################################################################
 ################################################################################
 
+### Apply and source new hostname on newly provisioned node
+### so that etcd will start up correctly right from the start
+
+aenigma-exec() {
+
+    ### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+    bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-set_secondary_node_hostname
+"
+
+}
+
+############################################################################
+
+### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+
+ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
+aenigma-exec
+exit
+END
+echo
+
+################################################################################
+################################################################################
+
 ### Re-run the etcd cluster installation now that we have a new node
 
 aenigma-install_etcd_cluster
