@@ -1781,14 +1781,18 @@ aenigma-install_postgresql_dependencies() {
 
 aenigma-wipe_etcd() {
 
-	### Stop ETCd if it's already installed
+	### Stop etcd if it's already installed
 
 	if dpkg -s etcd &> /dev/null
 	then
 		service etcd stop || true
 	fi
 
-	### Delete any previous ETCd data
+	### Purge etcd
+
+	apt-get -y purge etcd
+
+	### Delete any previous etcd data in case it gets left over by apt
 
 	if [ -d "/var/lib/etcd/default/" ]
 	then
@@ -1836,7 +1840,7 @@ aenigma-install_etcd() {
 
 		aenigma-wipe_etcd
 
-		### Delete any previous ETCd data on secondary nodes
+		### Delete any previous etcd data on secondary nodes
 
 		########################################################################
 
