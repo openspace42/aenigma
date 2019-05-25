@@ -396,6 +396,8 @@ aenigma-apply_patroni_config
 
 service patroni restart
 
+aenigma-start_ejabberd
+
 ### Update haproxy config now that we have a new node
 
 aenigma-apply_haproxy_config

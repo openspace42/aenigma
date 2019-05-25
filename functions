@@ -593,18 +593,115 @@ aenigma-install_sslh() {
 
 aenigma-restart_ejabberd_if_running() {
 
+	############################################################################
+
+	### Restart ejabberd if it's already installed and running
+
+	############################################################################
+
 	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 	then
-		dna-echo -m "Now restarting ejabberd..."
-		if ! service ejabberd restart
+
+		operation_message="restarting ejabberd"
+		dna-echo_operation -h
+
+		if service ejabberd restart
 		then
+
+			dna-echo_operation -t
+
+		else
+
 			echo
 			dna-echo -e "ejabberd failed during restart"
 			dna-echo -m "Continuing anyway as this should fix itself automatically by the end of the installation."
 			sleep 3
+
 		fi
+
 	else
+
 		dna-echo -m "ejabberd not running. Skipping restart."
+
+	fi
+
+	############################################################################
+
+}
+
+aenigma-start_ejabberd() {
+
+	operation_message="starting up ejabberd"
+	dna-echo_operation -h
+
+	service ejabberd start
+
+	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
+
+	/usr/sbin/ejabberdctl status
+	echo
+
+	dna-echo_operation -t
+
+}
+
+aenigma-stop_ejabberd() {
+
+	############################################################################
+
+	### Stop ejabberd if it's already installed and running
+
+	############################################################################
+
+	if systemctl is-active --quiet ejabberd
+	then
+
+		operation_message="stopping ejabberd"
+		dna-echo_operation -h
+
+		service ejabberd stop &> /dev/null || true
+
+		dna-wait -s "8" -d "Now allowing ejabberd to shut down correctly..."
+
+		dna-echo_operation -t
+
+	fi
+
+}
+
+aenigma-stop_patroni() {
+
+	############################################################################
+
+	### Stop patroni [and therefore ejabberd] if they're already installed
+
+	############################################################################
+
+	### Stop ejabberd if it's already installed and running
+
+	aenigma-stop_ejabberd
+
+	############################################################################
+
+	### Proceed
+
+	if pip list 2> /dev/null | grep -q patroni
+	then
+
+		if [ -f "/etc/systemd/system/patroni.service" ]
+		then
+
+			operation_message="stopping patroni"
+			dna-echo_operation -h
+
+			service patroni stop &> /dev/null || true
+
+			dna-wait -s "8" -d "Now allowing patroni to shut down correctly..."
+
+			dna-echo_operation -t
+
+		fi
+
 	fi
 
 }
@@ -889,17 +986,9 @@ aenigma-localize_ejabberd_install() {
 
 	############################################################################
 
-	### Stop ejabberd if it's already running [i.e. because it was already installed]
+	### Stop ejabberd if it's already installed and running
 
-	if systemctl is-active --quiet ejabberd
-	then
-
-		dna-echo -m "Now stopping ejabberd..."
-		/usr/sbin/service ejabberd stop
-		dna-wait -s "4" -d "Now allowing ejabberd to shut down correctly..."
-		dna-echo -s "Finished stopping ejabberd."
-
-	fi
+	aenigma-stop_ejabberd
 
 	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
 
@@ -958,11 +1047,8 @@ aenigma-localize_ejabberd_install() {
 	fi
 
 	dna-echo -m "Now finally starting up ejabberd..."
-	/usr/sbin/service ejabberd start
-	dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
-	/usr/sbin/ejabberdctl status
-	echo
-	dna-echo -s "Finished starting ejabberd back up."
+
+	aenigma-start_ejabberd
 
 	############################################################################
 
@@ -1781,14 +1867,9 @@ aenigma-install_postgresql_dependencies() {
 
 aenigma-wipe_etcd() {
 
-	### Stop patroni if it's running
+	### Stop patroni [and therefore ejabberd] if they're installed and running
 
-	if systemctl is-active --quiet patroni
-	then
-		service patroni stop
-	fi
-
-	dna-wait -s "8" -d "Now allowing patroni to shut down correctly..."
+	aenigma-stop_patroni
 
 	### Stop etcd if it's already installed
 
@@ -2046,6 +2127,12 @@ END
 
 	############################################################################
 
+	### Start ejabberd back up
+
+	aenigma-start_ejabberd
+
+	############################################################################
+
 }
 
 aenigma-migrate-mnesia-postgresql() {
@@ -2128,15 +2215,9 @@ aenigma-apply_patroni_config() {
 
 	############################################################################
 
-	### Stop patroni if it's already installed
+	### Stop patroni [and therefore ejabberd] if they're installed and running
 
-	if pip list 2> /dev/null | grep -q patroni
-	then
-		if [ -f "/etc/systemd/system/patroni.service" ]
-		then
-			service patroni stop
-		fi
-	fi
+	aenigma-stop_patroni
 
 	############################################################################
 
@@ -2507,6 +2588,12 @@ EOF
 
 		########################################################################
 
+		### Start ejabberd
+
+		aenigma-start_ejabberd
+
+		########################################################################
+
 		### Migrate mnesia to psql if necessary
 
 		########################################################################
@@ -2518,6 +2605,16 @@ EOF
 			aenigma-migrate-mnesia-postgresql
 
 		fi
+
+		########################################################################
+
+	else
+
+		########################################################################
+
+		### Start ejabberd
+
+		aenigma-start_ejabberd
 
 		########################################################################
 
