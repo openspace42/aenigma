@@ -778,7 +778,7 @@ aenigma-set_permissions() {
 
 	### /var/log/ejabberd
 
-	if id "ejabberd" >/dev/null 2>&1
+	if id "ejabberd" &>/dev/null
 	then
 		chown -R "ejabberd:adm" "/var/log/ejabberd/"
 		chmod -R 755 "/var/log/ejabberd/"
@@ -807,7 +807,12 @@ aenigma-set_permissions() {
 	### /data/
 
 	mkdir -p "/data/"
-	chown -R postgres:postgres "/data/"
+
+	if id "postgres" &>/dev/null
+	then
+		chown -R postgres:postgres "/data/"
+	fi
+
 	chmod -R 700 "/data/"
 
 	############################################################################
