@@ -1781,6 +1781,15 @@ aenigma-install_postgresql_dependencies() {
 
 aenigma-wipe_etcd() {
 
+	### Stop patroni if it's running
+
+	if systemctl is-active --quiet patroni
+	then
+		service patroni stop
+	fi
+
+	dna-wait -s "8" -d "Now allowing patroni to shut down correctly..."
+
 	### Stop etcd if it's already installed
 
 	if dpkg -s etcd &> /dev/null
@@ -2115,6 +2124,22 @@ aenigma-get_postgresql_bin_dir_path() {
 
 aenigma-apply_patroni_config() {
 
+	### Install and localize patroni config
+
+	############################################################################
+
+	### Stop patroni if it's already installed
+
+	if pip list 2> /dev/null | grep -q patroni
+	then
+		if [ -f "/etc/systemd/system/patroni.service" ]
+		then
+			service patroni stop
+		fi
+	fi
+
+	############################################################################
+
 	### Install patroni config
 
 	cat <<EOF > "/etc/patroni.yml"
@@ -2221,6 +2246,13 @@ EOF
 
 	############################################################################
 
+	### Apply passwords to the postgresql/patroni config
+
+	sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
+	sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
+
+	############################################################################
+
 }
 
 aenigma-install_postgresql_patroni() {
@@ -2312,12 +2344,6 @@ aenigma-install_postgresql_patroni() {
 
 	############################################################################
 
-	### Apply patroni config
-
-	aenigma-apply_patroni_config
-
-	############################################################################
-
 	### Generate random passwords for the postgresql/patroni config if this is a primary node
 
 	############################################################################
@@ -2347,12 +2373,9 @@ aenigma-install_postgresql_patroni() {
 
 	############################################################################
 
-	### Apply passwords to the postgresql/patroni config
+	### Apply patroni config
 
-	############################################################################
-
-	sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
-	sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
+	aenigma-apply_patroni_config
 
 	############################################################################
 
