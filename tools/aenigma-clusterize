@@ -193,7 +193,7 @@ secondary_node_ipv4="${value}"
 
 ### Now add the secondary node's IPv4 to nodes_db_ipv4
 
-if grep -q "${secondary_node_ipv4}" "${nodes_db_ipv4_path}"
+if grep -q "^${secondary_node_ipv4}$" "${nodes_db_ipv4_path}"
 then
 	### Specified secondary node is already registered
 	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
@@ -399,8 +399,6 @@ service patroni restart
 ### Update haproxy config now that we have a new node
 
 aenigma-apply_haproxy_config
-
-service haproxy restart
 
 ################################################################################
 ################################################################################
