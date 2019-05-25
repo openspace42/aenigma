@@ -596,7 +596,7 @@ aenigma-restart_ejabberd_if_running() {
 	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
 	then
 		dna-echo -m "Now restarting ejabberd..."
-		if ! /usr/sbin/service ejabberd restart
+		if ! service ejabberd restart
 		then
 			echo
 			dna-echo -e "ejabberd failed during restart"
@@ -1803,8 +1803,13 @@ aenigma-wipe_etcd() {
 
 aenigma-install_etcd() {
 
+	############################################################################
+
+	### Install etcd
+
 	### !!! This function is only intended to be ran by the primary node !!! ###
 
+	############################################################################
 	############################################################################
 
 	### Install dependencies required for postgresql cluster
@@ -1816,15 +1821,31 @@ aenigma-install_etcd() {
 	aenigma-set_permissions
 
 	############################################################################
+	############################################################################
 
-	### Install etcd
+	### Perform the installation
+
+	############################################################################
+
+	### Inhibit etcd from starting after install as permissions won't be already
+	### correct
+
+	echo exit 101 > "/usr/sbin/policy-rc.d"
+	chmod +x "/usr/sbin/policy-rc.d"
+
+	### Proceed
 
 	dna-install_etcd
+
+	### Remove autostart inhibition
+
+	rm "/usr/sbin/policy-rc.d"
 
 	### Add etcd user to aenigma group for correct tls_project_dir permissions
 
 	usermod -aG aenigma etcd
 
+	############################################################################
 	############################################################################
 
 	### Delete all etcd data to start fresh
@@ -1832,13 +1853,15 @@ aenigma-install_etcd() {
 	if [ ! "${cluster_mode-}" = "secondary" ]
 	then
 
+		########################################################################
+
 		### This only applies to primary nodes, so that an initial wipe will
 		### occur only once at the same time during primary node installation.
 		### Secondary nodes will skip this when running on their own as the
 		### primary node will already have remotely performed this onto them as
 		### well.
 
-		aenigma-wipe_etcd
+		# aenigma-wipe_etcd
 
 		### Delete any previous etcd data on secondary nodes
 
@@ -1887,6 +1910,7 @@ END
 
 	fi
 
+	############################################################################
 	############################################################################
 
 	### Set config file
@@ -1944,10 +1968,9 @@ EOF
 
 	sleep 3
 
-	echo
+	dna-wait -s "8" -d "Now allowing etcd to start up correctly..."
 
-	dna-wait -s "4" -d "Now allowing etcd to start up correctly..."
-
+	############################################################################
 	############################################################################
 
 }
@@ -4275,7 +4298,7 @@ synthia-perform_installation() {
 
 			dna-echo -m "Now restarting ejabberd..."
 
-			/usr/sbin/service ejabberd restart
+			service ejabberd restart
 
 		fi
 
