@@ -1083,33 +1083,46 @@ aenigma-get_ejabberd_cluster_size() {
 
 aenigma-wipe_old_ufw_cluster_rules() {
 
-	### Get any and all "ufw allow from x.x.x.x" rules previously set by us
+	### Remove any and all UFW rules related to old cluster nodes
 
-	ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_project_dir}/ufw_previous_cluster_rules"
+	############################################################################
 
-	### Check every item from previous command output to see if those IPv4s
-	### are still part of the cluster and if not remove those rules
+	### Only do this check if ufw has actually been initialized
 
-	while read line
-	do
+	if systemctl is-active --quiet ufw
+	then
 
-		if [ ! "${line}" = "" ]
-		then
+		### Get "ufw allow from x.x.x.x" rules previously set by us
 
-			if ! grep -qr "${line}" "${conf_cluster_nodes_dir}"
+		ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_project_dir}/ufw_previous_cluster_rules" || true
+
+		### Check every item from previous command output to see if those IPv4s
+		### are still part of the cluster and if not remove those rules
+
+		while read line
+		do
+
+			if [ ! "${line}" = "" ]
 			then
 
-				ufw --force delete "$(ufw status | grep -E ' (ALLOW|LIMIT) ' | grep -n ${line} | cut -f1 -d":")"
+				if ! grep -qr "${line}" "${conf_cluster_nodes_dir}"
+				then
+
+					ufw --force delete "$(ufw status | grep -E ' (ALLOW|LIMIT) ' | grep -n ${line} | cut -f1 -d":")"
+
+				fi
 
 			fi
 
-		fi
+		done < "${tmp_project_dir}/ufw_previous_cluster_rules"
 
-	done < "${tmp_project_dir}/ufw_previous_cluster_rules"
+		unset line
 
-	unset line
+		rm "${tmp_project_dir}/ufw_previous_cluster_rules"
 
-	rm "${tmp_project_dir}/ufw_previous_cluster_rules"
+	fi
+
+	############################################################################
 
 }
 
