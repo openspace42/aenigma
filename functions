@@ -1836,7 +1836,7 @@ aenigma-install_etcd() {
 		### primary node will already have remotely performed this onto them as
 		### well.
 
-		# aenigma-wipe_etcd
+		aenigma-wipe_etcd
 
 		### Delete any previous etcd data on secondary nodes
 
