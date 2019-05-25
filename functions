@@ -744,9 +744,16 @@ aenigma-set_permissions() {
 
 	### ~/.ssh/
 
-	chown "root:root" "/root/.ssh/authorized_keys" 2> /dev/null || true
-	chmod 755 "/root/.ssh/" 2> /dev/null || true
-	chmod 600 "/root/.ssh/authorized_keys" 2> /dev/null || true
+	if [ -d "/root/.ssh/" ]
+	then
+		chmod 755 "/root/.ssh/"
+	fi
+
+	if [ -f "/root/.ssh/authorized_keys" ]
+	then
+		chown "root:root" "/root/.ssh/authorized_keys"
+		chmod 600 "/root/.ssh/authorized_keys"
+	fi
 
 	############################################################################
 	############################################################################
@@ -757,7 +764,7 @@ aenigma-set_permissions() {
 
 	### /var/lib/ejabberd/
 
-	if id "ejabberd" >/dev/null 2>&1
+	if id "ejabberd" &> /dev/null
 	then
 		chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/uploads/"
 		chmod 2750 "/var/lib/ejabberd/uploads/"
@@ -769,7 +776,7 @@ aenigma-set_permissions() {
 
 	### /var/www/ejabberd
 
-	if id "ejabberd" >/dev/null 2>&1
+	if id "ejabberd" &> /dev/null
 	then
 		usermod -aG aenigma ejabberd
 		chown -R "ejabberd:ejabberd" "/var/www/ejabberd/"
@@ -778,7 +785,7 @@ aenigma-set_permissions() {
 
 	### /var/log/ejabberd
 
-	if id "ejabberd" &>/dev/null
+	if id "ejabberd" &> /dev/null
 	then
 		chown -R "ejabberd:adm" "/var/log/ejabberd/"
 		chmod -R 755 "/var/log/ejabberd/"
