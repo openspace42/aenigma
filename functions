@@ -2223,6 +2223,18 @@ aenigma-install_etcd_cluster() {
 
 		########################################################################
 
+		### Ensure routing info is up-to-date on all nodes or else etcd will
+		### fail.
+
+		aenigma-push_routing_info
+
+		### Ensure no old nodes can connect to any current nodes or else their
+		### etcd might connect to the latter and make etcd fail
+
+		aenigma-wipe_old_ufw_cluster_rules
+
+		########################################################################
+
 		### Stop ejabberd and patroni cluster-wide
 
 		aenigma-stop_ejabberd_patroni
