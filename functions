@@ -2762,19 +2762,23 @@ EOF
 
 		########################################################################
 
-		### Download ejabberd psql schema
-
-		curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
-		chmod 777 "${tmp_project_dir}/pg.new.sql"
-		echo
-
 		### Import ejabberd psql schema if the db was just created
 
 		if [ "${patroni_ejabberd_db_previous_state-}" = "nx" ]
 		then
+
+			### Download ejabberd psql schema
+
+			curl "https://raw.githubusercontent.com/processone/ejabberd/master/sql/pg.new.sql" > "${tmp_project_dir}/pg.new.sql"
+			chmod 777 "${tmp_project_dir}/pg.new.sql"
+			echo
+
+			### Import into postgresql
+
 			dna-echo -m "Importing PSQL default schema"
 			PGPASSWORD="${patroni_ejabberd_password}" psql -h "${hostname}" -p "5432" -U ejabberd ejabberd < "/tmp/aenigma/pg.new.sql"
 			echo
+
 		fi
 
 		########################################################################
