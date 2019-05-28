@@ -421,19 +421,10 @@ echo
 
 aenigma-install_etcd_cluster
 
-### Update patroni config now that we have a new node
+### Apply new configs and restart patroni, haproxy, and ejabberd
+### on existing nodes [not the one we're provisioning now, which we exclude]
 
-aenigma-apply_patroni_config
-
-aenigma-start_patroni
-
-### Update haproxy config now that we have a new node
-
-aenigma-apply_haproxy_config
-
-### Restart ejabberd
-
-aenigma-start_ejabberd
+aenigma-apply_and_restart_patroni_haproxy_ejabberd -e "${secondary_node_ipv4}"
 
 ################################################################################
 ################################################################################

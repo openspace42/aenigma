@@ -2225,14 +2225,14 @@ EOF
 	sed -i "s|domain-var|${domain}|g" "/etc/default/etcd"
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
+	operation_message="starting etcd on node: | ${l-}${hostname}${n-} |."
+	dna-echo_operation -h
+
 	update-rc.d etcd enable
 
 	systemctl restart etcd &
 
 	sleep 3
-
-	operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |."
-	dna-echo_operation -h
 
 	dna-wait -s "8" -d "Now allowing etcd to start up correctly..."
 
@@ -2322,6 +2322,116 @@ END
 		########################################################################
 
 	fi
+
+}
+
+aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
+
+	############################################################################
+
+	### Run this function after re-installing or clusterizing
+	### to apply new configs updated with new nodes to patroni and haproxy
+	### and restart these two services plus ejabberd
+
+	############################################################################
+
+	while getopts ":e:r" arguments; do
+        case $arguments in
+            n)	exclude_node="${OPTARG}"
+	            ;;
+			r)	remote_only="yes"
+	            ;;
+            \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+	            dna-exit
+	            ;;
+        esac
+    done
+    OPTIND=1
+
+	############################################################################
+	############################################################################
+
+	### Localhost
+
+	############################################################################
+
+	if [ ! "${remote_only-}" = "yes" ]
+
+	### Update patroni config now that we have a new node
+
+	aenigma-apply_patroni_config
+
+	aenigma-start_patroni
+
+	### Update haproxy config now that we have a new node
+
+	aenigma-apply_haproxy_config
+
+	### Restart ejabberd
+
+	aenigma-start_ejabberd
+
+	############################################################################
+	############################################################################
+
+	### Secondary nodes
+
+	############################################################################
+
+	aenigma-get_nodes_online
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+		bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-apply_patroni_config
+aenigma-start_patroni
+aenigma-apply_haproxy_config
+aenigma-start_ejabberd
+"
+
+	}
+
+	############################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+
+		### Ensure we don't try connecting to ourselves [therefore ignore
+		### the first line of nodes_db_ipv4] or to the excluded node.
+
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ] && [ ! "${online_node_ipv4}" = "${excluded_node}" ]
+		then
+
+			### SSH into the secondary node, declare the aenigma-exec function,
+			### and run it inside of the subshell.
+
+			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
+aenigma-exec
+exit
+END
+
+		fi
+
+		echo
+
+	done
+
+	unset online_node_ipv4
+
+	############################################################################
+	############################################################################
+
+	unset exclude_node remote_only
+
+	############################################################################
+	############################################################################
 
 }
 
@@ -2855,7 +2965,7 @@ EOF
 
 	############################################################################
 
-	operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |."
+	operation_message="restarting haproxy on node: | ${l-}${hostname}${n-} |."
 	dna-echo_operation -h
 
 	systemctl restart haproxy
@@ -4276,6 +4386,8 @@ synthia-perform_installation() {
 	then
 
 		aenigma-install_etcd_cluster
+
+		aenigma-apply_and_restart_patroni_haproxy_ejabberd -r
 
 	fi
 
