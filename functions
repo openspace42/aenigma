@@ -665,19 +665,35 @@ aenigma-stop_ejabberd() {
 
 	############################################################################
 
-	if systemctl is-active --quiet ejabberd
+	if dpkg -s ejabberd
 	then
 
-		dna-get_hostname
+		if systemctl is-active --quiet ejabberd
+		then
 
-		operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |."
-		dna-echo_operation -h
+			dna-get_hostname
 
-		service ejabberd stop &> /dev/null || true
+			operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |."
+			dna-echo_operation -h
 
-		dna-wait -s "8" -d "Now allowing ejabberd to shut down correctly..."
+			service ejabberd stop &> /dev/null || true
 
-		dna-echo_operation -t
+			dna-wait -s "4" -d "Now allowing ejabberd to shut down correctly..."
+
+			dna-echo_operation -t
+
+		else
+
+			dna-echo -s "ejabberd already stopped on node: | ${l-}${hostname}${n-} |."
+
+			service ejabberd stop &> /dev/null || true
+
+		fi
+
+	else
+
+		dna-echo -m "ejabberd not installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "no need to stop its service"
 
 	fi
 
@@ -691,10 +707,10 @@ aenigma-stop_patroni() {
 
 	############################################################################
 
-	if pip list 2> /dev/null | grep -q patroni
+	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
 	then
 
-		if [ -f "/etc/systemd/system/patroni.service" ]
+		if systemctl is-active --quiet ejabberd
 		then
 
 			dna-get_hostname
@@ -704,11 +720,22 @@ aenigma-stop_patroni() {
 
 			service patroni stop &> /dev/null || true
 
-			dna-wait -s "8" -d "Now allowing patroni to shut down correctly..."
+			dna-wait -s "4" -d "Now allowing patroni to shut down correctly..."
 
 			dna-echo_operation -t
 
+		else
+
+			dna-echo -s "patroni already stopped on node: | ${l-}${hostname}${n-} |."
+
+			service patroni stop &> /dev/null || true
+
 		fi
+
+	else
+
+		dna-echo -m "patroni not installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "no need to stop its service"
 
 	fi
 
