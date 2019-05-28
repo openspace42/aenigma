@@ -665,13 +665,13 @@ aenigma-stop_ejabberd() {
 
 	############################################################################
 
+	dna-get_hostname
+
 	if dpkg -s ejabberd &> /dev/null
 	then
 
 		if systemctl is-active --quiet ejabberd
 		then
-
-			dna-get_hostname
 
 			operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |."
 			dna-echo_operation -h
@@ -707,13 +707,13 @@ aenigma-stop_patroni() {
 
 	############################################################################
 
+	dna-get_hostname
+
 	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
 	then
 
 		if systemctl is-active --quiet ejabberd
 		then
-
-			dna-get_hostname
 
 			operation_message="stopping patroni on node: | ${l-}${hostname}${n-} |."
 			dna-echo_operation -h
