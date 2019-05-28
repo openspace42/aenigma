@@ -425,13 +425,15 @@ aenigma-install_etcd_cluster
 
 aenigma-apply_patroni_config
 
-service patroni restart
-
-aenigma-start_ejabberd
+aenigma-start_patroni
 
 ### Update haproxy config now that we have a new node
 
 aenigma-apply_haproxy_config
+
+### Restart ejabberd
+
+aenigma-start_ejabberd
 
 ################################################################################
 ################################################################################
