@@ -643,7 +643,7 @@ aenigma-restart_ejabberd_if_running() {
 
 aenigma-start_ejabberd() {
 
-	operation_message="starting up ejabberd"
+	operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |."
 	dna-echo_operation -h
 
 	service ejabberd start
@@ -2014,10 +2014,6 @@ aenigma-install_postgresql_dependencies() {
 
 aenigma-wipe_etcd() {
 
-	### Stop patroni [and therefore ejabberd] if they're installed and running
-
-	aenigma-stop_patroni
-
 	### Stop etcd if it's already installed
 
 	if dpkg -s etcd &> /dev/null
@@ -2204,7 +2200,12 @@ EOF
 
 	sleep 3
 
+	operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |."
+	dna-echo_operation -h
+
 	dna-wait -s "8" -d "Now allowing etcd to start up correctly..."
+
+	dna-echo_operation -t
 
 	############################################################################
 	############################################################################
@@ -2643,7 +2644,12 @@ EOF
 
 	############################################################################
 
+	operation_message="starting patroni on node: | ${l-}${hostname}${n-} |."
+	dna-echo_operation -h
+
 	dna-wait -s "11" -d "Now allowing patroni to start up correctly..."
+
+	dna-echo_operation -t
 
 	############################################################################
 
