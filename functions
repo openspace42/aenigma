@@ -665,7 +665,7 @@ aenigma-stop_ejabberd() {
 
 	############################################################################
 
-	if dpkg -s ejabberd
+	if dpkg -s ejabberd &> /dev/null
 	then
 
 		if systemctl is-active --quiet ejabberd
