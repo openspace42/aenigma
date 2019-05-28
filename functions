@@ -2335,7 +2335,8 @@ aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
 
 	############################################################################
 
-	while getopts ":e:r" arguments; do
+	while getopts ":e:r" arguments
+	do
         case $arguments in
             n)	exclude_node="${OPTARG}"
 	            ;;
@@ -2357,19 +2358,21 @@ aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
 
 	if [ ! "${remote_only-}" = "yes" ]
 
-	### Update patroni config now that we have a new node
+		### Update patroni config now that we have a new node
 
-	aenigma-apply_patroni_config
+		aenigma-apply_patroni_config
 
-	aenigma-start_patroni
+		aenigma-start_patroni
 
-	### Update haproxy config now that we have a new node
+		### Update haproxy config now that we have a new node
 
-	aenigma-apply_haproxy_config
+		aenigma-apply_haproxy_config
 
-	### Restart ejabberd
+		### Restart ejabberd
 
-	aenigma-start_ejabberd
+		aenigma-start_ejabberd
+
+	fi
 
 	############################################################################
 	############################################################################
