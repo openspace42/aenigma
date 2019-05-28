@@ -2224,55 +2224,9 @@ aenigma-install_etcd_cluster() {
 
 		########################################################################
 
-		### Get online nodes
+		### Stop ejabberd and patroni cluster-wide
 
-		aenigma-get_nodes_online
-
-		########################################################################
-
-		### Stop patroni [and therefore ejabberd] on all nodes in the cluster
-
-		########################################################################
-
-		### Stop patroni locally
-
-		aenigma-stop_patroni
-
-		########################################################################
-
-		### Stop patroni on secondary nodes
-
-		aenigma-exec() {
-
-			### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-	        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-stop_patroni
-"
-
-		}
-
-		########################################################################
-
-		for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
-		do
-			### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-			if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
-			then
-				### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-		        ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-. /root/openspace42/aenigma/functions
-synthia-source_dna
-synthia-define_vars
-dna-read_conf_settings
-aenigma-exec
-exit
-END
-			fi
-			echo
-		done
-		unset online_node_ipv4
+		aenigma-stop_ejabberd_patroni
 
 		########################################################################
 
@@ -2280,10 +2234,14 @@ END
 
 		aenigma-install_etcd
 
+		########################################################################
+
 		### At this point etcd will be installed locally on this primary node
 		### and we can proceed to install it on any secondary nodes.
 
 		########################################################################
+
+		aenigma-get_nodes_online
 
 		aenigma-exec() {
 
@@ -2318,8 +2276,6 @@ END
 		unset online_node_ipv4
 
 		########################################################################
-
-		### Start patroni and ejabberd
 
 	fi
 
