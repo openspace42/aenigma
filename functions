@@ -2357,6 +2357,7 @@ aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
 	############################################################################
 
 	if [ ! "${remote_only-}" = "yes" ]
+	then
 
 		### Update patroni config now that we have a new node
 
