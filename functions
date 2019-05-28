@@ -1476,8 +1476,6 @@ aenigma-get_nodes_online() {
 					dna-echo -m "Ok, aborting..."
 					dna-exit
 				fi
-			else
-				echo
 			fi
 		fi
 		array_iter=$((array_iter + 1))
