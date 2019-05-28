@@ -685,17 +685,9 @@ aenigma-stop_patroni() {
 
 	############################################################################
 
-	### Stop patroni [and therefore ejabberd] if they're already installed
+	### Stop patroni if it's already installed and running
 
 	############################################################################
-
-	### Stop ejabberd if it's already installed and running
-
-	aenigma-stop_ejabberd
-
-	############################################################################
-
-	### Proceed
 
 	if pip list 2> /dev/null | grep -q patroni
 	then
@@ -715,6 +707,117 @@ aenigma-stop_patroni() {
 		fi
 
 	fi
+
+}
+
+aenigma-stop_ejabberd_patroni() {
+
+	############################################################################
+	############################################################################
+
+	### Stop ejabberd and subsequently patroni on all nodes of the cluster
+	### if they're already installed and running
+
+	############################################################################
+	############################################################################
+
+	### ejabberd
+
+	############################################################################
+
+	### Stop ejabberd locally
+
+	aenigma-stop_ejabberd
+
+	############################################################################
+
+	### Stop ejabberd on secondary nodes
+
+	aenigma-get_nodes_online
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+		bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-stop_ejabberd
+"
+
+	}
+
+	############################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
+aenigma-exec
+exit
+END
+		fi
+		echo
+	done
+	unset online_node_ipv4
+
+	############################################################################
+	############################################################################
+
+	### patroni
+
+	############################################################################
+
+	### Stop ejabberd locally
+
+	aenigma-stop_patroni
+
+	############################################################################
+
+	### Stop patroni on secondary nodes
+
+	aenigma-get_nodes_online
+
+	aenigma-exec() {
+
+		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+
+		bash openspace42/aenigma/tools/aenigma-exec -c "
+aenigma-stop_patroni
+"
+
+	}
+
+	############################################################################
+
+	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
+	do
+		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
+		then
+			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
+set -eu
+. /root/openspace42/aenigma/functions
+synthia-source_dna
+synthia-define_vars
+dna-read_conf_settings
+aenigma-exec
+exit
+END
+		fi
+		echo
+	done
+	unset online_node_ipv4
+
+	############################################################################
+	############################################################################
 
 }
 
