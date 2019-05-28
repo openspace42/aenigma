@@ -2421,7 +2421,7 @@ aenigma-start_ejabberd
 		### Ensure we don't try connecting to ourselves [therefore ignore
 		### the first line of nodes_db_ipv4] or to the excluded node.
 
-		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ] && [ ! "${online_node_ipv4}" = "${excluded_node}" ]
+		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ] && [ ! "${online_node_ipv4}" = "${excluded_node-}" ]
 		then
 
 			### SSH into the secondary node, declare the aenigma-exec function,
