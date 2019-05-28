@@ -4,3 +4,4 @@ HiddenServicePort 443   public_ipv4-var:443
 HiddenServicePort 5222  127.0.0.1:5222
 HiddenServicePort 5223  127.0.0.1:5223
 HiddenServicePort 5269  127.0.0.1:5269
+HiddenServicePort 5443  127.0.0.1:5443

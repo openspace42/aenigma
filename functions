@@ -3206,7 +3206,7 @@ aenigma-provision_conversejs() {
 
 	### Use onion-specific websocket
 
-	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://xh${node_number}.${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
+	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
 
 	### Remove test bosh service warning from onion-specific config
 
