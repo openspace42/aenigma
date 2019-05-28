@@ -643,6 +643,14 @@ aenigma-restart_ejabberd_if_running() {
 
 aenigma-start_ejabberd() {
 
+	############################################################################
+
+	### Start ejabberd if it's already installed
+
+	############################################################################
+
+	dna-get_hostname
+
 	if dpkg -s ejabberd &> /dev/null
 	then
 
@@ -710,6 +718,14 @@ aenigma-stop_ejabberd() {
 }
 
 aenigma-start_patroni() {
+
+	############################################################################
+
+	### Start patroni if it's already installed
+
+	############################################################################
+
+	dna-get_hostname
 
 	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
 	then
