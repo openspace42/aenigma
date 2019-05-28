@@ -668,7 +668,9 @@ aenigma-stop_ejabberd() {
 	if systemctl is-active --quiet ejabberd
 	then
 
-		operation_message="stopping ejabberd"
+		dna-get_hostname
+
+		operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |."
 		dna-echo_operation -h
 
 		service ejabberd stop &> /dev/null || true
@@ -695,7 +697,9 @@ aenigma-stop_patroni() {
 		if [ -f "/etc/systemd/system/patroni.service" ]
 		then
 
-			operation_message="stopping patroni"
+			dna-get_hostname
+
+			operation_message="stopping patroni on node: | ${l-}${hostname}${n-} |."
 			dna-echo_operation -h
 
 			service patroni stop &> /dev/null || true
