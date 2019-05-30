@@ -3222,6 +3222,10 @@ EOF
 
 	dna-echo_operation -t
 
+	### Enable unbound as the system-wide dns resolver.
+
+	echo "127.0.0.1" > "/etc/resolv.conf"
+
 	### UFW / IPTABLES
 
 	operation_message="configuring IPtables for Tor routing"
