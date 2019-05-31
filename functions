@@ -2354,7 +2354,7 @@ aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
 	while getopts ":e:r" arguments
 	do
         case $arguments in
-            e)	exclude_node="${OPTARG}"
+            e)	excluded_node="${OPTARG}"
 	            ;;
 			r)	remote_only="yes"
 	            ;;
