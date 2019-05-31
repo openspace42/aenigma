@@ -761,7 +761,7 @@ aenigma-stop_patroni() {
 	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
 	then
 
-		if systemctl is-active --quiet ejabberd
+		if systemctl is-active --quiet patroni
 		then
 
 			operation_message="stopping patroni on node: | ${l-}${hostname}${n-} |."
