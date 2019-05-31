@@ -3298,7 +3298,7 @@ aenigma-provision_conversejs() {
 
 	git clone https://github.com/conversejs/converse.js "/var/www/${proj_name}/xmpp/"
 
-	( cd "/var/www/${proj_name}/xmpp/" && make dev && make dist )
+	( cd "/var/www/${proj_name}/xmpp/" && git checkout tags/v4.2.0 && make dev && make dist )
 
 	echo
 
