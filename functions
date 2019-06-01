@@ -3267,7 +3267,7 @@ EOF
 	mkdir -p "/var/www/onion/"
 	chown -R "www-data:www-data" "/var/www/onion/"
 
-	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/onion/"
 
 	############################################################################
 	############################################################################
