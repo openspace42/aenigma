@@ -3360,7 +3360,7 @@ aenigma-set_loglevel_zero() {
 	############################################################################
 
 	### Turn all logging off globally to prevent backward data leaks should the
-	### server be hacked or seized.
+	### server be compromised or seized.
 
 	############################################################################
 
@@ -4821,6 +4821,21 @@ synthia-perform_installation() {
 	if [ "${boolean_output}" = "y" ]
 	then
 		aenigma-provision_conversejs
+	fi
+
+	############################################################################
+
+	### Prompt for loglevel_zero
+
+	dna-echo -m "aenigma can disable all XMPP-related services logging on this server."
+	dna-echo -m "This is always a good idea in case the server gets compromised or seized in the future, to at least avoid leaking highly detailed user connection / disconnection and traffic data."
+	dna-echo -m "This will apply to ejabberd, SSLH, and NGINX. You can always revert this setting by re-running the installation and answering | ${y-}no${n-} | at this prompt or running the | ${y-}aenigma-apply_loglevel_standard${n-} | function from | ${o-}aenigma-env${n-} |."
+
+	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}loglevel zero mode${n-} | now?"
+
+	if [ "${boolean_output}" = "y" ]
+	then
+		aenigma-set_loglevel_zero
 	fi
 
 	############################################################################
