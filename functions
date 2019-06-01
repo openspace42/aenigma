@@ -3436,7 +3436,7 @@ aenigma-set_loglevel_standard() {
 	for nginx_config_file in /etc/nginx/conf.d/*.conf
 	do
         nginx_site_name="$(echo ${nginx_config_file} | cut -d "/" -f5 | sed -e "s/.conf$//")"
-        sed -i "s|\    error_log off;|\    error_log /var/log/nginx/${nginx_site_name}.access.log;|g" "${nginx_config_file}"
+        sed -i "s|\    error_log off;|\    error_log /var/log/nginx/${nginx_site_name}.error.log;|g" "${nginx_config_file}"
 	done
 
 	unset nginx_config_file nginx_site_name
