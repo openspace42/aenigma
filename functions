@@ -2579,6 +2579,7 @@ bootstrap:
 
   initdb:
   - encoding: UTF8
+  - locale: en_US.utf8
 #  - data-checksums
 
   pg_hba:
