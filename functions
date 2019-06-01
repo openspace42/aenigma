@@ -3357,14 +3357,24 @@ aenigma-provision_conversejs() {
 
 aenigma-set_loglevel_zero() {
 
+	############################################################################
+
 	### Turn all logging off globally to prevent backward data leaks should the
 	### server be hacked or seized.
+
+	############################################################################
+
+	operation_message="setting loglevel to zero for all services"
+	dna-echo_operation -h
 
 	### ejabberd
 
 	sed -i "s|^loglevel.*|loglevel: 0|g" "/etc/ejabberd/ejabberd.yml"
 
-	rm /var/log/ejabberd/*
+	if [ ! -z "$(ls /var/log/ejabberd/* 2> /dev/null)" ]
+	then
+		rm /var/log/ejabberd/*
+	fi
 
 	aenigma-restart_ejabberd_if_running
 
@@ -3379,15 +3389,29 @@ aenigma-set_loglevel_zero() {
 	sed -i "s|^\    access_log.*|\    access_log off;|g" /etc/nginx/conf.d/*
 	sed -i "s|^\    error_log.*|\    error_log off;|g" /etc/nginx/conf.d/*
 
-	rm /var/log/nginx/*
+	if [ ! -z "$(ls /var/log/nginx/* 2> /dev/null)" ]
+	then
+		rm /var/log/nginx/*
+	fi
 
 	service nginx restart
+
+	dna-echo_operation -t
+
+	############################################################################
 
 }
 
 aenigma-set_loglevel_standard() {
 
+	############################################################################
+
 	### Turn all logging back on if set_loglevel_zero was previously ran.
+
+	############################################################################
+
+	operation_message="setting loglevel to zero for all services"
+	dna-echo_operation -h
 
 	### ejabberd
 
@@ -3418,6 +3442,10 @@ aenigma-set_loglevel_standard() {
 	unset nginx_config_file nginx_site_name
 
 	service nginx restart
+
+	dna-echo_operation -t
+
+	############################################################################
 
 }
 
