@@ -3355,6 +3355,72 @@ aenigma-provision_conversejs() {
 
 }
 
+aenigma-set_loglevel_zero() {
+
+	### Turn all logging off globally to prevent backward data leaks should the
+	### server be hacked or seized.
+
+	### ejabberd
+
+	sed -i "s|^loglevel.*|loglevel: 0|g" "/etc/ejabberd/ejabberd.yml"
+
+	rm /var/log/ejabberd/*
+
+	aenigma-restart_ejabberd_if_running
+
+	### sslh
+
+	sed -i "s|log_level: 1;|log_level: 0;|g" "/etc/sslh.cfg"
+
+	service sslh restart
+
+	### nginx
+
+	sed -i "s|^\    access_log.*|\    access_log off;|g" /etc/nginx/conf.d/*
+	sed -i "s|^\    error_log.*|\    error_log off;|g" /etc/nginx/conf.d/*
+
+	rm /var/log/nginx/*
+
+	service nginx restart
+
+}
+
+aenigma-set_loglevel_standard() {
+
+	### Turn all logging back on if set_loglevel_zero was previously ran.
+
+	### ejabberd
+
+	sed -i "s|^loglevel.*|loglevel: 4|g" "/etc/ejabberd/ejabberd.yml"
+
+	aenigma-restart_ejabberd_if_running
+
+	### sslh
+
+	sed -i "s|log_level: 0;|log_level: 1;|g" "/etc/sslh.cfg"
+
+	service sslh restart
+
+	### nginx
+
+	for nginx_config_file in /etc/nginx/conf.d/*.conf
+	do
+        nginx_site_name="$(echo ${nginx_config_file} | cut -d "/" -f5 | sed -e "s/.conf$//")"
+        sed -i "s|\    access_log off;|\    access_log /var/log/nginx/${nginx_site_name}.access.log;|g" "${nginx_config_file}"
+	done
+
+	for nginx_config_file in /etc/nginx/conf.d/*.conf
+	do
+        nginx_site_name="$(echo ${nginx_config_file} | cut -d "/" -f5 | sed -e "s/.conf$//")"
+        sed -i "s|\    error_log off;|\    error_log /var/log/nginx/${nginx_site_name}.access.log;|g" "${nginx_config_file}"
+	done
+
+	unset nginx_config_file nginx_site_name
+
+	service nginx restart
+
+}
+
 backup_locally_loop() {
 
 	if [ "${cluster_mode-}" = "secondary" ]
