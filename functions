@@ -2579,6 +2579,7 @@ bootstrap:
 
   initdb:
   - encoding: UTF8
+  - locale: en_US.utf8
 #  - data-checksums
 
   pg_hba:
@@ -3266,7 +3267,7 @@ EOF
 	mkdir -p "/var/www/onion/"
 	chown -R "www-data:www-data" "/var/www/onion/"
 
-	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/onion/"
 
 	############################################################################
 	############################################################################
@@ -3351,6 +3352,100 @@ aenigma-provision_conversejs() {
 	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/onion/xmpp/index.html"
 
 	############################################################################
+	############################################################################
+
+}
+
+aenigma-set_loglevel_zero() {
+
+	############################################################################
+
+	### Turn all logging off globally to prevent backward data leaks should the
+	### server be compromised or seized.
+
+	############################################################################
+
+	operation_message="setting loglevel to zero for all services"
+	dna-echo_operation -h
+
+	### ejabberd
+
+	sed -i "s|^loglevel.*|loglevel: 0|g" "/etc/ejabberd/ejabberd.yml"
+
+	if [ ! -z "$(ls /var/log/ejabberd/* 2> /dev/null)" ]
+	then
+		rm /var/log/ejabberd/*
+	fi
+
+	aenigma-restart_ejabberd_if_running
+
+	### sslh
+
+	sed -i "s|log_level: 1;|log_level: 0;|g" "/etc/sslh.cfg"
+
+	service sslh restart
+
+	### nginx
+
+	sed -i "s|^\    access_log.*|\    access_log off;|g" /etc/nginx/conf.d/*
+	sed -i "s|^\    error_log.*|\    error_log off;|g" /etc/nginx/conf.d/*
+
+	if [ ! -z "$(ls /var/log/nginx/* 2> /dev/null)" ]
+	then
+		rm /var/log/nginx/*
+	fi
+
+	service nginx restart
+
+	dna-echo_operation -t
+
+	############################################################################
+
+}
+
+aenigma-set_loglevel_standard() {
+
+	############################################################################
+
+	### Turn all logging back on if set_loglevel_zero was previously ran.
+
+	############################################################################
+
+	operation_message="setting loglevel to zero for all services"
+	dna-echo_operation -h
+
+	### ejabberd
+
+	sed -i "s|^loglevel.*|loglevel: 4|g" "/etc/ejabberd/ejabberd.yml"
+
+	aenigma-restart_ejabberd_if_running
+
+	### sslh
+
+	sed -i "s|log_level: 0;|log_level: 1;|g" "/etc/sslh.cfg"
+
+	service sslh restart
+
+	### nginx
+
+	for nginx_config_file in /etc/nginx/conf.d/*.conf
+	do
+        nginx_site_name="$(echo ${nginx_config_file} | cut -d "/" -f5 | sed -e "s/.conf$//")"
+        sed -i "s|\    access_log off;|\    access_log /var/log/nginx/${nginx_site_name}.access.log;|g" "${nginx_config_file}"
+	done
+
+	for nginx_config_file in /etc/nginx/conf.d/*.conf
+	do
+        nginx_site_name="$(echo ${nginx_config_file} | cut -d "/" -f5 | sed -e "s/.conf$//")"
+        sed -i "s|\    error_log off;|\    error_log /var/log/nginx/${nginx_site_name}.error.log;|g" "${nginx_config_file}"
+	done
+
+	unset nginx_config_file nginx_site_name
+
+	service nginx restart
+
+	dna-echo_operation -t
+
 	############################################################################
 
 }
@@ -4727,6 +4822,21 @@ synthia-perform_installation() {
 	if [ "${boolean_output}" = "y" ]
 	then
 		aenigma-provision_conversejs
+	fi
+
+	############################################################################
+
+	### Prompt for loglevel_zero
+
+	dna-echo -m "aenigma can disable all XMPP-related services logging on this server."
+	dna-echo -m "This is always a good idea in case the server gets compromised or seized in the future, to at least avoid leaking highly detailed user connection / disconnection and traffic data."
+	dna-echo -m "This will apply to ejabberd, SSLH, and NGINX. You can always revert this setting by re-running the installation and answering | ${y-}no${n-} | at this prompt or running the | ${y-}aenigma-apply_loglevel_standard${n-} | function from | ${o-}aenigma-env${n-} |."
+
+	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}loglevel zero mode${n-} | now?"
+
+	if [ "${boolean_output}" = "y" ]
+	then
+		aenigma-set_loglevel_zero
 	fi
 
 	############################################################################

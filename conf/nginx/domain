@@ -3,7 +3,7 @@ server {
     listen 80 default_server;
     listen [::]:80 default_server;
 
-    server_name hostname.xyz .hostname.xyz *.hostname.xyz;
+    server_name domain.xyz .domain.xyz *.domain.xyz;
 
     rewrite ^ https://$host$request_uri? permanent;
 
@@ -14,7 +14,7 @@ server {
     listen 127.0.0.1:443 default_server ssl http2;
     listen [::1]:443 default_server ssl http2;
 
-    server_name hostname.xyz .hostname.xyz *.hostname.xyz;
+    server_name domain.xyz .domain.xyz *.domain.xyz;
 
     access_log /var/log/nginx/hostname.xyz.access.log;
     error_log /var/log/nginx/hostname.xyz.error.log;
