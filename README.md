@@ -55,6 +55,7 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 * also provisions a **Tor hidden service** [optional] to make your server [or cluster] reachable entirely inside the Tor network via a .onion address for all services [XMPP, web, SSH, etc...].
 * also provisions an instance of **the Converse.js XMPP web client** [optional] to give you a fast and easy way to access your client account from anywhere!
 * also provisions an instance of a **Movim** pod [optional] to turn your XMPP experience into a social one! [work in progress]
+* has a **logelevel zero** mode where no user connection / disconnection traffic data are logged in order to limit the amount of information left over should the server be compromised or seized in the future
 
 ## Non-features
 
