@@ -3389,6 +3389,9 @@ aenigma-set_loglevel_zero() {
 
 	### nginx
 
+	sed -i "s|^\    access_log.*|\    access_log off;|g" "/etc/nginx/nginx.conf"
+	sed -i "s|^error_log.*|error_log off;|g" "/etc/nginx/nginx.conf"
+
 	sed -i "s|^\    access_log.*|\    access_log off;|g" /etc/nginx/conf.d/*
 	sed -i "s|^\    error_log.*|\    error_log off;|g" /etc/nginx/conf.d/*
 
@@ -3429,6 +3432,9 @@ aenigma-set_loglevel_standard() {
 	service sslh restart
 
 	### nginx
+
+	sed -i "s|\    access_log off;|\    access_log  /var/log/nginx/access.log  main;|g" "/etc/nginx/nginx.conf"
+	sed -i "s|error_log off;|error_log  /var/log/nginx/error.log warn;|g" "/etc/nginx/nginx.conf"
 
 	for nginx_config_file in /etc/nginx/conf.d/*.conf
 	do
