@@ -2812,6 +2812,8 @@ EOF
 
 	systemctl start patroni
 
+	echo
+
 	############################################################################
 
 	operation_message="starting patroni on node: | ${l-}${hostname}${n-} |."
