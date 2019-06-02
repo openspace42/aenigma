@@ -323,20 +323,21 @@ modules:
     docroot: "/var/www/ejabberd/"
     accesslog: "/var/log/ejabberd/www_access.log"
   mod_http_upload:
-    host: "xh.@HOST@"
-    docroot: "@HOME@/uploads"
-    put_url: "https://xh.@HOST@:443/upload"
-    thumbnail: false # otherwise needs the identify command from ImageMagick installed
+#    host: "xh.@HOST@"
+#    docroot: "@HOME@/uploads"
+    put_url: "https://ae.@HOST@/upload"
+    thumbnail: true
     max_size: 262144000
-    file_mode: "0640"
-    dir_mode: "2750"
-    access:
-      - allow
-    custom_headers:
-      "Access-Control-Allow-Origin": "*"
-      "Access-Control-Allow-Credentials": "true"
-      "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT"
-      "Access-Control-Allow-Headers": "Authorization, Content-Type"
+    external_secret: nginx_ejabberd_uploads_external_secret-var
+#    file_mode: "0640"
+#    dir_mode: "2750"
+#    access:
+#      - allow
+#    custom_headers:
+#      "Access-Control-Allow-Origin": "*"
+#      "Access-Control-Allow-Credentials": "true"
+#      "Access-Control-Allow-Methods": "OPTIONS, HEAD, GET, PUT"
+#      "Access-Control-Allow-Headers": "Authorization, Content-Type"
   mod_http_upload_quota:
     max_days: 3650
   mod_last: {}

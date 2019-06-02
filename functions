@@ -466,9 +466,33 @@ aenigma-provision_nginx() {
 
 	fi
 
-	### Install nginx and configure ejabberd admin panel reverse proxy site
+	############################################################################
 
-	dna-install_nginx
+	### Install nginx and configure ejabberd admin panel reverse proxy site.
+
+	### Here we use the distro provided nginx as the nginx.org repo
+	### does not have nginx-common required for libnginx-mod-http-perl.
+
+	dna-install_dependencies -p "nginx-common nginx libnginx-mod-http-perl"
+
+	mkdir -p "/usr/local/lib/perl"
+	wget -O "/usr/local/lib/perl/upload.pm" "https://git.io/fNZgL"
+
+	sed -i "s|my \$uri_prefix_components = 0;|my \$uri_prefix_components = 1;|g" "/usr/local/lib/perl/upload.pm"
+
+	if ! grep -q "ngx_http_perl_module.so" "/etc/nginx/nginx.conf"
+	then
+
+		sed -i "/^events {/i load_module modules\/ngx_http_perl_module.so;\n" "/etc/nginx/nginx.conf"
+
+	fi
+
+	if ! grep -q "/usr/local/lib/perl" "/etc/nginx/nginx.conf"
+    then
+
+        sed -i "/^http {$/a\ \n    perl_modules /usr/local/lib/perl;\n    perl_require upload.pm;" "/etc/nginx/nginx.conf"
+
+    fi
 
 	############################################################################
 
@@ -476,6 +500,9 @@ aenigma-provision_nginx() {
 
 	mkdir -p "/var/www/${proj_name}/"
 	chown -R "www-data:www-data" "/var/www/${proj_name}/"
+
+	mkdir -p "/var/www/upload"
+	chown -R "www-data:www-data" "/var/www/upload/"
 
 	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
 
@@ -507,6 +534,22 @@ aenigma-provision_nginx() {
 		fi
 
 	fi
+
+	if [ ! "${cluster_mode-}" = "secondary" ]
+	then
+
+		### Generate a random external_secret for the nginx ejabberd uploads
+
+		if [ -z "${nginx_ejabberd_uploads_external_secret-}" ]
+		then
+			dna-echo -m "Generating password for the postgresql/patroni postgres user"
+			nginx_ejabberd_uploads_external_secret="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			dna-set_option -o "nginx_ejabberd_uploads_external_secret" -p "xmpp" -s "${nginx_ejabberd_uploads_external_secret}"
+		fi
+
+	fi
+
+	sed -i "s|it-is-secret|${nginx_ejabberd_uploads_external_secret}|g" "/usr/local/lib/perl/upload.pm"
 
 	############################################################################
 
@@ -1213,11 +1256,15 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
 
+	sed -i "s/xe.@/ae${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+
 	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/nginx_ejabberd_uploads_external_secret-var/${nginx_ejabberd_uploads_external_secret}/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/etc/ejabberd/ejabberd.yml"
 
@@ -3720,6 +3767,20 @@ synthia-perform_installation() {
 	if [ -f "/etc/nginx/conf.d/aenigma.conf" ]
 	then
 		rm "/etc/nginx/conf.d/aenigma.conf"
+	fi
+
+	if [ -f "rm /etc/apt/sources.list.d/nginx.list" ]
+	then
+
+		rm /etc/apt/sources.list.d/nginx.list*
+		apt-get update
+
+		dna-check_dpkg_availability
+		export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes nginx-common || true
+		dna-install_dependencies -p "nginx"
+
+		service nginx restart
+
 	fi
 
 	############################################################################
