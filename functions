@@ -3769,7 +3769,7 @@ synthia-perform_installation() {
 		rm "/etc/nginx/conf.d/aenigma.conf"
 	fi
 
-	if [ -f "rm /etc/apt/sources.list.d/nginx.list" ]
+	if [ -f "/etc/apt/sources.list.d/nginx.list" ]
 	then
 
 		rm /etc/apt/sources.list.d/nginx.list*
