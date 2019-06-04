@@ -467,6 +467,7 @@ aenigma-provision_nginx() {
 	fi
 
 	############################################################################
+	############################################################################
 
 	### Install nginx and configure ejabberd admin panel reverse proxy site.
 
@@ -474,6 +475,17 @@ aenigma-provision_nginx() {
 	### does not have nginx-common required for libnginx-mod-http-perl.
 
 	dna-install_dependencies -p "nginx-common nginx libnginx-mod-http-perl"
+
+	############################################################################
+
+	### Increase names_hash_bucket_size to 128 in nginx config
+	### as the .onion hostname is really long should it be later provisioned.
+
+	dna-nginx_increase_names_hash_bucket_size_128
+
+	############################################################################
+
+	### Remove default nginx stuff
 
 	if [ -d "/etc/nginx/sites-enabled/" ]
 	then
@@ -484,6 +496,11 @@ aenigma-provision_nginx() {
 	then
 		rm "/etc/nginx/conf.d/default.conf"
 	fi
+
+	############################################################################
+
+	### Install perl and upload module.
+	### https://github.com/weiss/ngx_http_upload
 
 	mkdir -p "/usr/local/lib/perl"
 	wget -O "/usr/local/lib/perl/upload.pm" "https://git.io/fNZgL"
@@ -506,7 +523,7 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
-	### Create web locations and populate it
+	### Create web locations and populate them.
 
 	mkdir -p "/var/www/${proj_name}/"
 	chown -R "www-data:www-data" "/var/www/${proj_name}/"
@@ -518,7 +535,7 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
-	### Create and configure the $domain website
+	### Create and configure the $domain website.
 
 	cp "${source_dir}/conf/nginx/domain" "/etc/nginx/conf.d/${domain}.conf"
 
@@ -557,6 +574,8 @@ aenigma-provision_nginx() {
 	sed -i "s|it-is-secret|${nginx_ejabberd_uploads_external_secret}|g" "/usr/local/lib/perl/upload.pm"
 
 	############################################################################
+
+	### Create and configure the websites for any and every $additional_domain.
 
 	if [ ! "${additional_domains-}" = "none" ]
 	then
@@ -817,7 +836,7 @@ aenigma-stop_patroni() {
 
 			service patroni stop &> /dev/null || true
 
-			dna-wait -s "11" -d "Now allowing patroni to shut down correctly..."
+			dna-wait -s "16" -d "Now allowing patroni to shut down correctly..."
 
 			dna-echo_operation -t
 
@@ -3150,11 +3169,6 @@ aenigma-provision_tor() {
 	### NGINX
 
 	############################################################################
-
-	### Increase names_hash_bucket_size to 128 in nginx config
-	### as the .onion hostname is really long
-
-	dna-nginx_increase_names_hash_bucket_size_128
 
 	### Install conf for onion hostname
 
