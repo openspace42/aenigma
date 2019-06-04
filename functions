@@ -507,12 +507,12 @@ aenigma-provision_nginx() {
 
 	sed -i "s|my \$uri_prefix_components = 0;|my \$uri_prefix_components = 1;|g" "/usr/local/lib/perl/upload.pm"
 
-	if ! grep -q "ngx_http_perl_module.so" "/etc/nginx/nginx.conf"
-	then
-
-		sed -i "/^events {/i load_module modules\/ngx_http_perl_module.so;\n" "/etc/nginx/nginx.conf"
-
-	fi
+#	if ! grep -q "ngx_http_perl_module.so" "/etc/nginx/nginx.conf"
+#	then
+#
+#		sed -i "/^events {/i load_module modules\/ngx_http_perl_module.so;\n" "/etc/nginx/nginx.conf"
+#
+#	fi
 
 	if ! grep -q "/usr/local/lib/perl" "/etc/nginx/nginx.conf"
     then
