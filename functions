@@ -1280,9 +1280,8 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
 
-	sed -i "s/xe.@/ae${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/ae.@/ae${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 
-	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
@@ -2045,7 +2044,6 @@ aenigma-perform_dns_checks() {
 				current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 
 				declare -a xmpp_service_array=(
-					"xe"
 					"xh"
 					"xm"
 					"xp"
@@ -3797,6 +3795,7 @@ synthia-perform_installation() {
 		dna-check_dpkg_availability
 		export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confnew" --force-yes nginx-common || true
 		dna-install_dependencies -p "nginx"
+		dna-nginx_increase_names_hash_bucket_size_128
 
 		service nginx restart
 

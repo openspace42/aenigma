@@ -312,8 +312,6 @@ modules:
         urls: ["mailto:admin_mail"]
   mod_fail2ban: {}
   mod_http_api: {}
-  mod_echo:
-    host: "xe.@HOST@"
   mod_http_fileserver:
     docroot: "/var/www/ejabberd/"
     accesslog: "/var/log/ejabberd/www_access.log"
