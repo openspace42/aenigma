@@ -326,7 +326,7 @@ modules:
     put_url: "https://ae.@HOST@/upload"
     thumbnail: true
     max_size: 262144000
-    external_secret: nginx_ejabberd_uploads_external_secret-var
+    external_secret: "nginx_ejabberd_uploads_external_secret-var"
 #    file_mode: "0640"
 #    dir_mode: "2750"
 #    access:
