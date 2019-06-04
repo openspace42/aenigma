@@ -475,6 +475,16 @@ aenigma-provision_nginx() {
 
 	dna-install_dependencies -p "nginx-common nginx libnginx-mod-http-perl"
 
+	if [ -d "/etc/nginx/sites-enabled/" ]
+	then
+		rm -rf "/etc/nginx/sites-enabled"
+	fi
+
+	if [ -f "/etc/nginx/conf.d/default.conf" ]
+	then
+		rm "/etc/nginx/conf.d/default.conf"
+	fi
+
 	mkdir -p "/usr/local/lib/perl"
 	wget -O "/usr/local/lib/perl/upload.pm" "https://git.io/fNZgL"
 
@@ -508,12 +518,7 @@ aenigma-provision_nginx() {
 
 	############################################################################
 
-	### Create and configure the $hostname website
-
-	if [ -f "/etc/nginx/conf.d/default.conf" ]
-	then
-		rm "/etc/nginx/conf.d/default.conf"
-	fi
+	### Create and configure the $domain website
 
 	cp "${source_dir}/conf/nginx/domain" "/etc/nginx/conf.d/${domain}.conf"
 
@@ -812,7 +817,7 @@ aenigma-stop_patroni() {
 
 			service patroni stop &> /dev/null || true
 
-			dna-wait -s "4" -d "Now allowing patroni to shut down correctly..."
+			dna-wait -s "11" -d "Now allowing patroni to shut down correctly..."
 
 			dna-echo_operation -t
 
