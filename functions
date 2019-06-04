@@ -3768,10 +3768,14 @@ synthia-perform_installation() {
 
 	### Legacy fixes and migration detections
 
+	### dhparam
+
 	if [ -f "${tls_project_dir}/dh.pem" ]
 	then
 		rm "${tls_project_dir}/dh.pem"
 	fi
+
+	### ejabbed sql
 
 	if dpkg -s ejabberd &> /dev/null
 	then
@@ -3780,6 +3784,8 @@ synthia-perform_installation() {
 			export psql_migration_required="true"
 		fi
 	fi
+
+	### nginx uploads
 
 	if [ -f "/etc/nginx/conf.d/aenigma.conf" ]
 	then
@@ -3794,8 +3800,30 @@ synthia-perform_installation() {
 
 		dna-check_dpkg_availability
 		export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confnew" --force-yes nginx-common || true
-		dna-install_dependencies -p "nginx"
+		apt-get -y install nginx || true
 		dna-nginx_increase_names_hash_bucket_size_128
+
+		if [ -f "/etc/nginx/conf.d/onion.conf" ]
+		then
+
+			if grep -q "default_server" "/etc/nginx/conf.d/onion.conf"
+			then
+
+				sed -i "s|443 default_server ssl|443 ssl|g" "/etc/nginx/conf.d/${domain}.conf"
+
+			fi
+
+		fi
+
+		if [ -d "/etc/nginx/sites-enabled/" ]
+		then
+			rm -rf "/etc/nginx/sites-enabled"
+		fi
+
+		if [ -f "/etc/nginx/conf.d/default.conf" ]
+		then
+			rm "/etc/nginx/conf.d/default.conf"
+		fi
 
 		service nginx restart
 
