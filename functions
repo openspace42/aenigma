@@ -3413,10 +3413,6 @@ aenigma-provision_conversejs() {
 
 	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
 
-	### Remove test bosh service warning from onion-specific config
-
-	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/onion/xmpp/index.html"
-
 	############################################################################
 	############################################################################
 

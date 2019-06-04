@@ -312,14 +312,10 @@ modules:
         urls: ["mailto:admin_mail"]
   mod_fail2ban: {}
   mod_http_api: {}
-  mod_http_fileserver:
-    docroot: "/var/www/ejabberd/"
-    accesslog: "/var/log/ejabberd/www_access.log"
   mod_http_upload:
 #    host: "xh.@HOST@"
 #    docroot: "@HOME@/uploads"
     put_url: "https://ae.@HOST@/upload"
-    thumbnail: true
     max_size: 262144000
     external_secret: "nginx_ejabberd_uploads_external_secret-var"
 #    file_mode: "0640"
