@@ -769,7 +769,7 @@ aenigma-stop_patroni() {
 
 			service patroni stop &> /dev/null || true
 
-			dna-wait -s "4" -d "Now allowing patroni to shut down correctly..."
+			dna-wait -s "16" -d "Now allowing patroni to shut down correctly..."
 
 			dna-echo_operation -t
 
