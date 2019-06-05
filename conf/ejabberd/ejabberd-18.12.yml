@@ -361,7 +361,8 @@ modules:
   ##   interval: 60
   mod_privacy: {}
   mod_private: {}
-  ## mod_proxy65: {}
+  mod_proxy65:
+    host: "xr.@HOST@"
   mod_pubsub:
     host: "xp.@HOST@"
     access_createnode: pubsub_createnode

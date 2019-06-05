@@ -1285,6 +1285,7 @@ aenigma-localize_ejabberd_install() {
 	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xr.@/xr${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "s/nginx_ejabberd_uploads_external_secret-var/${nginx_ejabberd_uploads_external_secret}/g" "/etc/ejabberd/ejabberd.yml"
@@ -2047,6 +2048,7 @@ aenigma-perform_dns_checks() {
 					"xh"
 					"xm"
 					"xp"
+					"xr"
 					"xv"
 				)
 
@@ -3399,6 +3401,24 @@ aenigma-provision_conversejs() {
 
 	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/${proj_name}/xmpp/index.html"
 
+	### Add config parameters
+
+	sed -i "s|view_mode: 'fullscreen'|view_mode: 'fullscreen',|g" "/var/www/${proj_name}/xmpp/index.html"
+
+	sed -i "/view_mode/ r /dev/stdin" "/var/www/${proj_name}/xmpp/index.html" <<'EOF'
+        allow_chat_pending_contacts: true,
+        allow_non_roster_messaging: true,
+        allow_otr: false,
+        allow_registration: false,
+        auto_join_on_invite: true,
+        csi_waiting_time: 60,
+        default_domain: 'domain-var',
+        enable_smacks: true,
+        muc_show_join_leave: false,
+EOF
+
+	sed -i "s|domain-var|${domain}|g" "/var/www/${proj_name}/xmpp/index.html"
+
 	### Set permissions
 
 	chown -R www-data:www-data "/var/www/${proj_name}/xmpp/"
@@ -3412,6 +3432,10 @@ aenigma-provision_conversejs() {
 	### Use onion-specific websocket
 
 	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
+
+	### Use onion domain for default_domain
+
+	sed -i "s|${domain}|${tor_hidden_service_hostname}|g" "/var/www/onion/xmpp/index.html"
 
 	############################################################################
 	############################################################################
