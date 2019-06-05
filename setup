@@ -108,7 +108,7 @@ then
     dna-exit
 fi
 
-if [ -n "${custom_branch}" ]
+if [ -n "${custom_branch-}" ]
 then
     export custom_project_version="b"
 fi
