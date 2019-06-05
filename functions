@@ -466,27 +466,76 @@ aenigma-provision_nginx() {
 
 	fi
 
-	### Install nginx and configure ejabberd admin panel reverse proxy site
+	############################################################################
+	############################################################################
 
-	dna-install_nginx
+	### Install nginx and configure ejabberd admin panel reverse proxy site.
+
+	### Here we use the distro provided nginx as the nginx.org repo
+	### does not have nginx-common required for libnginx-mod-http-perl.
+
+	dna-install_dependencies -p "nginx-common nginx libnginx-mod-http-perl"
 
 	############################################################################
 
-	### Create web locations and populate it
+	### Increase names_hash_bucket_size to 128 in nginx config
+	### as the .onion hostname is really long should it be later provisioned.
 
-	mkdir -p "/var/www/${proj_name}/"
-	chown -R "www-data:www-data" "/var/www/${proj_name}/"
-
-	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+	dna-nginx_increase_names_hash_bucket_size_128
 
 	############################################################################
 
-	### Create and configure the $hostname website
+	### Remove default nginx stuff
+
+	if [ -d "/etc/nginx/sites-enabled/" ]
+	then
+		rm -rf "/etc/nginx/sites-enabled"
+	fi
 
 	if [ -f "/etc/nginx/conf.d/default.conf" ]
 	then
 		rm "/etc/nginx/conf.d/default.conf"
 	fi
+
+	############################################################################
+
+	### Install perl and upload module.
+	### https://github.com/weiss/ngx_http_upload
+
+	mkdir -p "/usr/local/lib/perl"
+	wget -O "/usr/local/lib/perl/upload.pm" "https://git.io/fNZgL"
+
+	sed -i "s|my \$uri_prefix_components = 0;|my \$uri_prefix_components = 1;|g" "/usr/local/lib/perl/upload.pm"
+
+#	if ! grep -q "ngx_http_perl_module.so" "/etc/nginx/nginx.conf"
+#	then
+#
+#		sed -i "/^events {/i load_module modules\/ngx_http_perl_module.so;\n" "/etc/nginx/nginx.conf"
+#
+#	fi
+
+	if ! grep -q "/usr/local/lib/perl" "/etc/nginx/nginx.conf"
+    then
+
+        sed -i "/^http {$/a\ \n    perl_modules /usr/local/lib/perl;\n    perl_require upload.pm;" "/etc/nginx/nginx.conf"
+
+    fi
+
+	############################################################################
+
+	### Create web locations and populate them.
+
+	mkdir -p "/var/www/${proj_name}/"
+	chown -R "www-data:www-data" "/var/www/${proj_name}/"
+
+	mkdir -p "/var/www/upload"
+	chown -R "www-data:www-data" "/var/www/upload/"
+
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+
+	############################################################################
+
+	### Create and configure the $domain website.
 
 	cp "${source_dir}/conf/nginx/domain" "/etc/nginx/conf.d/${domain}.conf"
 
@@ -508,7 +557,25 @@ aenigma-provision_nginx() {
 
 	fi
 
+	if [ ! "${cluster_mode-}" = "secondary" ]
+	then
+
+		### Generate a random external_secret for the nginx ejabberd uploads
+
+		if [ -z "${nginx_ejabberd_uploads_external_secret-}" ]
+		then
+			dna-echo -m "Generating password for the postgresql/patroni postgres user"
+			nginx_ejabberd_uploads_external_secret="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
+			dna-set_option -o "nginx_ejabberd_uploads_external_secret" -p "xmpp" -s "${nginx_ejabberd_uploads_external_secret}"
+		fi
+
+	fi
+
+	sed -i "s|it-is-secret|${nginx_ejabberd_uploads_external_secret}|g" "/usr/local/lib/perl/upload.pm"
+
 	############################################################################
+
+	### Create and configure the websites for any and every $additional_domain.
 
 	if [ ! "${additional_domains-}" = "none" ]
 	then
@@ -1213,11 +1280,15 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "s/admin_mail/${admin_mail}/g" "/etc/ejabberd/ejabberd.yml"
 
-	sed -i "s/xe.@/xe${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/ae.@/ae${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+
 	sed -i "s/xh.@/xh${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xm.@/xm${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xp.@/xp${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "s/xr.@/xr${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
 	sed -i "s/xv.@/xv${node_number}.@/g" "/etc/ejabberd/ejabberd.yml"
+
+	sed -i "s/nginx_ejabberd_uploads_external_secret-var/${nginx_ejabberd_uploads_external_secret}/g" "/etc/ejabberd/ejabberd.yml"
 
 	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/etc/ejabberd/ejabberd.yml"
 
@@ -1974,10 +2045,10 @@ aenigma-perform_dns_checks() {
 				current_node_number="$(echo ${array_iter} | xargs printf %02d)"
 
 				declare -a xmpp_service_array=(
-					"xe"
 					"xh"
 					"xm"
 					"xp"
+					"xr"
 					"xv"
 				)
 
@@ -3099,11 +3170,6 @@ aenigma-provision_tor() {
 
 	############################################################################
 
-	### Increase names_hash_bucket_size to 128 in nginx config
-	### as the .onion hostname is really long
-
-	dna-nginx_increase_names_hash_bucket_size_128
-
 	### Install conf for onion hostname
 
 	operation_message="applying NGINX config for Tor"
@@ -3335,6 +3401,24 @@ aenigma-provision_conversejs() {
 
 	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/${proj_name}/xmpp/index.html"
 
+	### Add config parameters
+
+	sed -i "s|view_mode: 'fullscreen'|view_mode: 'fullscreen',|g" "/var/www/${proj_name}/xmpp/index.html"
+
+	sed -i "/view_mode/ r /dev/stdin" "/var/www/${proj_name}/xmpp/index.html" <<'EOF'
+        allow_chat_pending_contacts: true,
+        allow_non_roster_messaging: true,
+        allow_otr: false,
+        allow_registration: false,
+        auto_join_on_invite: true,
+        csi_waiting_time: 60,
+        default_domain: 'domain-var',
+        enable_smacks: true,
+        muc_show_join_leave: false,
+EOF
+
+	sed -i "s|domain-var|${domain}|g" "/var/www/${proj_name}/xmpp/index.html"
+
 	### Set permissions
 
 	chown -R www-data:www-data "/var/www/${proj_name}/xmpp/"
@@ -3349,9 +3433,9 @@ aenigma-provision_conversejs() {
 
 	sed -i "s|wss://xh${node_number}.${domain}/ws/|wss://${tor_hidden_service_hostname}/ws/|g" "/var/www/onion/xmpp/index.html"
 
-	### Remove test bosh service warning from onion-specific config
+	### Use onion domain for default_domain
 
-	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/onion/xmpp/index.html"
+	sed -i "s|${domain}|${tor_hidden_service_hostname}|g" "/var/www/onion/xmpp/index.html"
 
 	############################################################################
 	############################################################################
@@ -3704,10 +3788,14 @@ synthia-perform_installation() {
 
 	### Legacy fixes and migration detections
 
+	### dhparam
+
 	if [ -f "${tls_project_dir}/dh.pem" ]
 	then
 		rm "${tls_project_dir}/dh.pem"
 	fi
+
+	### ejabbed sql
 
 	if dpkg -s ejabberd &> /dev/null
 	then
@@ -3717,9 +3805,48 @@ synthia-perform_installation() {
 		fi
 	fi
 
+	### nginx uploads
+
 	if [ -f "/etc/nginx/conf.d/aenigma.conf" ]
 	then
 		rm "/etc/nginx/conf.d/aenigma.conf"
+	fi
+
+	if [ -f "/etc/apt/sources.list.d/nginx.list" ]
+	then
+
+		rm /etc/apt/sources.list.d/nginx.list*
+		apt-get update
+
+		dna-check_dpkg_availability
+		export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confnew" --force-yes nginx-common || true
+		apt-get -y install nginx || true
+		dna-nginx_increase_names_hash_bucket_size_128
+
+		if [ -f "/etc/nginx/conf.d/onion.conf" ]
+		then
+
+			if grep -q "default_server" "/etc/nginx/conf.d/onion.conf"
+			then
+
+				sed -i "s|443 default_server ssl|443 ssl|g" "/etc/nginx/conf.d/${domain}.conf"
+
+			fi
+
+		fi
+
+		if [ -d "/etc/nginx/sites-enabled/" ]
+		then
+			rm -rf "/etc/nginx/sites-enabled"
+		fi
+
+		if [ -f "/etc/nginx/conf.d/default.conf" ]
+		then
+			rm "/etc/nginx/conf.d/default.conf"
+		fi
+
+		service nginx restart
+
 	fi
 
 	############################################################################
