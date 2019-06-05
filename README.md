@@ -61,6 +61,28 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 
 * Keeps backwards compatibility with other, older, not 100% compliant, XMPP servers out there by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can break all bridges with the rest of the world and enable the latest ciphers suggested by cipherli.st [although really not recommended] by changing two lines in the config file
 
+### News | 2019-06-05 | v0.7.0 stable release
+
+```
+Hi all! aenigma v0.7.0 is out with full postgresql single / cluster support
+
+you can finally upgrade with "aenigma-upgrade". there are also several improvements:
+
+- every aenigma node can now resolve .onion domains and route them correctly through tor so that aurora@abcd01.onion can speak to ilena@abcd02.onion on completely separate servers, entirely via Tor [c2s, s2s, c2s].
+- the new loglevel_zero function will make your server not store any user connection / disconnection traffic data to limit the amount of data leaked in the event the server were compromised or seized in the future
+- converse.js now uses websocket connection to ejabberd rather than bosh, for a very notable speed improvement. converse.js accessed via .onion domain from tor will now use .onion websocket endpoint to conceal the clearnet domain used on that machine.
+
+This release also ships with dna v0.3.13 with a bunch of fixes and improvements, and the following new functions:
+
+- provision_self_signed_wildcard_cert
+- nginx_increase_names_hash_bucket_size_128
+- check_s3_connection
+
+Locale setting was also completely re-written.
+
+A release of v0.7.1 will bring ejabberd uploads handled by nginx, improvements in loglevel_zero function, and more small improvements, and that should come out in about a week.
+```
+
 ## Future features
 
 * New and improved backup / restore logic that is cluster-aware and more robust when handling unusual user-level situations [[Patreon $16/month goal](https://www.patreon.com/aenigma_xmpp)]
