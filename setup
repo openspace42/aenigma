@@ -101,7 +101,7 @@ do
 done
 OPTIND=1
 
-if [ -n "${custom_branch}" ] && [ -n "${custom_project_version}" ]
+if [ -n "${custom_branch-}" ] && [ -n "${custom_project_version-}" ]
 then
     dna-echo -e "Argument | ${n-}custom_project_version [-p]${r-} | is incompatible with argument | ${n-}custom_branch [-b]${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
     dna-echo -m "When using a custom branch, the bleeding_edge version of that branch will always be fetched."
