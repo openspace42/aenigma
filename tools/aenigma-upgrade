@@ -80,9 +80,11 @@ echo
 
 ### Evaluate command arguments for custom-version install
 
-while getopts ":d:p:o:" arguments
+while getopts ":b:d:p:o:" arguments
 do
     case $arguments in
+        b)  export custom_branch="${OPTARG}"
+            ;;
         d)	export custom_dna_version="${OPTARG}"
 	        ;;
 		p)	export custom_project_version="${OPTARG}"
@@ -98,6 +100,23 @@ do
     esac
 done
 OPTIND=1
+
+if [[ "${custom_project_version-}" == "l" ]]                                  ### Do NOT escape the string comparison
+then
+	echo
+    dna-echo -e "You're running the installation via the upgrade script."
+    dna-echo -m "Therefore the | ${r-}local${n-} | version of the ${proj_name} directory doesn't exist, as it's cloned automatically by the upgrade script itself."
+    dna-echo -m "If you want to make customizations to the project before installing it, clone it yourself while in the root directory of the root user and then run:"
+    dna-echo -m " | ${c-}bash ${proj_name}/setup -pl | "
+    dna-exit
+fi
+
+if [ -n "${custom_branch}" ]
+then
+    export custom_project_version="b"
+fi
+
+################################################################################
 
 ### Download dna
 
@@ -115,32 +134,23 @@ synthia-define_vars
 
 ################################################################################
 
-if [[ "${custom_project_version-}" == "l" ]]                                  ### Do NOT escape the string comparison
-then
-
-	echo
-    dna-echo -e "You're running the installation via the upgrade script."
-    dna-echo -m "Therefore the | ${r-}local${n-} | version of the ${proj_name} directory doesn't exist, as it's cloned automatically by the upgrade script itself."
-    dna-echo -m "If you want to make customizations to the project before installing it, clone it yourself while in the root directory of the root user and then run:"
-    dna-echo -m " | ${c-}bash ${proj_name}/setup -pl | "
-    dna-exit
-
-fi
-
-################################################################################
-
 ### Clone and upgrade
 
 if [ -d "/root/${proj_name}/" ]
 then
-        rm -r "/root/${proj_name}/"
+    rm -r "/root/${proj_name}/"
 fi
 
 echo
 
 cd
 
-git clone "${git_host}/${author_name}/${proj_name}"
+if [ -z "${custom_branch}" ]
+then
+    git clone "${git_host}/${author_name}/${proj_name}"
+else
+    git clone "${git_host}/${author_name}/${proj_name}" -b "${custom_branch}"
+fi
 
 dna-run_install
 
