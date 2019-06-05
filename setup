@@ -80,9 +80,11 @@ echo
 
 ### Evaluate command arguments for custom-version install
 
-while getopts ":d:p:o:" arguments
+while getopts ":b:d:p:o:" arguments
 do
     case $arguments in
+        b)  export custom_branch="${OPTARG}"
+            ;;
         d)	export custom_dna_version="${OPTARG}"
 	        ;;
 		p)	export custom_project_version="${OPTARG}"
@@ -99,6 +101,20 @@ do
 done
 OPTIND=1
 
+if [ -n "${custom_branch-}" ] && [ -n "${custom_project_version-}" ]
+then
+    dna-echo -e "Argument | ${n-}custom_project_version [-p]${r-} | is incompatible with argument | ${n-}custom_branch [-b]${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+    dna-echo -m "When using a custom branch, the bleeding_edge version of that branch will always be fetched."
+    dna-exit
+fi
+
+if [ -n "${custom_branch}" ]
+then
+    export custom_project_version="b"
+fi
+
+################################################################################
+
 ### If not using local version of project repo...
 
 if [ ! "${custom_project_version-}" = "l" ]
@@ -109,6 +125,8 @@ then
 	( cd "${exec_dir_root}" && git fetch && git reset --hard origin/master > /dev/null )
 
 fi
+
+################################################################################
 
 ### Download dna
 

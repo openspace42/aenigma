@@ -39,6 +39,12 @@ server {
         try_files $uri $uri/ =404;
     }
 
+    location ^~ /upload {
+        alias /var/www/upload;
+        perl upload::handle;
+        client_max_body_size 100m;
+    }
+
     add_header X-Proxy-Cache $upstream_cache_status;
     location ^~ /admin {
         proxy_pass https://127.0.0.1:5443/admin/;
@@ -53,6 +59,9 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "Upgrade";
+        proxy_set_header Host $host;
+        proxy_read_timeout 180s;
+        proxy_send_timeout 180s;
     }
 
     # Basic locations files

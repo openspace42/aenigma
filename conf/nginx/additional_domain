@@ -39,6 +39,12 @@ server {
         try_files $uri $uri/ =404;
     }
 
+    location ^~ /upload {
+        alias /var/www/upload;
+        perl upload::handle;
+        client_max_body_size 100m;
+    }
+
     add_header X-Proxy-Cache $upstream_cache_status;
     location ^~ /admin {
         proxy_pass https://127.0.0.1:5443/admin/;
