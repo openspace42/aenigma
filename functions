@@ -3600,6 +3600,65 @@ aenigma-set_loglevel_standard() {
 
 }
 
+aenigma-set_mam_disabled() {
+
+	############################################################################
+
+	### Turn all ejabberd message archiving [mod_mam] off for extra stealth
+
+	############################################################################
+
+	operation_message="disabling ejabberd message archiving [mod_mam] globally"
+	dna-echo_operation -h
+
+	############################################################################
+
+	### disable mod_mam in ejabberd.yml
+
+	sed -i '/^\  mod_mam/,/^\    cache_life_time/{//!d}' "/etc/ejabberd/ejabberd.yml"
+	sed -i "s|^\  mod_mam:|#  mod_mam: {}|g" "/etc/ejabberd/ejabberd.yml"
+	sed -i "/^\    cache_life_time/d" "/etc/ejabberd/ejabberd.yml"
+
+	############################################################################
+
+	### delete existing mam archive
+
+	ejabberdctl --no-timeout delete_old_mam_messages all 0
+
+	############################################################################
+
+	dna-echo_operation -t
+
+	############################################################################
+	############################################################################
+
+}
+
+aenigma-set_mam_enabled() {
+
+	############################################################################
+
+	### Turn all ejabberd message archiving [mod_mam] back on
+
+	############################################################################
+
+	operation_message="re-enabling ejabberd message archiving [mod_mam] globally"
+	dna-echo_operation -h
+
+	############################################################################
+
+	aenigma-install_ejabberd_config
+	aenigma-localize_ejabberd_install
+
+	############################################################################
+
+	dna-echo_operation -t
+
+	############################################################################
+	############################################################################
+
+}
+
 backup_locally_loop() {
 
 	if [ "${cluster_mode-}" = "secondary" ]
@@ -5030,6 +5089,21 @@ synthia-perform_installation() {
 	if [ "${boolean_output}" = "y" ]
 	then
 		aenigma-set_loglevel_zero
+	fi
+
+	############################################################################
+
+	### Prompt for loglevel_zero
+
+	dna-echo -m "aenigma can disable all ejabberd message archive management [mod_mam]."
+	dna-echo -m "This can reduce even further the amount of leaked data in the event of this server being compromised or seized in the future [even though OMEMO-encrypted message are always safe anyway]."
+	dna-echo -m "You can always revert this setting by re-running the installation and answering | ${y-}no${n-} | at this prompt or running the | ${y-}aenigma-set_mam_enabled${n-} | function from | ${o-}aenigma-env${n-} |."
+
+	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}loglevel zero mode${n-} | now?"
+
+	if [ "${boolean_output}" = "y" ]
+	then
+		aenigma-set_mam_disabled
 	fi
 
 	############################################################################
