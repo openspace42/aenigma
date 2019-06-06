@@ -678,31 +678,46 @@ aenigma-restart_ejabberd_if_running() {
 
 	############################################################################
 
-	if (( $(ps -ef | grep -v grep | grep ejabberd | wc -l) > 0 ))
+	dna-get_hostname
+
+	if dpkg -s ejabberd &> /dev/null
 	then
 
-		operation_message="restarting ejabberd"
-		dna-echo_operation -h
-
-		if service ejabberd restart
+		if systemctl is-active --quiet ejabberd
 		then
 
-			dna-echo_operation -t
+			operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |."
+			dna-echo_operation -h
+
+			if service ejabberd restart
+			then
+
+				dna-wait -s "11" -d "Now allowing ejabberd to start up correctly..."
+				dna-echo_operation -t
+
+			else
+
+				echo
+				dna-echo -e "ejabberd failed during restart"
+				dna-echo -m "Continuing anyway as this should fix itself automatically by the end of the installation."
+				sleep 3
+
+			fi
 
 		else
 
-			echo
-			dna-echo -e "ejabberd failed during restart"
-			dna-echo -m "Continuing anyway as this should fix itself automatically by the end of the installation."
-			sleep 3
+			dna-echo -s "ejabberd not running on node: | ${l-}${hostname}${n-} |."
 
 		fi
 
 	else
 
-		dna-echo -m "ejabberd not running. Skipping restart."
+		dna-echo -m "ejabberd not installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "not going to start its service"
 
 	fi
+
+	unset operation_message
 
 	############################################################################
 
@@ -1791,7 +1806,7 @@ set +e
 chown -R "ejabberd:ejabberd" "${tls_project_dir}"
 set -e
 chmod -R 700 "${tls_project_dir}"
-/usr/sbin/service ejabberd restart
+aenigma-restart_ejabberd_if_running
 "
 
 	}
