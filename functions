@@ -2625,7 +2625,7 @@ aenigma-apply_patroni_config() {
 
 	dna-get_hostname
 
-	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
+	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ] && [ -d "/usr/lib/postgresql/" ]
 	then
 
 		########################################################################
