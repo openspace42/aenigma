@@ -1114,7 +1114,8 @@ aenigma-set_permissions() {
 
 	############################################################################
 
-	dna-echo -m "Now setting permissions..."
+	operation_message="setting permissions"
+	dna-echo_operation -h
 
 	############################################################################
 
@@ -1212,7 +1213,7 @@ aenigma-set_permissions() {
 	############################################################################
 	############################################################################
 
-	dna-echo -m "${g-}Finished setting permissions."
+	dna-echo_operation -t
 
 }
 
