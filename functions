@@ -1339,8 +1339,6 @@ aenigma-localize_ejabberd_install() {
 
 	fi
 
-	dna-echo -m "Now finally starting up ejabberd..."
-
 	aenigma-start_ejabberd
 
 	############################################################################
