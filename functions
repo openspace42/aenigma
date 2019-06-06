@@ -686,7 +686,7 @@ aenigma-restart_ejabberd_if_running() {
 		if systemctl is-active --quiet ejabberd
 		then
 
-			operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |."
+			local operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |."
 			dna-echo_operation -h
 
 			if service ejabberd restart
@@ -719,8 +719,6 @@ aenigma-restart_ejabberd_if_running() {
 		dna-echo -m "not going to start its service."
 
 	fi
-
-	unset operation_message
 
 	############################################################################
 
