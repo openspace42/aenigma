@@ -809,7 +809,7 @@ aenigma-start_patroni() {
 
 	dna-get_hostname
 
-	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
+	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ] && [ -d "/usr/lib/postgresql/" ]
 	then
 
 		operation_message="starting patroni on node: | ${l-}${hostname}${n-} |."
@@ -823,7 +823,7 @@ aenigma-start_patroni() {
 
 	else
 
-		dna-echo -m "patroni not installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "patroni not [fully] installed on node: | ${l-}${hostname}${n-} |."
 		dna-echo -m "not going to start its service."
 
 	fi
@@ -2757,7 +2757,7 @@ EOF
 
 		########################################################################
 
-		dna-echo -m "patroni not installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "patroni not [fully] installed on node: | ${l-}${hostname}${n-} |."
 		dna-echo -m "skipping config apply for now."
 
 		########################################################################
