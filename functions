@@ -713,7 +713,7 @@ aenigma-restart_ejabberd_if_running() {
 	else
 
 		dna-echo -m "ejabberd not installed on node: | ${l-}${hostname}${n-} |."
-		dna-echo -m "not going to start its service"
+		dna-echo -m "not going to start its service."
 
 	fi
 
@@ -751,7 +751,7 @@ aenigma-start_ejabberd() {
 	else
 
 		dna-echo -m "ejabberd not installed on node: | ${l-}${hostname}${n-} |."
-		dna-echo -m "not going to start its service"
+		dna-echo -m "not going to start its service."
 
 	fi
 
@@ -824,7 +824,7 @@ aenigma-start_patroni() {
 	else
 
 		dna-echo -m "patroni not installed on node: | ${l-}${hostname}${n-} |."
-		dna-echo -m "not going to start its service"
+		dna-echo -m "not going to start its service."
 
 	fi
 
@@ -2623,9 +2623,21 @@ aenigma-apply_patroni_config() {
 
 	############################################################################
 
-	### Install patroni config
+	dna-get_hostname
 
-	cat <<EOF > "/etc/patroni.yml"
+	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ]
+	then
+
+		########################################################################
+
+		operation_message="applying patroni config on node: | ${l-}${hostname}${n-} |."
+		dna-echo_operation -h
+
+		########################################################################
+
+		### Install patroni config
+
+		cat <<EOF > "/etc/patroni.yml"
 scope: aenigma
 name: postgresql-node_number-var
 
@@ -2702,39 +2714,57 @@ postgresql:
     unix_socket_directories: '/tmp'
 EOF
 
+		############################################################################
+
+		### Add other cluster nodes to the patroni config
+
+		for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+		do
+			### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
+			if [ ! "${node_ipv4}" = "${public_ipv4}" ]
+			then
+				sed -i "/replicator public_ipv4-var/a \  - host replication replicator ${node_ipv4}\/0 md5" "/etc/patroni.yml"
+			fi
+		done
+		unset node_ipv4
+
+		############################################################################
+
+		### Localize vars in patroni config
+
+		sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
+		sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
+		sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
+
+		aenigma-get_postgresql_bin_dir_path
+
+		sed -i "s|postgresql_bin_dir_path-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
+
+		############################################################################
+
+		### Apply passwords to the postgresql/patroni config
+
+		sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
+		sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
+
+		############################################################################
+
+		dna-echo_operation -t
+
+		########################################################################
+
+	else
+
+		########################################################################
+
+		dna-echo -m "patroni not installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "skipping config apply for now."
+
+		########################################################################
+
+	fi
+
 	############################################################################
-
-	### Add other cluster nodes to the patroni config
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
-	do
-		### Ensure we don't add ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
-		then
-			sed -i "/replicator public_ipv4-var/a \  - host replication replicator ${node_ipv4}\/0 md5" "/etc/patroni.yml"
-		fi
-	done
-	unset node_ipv4
-
-	############################################################################
-
-	### Localize vars in patroni config
-
-	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/patroni.yml"
-	sed -i "s|node_number-var|${node_number}|g" "/etc/patroni.yml"
-	sed -i "s|domain-var|${domain}|g" "/etc/patroni.yml"
-
-	aenigma-get_postgresql_bin_dir_path
-
-	sed -i "s|postgresql_bin_dir_path-var|${postgresql_bin_dir_path}|g" "/etc/patroni.yml"
-
-	############################################################################
-
-	### Apply passwords to the postgresql/patroni config
-
-	sed -i "s|patroni_postgres_password-var|${patroni_postgres_password}|g" "/etc/patroni.yml"
-	sed -i "s|patroni_repl_password-var|${patroni_repl_password}|g" "/etc/patroni.yml"
-
 	############################################################################
 
 }
