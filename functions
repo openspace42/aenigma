@@ -692,7 +692,7 @@ aenigma-restart_ejabberd_if_running() {
 			if service ejabberd restart
 			then
 
-				dna-wait -s "11" -d "Now allowing ejabberd to start up correctly..."
+				dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
 				dna-echo_operation -t
 
 			else
@@ -703,6 +703,9 @@ aenigma-restart_ejabberd_if_running() {
 				sleep 3
 
 			fi
+
+			/usr/sbin/ejabberdctl status
+			echo
 
 		else
 
@@ -739,14 +742,23 @@ aenigma-start_ejabberd() {
 		operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |."
 		dna-echo_operation -h
 
-		service ejabberd start
+		if service ejabberd start
+		then
 
-		dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
+			dna-wait -s "16" -d "Now allowing ejabberd to start up correctly..."
+			dna-echo_operation -t
+
+		else
+
+			echo
+			dna-echo -e "ejabberd failed during restart"
+			dna-echo -m "Continuing anyway as this should fix itself automatically by the end of the installation."
+			sleep 3
+
+		fi
 
 		/usr/sbin/ejabberdctl status
 		echo
-
-		dna-echo_operation -t
 
 	else
 
