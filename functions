@@ -4877,7 +4877,7 @@ synthia-perform_installation() {
 
 	add_service_check_bottom_spacing() {
 
-		if [ "${service}" = "APT" ]
+		if [ "${service}" = "APT" ] || [ "${service}" = "NGINX" ]
 		then
 			echo
 		fi
