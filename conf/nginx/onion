@@ -15,7 +15,8 @@ server {
     ssl_certificate     /etc/ssl/aenigma/tor_hidden_service_hostname-var.cert.pem;
     ssl_certificate_key     /etc/ssl/aenigma/tor_hidden_service_hostname-var.privkey.pem;
 
-    ssl_protocols TLSv1.3 TLSv1.2;
+    #ssl_protocols TLSv1.3 TLSv1.2;
+    ssl_protocols TLSv1.2;
     ssl_prefer_server_ciphers on;
     ssl_ciphers EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA512:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:ECDH+AESGCM:ECDH+AES256:DH+AESGCM:DH+AES256:RSA+AESGCM:!aNULL:!eNULL:!LOW:!RC4:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS;
     ssl_ecdh_curve auto;
