@@ -704,7 +704,7 @@ aenigma-restart_ejabberd_if_running() {
 
 			fi
 
-			/usr/sbin/ejabberdctl status
+			ejabberdctl status || true
 			echo
 
 		else
@@ -757,7 +757,7 @@ aenigma-start_ejabberd() {
 
 		fi
 
-		/usr/sbin/ejabberdctl status
+		ejabberdctl status || true
 		echo
 
 	else
