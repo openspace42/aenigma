@@ -709,7 +709,7 @@ aenigma-restart_ejabberd_if_running() {
 
 		else
 
-			dna-echo -s "ejabberd not running on node: | ${l-}${hostname}${n-} |."
+			dna-echo -s "ejabberd not running on node:${n-} | ${l-}${hostname}${n-} |."
 
 		fi
 
@@ -796,7 +796,7 @@ aenigma-stop_ejabberd() {
 
 		else
 
-			dna-echo -s "ejabberd already stopped on node: | ${l-}${hostname}${n-} |."
+			dna-echo -s "ejabberd already stopped on node:${n-} | ${l-}${hostname}${n-} |."
 
 			service ejabberd stop &> /dev/null || true
 
@@ -869,7 +869,7 @@ aenigma-stop_patroni() {
 
 		else
 
-			dna-echo -s "patroni already stopped on node: | ${l-}${hostname}${n-} |."
+			dna-echo -s "patroni already stopped on node:${n-} | ${l-}${hostname}${n-} |."
 
 			service patroni stop &> /dev/null || true
 
