@@ -8,6 +8,20 @@ set -eu
 
 ################################################################################
 
+while getopts ":e" arguments
+do
+    case $arguments in
+        e)	force_reinstall_etcd_cluster="yes"
+            ;;
+        \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+            dna-exit
+            ;;
+    esac
+done
+OPTIND=1
+
+################################################################################
+
 ### Add padding to output
 
 echo
@@ -418,9 +432,14 @@ echo
 ################################################################################
 ################################################################################
 
-### Re-run the etcd cluster installation now that we have a new node
+if [ "${nodes_db_initial_diff}" = "diff" ] || [ "${force_reinstall_etcd_cluster}" = "yes" ]
+then
 
-aenigma-install_etcd_cluster
+    ### Re-run the etcd cluster installation now that we have a new node
+
+    aenigma-install_etcd_cluster
+
+fi
 
 ### Apply new configs and restart patroni, haproxy, and ejabberd
 ### on existing nodes [not the one we're provisioning now, which we exclude]
