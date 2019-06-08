@@ -5056,35 +5056,6 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Provision Tor
-
-	dna-echo -m "aenigma can also provision a Tor hidden service on this machine to make it reachable entirely inside the Tor network."
-	dna-echo -m "You will be able to connect to the | ${o-}.onion${n-} | address that will be generated to access all services [XMPP, web, SSH, etc...]"
-
-	dna-ask_for_boolean -d "y" -q "Would you like to provision Tor now?"
-
-	if [ "${boolean_output}" = "y" ]
-	then
-		aenigma-provision_tor
-	fi
-
-	############################################################################
-
-	### Provision Converse.js
-
-	dna-echo -m "aenigma can also provision a Converse.js instance on this machine to allow you and this instance's users to have your own XMPP web client always available from anywhere."
-	dna-echo -m "You will be able to connect to it at | ${o-}https://${hostname}/xmpp/${n-} | from any device."
-	dna-echo -m "This operation will take about 5 minutes to complete."
-
-	dna-ask_for_boolean -d "y" -q "Would you like to provision Converse.js now?"
-
-	if [ "${boolean_output}" = "y" ]
-	then
-		aenigma-provision_conversejs
-	fi
-
-	############################################################################
-
 	### Prompt for loglevel_zero
 
 	dna-echo -m "aenigma can disable all XMPP-related services logging on this server."
@@ -5111,6 +5082,35 @@ synthia-perform_installation() {
 	if [ "${boolean_output}" = "y" ]
 	then
 		aenigma-set_mam_disabled
+	fi
+
+	############################################################################
+
+	### Provision Tor
+
+	dna-echo -m "aenigma can also provision a Tor hidden service on this machine to make it reachable entirely inside the Tor network."
+	dna-echo -m "You will be able to connect to the | ${o-}.onion${n-} | address that will be generated to access all services [XMPP, web, SSH, etc...]"
+
+	dna-ask_for_boolean -d "y" -q "Would you like to provision Tor now?"
+
+	if [ "${boolean_output}" = "y" ]
+	then
+		aenigma-provision_tor
+	fi
+
+	############################################################################
+
+	### Provision Converse.js
+
+	dna-echo -m "aenigma can also provision a Converse.js instance on this machine to allow you and this instance's users to have your own XMPP web client always available from anywhere."
+	dna-echo -m "You will be able to connect to it at | ${o-}https://${hostname}/xmpp/${n-} | from any device."
+	dna-echo -m "This operation will take about 5 minutes to complete."
+
+	dna-ask_for_boolean -d "y" -q "Would you like to provision Converse.js now?"
+
+	if [ "${boolean_output}" = "y" ]
+	then
+		aenigma-provision_conversejs
 	fi
 
 	############################################################################
