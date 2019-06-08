@@ -5106,7 +5106,7 @@ synthia-perform_installation() {
 	dna-echo -m "This can reduce even further the amount of leaked data in the event of this server being compromised or seized in the future [even though OMEMO-encrypted message are always safe anyway]."
 	dna-echo -m "You can always revert this setting by re-running the installation and answering | ${y-}no${n-} | at this prompt or running the | ${y-}aenigma-set_mam_enabled${n-} | function from | ${o-}aenigma-env${n-} |."
 
-	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}loglevel zero mode${n-} | now?"
+	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}mam_disabled mode${n-} | now?"
 
 	if [ "${boolean_output}" = "y" ]
 	then
