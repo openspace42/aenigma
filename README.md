@@ -10,25 +10,15 @@ The installation takes you on a 15 minute, clearly worded, step-by-step setup an
 
 All of the features offered by our project and the related installation instructions are detailed below.
 
-## The openspace instance of aenigma
+## The official instance of aenigma
 
-Take a look at our actual running instance of aenigma - operated by our hackerspace [openspace](https://openspace.xxx) - by registering a forever free account **@os.vu**.
+Take a look at our actual running instance of aenigma - a fully functional XMPP server cluster operated by our hackerspace [openspace](https://openspace.xxx) - by registering a forever free account **@aenigma.xyz**.
 
-You can register your account right now by specifying a `your-user@os.vu` JID [jabber user ID] during the new account creation fase [offered by virtually all XMPP apps] and dive right into this amazing world!
+You can register your account right now by specifying a `your-user@aenigma.xyz` JID [jabber user ID] during the new account creation phase [offered by virtually all XMPP apps] and dive right into this amazing world!
 
-As soon as you're up and running join our group chat at [aenigma@xc.os.vu](xmpp:aenigma@xc.os.vu) !
+If you're finding XMPP to your liking, then deploy your own server following the very simple instructions below! As soon as you're up and running join our group chat at [aenigma@xc.aenigma.xyz](xmpp:aenigma@xc.aenigma.xyz) !
 
-<a href='https://compliance.conversations.im/server/os.vu'><img src='https://compliance.conversations.im/badge/os.vu'></a>
-
-## News and official chatroom
-
-Follow our development updates together with the aenigma community on our chatroom at [aenigma@xc.os.vu](xmpp:aenigma@xc.os.vu).
-
-If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
-
-## Support the project
-
-You can now become a Patreon supporter of the project starting at only $1/month, and access our priority support, custom features rapid development requests [then made available for eveyone of course], and help ensure that aenigma is always on the bleeding edge of features offered by ejabberd and the XMPP world. Help us out and join our Patreon community [here](https://www.patreon.com/aenigma_xmpp). Thank you in advance!
+<a href='https://compliance.conversations.im/server/aenigma.xyz'><img src='https://compliance.conversations.im/badge/aenigma.xyz'></a>
 
 ## Features
 
@@ -61,7 +51,17 @@ You can now become a Patreon supporter of the project starting at only $1/month,
 
 * Keeps backwards compatibility with other, older, not 100% compliant, XMPP servers out there by using a not very restrictive ciphersuite for s2s [aka server to server] connections, but you can break all bridges with the rest of the world and enable the latest ciphers suggested by cipherli.st [although really not recommended] by changing two lines in the config file
 
-### News | 2019-06-05 | v0.7.0 stable release
+## Support the project
+
+You can now become a Patreon supporter of the project starting at only $1/month, and access our priority support, custom features rapid development requests [then made available for eveyone of course], and help ensure that aenigma is always on the bleeding edge of features offered by ejabberd and the XMPP world. Help us out and join our Patreon community [here](https://www.patreon.com/aenigma_xmpp). Thank you in advance!
+
+## News and official chatroom
+
+Follow our development updates together with the aenigma community on our chatroom at [aenigma@xc.aenigma.xyz](xmpp:aenigma@xc.aenigma.xyz).
+
+If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
+
+### Latest post: 2019-06-05 | v0.7.0 stable release
 
 ```
 Hi all! aenigma v0.7.0 is out with full postgresql single / cluster support
