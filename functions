@@ -507,12 +507,23 @@ aenigma-provision_nginx() {
 
 	sed -i "s|my \$uri_prefix_components = 0;|my \$uri_prefix_components = 1;|g" "/usr/local/lib/perl/upload.pm"
 
-#	if ! grep -q "ngx_http_perl_module.so" "/etc/nginx/nginx.conf"
-#	then
-#
-#		sed -i "/^events {/i load_module modules\/ngx_http_perl_module.so;\n" "/etc/nginx/nginx.conf"
-#
-#	fi
+	nginx_version="$(nginx -v)"
+
+	dna-get_distro_name
+
+	### If this is debian manually load perl module #ephemeral
+
+	if [ "${distro_name}" = "debian" ]
+	then
+
+		if ! grep -q "ngx_http_perl_module.so" "/etc/nginx/nginx.conf"
+		then
+
+			sed -i "/^events {/i load_module modules\/ngx_http_perl_module.so;\n" "/etc/nginx/nginx.conf"
+
+		fi
+
+	fi
 
 	if ! grep -q "/usr/local/lib/perl" "/etc/nginx/nginx.conf"
     then
