@@ -3507,7 +3507,7 @@ EOF
 
 }
 
-aenigma-set_loglevel_zero() {
+aenigma-set_loglevel_zero_enabled() {
 
 	############################################################################
 
@@ -3557,11 +3557,11 @@ aenigma-set_loglevel_zero() {
 
 }
 
-aenigma-set_loglevel_standard() {
+aenigma-set_loglevel_zero_disabled() {
 
 	############################################################################
 
-	### Turn all logging back on if set_loglevel_zero was previously ran.
+	### Turn all logging back on if set_loglevel_zero_enabled was previously ran.
 
 	############################################################################
 
@@ -3607,7 +3607,7 @@ aenigma-set_loglevel_standard() {
 
 }
 
-aenigma-set_mam_disabled() {
+aenigma-set_mam_off_enabled() {
 
 	############################################################################
 
@@ -3641,7 +3641,7 @@ aenigma-set_mam_disabled() {
 
 }
 
-aenigma-set_mam_enabled() {
+aenigma-set_mam_off_disabled() {
 
 	############################################################################
 
@@ -5058,30 +5058,72 @@ synthia-perform_installation() {
 
 	### Prompt for loglevel_zero
 
-	dna-echo -m "aenigma can disable all XMPP-related services logging on this server."
-	dna-echo -m "This is always a good idea in case the server gets compromised or seized in the future, to at least avoid leaking highly detailed user connection / disconnection and traffic data."
-	dna-echo -m "This will apply to ejabberd, SSLH, and NGINX. You can always revert this setting by re-running the installation and answering | ${y-}no${n-} | at this prompt or running the | ${y-}aenigma-apply_loglevel_standard${n-} | function from | ${o-}aenigma-env${n-} |."
+	describe_setting() {
 
-	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}loglevel zero mode${n-} | now?"
+		dna-echo -m "aenigma can disable all XMPP-related services logging on this server."
+		dna-echo -m "This is always a good idea in case the server gets compromised or seized in the future, to at least avoid leaking highly detailed user connection / disconnection and traffic data."
+		dna-echo -m "This will apply to ejabberd, SSLH, and NGINX. You can always revert this setting by re-running the installation and setting this option to: | ${y-}disabled${n-} | at this prompt or running the: | ${y-}aenigma-apply_loglevel_standard${n-} | function from | ${o-}aenigma-env${n-} |."
+		dna-echo -m "If you'd like to enable | ${l-}loglevel_zero mode${n-} | you must specify so now."
 
-	if [ "${boolean_output}" = "y" ]
+	}
+
+	validate_input() {
+
+		case $input in
+			enabled)	valid="y"
+						;;
+			disabled)	valid="y"
+						;;
+			*)			dna-echo -e "Invalid setting for | ${n-}loglevel_zero_mode${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |."
+						valid="n"
+						;;
+		esac
+
+	}
+
+	dna-set_option -o "loglevel_zero_mode" -p "stealth" -d "y" -c "[enabled/disabled]" -v "y"
+
+	if [ "${loglevel_zero_mode}" = "enabled" ]
 	then
-		aenigma-set_loglevel_zero
+		aenigma-set_loglevel_zero_enabled
+	else
+		aenigma-set_loglevel_zero_disabled
 	fi
 
 	############################################################################
 
-	### Prompt for loglevel_zero
+	### Prompt for mam_off
 
-	dna-echo -m "aenigma can disable all ejabberd message archive management [mod_mam] and delete all existing mam archives retroactively."
-	dna-echo -m "This can reduce even further the amount of leaked data in the event of this server being compromised or seized in the future [even though OMEMO-encrypted message are always safe anyway]."
-	dna-echo -m "You can always revert this setting by re-running the installation and answering | ${y-}no${n-} | at this prompt or running the | ${y-}aenigma-set_mam_enabled${n-} | function from | ${o-}aenigma-env${n-} |."
+	describe_setting() {
 
-	dna-ask_for_boolean -d "y" -q "Would you like to set | ${l-}mam_disabled mode${n-} | now?"
+		dna-echo -m "aenigma can disable all ejabberd message archive management [mod_mam] and delete all existing mam archives retroactively."
+		dna-echo -m "This can reduce even further the amount of leaked data in the event of this server being compromised or seized in the future [even though OMEMO-encrypted message are always safe anyway]."
+		dna-echo -m "You can always revert this setting by re-running the installation and setting this option to: | ${y-}disabled${n-} | at this prompt or running the: | ${y-}aenigma-set_mam_enabled${n-} | function from | ${o-}aenigma-env${n-} |."
+		dna-echo -m "If you'd like to enable | ${l-}mam_off mode${n-} | you must specify so now."
 
-	if [ "${boolean_output}" = "y" ]
+	}
+
+	validate_input() {
+
+		case $input in
+			enabled)	valid="y"
+						;;
+			disabled)	valid="y"
+						;;
+			*)			dna-echo -e "Invalid setting for | ${n-}mam_off_mode${r-} | in function | ${n-}${FUNCNAME[0]}${r-} |."
+						valid="n"
+						;;
+		esac
+
+	}
+
+	dna-set_option -o "mam_off_mode" -p "stealth" -d "y" -c "[enabled/disabled]" -v "y"
+
+	if [ "${mam_off_mode}" = "mam_off_mode" ]
 	then
-		aenigma-set_mam_disabled
+		aenigma-set_mam_off_enabled
+	else
+		aenigma-set_mam_off_disabled
 	fi
 
 	############################################################################
