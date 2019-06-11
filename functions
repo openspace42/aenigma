@@ -3611,7 +3611,7 @@ aenigma-set_mam_off_enabled() {
 
 	############################################################################
 
-	### Turn all ejabberd message archiving [mod_mam] off for extra stealth
+	### Turn all ejabberd message archiving [mod_mam] off for extra stealth.
 
 	############################################################################
 
@@ -3620,7 +3620,7 @@ aenigma-set_mam_off_enabled() {
 
 	############################################################################
 
-	### disable mod_mam in ejabberd.yml
+	### Disable mod_mam in ejabberd.yml.
 
 	sed -i '/^\  mod_mam/,/^\    cache_life_time/{//!d}' "/etc/ejabberd/ejabberd.yml"
 	sed -i "s|^\  mod_mam:|#  mod_mam: {}|g" "/etc/ejabberd/ejabberd.yml"
@@ -3628,9 +3628,15 @@ aenigma-set_mam_off_enabled() {
 
 	############################################################################
 
-	### delete existing mam archive
+	### Delete existing mam archive.
 
 	ejabberdctl --no-timeout delete_old_mam_messages all 0
+
+	############################################################################
+
+	### Restart ejabberd to take effect of the changes.
+
+	aenigma-restart_ejabberd_if_running
 
 	############################################################################
 
