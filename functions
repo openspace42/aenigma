@@ -1348,6 +1348,8 @@ aenigma-localize_ejabberd_install() {
 		/usr/sbin/service ejabberd stop 2> /dev/null || true
 		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
 
+		export wipe_var_lib_ejabberd="done"
+
 	fi
 
 	aenigma-start_ejabberd
@@ -5125,7 +5127,7 @@ synthia-perform_installation() {
 
 	dna-set_option -o "mam_off_mode" -p "stealth" -d "y" -c "[enabled/disabled]" -v "y"
 
-	if [ "${mam_off_mode}" = "mam_off_mode" ]
+	if [ "${mam_off_mode}" = "enabled" ]
 	then
 		aenigma-set_mam_off_enabled
 	else
