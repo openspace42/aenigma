@@ -1282,20 +1282,17 @@ aenigma-install_ejabberd_deb() {
 
 	wget -O "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb"
 
+	### Inhibit ejabberd from autostarting
+
+	echo -e '#!/bin/bash\nexit 101' > "/usr/sbin/policy-rc.d"
+	chmod +x "/usr/sbin/policy-rc.d"
+	/usr/sbin/policy-rc.d
+
 	### Install .deb package
 
 	dpkg -i "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" || true
 
 	echo
-
-	### Install service
-
-	updatedb
-
-	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberd.service" "/etc/systemd/system"
-
-	systemctl daemon-reload
-	systemctl enable --now ejabberd || true
 
 	dna-echo_operation -t
 
@@ -1409,9 +1406,31 @@ aenigma-localize_ejabberd_install() {
 
 	aenigma-set_permissions
 
-	### Start ejabberd
+	### Finally start ejabberd
 
 	aenigma-start_ejabberd
+
+	############################################################################
+
+}
+
+aenigma-enable_ejabberd() {
+
+	############################################################################
+
+	operation_message="enabling and starting ejabberd"
+	dna-echo_operation -h
+
+	### Install service
+
+	updatedb
+
+	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberd.service" "/etc/systemd/system"
+
+	systemctl daemon-reload
+	systemctl enable --now ejabberd || true
+
+	dna-echo_operation -t
 
 	############################################################################
 
@@ -4911,11 +4930,6 @@ synthia-perform_installation() {
 
 	fi
 
-
-	### Install the aenigma ejabberd config.
-
-	aenigma-install_ejabberd_config
-
 	### Perform a full APT upgrade
 
 	dna-apt_full_upgrade -e
@@ -4924,9 +4938,17 @@ synthia-perform_installation() {
 
 	aenigma-install_ejabberd
 
+	### Install the aenigma ejabberd config.
+
+	aenigma-install_ejabberd_config
+
 	### Localize ejabberd configuration and restart it
 
 	aenigma-localize_ejabberd_install
+
+	### Enable ejabberd
+
+	aenigma-enable_ejabberd
 
 	### Only for psql migration
 
