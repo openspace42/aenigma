@@ -1307,9 +1307,14 @@ aenigma-install_ejabberd_deb() {
 
 	echo
 
+	### Remove autostart inhibition
+
+	rm "/usr/sbin/policy-rc.d"
+
 	### Link binaries
 
-	ln -s "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberdctl" "/usr/sbin/" || true
+	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberdctl" "/usr/sbin/"
+	sed -i "s|^ROOT_DIR.*|ROOT_DIR=\"/opt/ejabberd-${hardcoded_package_version_ejabberd}/\"|g" "/usr/sbin/ejabberdctl"
 
 	dna-echo_operation -t
 
@@ -1432,6 +1437,7 @@ aenigma-localize_ejabberd_install() {
 
 	ln -s "/opt/ejabberd/conf/ejabberd.yml" "/opt/ejabberd-19.05/conf/ejabberd.yml"
 	ln -s "/opt/ejabberd/conf/ejabberdctl.cfg" "/opt/ejabberd-19.05/conf/ejabberdctl.cfg"
+	ln -s "/opt/ejabberd/conf/inetrc" "/opt/ejabberd-19.05/conf/inetrc"
 
 	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
 
