@@ -1162,6 +1162,13 @@ aenigma-set_permissions() {
 
 	############################################################################
 
+	### /opt/ejabberd-vers/conf/
+
+	if id "ejabberd" &> /dev/null
+	then
+		chown -R "ejabberd:ejabberd" "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
+	fi
+
 	### /var/lib/ejabberd/
 
 	if id "ejabberd" &> /dev/null
@@ -1394,6 +1401,15 @@ aenigma-localize_ejabberd_install() {
 		export wipe_var_lib_ejabberd="done"
 
 	fi
+
+	### Link config files into /opt/ejabberd-version/conf/
+
+	mkdir -p "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
+
+	ln -s "/opt/ejabberd/conf/ejabberd.yml" "/opt/ejabberd-19.05/conf/ejabberd.yml"
+	ln -s "/opt/ejabberd/conf/ejabberdctl.cfg" "/opt/ejabberd-19.05/conf/ejabberdctl.cfg"
+
+	aenigma-set_permissions
 
 	aenigma-start_ejabberd
 
