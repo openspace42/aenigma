@@ -97,7 +97,7 @@ listen:
     ### dhfile: 'DHFILE'
     ciphers: 'CIPHERS'
     ## zlib: true ##re-enable if 1902 supports zlib here
-   -
+  - 
     port: 1883
     ip: "::"
     module: mod_mqtt

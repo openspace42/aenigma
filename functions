@@ -59,8 +59,8 @@ synthia-define_vars() {
 
 	export hardcoded_package_version_ejabberd="19.05"
 	export hardcoded_package_version_ejabberd_extended="19.05-0"
-	export hardcoded_package_version_ejabberd_fallback="19.05"
-	export hardcoded_package_version_ejabberd_fallback_extended="19.05-0"
+	export hardcoded_package_version_ejabberd_fallback="19.02"
+	export hardcoded_package_version_ejabberd_fallback_extended="19.02-0"
 
 	############################################################################
 	############################################################################
@@ -1285,10 +1285,14 @@ aenigma-install_ejabberd_deb() {
 
 	updatedb
 
-	cp $(locate ejabberd.service) "/etc/systemd/system"
+	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberd.service" "/etc/systemd/system"
 
 	systemctl daemon-reload
 	systemctl enable --now ejabberd || true
+
+	dna-echo_operation -t
+
+	############################################################################
 
 }
 
@@ -1368,12 +1372,12 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/opt/ejabberd/conf/ejabberd.yml"
 
-	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/etc/default/ejabberd"
+	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
 	if [ "${set_erlang_node_to_hostname-}" = "ok" ]
 	then
-		sed -i "/# ERLANG_NODE/d" /etc/default/ejabberd
-		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" /etc/default/ejabberd
+		sed -i "/# ERLANG_NODE/d" "/opt/ejabberd/conf/ejabberdctl.cfg"
+		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 	fi
 
 	if [ "${wipe_var_lib_ejabberd-}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-}" = "not_necessary" ]
@@ -4649,7 +4653,7 @@ synthia-perform_installation() {
 		if [ ! -f "/var/lib/ejabberd/LATEST.LOG" ]
 		then
 
-			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the /etc/default/ejabberd config file and wiping the data directory after installing ejabberd.
+			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the /opt/ejabberd/conf/ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
 
 			set_erlang_node_to_hostname="ok"
 			wipe_var_lib_ejabberd="ok"
@@ -4662,12 +4666,12 @@ synthia-perform_installation() {
 
 			### Check to see if config file already exists.
 
-			if [ -f "/etc/default/ejabberd" ]
+			if [ -f "/opt/ejabberd/conf/ejabberdctl.cfg" ]
 			then
 
 				### The config file is in place. Check to see if the ERLANG_NODE value is already correct.
 
-				if grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/etc/default/ejabberd"
+				if grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/opt/ejabberd/conf/ejabberdctl.cfg"
 				then
 
 					### The configuration is already correct, the existing data in /var/lib/ejabberd will work fine.
@@ -4678,12 +4682,12 @@ synthia-perform_installation() {
 
 					### Check to see if the ERLANG_NODE line exists
 
-					if ! grep -q "ERLANG_NODE=ejabberd@" "/etc/default/ejabberd"
+					if ! grep -q "ERLANG_NODE=ejabberd@" "/opt/ejabberd/conf/ejabberdctl.cfg"
 					then
 
-						dna-echo -e "There is an error in your existing | ${n-}/etc/default/ejabberd${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
+						dna-echo -e "There is an error in your existing | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
 						dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/default/ejabberd${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/opt/ejabberd/conf/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
 						dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $proj_name into a cluster in the future."
 						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
 						read -rp "${b-}Press enter to continue...${x-}"
@@ -4695,14 +4699,14 @@ synthia-perform_installation() {
 
 						### Check to see if the ERLANG_NODE line is commented or its value is set to localhost
 
-						if grep -q "#ERLANG_NODE=ejabberd@" "/etc/default/ejabberd" || grep -q "^ERLANG_NODE=ejabberd@localhost$" "/etc/default/ejabberd"
+						if grep -q "#ERLANG_NODE=ejabberd@" "/opt/ejabberd/conf/ejabberdctl.cfg" || grep -q "^ERLANG_NODE=ejabberd@localhost$" "/opt/ejabberd/conf/ejabberdctl.cfg"
 						then
 
-							dna-echo -e "Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance with a previous version of ${proj_name}."
+							dna-echo -e "Your existing | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance with a previous version of ${proj_name}."
 
 						else
 
-							dna-echo -e "Your existing | ${n-}/etc/default/ejabberd${r-} | config file indicates that you were previously using this instance of ${proj_name} with a different hostname than the current one."
+							dna-echo -e "Your existing | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance of ${proj_name} with a different hostname than the current one."
 
 						fi
 
@@ -4726,9 +4730,9 @@ synthia-perform_installation() {
 
 					### An installation was actually completed at some point. Proceed with warning the user.
 
-					dna-echo -e "The | ${n-}/etc/default/ejabberd${r-} | configuration file of this existing installation of ${proj_name} is missing."
+					dna-echo -e "The | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | configuration file of this existing installation of ${proj_name} is missing."
 					dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/etc/default/ejabberd${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
+					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/opt/ejabberd/conf/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
 					dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $proj_name into a cluster in the future."
 					dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
 					read -rp "${b-}Press enter to continue...${x-}"
@@ -4746,12 +4750,12 @@ synthia-perform_installation() {
 
 		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
 
-		if [ -f "/etc/default/ejabberd" ]
+		if [ -f "/opt/ejabberd/conf/ejabberdctl.cfg" ]
 		then
 
 			### This is a re-install, as the config file is already in place. Check to see if the ERLANG_NODE value is already correct.
 
-			if ! grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/etc/default/ejabberd"
+			if ! grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/opt/ejabberd/conf/ejabberdctl.cfg"
 			then
 
 				### The ERLANG_NODE value is incorrect. Therefore, this instance was either previously installed in single [non-cluster] mode or was part of a different cluster. Alert the user of the imminent wipe.
