@@ -1473,6 +1473,7 @@ aenigma-enable_ejabberd() {
 
 	systemctl daemon-reload
 	systemctl enable --now ejabberd || true
+	echo
 
 	dna-echo_operation -t
 
@@ -4102,6 +4103,19 @@ synthia-perform_installation() {
 		service nginx restart
 
 	fi
+
+	### ejabberd from apt to deb
+
+	if [ -f "/etc/apt/sources.list.d/jabber.at.list" ]
+	then
+		rm "/etc/apt/sources.list.d/jabber.at.list"
+	fi
+
+	apt-get update
+	echo
+
+	apt-get -y remove ejabberd
+	echo
 
 	############################################################################
 
