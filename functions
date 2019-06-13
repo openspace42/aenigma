@@ -1340,10 +1340,6 @@ aenigma-localize_ejabberd_install() {
 
 	aenigma-stop_ejabberd
 
-	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
-
-	aenigma-set_permissions
-
 	### Perform customizations on the ejabberd config files.
 
 	if [ ! "${additional_domains-}" = "none" ]
@@ -1409,7 +1405,11 @@ aenigma-localize_ejabberd_install() {
 	ln -s "/opt/ejabberd/conf/ejabberd.yml" "/opt/ejabberd-19.05/conf/ejabberd.yml"
 	ln -s "/opt/ejabberd/conf/ejabberdctl.cfg" "/opt/ejabberd-19.05/conf/ejabberdctl.cfg"
 
+	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
+
 	aenigma-set_permissions
+
+	### Start ejabberd
 
 	aenigma-start_ejabberd
 
