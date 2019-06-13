@@ -4941,18 +4941,20 @@ synthia-perform_installation() {
 
 		### ejabberd is currently installed. Check if an ejabberd upgrade is going to be performed.
 
-		if [ ! "${hardcoded_package_version_ejabberd}" = "${ejabberd_installed_version}" ]
-		then
+#		if [ ! "${hardcoded_package_version_ejabberd}" = "${ejabberd_installed_version}" ]
+#		then
 
-			dna-echo -s "A new version of ejabberd is available. Upgrading it now..."
+#			dna-echo -s "A new version of ejabberd is available. Upgrading it now..."
 
 			### Upgrade ejabberd by non-interactively installing the new config
 			### files [which we'll the re-replace later in the installation
 			### anyway].
 
-			dpkg -i "${tmp_project_dir}/ejabberd-${ejabberd_candidate_version}" || true
+#			dpkg -i "${tmp_project_dir}/ejabberd-${ejabberd_candidate_version}" || true
 
-		fi
+#		fi
+
+		echo
 
 	else
 
