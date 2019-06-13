@@ -4108,14 +4108,16 @@ synthia-perform_installation() {
 
 	if [ -f "/etc/apt/sources.list.d/jabber.at.list" ]
 	then
+
 		rm "/etc/apt/sources.list.d/jabber.at.list"
+
+		apt-get update
+		echo
+
+		apt-get -y remove ejabberd
+		echo
+
 	fi
-
-	apt-get update
-	echo
-
-	apt-get -y remove ejabberd
-	echo
 
 	############################################################################
 
