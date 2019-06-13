@@ -432,7 +432,7 @@ echo
 ################################################################################
 ################################################################################
 
-if [ "${nodes_db_initial_diff}" = "diff" ] || [ "${force_reinstall_etcd_cluster}" = "yes" ]
+if [ "${nodes_db_initial_diff}" = "diff" ] || [ -n "${force_reinstall_etcd_cluster-}" ]
 then
 
     ### Re-run the etcd cluster installation now that we have a new node

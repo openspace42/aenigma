@@ -1181,7 +1181,7 @@ aenigma-set_permissions() {
 #		fi
 #	fi
 
-	### /opt/ejabberd/.erlang_cookie
+	### /opt/ejabberd/.erlang.cookie
 
 	if [ -f "/opt/ejabberd/.erlang.cookie" ]
 	then
