@@ -1164,7 +1164,7 @@ aenigma-set_permissions() {
 
 	### /opt/ejabberd-vers/conf/
 
-	if id "ejabberd" &> /dev/null
+	if id "ejabberd" &> /dev/null && [ -d "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/" ]
 	then
 		chown -R "ejabberd:ejabberd" "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
 	fi
