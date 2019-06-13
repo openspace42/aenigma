@@ -1264,12 +1264,12 @@ aenigma-create_ejabberd_locations() {
 	### Create logfile
 
 	operation_message="creating logfiles directory"
-	dna-echo -h
+	dna-echo_operation -h
 
 	mkdir -p "/opt/ejabberd/logs/"
 	touch "/opt/ejabberd/logs/www_access.log"
 
-	dna-echo -t
+	dna-echo_operation -t
 
 	### Set permissions
 
