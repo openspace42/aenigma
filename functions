@@ -1171,14 +1171,21 @@ aenigma-set_permissions() {
 
 	### /var/lib/ejabberd/
 
-	if id "ejabberd" &> /dev/null
+#	if id "ejabberd" &> /dev/null
+#	then
+#		chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/uploads/"
+#		chmod 2750 "/var/lib/ejabberd/uploads/"
+#		if [ -f "/var/lib/ejabberd/.erlang.cookie" ]
+#		then
+#			chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie"
+#		fi
+#	fi
+
+	### /opt/ejabberd/.erlang_cookie
+
+	if [ -f "/opt/ejabberd/.erlang.cookie" ]
 	then
-		chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/uploads/"
-		chmod 2750 "/var/lib/ejabberd/uploads/"
-		if [ -f "/var/lib/ejabberd/.erlang.cookie" ]
-		then
-			chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie"
-		fi
+		chown ejabberd:ejabberd "/opt/ejabberd/.erlang.cookie"
 	fi
 
 	### /var/www/ejabberd
