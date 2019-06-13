@@ -1240,22 +1240,29 @@ aenigma-create_ejabberd_locations() {
 
 	### Create ejabberd uploads directory
 
-	dna-echo -m "Now creating uploads directory..."
-	mkdir -p "/var/lib/ejabberd/uploads/"
+	operation_message="creating uploads directory"
+	dna-echo -h
+
+	mkdir -p "/opt/ejabberd/uploads/"
 	dna-echo -m "${g-}Finished creating uploads directory."
+
+	dna-echo -t
 
 	### Create HTTP uploads directory
 
-	dna-echo -m "Now creating HTTP fileserver directory..."
-	mkdir -p "/var/www/ejabberd/"
-	dna-echo -m "${g-}Finished creating HTTP fileserver directory."
+#	dna-echo -m "Now creating HTTP fileserver directory..."
+#	mkdir -p "/var/www/ejabberd/"
+#	dna-echo -m "${g-}Finished creating HTTP fileserver directory."
 
 	### Create logfile
 
-	dna-echo -m "Now creating logfile..."
+	operation_message="creating logfiles directory"
+	dna-echo -h
+
 	mkdir -p "/opt/ejabberd/logs/"
 	touch "/opt/ejabberd/logs/www_access.log"
-	dna-echo -m "${g-}Finished creating logfile."
+
+	dna-echo -t
 
 	### Set permissions
 
@@ -1286,13 +1293,16 @@ aenigma-install_ejabberd_deb() {
 
 	echo -e '#!/bin/bash\nexit 101' > "/usr/sbin/policy-rc.d"
 	chmod +x "/usr/sbin/policy-rc.d"
-	/usr/sbin/policy-rc.d
 
 	### Install .deb package
 
 	dpkg -i "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" || true
 
 	echo
+
+	### Link binaries
+
+	ln -s "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberdctl" "/usr/sbin/" || true
 
 	dna-echo_operation -t
 
@@ -1326,6 +1336,20 @@ aenigma-install_ejabberd() {
 }
 
 aenigma-localize_ejabberd_install() {
+
+	############################################################################
+
+	while getopts ":s" arguments
+	do
+        case $arguments in
+            e)	skip_ejabberd_start="y"
+	            ;;
+            \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+	            dna-exit
+	            ;;
+        esac
+    done
+    OPTIND=1
 
 	############################################################################
 
@@ -1406,9 +1430,16 @@ aenigma-localize_ejabberd_install() {
 
 	aenigma-set_permissions
 
-	### Finally start ejabberd
+	if [ -z "${skip_ejabberd_start-}" ]
+	then
 
-	aenigma-start_ejabberd
+		### Finally start ejabberd
+
+		aenigma-start_ejabberd
+
+	fi
+
+	unset skip_ejabberd_start
 
 	############################################################################
 
@@ -4868,7 +4899,7 @@ synthia-perform_installation() {
 
 	### Prepare APT for ejabberd installation.
 
-	aenigma-add_ejabberd_repo
+#	aenigma-add_ejabberd_repo
 
 	############################################################################
 
@@ -4936,7 +4967,7 @@ synthia-perform_installation() {
 
 	### Actually install ejabberd.
 
-	aenigma-install_ejabberd
+	aenigma-install_ejabberd_deb
 
 	### Install the aenigma ejabberd config.
 
