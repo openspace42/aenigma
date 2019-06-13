@@ -704,7 +704,7 @@ aenigma-restart_ejabberd_if_running() {
 		if systemctl is-active --quiet ejabberd
 		then
 
-			local operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |."
+			local operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |"
 			dna-echo_operation -h
 
 			if service ejabberd restart
@@ -755,7 +755,7 @@ aenigma-start_ejabberd() {
 	if dpkg -s ejabberd &> /dev/null
 	then
 
-		operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |."
+		operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |"
 		dna-echo_operation -h
 
 		if service ejabberd start
@@ -801,7 +801,7 @@ aenigma-stop_ejabberd() {
 		if systemctl is-active --quiet ejabberd
 		then
 
-			operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |."
+			operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |"
 			dna-echo_operation -h
 
 			service ejabberd stop &> /dev/null || true
@@ -840,7 +840,7 @@ aenigma-start_patroni() {
 	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ] && [ -d "/usr/lib/postgresql/" ]
 	then
 
-		operation_message="starting patroni on node: | ${l-}${hostname}${n-} |."
+		operation_message="starting patroni on node: | ${l-}${hostname}${n-} |"
 		dna-echo_operation -h
 
 		service patroni start
@@ -874,7 +874,7 @@ aenigma-stop_patroni() {
 		if systemctl is-active --quiet patroni
 		then
 
-			operation_message="stopping patroni on node: | ${l-}${hostname}${n-} |."
+			operation_message="stopping patroni on node: | ${l-}${hostname}${n-} |"
 			dna-echo_operation -h
 
 			service patroni stop &> /dev/null || true
@@ -2471,7 +2471,7 @@ EOF
 	sed -i "s|domain-var|${domain}|g" "/etc/default/etcd"
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
-	operation_message="starting etcd on node: | ${l-}${hostname}${n-} |."
+	operation_message="starting etcd on node: | ${l-}${hostname}${n-} |"
 	dna-echo_operation -h
 
 	update-rc.d etcd enable
@@ -2774,7 +2774,7 @@ aenigma-apply_patroni_config() {
 
 		########################################################################
 
-		operation_message="applying patroni config on node: | ${l-}${hostname}${n-} |."
+		operation_message="applying patroni config on node: | ${l-}${hostname}${n-} |"
 		dna-echo_operation -h
 
 		########################################################################
@@ -2901,7 +2901,7 @@ EOF
 
 		########################################################################
 
-		dna-echo -m "patroni not [fully] installed on node: | ${l-}${hostname}${n-} |."
+		dna-echo -m "patroni not [fully] installed on node: | ${l-}${hostname}${n-} |"
 		dna-echo -m "skipping config apply for now."
 
 		########################################################################
@@ -3076,7 +3076,7 @@ EOF
 
 	############################################################################
 
-	operation_message="starting patroni on node: | ${l-}${hostname}${n-} |."
+	operation_message="starting patroni on node: | ${l-}${hostname}${n-} |"
 	dna-echo_operation -h
 
 	dna-wait -s "11" -d "Now allowing patroni to start up correctly..."
@@ -3248,7 +3248,7 @@ EOF
 
 	############################################################################
 
-	operation_message="restarting haproxy on node: | ${l-}${hostname}${n-} |."
+	operation_message="restarting haproxy on node: | ${l-}${hostname}${n-} |"
 	dna-echo_operation -h
 
 	systemctl restart haproxy
