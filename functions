@@ -1241,12 +1241,12 @@ aenigma-create_ejabberd_locations() {
 	### Create ejabberd uploads directory
 
 	operation_message="creating uploads directory"
-	dna-echo -h
+	dna-echo_operation -h
 
 	mkdir -p "/opt/ejabberd/uploads/"
 	dna-echo -m "${g-}Finished creating uploads directory."
 
-	dna-echo -t
+	dna-echo_operation -t
 
 	### Create HTTP uploads directory
 
