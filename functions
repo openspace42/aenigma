@@ -1463,7 +1463,7 @@ aenigma-enable_ejabberd() {
 
 	############################################################################
 
-	operation_message="enabling and starting ejabberd"
+	operation_message="enabling ejabberd"
 	dna-echo_operation -h
 
 	### Install service.
@@ -3790,6 +3790,11 @@ aenigma-set_mam_off_enabled() {
 	sed -i '/^\  mod_mam/,/^\    cache_life_time/{//!d}' "/opt/ejabberd/conf/ejabberd.yml"
 	sed -i "s|^\  mod_mam:|#  mod_mam: {}|g" "/opt/ejabberd/conf/ejabberd.yml"
 	sed -i "/^\    cache_life_time/d" "/opt/ejabberd/conf/ejabberd.yml"
+
+	### Disable mod_mix as it depends on mod_mam
+
+	sed -i "s|^\  mod_mix:|#  mod_mix: {}|g" "/opt/ejabberd/conf/ejabberd.yml"
+	sed -i "/^\    host: \"xm/d" "/opt/ejabberd/conf/ejabberd.yml"
 
 	############################################################################
 
