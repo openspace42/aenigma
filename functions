@@ -4258,7 +4258,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Perform primary_node-only setup.
+	### perform primary_node-only setup.
 
 	############################################################################
 
@@ -4267,13 +4267,20 @@ synthia-perform_installation() {
 
 		########################################################################
 
-		### Start creating the nodes_db files and print this machine [the primary node]'s public IPv4 and IPv6 [if available] to the first line of each
-		### We create the nodes_db file independently of whether clusterization is enabled or not.
+		### start creating the nodes_db files and print this machine
+		### [the primary node]'s public IPv4 and IPv6 [if available]
+		### to the first line of each.
+
+		### we create the nodes_db file independently of whether clusterization
+		### is enabled or not.
+
+		########################################################################
 
 		if [ "${cluster_enabled}" = "single" ]
 		then
 
-			### Clusterization has been turned off. Delete the conf_nodes directory if present.
+			### Clusterization has been turned off.
+			### delete the conf_nodes directory if present.
 
 			if [ -d "${conf_cluster_nodes_dir}" ]
 			then
@@ -4283,8 +4290,11 @@ synthia-perform_installation() {
 		fi
 
 		########################################################################
+		########################################################################
 
-		### Set XMPP domain
+		### set XMPP domain.
+
+		########################################################################
 
 	    describe_setting() {
 
@@ -4335,8 +4345,11 @@ synthia-perform_installation() {
 	    fi
 
 		########################################################################
+		########################################################################
 
-		### Set additioanl XMPP domains
+		### set additioanl XMPP domains.
+
+		########################################################################
 
 	    describe_setting() {
 
@@ -4404,8 +4417,11 @@ synthia-perform_installation() {
 	    fi
 
 		########################################################################
+		########################################################################
 
-		### Review and set machine hostname
+		### review and set machine hostname.
+
+		########################################################################
 
 		curr_host_name="$(cat /etc/hostname)"
 
@@ -4437,8 +4453,11 @@ synthia-perform_installation() {
 		hostname -F "/etc/hostname"
 
 		########################################################################
+		########################################################################
 
-		### Review domain and hostname to see if the user approves
+		### review domain and hostname to see if the user approves.
+
+		########################################################################
 
 		dna-echo -m "----------------------------------------------------------------"
 
@@ -4477,19 +4496,33 @@ synthia-perform_installation() {
 		fi
 
 		########################################################################
+		########################################################################
 
-		### Set node_number to 01 as this is the primary node
+		### set node_number to 01 as this is the primary node.
+
+		########################################################################
 
 		dna-set_option -o "node_number" -p "cluster" -s "01"
 
-		### Initialize nodes_db files
+		########################################################################
+		########################################################################
+
+		### initialize nodes_db files.
+
+		########################################################################
 
 		aenigma-initialize_nodes_db_files
 
-		### Update routing info
+		########################################################################
+		########################################################################
+
+		### update routing info.
+
+		########################################################################
 
 		aenigma-update_routing_info
 
+		########################################################################
 		########################################################################
 
 	fi
@@ -4497,34 +4530,47 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Set admin email address
+	### set admin email address.
+
+	############################################################################
 
 	dna-set_admin_email
 
 	############################################################################
+	############################################################################
 
-	### Check internet connectivity and get public IP addresses
+	### check internet connectivity and get public IP addresses.
+
+	############################################################################
 
 	dna-get_public_ipv4
 
 	dna-check_ipv6_connectivity
 
 	############################################################################
+	############################################################################
 
-	### Create the necessary files and directories for ejabberd
+	### create the necessary files and directories for ejabberd.
+
+	############################################################################
+
+	### ejabberd locations.
 
 	aenigma-create_ejabberd_locations
 
-	### Create the $conf_xmpp_dir
+	### $conf_xmpp_dir.
 
 	mkdir -p "${conf_xmpp_dir}"
+
+	############################################################################
+	############################################################################
+
+	### add cronjob for resync_cluster script.
 
 	############################################################################
 
 	if [ "${cluster_enabled}" = "cluster" ]
 	then
-
-		### Add cronjob for resync_cluster script
 
 		dna-add_cron_job -n "${proj_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-resync_cluster --return-check"
 
@@ -4533,46 +4579,71 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
+	### proceed with primary/secondary_node-split installation.
+
+	############################################################################
+
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
-		### Create domains_db
+		########################################################################
+
+		### create domains_db.
+
+		########################################################################
 
 		aenigma-create_domains_db
 
-		### Proceed with primary node installation
+		########################################################################
+		########################################################################
+
+		### proceed with primary node installation.
+
+		########################################################################
 
 		aenigma-perform_dns_checks
 
 		########################################################################
+		########################################################################
 
-		### Install certbot preemtively to then correctly place the post renewal hook
+		### install certbot preemtively and place the post renewal hook.
+
+		########################################################################
+
+		### install certbot.
 
 		dna-install_certbot
 
-		#### Copy the LetsEncrypt post-renewal script to its location and actually run it now to be ready for the installation
+		#### copy the LetsEncrypt post-renewal script to its location
+		### and actually run it now to be ready for the installation.
 
 		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
 
-		### Execute the post-renewal script now to generate the all-in-one TLS cert for ejabberd
+		### execute the post-renewal script now
+		### to generate the all-in-one TLS cert for ejabberd.
 
 		bash "${tools_dir}/${proj_name}-create-push-certs"
 
 		########################################################################
+		########################################################################
 
-		### Setup backup restore
+		### setup backup restore
+
+		########################################################################
 
 		dna-setup_backup_restore
 
 		########################################################################
+		########################################################################
 
 	else
 
-		### Proceed with secondary node installation
-
 		########################################################################
 
-		### Clear any letsencrypt post-renewal-hook if present from a previous installation in primary node mode
+		### clear any letsencrypt post-renewal-hook if present
+		### from a previous installation in primary node mode.
+
+		########################################################################
 
 		if [ -f "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs" ]
 		then
@@ -4580,8 +4651,12 @@ synthia-perform_installation() {
 		fi
 
 		########################################################################
+		########################################################################
 
-		### Generate token [or use the public IPv6 address of this machine if available] as visual fingerprint for user connection checking.
+		### generate token [or use the public IPv6 address of this machine
+		### if available] as visual fingerprint for user connection checking.
+
+		########################################################################
 
 		if [ "${ipv6_available}" = "y" ]
 		then
@@ -4592,11 +4667,20 @@ synthia-perform_installation() {
 		fi
 
 		########################################################################
+		########################################################################
 
-		### Temporarily allow incoming connections on port 42022 *without limit* on UFW to avoid locking out the primary node during installation.
+		### temporarily allow incoming connections on port 42022 *without limit*
+		### on UFW to avoid locking out the primary node during installation.
+
+		########################################################################
 
 		/usr/sbin/ufw allow 42022
 		echo
+
+		########################################################################
+		########################################################################
+
+		### echo public ipv4 of this machine for clusterization.
 
 		########################################################################
 
@@ -4605,6 +4689,11 @@ synthia-perform_installation() {
 		dna-echo -m "Enter it on the primary node when prompted to do so, then follow the instructions from there."
 
 		sleep 1
+
+		########################################################################
+		########################################################################
+
+		### create ssh authorized_keys file.
 
 		########################################################################
 
@@ -4616,6 +4705,11 @@ synthia-perform_installation() {
 			mkdir -p "/root/.ssh/"
 	        touch "${ssh_auth_keys_file}"
 		fi
+
+		########################################################################
+		########################################################################
+
+		### ask for primary node ssh pubkey if not already present.
 
 		########################################################################
 
@@ -4654,6 +4748,13 @@ synthia-perform_installation() {
 			####################################################################
 
 		fi
+
+		########################################################################
+		########################################################################
+
+		### check for successful connection from primary node.
+
+		########################################################################
 
 		if [ ! "${primary_node_ssh_connection-null}" = "ok" ]
 		then
@@ -4713,9 +4814,14 @@ synthia-perform_installation() {
 
 		fi
 
-		################################################################################
+		########################################################################
+		########################################################################
 
-		### Print clusterization token and instructions
+		### print clusterization token and instructions.
+
+		########################################################################
+
+		### print instructions.
 
 		dna-echo -m "A token has been generated to verify a correct connection to this machine from the primary node."
 		dna-echo -m "You'll be asked to verify it matches with the one that will shortly be displayed on the primary node."
@@ -4724,6 +4830,11 @@ synthia-perform_installation() {
 		dna-echo -m "After that, continue the setup on the primary node and come back here when finished."
 
 		sleep 1
+
+		########################################################################
+		########################################################################
+
+		### listen for setup-complete token.
 
 		########################################################################
 
@@ -4743,20 +4854,27 @@ synthia-perform_installation() {
 		sleep 1
 
 		########################################################################
+		########################################################################
 
-		### Re-limit port 42022 on UFW
+		### re-limit port 42022 on ufw.
+
+		########################################################################
 
 		/usr/sbin/ufw limit 42022
 		echo
 
 		########################################################################
+		########################################################################
 
-		### Read newly received config
+		### read newly received config.
+
+		########################################################################
 
 		dna-read_conf_settings
 
 		aenigma-set_secondary_node_hostname
 
+		########################################################################
 		########################################################################
 
 	fi
@@ -4764,15 +4882,13 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Initiate actual services installation
+	### initiate actual services installation.
 
 	############################################################################
 
-	### UFW
+	### ufw.
 
 	############################################################################
-
-	### Set UFW rules
 
 	operation_message="setting UFW rules"
 	dna-echo_operation -h
@@ -4791,7 +4907,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### NGINX
+	### nginx.
 
 	############################################################################
 
@@ -4800,7 +4916,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Mail notifications
+	### mail notifications.
 
 	############################################################################
 
@@ -4809,7 +4925,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### SSLH
+	### sslh.
 
 	############################################################################
 
@@ -4818,11 +4934,11 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### etcd / HAProxy / PostgreSQL / Patroni
+	### etcd / haproxy / postgresql / patroni.
 
 	############################################################################
 
-	### etcd
+	#### etcd.
 
 	############################################################################
 
@@ -4838,7 +4954,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### HAProxy
+	#### haproxy.
 
 	############################################################################
 
@@ -4847,7 +4963,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### PostgreSQL / Patroni
+	#### psql / patroni.
 
 	############################################################################
 
@@ -4856,12 +4972,12 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### ejabberd
+	#### ejabberd.
 
 	############################################################################
 
-	### Remove the "ejabberd_admin_password_set" file if it exists as ejabberd
-	### was not currently installed.
+	##### remove the "ejabberd_admin_password_set" file if it exists as ejabberd
+	##### was not currently installed.
 
 	############################################################################
 
@@ -4880,11 +4996,11 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Empty the /var/lib/ejabberd/ directory as we're now migrating to psql.
+	##### Empty the /var/lib/ejabberd/ directory as we're now migrating to psql.
 
-	### this is only for pre-v0.7.x to v0.7.0 migrations as v0.7.1 introduces
-	### deb package installation for ejabberd which completely changes directory
-	### structures.
+	##### this is only for pre-v0.7.x to v0.7.0 migrations as v0.7.1 introduces
+	##### deb package installation for ejabberd which completely changes directory
+	##### structures.
 
 	############################################################################
 
