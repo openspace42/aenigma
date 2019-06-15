@@ -1099,7 +1099,6 @@ aenigma-install_ejabberd_config() {
 
 	fi
 
-	mkdir -p "/opt/ejabberd/conf/"
 	cp "${source_ejab_conf_file}" "/opt/ejabberd/conf/ejabberd.yml"
 
 	### Install captcha script
@@ -1294,20 +1293,13 @@ aenigma-install_ejabberd_deb() {
 
 	wget -O "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb"
 
-	### Inhibit ejabberd from autostarting
-
-	echo -e '#!/bin/bash\nexit 101' > "/usr/sbin/policy-rc.d"
-	chmod +x "/usr/sbin/policy-rc.d"
+	### Verify .deb package ###todo
 
 	### Install .deb package
 
 	dpkg -i "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" || true
 
 	echo
-
-	### Remove autostart inhibition
-
-	rm "/usr/sbin/policy-rc.d"
 
 	### Link binaries
 
@@ -1352,7 +1344,7 @@ aenigma-localize_ejabberd_install() {
 	while getopts ":s" arguments
 	do
         case $arguments in
-            e)	skip_ejabberd_start="y"
+            s)	skip_ejabberd_start="y"
 	            ;;
             \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
 	            dna-exit
@@ -5012,7 +5004,7 @@ synthia-perform_installation() {
 
 	### Localize ejabberd configuration and restart it
 
-	aenigma-localize_ejabberd_install
+	aenigma-localize_ejabberd_install -s
 
 	### Enable ejabberd
 
