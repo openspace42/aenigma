@@ -1190,23 +1190,6 @@ aenigma-set_permissions() {
 		chown ejabberd:ejabberd "/opt/ejabberd/.erlang.cookie"
 	fi
 
-	### /var/www/ejabberd
-
-	if id "ejabberd" &> /dev/null
-	then
-		usermod -aG aenigma ejabberd
-		chown -R "ejabberd:ejabberd" "/var/www/ejabberd/"
-		chmod -R 755 "/var/www/ejabberd/"
-	fi
-
-	### /var/log/ejabberd
-
-	if id "ejabberd" &> /dev/null
-	then
-		chown -R "ejabberd:adm" "/opt/ejabberd/logs/"
-		chmod -R 755 "/opt/ejabberd/logs/"
-	fi
-
 	############################################################################
 	############################################################################
 
