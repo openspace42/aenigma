@@ -1112,8 +1112,13 @@ aenigma-install_ejabberd_config() {
 	fi
 
 	curl "https://raw.githubusercontent.com/processone/ejabberd/master/tools/captcha.sh" > "/opt/ejabberd/captcha.sh"
-	chmod +x "/opt/ejabberd/captcha.sh"
 	echo
+
+	############################################################################
+
+	### Set permissions
+
+	aenigma-set_permissions
 
 	############################################################################
 
@@ -1163,24 +1168,16 @@ aenigma-set_permissions() {
 
 	############################################################################
 
-	### /opt/ejabberd-vers/conf/
+	### /opt/ejabberd/conf/
 
-	if id "ejabberd" &> /dev/null && [ -d "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/" ]
+	if id "ejabberd" &> /dev/null && [ -d "/opt/ejabberd/conf/" ]
 	then
-		chown -R "ejabberd:ejabberd" "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
+		chown -R "ejabberd:ejabberd" "/opt/ejabberd/conf/"
 	fi
 
-	### /var/lib/ejabberd/
+	### /opt/ejabberd/captcha.sh
 
-#	if id "ejabberd" &> /dev/null
-#	then
-#		chown -R "ejabberd:ejabberd" "/var/lib/ejabberd/uploads/"
-#		chmod 2750 "/var/lib/ejabberd/uploads/"
-#		if [ -f "/var/lib/ejabberd/.erlang.cookie" ]
-#		then
-#			chown "ejabberd:ejabberd" "/var/lib/ejabberd/.erlang.cookie"
-#		fi
-#	fi
+	chmod +x "/opt/ejabberd/captcha.sh"
 
 	### /opt/ejabberd/.erlang.cookie
 
@@ -1376,6 +1373,8 @@ aenigma-localize_ejabberd_install() {
 
 	### Perform customizations on the ejabberd config files.
 
+	#### ejabberd.yml
+
 	if [ ! "${additional_domains-}" = "none" ]
 	then
 
@@ -1409,36 +1408,35 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/opt/ejabberd/conf/ejabberd.yml"
 
+	#### ejabberdctl.cfg
+
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
-	if [ "${set_erlang_node_to_hostname-}" = "ok" ]
-	then
-		sed -i "/# ERLANG_NODE/d" "/opt/ejabberd/conf/ejabberdctl.cfg"
-		sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" "/opt/ejabberd/conf/ejabberdctl.cfg"
-	fi
+	sed -i "/# ERLANG_NODE/d" "/opt/ejabberd/conf/ejabberdctl.cfg"
+	sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
-	if [ "${wipe_var_lib_ejabberd-}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-}" = "not_necessary" ]
-	then
+	#if [ "${wipe_var_lib_ejabberd-}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-}" = "not_necessary" ]
+	#then
 
-		dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
-		dna-echo -e "This is your final warning: if you're not absolutely sure your data is safe, abort the installation now!"
+	#	dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
+	#	dna-echo -e "This is your final warning: if you're not absolutely sure your data is safe, abort the installation now!"
 
-		dna-wait -s "11" -d "Counting down to full ejabberd wipe on this machine..."
+	#	dna-wait -s "11" -d "Counting down to full ejabberd wipe on this machine..."
 
-		/usr/sbin/service ejabberd stop 2> /dev/null || true
-		( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
+	#	/usr/sbin/service ejabberd stop 2> /dev/null || true
+	#	( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
 
-		export wipe_var_lib_ejabberd="done"
+	#	export wipe_var_lib_ejabberd="done"
 
-	fi
+	#fi
 
 	### Link config files into /opt/ejabberd-version/conf/
 
-	mkdir -p "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
+	#mkdir -p "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
 
-	ln -s "/opt/ejabberd/conf/ejabberd.yml" "/opt/ejabberd-19.05/conf/ejabberd.yml"
-	ln -s "/opt/ejabberd/conf/ejabberdctl.cfg" "/opt/ejabberd-19.05/conf/ejabberdctl.cfg"
-	ln -s "/opt/ejabberd/conf/inetrc" "/opt/ejabberd-19.05/conf/inetrc"
+	#ln -s "/opt/ejabberd/conf/ejabberd.yml" "/opt/ejabberd-19.05/conf/ejabberd.yml"
+	#ln -s "/opt/ejabberd/conf/ejabberdctl.cfg" "/opt/ejabberd-19.05/conf/ejabberdctl.cfg"
+	#ln -s "/opt/ejabberd/conf/inetrc" "/opt/ejabberd-19.05/conf/inetrc"
 
 	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
 
