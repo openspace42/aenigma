@@ -2580,6 +2580,38 @@ END
 
 }
 
+aenigma-install_etcd_cluster_conditionally() {
+
+	aenigma-get_ejabberd_cluster_size
+
+	if dpkg -s etcd &> /dev/null
+	then
+
+		if etcdctl cluster-health | grep -q "cluster is healthy"
+		then
+
+			etcd_cluster_size="$(etcdctl member list | wc -l)"
+
+			if [ "${etcd_cluster_size}" = "${ejabberd_cluster_size}" ]
+			then
+
+				dna-echo -s "etcd appears to be already installed and cluster appears to be healty."
+				dna-echo -m "Skipping re-install..."
+				return 0
+
+			fi
+
+		fi
+
+	fi
+
+	dna-echo -m "etcd doesn't appear to be already installed or cluster isn't fully up and running."
+	dna-echo -m "installing etcd now..."
+
+	aenigma-install_etcd_cluster
+
+}
+
 aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
 
 	############################################################################
@@ -5161,14 +5193,24 @@ synthia-perform_installation() {
 
 		if ${service_checker_array[$service]}
 		then
+
 			add_service_check_bottom_spacing
-			dna-echo -s "All | ${n-}${service}${g-} | operations completed successfully."
+
+			if [ "${service}" = "SSLH" ]
+			then
+				dna-echo -ns "All | ${n-}${service}${g-} | operations completed successfully."
+			else
+				dna-echo -s "All | ${n-}${service}${g-} | operations completed successfully."
+			fi
+
 		else
+
 			add_service_check_bottom_spacing
 			dna-echo -e "An error has occured during | ${n-}${service}${r-} | operations."
 			dna-echo -m "This was one of the last steps in this installation, so it's possible that your end result is at least partially working."
 			dna-echo -m "Review the output above and try running the installation again."
 			dna-press_to_continue
+
 		fi
 
 		set -e
