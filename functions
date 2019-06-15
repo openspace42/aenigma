@@ -515,6 +515,7 @@ aenigma-provision_nginx() {
 	sed -i "s|my \$uri_prefix_components = 0;|my \$uri_prefix_components = 1;|g" "/usr/local/lib/perl/upload.pm"
 
 	nginx_version="$(nginx -v)"
+	echo
 
 	dna-get_distro_name
 
@@ -1465,11 +1466,18 @@ aenigma-enable_ejabberd() {
 	operation_message="enabling and starting ejabberd"
 	dna-echo_operation -h
 
-	### Install service
+	### Install service.
 
 	updatedb
 
 	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberd.service" "/etc/systemd/system"
+
+	### Reduce timeout to 60 seconds to avoid waiting for a failed ejabberd
+	### startup for no reason.
+
+	sed -i "s|TimeoutSec=300|TimeoutSec=60|g" "/etc/systemd/system/ejabberd.service"
+
+	### Enable service.
 
 	systemctl daemon-reload
 	systemctl enable --now ejabberd || true
@@ -4950,7 +4958,7 @@ synthia-perform_installation() {
 			### files [which we'll the re-replace later in the installation
 			### anyway].
 
-#			dpkg -i "${tmp_project_dir}/ejabberd-${ejabberd_candidate_version}" || true
+#			dpkg -i "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd}" || true
 
 #		fi
 

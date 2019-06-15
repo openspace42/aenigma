@@ -97,7 +97,7 @@ listen:
     ### dhfile: 'DHFILE'
     ciphers: 'CIPHERS'
     ## zlib: true ##re-enable if 1902 supports zlib here
-  - 
+  -
     port: 1883
     ip: "::"
     module: mod_mqtt
@@ -293,7 +293,7 @@ language: "en"
 ##   "localhost":
 ##     language: "ru"
 
-captcha_cmd: "/etc/ejabberd/captcha.sh"
+captcha_cmd: "/opt/ejabberd/captcha.sh"
 captcha_host: "127.0.0.1:5443"
 captcha_limit: 5
 
