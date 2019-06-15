@@ -177,7 +177,7 @@ dna-br_backup_locally "${skip_install_complete_check-}"
 if [ "$backup_archival_location" = "s3" ]
 then
 
-    if [ "${s3_restore_test_failed-}" = "y" ]
+    if [ "${s3_restore_test_failed-null}" = "y" ]
     then
 
         dna-echo -e "Skipping S3 backup because of a previous test restore failure."
@@ -212,7 +212,7 @@ then
     rm "/tmp/${proj_name}-backup-running-lockfile"
 fi
 
-if [ "${s3_restore_test_failed-}" = "y" ]
+if [ "${s3_restore_test_failed-null}" = "y" ]
 then
     dna-exit
 fi

@@ -103,7 +103,7 @@ dna-log_script
 
 ### Ensure that this is the primary node in the event that cluster is enabled.
 
-if [ "${cluster_mode-}" = "secondary" ]
+if [ "${cluster_mode-null}" = "secondary" ]
 then
 	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
 	dna-exit
@@ -210,7 +210,7 @@ fi
 
 ################################################################################
 
-if [ ! "${psql_migration_required-}" = "true" ]
+if [ ! "${psql_migration_required-null}" = "true" ]
 then
 
     aenigma-restart_ejabberd_if_running

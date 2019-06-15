@@ -117,7 +117,7 @@ fi
 
 ### If not using local version of project repo...
 
-if [ ! "${custom_project_version-}" = "l" ]
+if [ ! "${custom_project_version-null}" = "l" ]
 then
 
 	### Reset the repo to HEAD before proceeding with anything

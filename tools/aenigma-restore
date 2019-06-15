@@ -229,7 +229,7 @@ dna-br_launch_restore
 
 ### Perform a [last] backup of this currently running installation just in case
 
-if [ ! "${skip_backup:-}" = "y" ]
+if [ ! "${skip_backup:-null}" = "y" ]
 then
 
 	dna-br_last_local_backup

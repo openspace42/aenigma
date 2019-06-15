@@ -117,7 +117,7 @@ dna-head_script
 
 ### Check / enable clusterization
 
-if [ ! "${cluster_enabled-}" = "cluster" ]
+if [ ! "${cluster_enabled-null}" = "cluster" ]
 then
 	dna-echo -e "${proj_name} was not installed in cluster mode."
 	dna-ask_for_boolean -d "y" -q "Do you wish to turn this instance into a cluster one?"
@@ -244,7 +244,7 @@ ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
 
 ################################################################################
 
-if [ "${aenigma_cluster_ssh_keypair_preexisting-}" = "y" ]
+if [ "${aenigma_cluster_ssh_keypair_preexisting-null}" = "y" ]
 then
 
 	### The aenigma_cluster SSH keypair was already generated during a previous clusterization.
@@ -257,7 +257,7 @@ then
 
 fi
 
-if [ "${ssh_connection_to_secondary_node_succeded-}" = "y" ]
+if [ "${ssh_connection_to_secondary_node_succeded-null}" = "y" ]
 then
 
 	### SSH back into the secondary node, and inform it that we are already able to connect to it.

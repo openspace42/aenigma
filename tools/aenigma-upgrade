@@ -101,7 +101,7 @@ do
 done
 OPTIND=1
 
-if [[ "${custom_project_version-}" == "l" ]]                                  ### Do NOT escape the string comparison
+if [[ "${custom_project_version-null}" == "l" ]]                                  ### Do NOT escape the string comparison
 then
 	echo
     dna-echo -e "You're running the installation via the upgrade script."

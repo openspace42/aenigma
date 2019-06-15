@@ -8,7 +8,7 @@ set -eu
 
 ################################################################################
 
-if [ "${custom_output-}" = "v" ]
+if [ "${custom_output-null}" = "v" ]
 then
     echo
     echo "Printing verbose output as per | -o v |."

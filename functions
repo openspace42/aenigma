@@ -109,7 +109,7 @@ synthia-download_dna() {
 
 	mkdir -p "${clone_base_dir}"
 
-	if [ "${custom_dna_version-}" = "l" ]
+	if [ "${custom_dna_version-null}" = "l" ]
 	then
 
 		export dna_selected_vers="v0.0.1-custom-local"
@@ -137,7 +137,7 @@ synthia-download_dna() {
 			export dna_latest_vers_tagged="$(semtag getlast)"
 			export dna_latest_vers_bl_edge="$(semtag getcurrent)"
 
-		    if [ "${custom_dna_version-}" = "b" ]
+		    if [ "${custom_dna_version-null}" = "b" ]
 		    then
 
 		        export dna_selected_vers="${dna_latest_vers_bl_edge}"
@@ -148,7 +148,7 @@ synthia-download_dna() {
 				git fetch
 		        git reset --hard origin/master
 
-			elif [[ "${custom_dna_version-}" == *"v"* ]]
+			elif [[ "${custom_dna_version-null}" == *"v"* ]]
 			then
 
 				export dna_selected_vers="${custom_dna_version}"
@@ -158,7 +158,7 @@ synthia-download_dna() {
 
 				git checkout "tags/${dna_selected_vers}"
 
-		    elif [ "${custom_dna_version-}" = "t" ]
+		    elif [ "${custom_dna_version-null}" = "t" ]
 		    then
 
 		        export dna_selected_vers="${dna_latest_vers_tagged}"
@@ -168,7 +168,7 @@ synthia-download_dna() {
 
 		        git checkout "tags/${dna_latest_vers_tagged}"
 
-		    elif [ "${custom_dna_version-}" = "f" ]
+		    elif [ "${custom_dna_version-null}" = "f" ]
 			then
 
 		        export dna_selected_vers="${dna_latest_vers_final}"
@@ -576,7 +576,7 @@ aenigma-provision_nginx() {
 
 	fi
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Generate a random external_secret for the nginx ejabberd uploads
@@ -596,7 +596,7 @@ aenigma-provision_nginx() {
 
 	### Create and configure the websites for any and every $additional_domain.
 
-	if [ ! "${additional_domains-}" = "none" ]
+	if [ ! "${additional_domains-null}" = "none" ]
 	then
 
 		additional_domains_array=(${additional_domains})
@@ -661,7 +661,7 @@ aenigma-install_sslh() {
 	sed -i "s|ssh_port-var|${ssh_port}|g" "/etc/sslh.cfg"
 	sed -i "s|xh.|xh${node_number}.|g" "/etc/sslh.cfg"
 
-	if [ ! "${additional_domains-}" = "none" ]
+	if [ ! "${additional_domains-null}" = "none" ]
 	then
 
 		> "${tmp_project_dir}/additional_domains_sslh_xh.txt"
@@ -1167,11 +1167,11 @@ aenigma-set_permissions() {
 
 	############################################################################
 
-	### /opt/ejabberd/conf/
+	### /opt/ejabberd/
 
-	if id "ejabberd" &> /dev/null && [ -d "/opt/ejabberd/conf/" ]
+	if id "ejabberd" &> /dev/null && [ -d "/opt/ejabberd/" ]
 	then
-		chown -R "ejabberd:ejabberd" "/opt/ejabberd/conf/"
+		chown -R "ejabberd:ejabberd" "/opt/ejabberd/"
 	fi
 
 	### /opt/ejabberd/captcha.sh
@@ -1242,15 +1242,25 @@ aenigma-set_permissions() {
 
 aenigma-create_ejabberd_locations() {
 
-	### Create ejabberd uploads directory
+	### Create ejabberd directory for correct .erlang.cookie placement
+	### on secondary nodes before ejabberd is installed from deb package.
 
-	operation_message="creating uploads directory"
+	operation_message="creating /opt/ejabberd/ directory"
 	dna-echo_operation -h
 
-	mkdir -p "/opt/ejabberd/uploads/"
-	dna-echo -m "${g-}Finished creating uploads directory."
+	mkdir -p "/opt/ejabberd/"
 
 	dna-echo_operation -t
+
+	### Create ejabberd uploads directory
+
+	#operation_message="creating uploads directory"
+	#dna-echo_operation -h
+
+	#mkdir -p "/opt/ejabberd/uploads/"
+	#dna-echo -m "${g-}Finished creating uploads directory."
+
+	#dna-echo_operation -t
 
 	### Create HTTP uploads directory
 
@@ -1260,13 +1270,13 @@ aenigma-create_ejabberd_locations() {
 
 	### Create logfile
 
-	operation_message="creating logfiles directory"
-	dna-echo_operation -h
+	#operation_message="creating logfiles directory"
+	#dna-echo_operation -h
 
-	mkdir -p "/opt/ejabberd/logs/"
-	touch "/opt/ejabberd/logs/www_access.log"
+#	mkdir -p "/opt/ejabberd/logs/"
+#	touch "/opt/ejabberd/logs/www_access.log"
 
-	dna-echo_operation -t
+#	dna-echo_operation -t
 
 	### Set permissions
 
@@ -1367,7 +1377,7 @@ aenigma-localize_ejabberd_install() {
 
 	#### ejabberd.yml
 
-	if [ ! "${additional_domains-}" = "none" ]
+	if [ ! "${additional_domains-null}" = "none" ]
 	then
 
 		> "${tmp_project_dir}/additional_domains_ejabberd.txt"
@@ -1407,7 +1417,7 @@ aenigma-localize_ejabberd_install() {
 	sed -i "/# ERLANG_NODE/d" "/opt/ejabberd/conf/ejabberdctl.cfg"
 	sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
-	#if [ "${wipe_var_lib_ejabberd-}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-}" = "not_necessary" ]
+	#if [ "${wipe_var_lib_ejabberd-null}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-null}" = "not_necessary" ]
 	#then
 
 	#	dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
@@ -1489,7 +1499,7 @@ aenigma-create_domains_db() {
 
 	echo "${domain}" > "${domains_db_path}"
 
-	if [ ! "${additional_domains-}" = "none" ]
+	if [ ! "${additional_domains-null}" = "none" ]
 	then
 
 		additional_domains_array=(${additional_domains})
@@ -2061,7 +2071,7 @@ aenigma-test_online_nodes() {
 							dna-echo -m "Ok, aborting node removal."
 						fi
 					fi
-					if [ "${launch_node_reinstallation-}" = "y" ]
+					if [ "${launch_node_reinstallation-null}" = "y" ]
 					then
 						dna-echo -m "Having re-ordered what is now node number | ${o-}${current_node_number}${n-} | it's time to re-configure it and notify it of the change."
 						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}${n-} |] and run the installer from there now. Then come back here."
@@ -2334,7 +2344,7 @@ aenigma-install_etcd() {
 
 	### Delete all etcd data to start fresh
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		########################################################################
@@ -2496,7 +2506,7 @@ aenigma-install_etcd_cluster() {
 
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		########################################################################
@@ -2601,7 +2611,7 @@ aenigma-apply_and_restart_patroni_haproxy_ejabberd() {
 
 	############################################################################
 
-	if [ ! "${remote_only-}" = "yes" ]
+	if [ ! "${remote_only-null}" = "yes" ]
 	then
 
 		### Update patroni config now that we have a new node
@@ -2688,7 +2698,7 @@ aenigma-migrate-mnesia-postgresql() {
 
 	### !!! Only run this after install_patroni_postgresql and on the primary node !!! ####
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
@@ -3005,7 +3015,7 @@ aenigma-install_postgresql_patroni() {
 
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Generate a random password for the postgres psql user
@@ -3084,7 +3094,7 @@ EOF
 
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		########################################################################
@@ -3114,7 +3124,7 @@ EOF
 
 		### Assign the generated password to the user if we've just created it
 
-		if [ "${patroni_ejabberd_role_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_role_previous_state-null}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter user ejabberd with encrypted password '$patroni_ejabberd_password'"
@@ -3123,7 +3133,7 @@ EOF
 
 		### Allow the ejabberd postgresql/patroni user to log in with password if we've just created it
 
-		if [ "${patroni_ejabberd_role_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_role_previous_state-null}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter role ejabberd with login"
@@ -3141,7 +3151,7 @@ EOF
 
 		### Make the ejabberd postgresql/patroni user the owner of its database
 
-		if [ "${patroni_ejabberd_role_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_role_previous_state-null}" = "nx" ]
 		then
 			dna-echo -m "Assigning password to the ejabberd postgresql/patroni user"
 			PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -c "alter database ejabberd owner to ejabberd;"
@@ -3156,7 +3166,7 @@ EOF
 
 		### Import ejabberd psql schema if the db was just created
 
-		if [ "${patroni_ejabberd_db_previous_state-}" = "nx" ]
+		if [ "${patroni_ejabberd_db_previous_state-null}" = "nx" ]
 		then
 
 			### Download ejabberd psql schema
@@ -3179,7 +3189,7 @@ EOF
 
 		########################################################################
 
-		if [ "${psql_migration_required-}" = "true" ]
+		if [ "${psql_migration_required-null}" = "true" ]
 		then
 
 			### Start ejabberd
@@ -3797,7 +3807,7 @@ aenigma-set_mam_off_disabled() {
 
 backup_locally_loop() {
 
-	if [ "${cluster_mode-}" = "secondary" ]
+	if [ "${cluster_mode-null}" = "secondary" ]
 	then
 		echo "${r-}${b-}The backup script is only intended to run on the primary node.${x-}"
 		echo
@@ -3990,24 +4000,39 @@ synthia-perform_installation() {
 	################### Add your install-time functions here ###################
 	############################################################################
 
-	### Display aenigma logo
+	### Start.
+
+	############################################################################
+
+	### Display aenigma logo.
 
 	aenigma-display_logo
 
 	############################################################################
+	############################################################################
 
-	### Link tools in $PATH
+	### Link tools in $PATH.
+
+	############################################################################
 
 	dna-link_tools
 
 	############################################################################
+	############################################################################
 
-	### Display intro
+	### Display intro.
+
+	############################################################################
 
 	if [ "${skip_intro}" = "n" ]
 	then
 	    aenigma-xmpp_intro
 	fi
+
+	############################################################################
+	############################################################################
+
+	### Check for distro compatibility.
 
 	############################################################################
 
@@ -4020,35 +4045,67 @@ synthia-perform_installation() {
 	fi
 
 	############################################################################
+	############################################################################
+
+	### Abort installation if this session is open via SSLH as we'll have to
+	### stop SSLH itself during the course of this installation.
+
+	############################################################################
 
 	dna-abort_on_sslh_session
 
+	############################################################################
+	############################################################################
+
+	### Run inception skipping anything that aenigma will set later on anyway.
+
+	############################################################################
+
 	dna-inception -h -m -p
+
+	############################################################################
+	############################################################################
+
+	### Refresh tmp_project_dir.
 
 	############################################################################
 
 	dna-refresh_tmp_project_dir
 
-	mkdir -p "${tls_project_dir}"
+	############################################################################
+	############################################################################
+
+	### Create tls_project_dir.
 
 	############################################################################
 
-	### globally allow APT to fail during the course of the installation until the final check round
+	mkdir -p "${tls_project_dir}"
+
+	############################################################################
+	############################################################################
+
+	### Globally allow APT to fail during the course of the installation
+	### until the final check round.
+
+	############################################################################
 
 	export dna_global_allow_apt_errors="y"
 
 	############################################################################
+	############################################################################
 
-	### Legacy fixes and migration detections
+	### Legacy fixes and migration detections.
 
-	### dhparam
+	############################################################################
+
+	#### dhparam.
 
 	if [ -f "${tls_project_dir}/dh.pem" ]
 	then
 		rm "${tls_project_dir}/dh.pem"
 	fi
 
-	### ejabbed sql
+	#### ejabbed sql.
 
 	if dpkg -s ejabberd &> /dev/null
 	then
@@ -4058,7 +4115,7 @@ synthia-perform_installation() {
 		fi
 	fi
 
-	### nginx uploads
+	#### nginx uploads.
 
 	if [ -f "/etc/nginx/conf.d/aenigma.conf" ]
 	then
@@ -4102,7 +4159,7 @@ synthia-perform_installation() {
 
 	fi
 
-	### ejabberd from apt to deb
+	#### ejabberd from apt to deb.
 
 	if [ -f "/etc/apt/sources.list.d/jabber.at.list" ]
 	then
@@ -4112,16 +4169,24 @@ synthia-perform_installation() {
 		apt-get update
 		echo
 
-		apt-get -y remove ejabberd
+		service ejabberd stop || true
+		systemctl disable --now ejabberd || true
+		systemctl daemon-reload || true
+
+		apt-get -y purge ejabberd || true
 		echo
+
+		rm /etc/systemd/system/ejabberd* || true
+		rm /usr/sbin/ejabberdctl || true
 
 	fi
 
 	############################################################################
+	############################################################################
 
-	clear
+	### Ask user if this aenigma node is going to be part of a cluster.
 
-	### Ask user if this aenigma node is going to be part of a cluster
+	############################################################################
 
 	describe_setting() {
 
@@ -4171,7 +4236,7 @@ synthia-perform_installation() {
 
 		dna-set_option -o "cluster_mode" -p "cluster" -d "y" -c "[primary/secondary]" -v "y"
 
-		if [ "${cluster_mode-}" = "primary" ]
+		if [ "${cluster_mode-null}" = "primary" ]
 		then
 			dna-echo -m "Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation."
 		else
@@ -4193,7 +4258,11 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	### Perform primary_node-only setup.
+
+	############################################################################
+
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		########################################################################
@@ -4388,7 +4457,7 @@ synthia-perform_installation() {
 
 		dna-echo -m "----------------------------------------------------------------"
 
-		if [ ! "${additional_domains-}" = "none" ]
+		if [ ! "${additional_domains-null}" = "none" ]
 		then
 
 			dna-echo -m "5] In addition, your | ${o-}additional domains${n-} | will be:"
@@ -4464,7 +4533,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Create domains_db
@@ -4488,8 +4557,6 @@ synthia-perform_installation() {
 		### Execute the post-renewal script now to generate the all-in-one TLS cert for ejabberd
 
 		bash "${tools_dir}/${proj_name}-create-push-certs"
-
-		clear
 
 		########################################################################
 
@@ -4588,7 +4655,7 @@ synthia-perform_installation() {
 
 		fi
 
-		if [ ! "${primary_node_ssh_connection-}" = "ok" ]
+		if [ ! "${primary_node_ssh_connection-null}" = "ok" ]
 		then
 
 			validate_input() {
@@ -4623,7 +4690,7 @@ synthia-perform_installation() {
 
 			}
 
-			if [ "${primary_node_ssh_connection-}" = "attempted" ]
+			if [ "${primary_node_ssh_connection-null}" = "attempted" ]
 			then
 				dna-set_value -d "Now specify the public SSH key [or write | ${y-}skip${n-} | if the connection was already successful]:" -v "y"
 			else
@@ -4697,6 +4764,10 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
+	### Initiate actual services installation
+
+	############################################################################
+
 	### UFW
 
 	############################################################################
@@ -4722,189 +4793,40 @@ synthia-perform_installation() {
 
 	### NGINX
 
+	############################################################################
+
 	aenigma-provision_nginx
 
 	############################################################################
 	############################################################################
 
-	### Install mail notifications
+	### Mail notifications
+
+	############################################################################
 
 	dna-install_mail_notifications -f
 
-	### Install SSLH
+	############################################################################
+	############################################################################
+
+	### SSLH
+
+	############################################################################
 
 	aenigma-install_sslh
 
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
-	then
-
-		### Determine if this is a fresh install
-
-		if [ ! -f "/var/lib/ejabberd/LATEST.LOG" ]
-		then
-
-			### This is a fresh install, we can proceed with customizing the ERLANG_NODE value in the /opt/ejabberd/conf/ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
-
-			set_erlang_node_to_hostname="ok"
-			wipe_var_lib_ejabberd="ok"
-
-		else
-
-			### This is a re-install.
-
-			wipe_var_lib_ejabberd="no"
-
-			### Check to see if config file already exists.
-
-			if [ -f "/opt/ejabberd/conf/ejabberdctl.cfg" ]
-			then
-
-				### The config file is in place. Check to see if the ERLANG_NODE value is already correct.
-
-				if grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/opt/ejabberd/conf/ejabberdctl.cfg"
-				then
-
-					### The configuration is already correct, the existing data in /var/lib/ejabberd will work fine.
-
-					set_erlang_node_to_hostname="not_necessary"
-
-				else
-
-					### Check to see if the ERLANG_NODE line exists
-
-					if ! grep -q "ERLANG_NODE=ejabberd@" "/opt/ejabberd/conf/ejabberdctl.cfg"
-					then
-
-						dna-echo -e "There is an error in your existing | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | file as the | ${n-}ERLANG_NODE${r-} | setting is missing."
-						dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-						dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/opt/ejabberd/conf/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
-						dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $proj_name into a cluster in the future."
-						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
-						read -rp "${b-}Press enter to continue...${x-}"
-						echo
-
-						set_erlang_node_to_hostname="ok"
-
-					else
-
-						### Check to see if the ERLANG_NODE line is commented or its value is set to localhost
-
-						if grep -q "#ERLANG_NODE=ejabberd@" "/opt/ejabberd/conf/ejabberdctl.cfg" || grep -q "^ERLANG_NODE=ejabberd@localhost$" "/opt/ejabberd/conf/ejabberdctl.cfg"
-						then
-
-							dna-echo -e "Your existing | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance with a previous version of ${proj_name}."
-
-						else
-
-							dna-echo -e "Your existing | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | config file indicates that you were previously using this instance of ${proj_name} with a different hostname than the current one."
-
-						fi
-
-						dna-echo -m "If you choose to continue with the upgrade/re-install, the installation will continue without any issues, but it will be impossible to turn this instance of $proj_name into a cluster in the future."
-						dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory and run an re-install in order to start using the brand new instance from scratch."
-						read -rp "${b-}Press enter to continue...${x-}"
-						echo
-
-						set_erlang_node_to_hostname="skip"
-
-					fi
-
-				fi
-
-			else
-
-				### It's possible the installation was never completed in the first place, this might explain the lack of a configuration file.
-
-				if [ -f "${conf_dir}/version/version_installed" ]
-				then
-
-					### An installation was actually completed at some point. Proceed with warning the user.
-
-					dna-echo -e "The | ${n-}/opt/ejabberd/conf/ejabberdctl.cfg${r-} | configuration file of this existing installation of ${proj_name} is missing."
-					dna-echo -m "The installation will continue without any issues, but ejabberd might refuse to start at the end if your existing data in | ${y-}/var/lib/ejabberd/${n-} | indicates that ejabberd was previously running under a different ERLANG_NODE value."
-					dna-echo -m "If this is the case, after the installation is complete, edit the | ${y-}/opt/ejabberd/conf/ejabberdctl.cfg${n-} | file and set the ERLANG_NODE value back to whatever you were using before [likely | ${y-}ERLANG_NODE=ejabberd@localhost${n-} |]."
-					dna-echo -m "Keep in mind, though, that altering the ERLANG_NODE value will make it impossible to turn this instance of $proj_name into a cluster in the future."
-					dna-echo -m "To do that, you will have to start fresh by deleting the | ${y-}/var/lib/ejabberd/${n-} | directory run an re-install in order to and start using the brand new instance from scratch."
-					read -rp "${b-}Press enter to continue...${x-}"
-					echo
-
-				fi
-
-				set_erlang_node_to_hostname="ok"
-
-			fi
-
-		fi
-
-	else
-
-		### As this is a secondary node, we need to join an existing ejabberd cluster and therefore start clean and remove any ejabberd data already present on this server.
-
-		if [ -f "/opt/ejabberd/conf/ejabberdctl.cfg" ]
-		then
-
-			### This is a re-install, as the config file is already in place. Check to see if the ERLANG_NODE value is already correct.
-
-			if ! grep -q "^ERLANG_NODE=ejabberd@${hostname}$" "/opt/ejabberd/conf/ejabberdctl.cfg"
-			then
-
-				### The ERLANG_NODE value is incorrect. Therefore, this instance was either previously installed in single [non-cluster] mode or was part of a different cluster. Alert the user of the imminent wipe.
-
-				dna-echo -e "It appears this machine has an existing ejabberd installation."
-				dna-echo -e "Proceeding with this installation as a secondary node will wipe anything and everything that might already present on this [and only this] server."
-				dna-echo -m "If this node is currently part of a cluster, data on other nodes will NOT be affected."
-				dna-echo -m "If however you've previously used this machine to host a standalone installation or not-yet-clusterized data, this will be permanently lost."
-				dna-echo -m "Please ensure there is no UNIQUE [as in non-clustered] and VALUABLE [as in you don't want to lose] data on this machine before continuing."
-
-				dna-ask_for_boolean -d "n" -q "Proceed with wiping any ejabberd-related data on this server during the course of this installation?"
-				if [ "${boolean_output}" = "y" ]
-				then
-
-					### As the user has consented to a full wipe, we can therefore proceed with customizing the ERLANG_NODE value in the ejabberdctl.cfg config file and wiping the data directory after installing ejabberd.
-
-					dna-echo -m "Ok, proceeding with ejabberd wipe at the end of this installation..."
-
-					set_erlang_node_to_hostname="ok"
-					wipe_var_lib_ejabberd="ok"
-
-				else
-
-					dna-echo -m "Ok, skipping ejabberd wipe and aborting installation."
-					dna-exit
-
-				fi
-
-			else
-
-				### The existing configuration is already correct, therefore the existing data is compatible with this re-clusterization.
-
-				set_erlang_node_to_hostname="not_necessary"
-				wipe_var_lib_ejabberd="no"
-
-			fi
-
-		else
-
-			### There is no existing ejabberd installation, therefore proceed with wiping any leftover data without asking.
-
-			set_erlang_node_to_hostname="ok"
-			wipe_var_lib_ejabberd="ok"
-
-		fi
-
-	fi
+	### etcd / HAProxy / PostgreSQL / Patroni
 
 	############################################################################
+
+	### etcd
+
 	############################################################################
 
-	### Postgresql
-
-	### Install etcd
-
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		aenigma-install_etcd_cluster
@@ -4913,50 +4835,40 @@ synthia-perform_installation() {
 
 	fi
 
-	### Install haproxy
+	############################################################################
+	############################################################################
+
+	### HAProxy
+
+	############################################################################
 
 	aenigma-install_haproxy
 
-	### Install PostgreSQL / Patroni
+	############################################################################
+	############################################################################
+
+	### PostgreSQL / Patroni
+
+	############################################################################
 
 	aenigma-install_postgresql_patroni
 
 	############################################################################
 	############################################################################
 
-	### Prepare APT for ejabberd installation.
-
-#	aenigma-add_ejabberd_repo
+	### ejabberd
 
 	############################################################################
 
-	### Check the current status of ejabberd on this machine
+	### Remove the "ejabberd_admin_password_set" file if it exists as ejabberd
+	### was not currently installed.
+
+	############################################################################
 
 	aenigma-get_ejabberd_installed_version
 
-	if [ ! "${ejabberd_installed_version}" = "none" ]
+	if [ "${ejabberd_installed_version}" = "none" ]
 	then
-
-		### ejabberd is currently installed. Check if an ejabberd upgrade is going to be performed.
-
-#		if [ ! "${hardcoded_package_version_ejabberd}" = "${ejabberd_installed_version}" ]
-#		then
-
-#			dna-echo -s "A new version of ejabberd is available. Upgrading it now..."
-
-			### Upgrade ejabberd by non-interactively installing the new config
-			### files [which we'll the re-replace later in the installation
-			### anyway].
-
-#			dpkg -i "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd}" || true
-
-#		fi
-
-		echo
-
-	else
-
-		### Remove the "ejabberd_admin_password_set" file if it exists as ejabberd was not currently installed
 
 		if [ -f "${conf_xmpp_dir}/ejabberd_admin_password_set" ]
 		then
@@ -4966,11 +4878,18 @@ synthia-perform_installation() {
 	fi
 
 	############################################################################
+	############################################################################
 
-	if [ "${psql_migration_required-}" = "true" ]
+	### Empty the /var/lib/ejabberd/ directory as we're now migrating to psql.
+
+	### this is only for pre-v0.7.x to v0.7.0 migrations as v0.7.1 introduces
+	### deb package installation for ejabberd which completely changes directory
+	### structures.
+
+	############################################################################
+
+	if [ "${psql_migration_required-null}" = "true" ]
 	then
-
-		### Empty the /var/lib/ejabberd/ directory as we're now migrating to psql
 
 		### Stop ejabberd
 
@@ -4990,11 +4909,14 @@ synthia-perform_installation() {
 
 	fi
 
+	############################################################################
+	############################################################################
+
 	### Perform a full APT upgrade
 
 	dna-apt_full_upgrade -e
 
-	### Actually install ejabberd.
+	### Actually install ejabberd from DEB package.
 
 	aenigma-install_ejabberd_deb
 
@@ -5002,7 +4924,7 @@ synthia-perform_installation() {
 
 	aenigma-install_ejabberd_config
 
-	### Localize ejabberd configuration and restart it
+	### Localize ejabberd configuration without restarting it.
 
 	aenigma-localize_ejabberd_install -s
 
@@ -5010,9 +4932,18 @@ synthia-perform_installation() {
 
 	aenigma-enable_ejabberd
 
+	### Start ejabberd
+
+	aenigma-start_ejabberd
+
+	############################################################################
+	############################################################################
+
 	### Only for psql migration
 
-	if [ "${psql_migration_status-}" = "complete" ]
+	############################################################################
+
+	if [ "${psql_migration_status-null}" = "complete" ]
 	then
 		ufw allow 5222
 		ufw allow 5223
@@ -5023,18 +4954,23 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	### Perform primary_node-only operations on ejabberd.
+
+	############################################################################
+
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
-		### Add backup script to crontab
+		### Add backup script to crontab.
 
 		dna-add_cron_job -n ${proj_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-backup"
 
-		### Add create_push_certs script to crontab for monthly LE autorenewal and distribution to other nodes
+		### Add create_push_certs script to crontab for monthly LE autorenewal
+		### and distribution to other nodes.
 
 		dna-add_cron_job -n ${proj_name}-backup -t "8 4 2 * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-create_push_certs"
 
-		### Register ejabberd admin user
+		### Register ejabberd admin user.
 
 		dna-echo -m "Now registering ejabberd admin user [if it doesn't yet exist]..."
 		ejab_admin_pw="$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 24 | head -n 1)"
@@ -5058,7 +4994,7 @@ synthia-perform_installation() {
 		    ejab_admin_pwreset="y"
 		fi
 
-		### Update ejabberd's module repo
+		### Update ejabberd's module repo.
 
 		dna-echo -m "Now updating ejabberd's module repo..."
 		set +e
@@ -5066,7 +5002,7 @@ synthia-perform_installation() {
 		set -e
 		dna-echo -s "Finished updating ejabberd's module repo..."
 
-		### Create shared roster groups
+		### Create shared roster groups.
 
 		dna-echo -m "Now creating 'ADMIN:EVERYBODY' and 'ADMIN:ONLINE' shared roster groups [admin@${domain} can see 'everybody' and 'all online']..."
 		/usr/sbin/ejabberdctl srg_create everybody "$domain" "everybody [$domain]" "This aenigma group includes every user on this domain" ""
@@ -5082,7 +5018,10 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Run some generic operations to catch services status output and alert the user if something has gone wrong.
+	### Run some generic operations to catch services status output and alert
+	### the user if something has gone wrong.
+
+	############################################################################
 
 	declare -A service_checker_array=(
 			[APT]="apt-get -y upgrade"
@@ -5123,7 +5062,13 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	if [ ! "${cluster_mode-}" = "secondary" ]
+	### If this is the primary node, then echo ejabberd admin credentials
+	### and, if cluster is enabled, prompt for clusterization.
+	### Otherwise if this is a secondary node, join the primary node.
+
+	############################################################################
+
+	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
 		### Pring login information and credentials
@@ -5141,7 +5086,7 @@ synthia-perform_installation() {
 
 		dna-press_to_continue
 
-		if [ "${cluster_enabled-}" = "cluster" ]
+		if [ "${cluster_enabled-null}" = "cluster" ]
 		then
 
 			dna-echo -m "It's now time to run the | ${o-}clusterize${n-} | script to start adding [or updating] your secondary nodes."
@@ -5152,7 +5097,7 @@ synthia-perform_installation() {
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 				bash "${tools_dir}/${proj_name}-clusterize"
 
-				while [ ! "${exit_clusterization_loop-}" = "y" ]
+				while [ ! "${exit_clusterization_loop-null}" = "y" ]
 				do
 
 					dna-ask_for_boolean -d "y" -q "Would you like to clusterize another node now?"
@@ -5204,7 +5149,9 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Prompt for loglevel_zero
+	### Prompt for loglevel_zero.
+
+	############################################################################
 
 	describe_setting() {
 
@@ -5239,8 +5186,11 @@ synthia-perform_installation() {
 	fi
 
 	############################################################################
+	############################################################################
 
-	### Prompt for mam_off
+	### Prompt for mam_off.
+
+	############################################################################
 
 	describe_setting() {
 
@@ -5275,8 +5225,11 @@ synthia-perform_installation() {
 	fi
 
 	############################################################################
+	############################################################################
 
-	### Provision Tor
+	### Prompt for Tor provisioning.
+
+	############################################################################
 
 	dna-echo -m "aenigma can also provision a Tor hidden service on this machine to make it reachable entirely inside the Tor network."
 	dna-echo -m "You will be able to connect to the | ${o-}.onion${n-} | address that will be generated to access all services [XMPP, web, SSH, etc...]"
@@ -5289,8 +5242,11 @@ synthia-perform_installation() {
 	fi
 
 	############################################################################
+	############################################################################
 
-	### Provision Converse.js
+	### Prompt for Converse.JS provisioning.
+
+	############################################################################
 
 	dna-echo -m "aenigma can also provision a Converse.js instance on this machine to allow you and this instance's users to have your own XMPP web client always available from anywhere."
 	dna-echo -m "You will be able to connect to it at | ${o-}https://${hostname}/xmpp/${n-} | from any device."
@@ -5306,7 +5262,9 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Generate aenigma-specific DHparam file
+	### Generate aenigma-specific DHparam file.
+
+	############################################################################
 
 	dna-generate_dhparam
 
@@ -5321,17 +5279,25 @@ synthia-perform_installation() {
 			sed -i "s|### dhfile: 'DHFILE'|dhfile: 'DHFILE'|g" "/opt/ejabberd/conf/ejabberd.yml"
 			sed -i "s|### s2s_dhfile: 'DHFILE'|s2s_dhfile: 'DHFILE'|g" "/opt/ejabberd/conf/ejabberd.yml"
 
-			dna-echo -m "Now restarting ejabberd..."
-
-			service ejabberd restart
+			aenigma-restart_ejabberd_if_running
 
 		fi
 
 	fi
 
 	############################################################################
+	############################################################################
+
+	### Delete tmp_project_dir as the installation is complete.
+
+	############################################################################
 
 	dna-remove_tmp_project_dir
+
+	############################################################################
+	############################################################################
+
+	### End.
 
 	############################################################################
 	############################################################################
