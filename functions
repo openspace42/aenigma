@@ -1176,7 +1176,12 @@ aenigma-set_permissions() {
 
 	### /opt/ejabberd/captcha.sh
 
-	chmod +x "/opt/ejabberd/captcha.sh"
+	if [ -f "/opt/ejabberd/captcha.sh" ]
+	then
+
+		chmod +x "/opt/ejabberd/captcha.sh"
+
+	fi
 
 	### /opt/ejabberd/.erlang.cookie
 
