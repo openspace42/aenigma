@@ -3681,7 +3681,7 @@ aenigma-set_loglevel_zero_enabled() {
 
 	############################################################################
 
-	operation_message="setting loglevel to zero for all services"
+	operation_message="disabling logging for all services"
 	dna-echo_operation -h
 
 	### ejabberd
@@ -3730,7 +3730,7 @@ aenigma-set_loglevel_zero_disabled() {
 
 	############################################################################
 
-	operation_message="setting loglevel to zero for all services"
+	operation_message="[re-]enabling logging for all services"
 	dna-echo_operation -h
 
 	### ejabberd
@@ -3820,7 +3820,7 @@ aenigma-set_mam_off_disabled() {
 
 	############################################################################
 
-	operation_message="re-enabling ejabberd message archiving [mod_mam] globally"
+	operation_message="[re-]enabling ejabberd message archiving [mod_mam] globally"
 	dna-echo_operation -h
 
 	############################################################################
