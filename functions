@@ -59,8 +59,8 @@ synthia-define_vars() {
 
 	export hardcoded_package_version_ejabberd="19.05"
 	export hardcoded_package_version_ejabberd_extended="19.05-0"
-	export hardcoded_package_version_ejabberd_fallback="19.02"
-	export hardcoded_package_version_ejabberd_fallback_extended="19.02-0"
+	export hardcoded_package_version_ejabberd_fallback="19.05"
+	export hardcoded_package_version_ejabberd_fallback_extended="19.05-0"
 
 	############################################################################
 	############################################################################
