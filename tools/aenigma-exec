@@ -91,7 +91,7 @@ dna-read_conf_settings
 
 ### Log script
 
-dna-log_script
+dna-log_script -h
 
 ################################################################################
 
