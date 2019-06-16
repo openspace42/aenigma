@@ -1615,7 +1615,7 @@ aenigma-wipe_old_ufw_cluster_rules() {
 
 		### Get "ufw allow from x.x.x.x" rules previously set by us
 
-		ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_project_dir}/ufw_previous_cluster_rules" || true
+		ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_dir}/ufw_previous_cluster_rules" || true
 
 		### Check every item from previous command output to see if those IPv4s
 		### are still part of the cluster and if not remove those rules
@@ -1635,11 +1635,11 @@ aenigma-wipe_old_ufw_cluster_rules() {
 
 			fi
 
-		done < "${tmp_project_dir}/ufw_previous_cluster_rules"
+		done < "${tmp_dir}/ufw_previous_cluster_rules"
 
 		unset line
 
-		rm "${tmp_project_dir}/ufw_previous_cluster_rules"
+		rm "${tmp_dir}/ufw_previous_cluster_rules"
 
 	fi
 
@@ -4970,7 +4970,7 @@ synthia-perform_installation() {
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
-		aenigma-install_etcd_cluster
+		aenigma-install_etcd_cluster_conditionally
 
 		aenigma-apply_and_restart_patroni_haproxy_ejabberd -r
 
