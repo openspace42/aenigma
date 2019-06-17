@@ -1272,6 +1272,121 @@ aenigma-create_ejabberd_locations() {
 
 }
 
+aenigma-verify_ejabberd_deb_package() {
+
+	############################################################################
+
+	### https://www.process-one.net/index.php/docs/verifying_process_one_downloads_integrity/
+
+	############################################################################
+
+	while getopts ":s" arguments
+    do
+        case "${arguments}" in
+            s)	check_silently="y"
+                ;;
+            \?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+                dna-exit
+                ;;
+        esac
+    done
+    OPTIND=1
+
+	############################################################################
+
+	dna-install_dependencies -p "gpg"
+
+	gpg --import "${source_dir}/conf/gpg/process-one.asc"
+	echo
+
+	wget -qO "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.sum" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.sum"
+	wget -qO "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.asc" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.asc"
+
+	### sha256.
+
+	cd "${tmp_project_dir}"
+
+	if sha256sum -c "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.sum"
+	then
+
+		if [ -z "${check_silently-}" ]
+		then
+
+			echo
+			dna-echo -s "ejabberd SHA256 file integrity check succeeded."
+
+		fi
+
+	else
+
+		if [ -z "${check_silently-}" ]
+		then
+
+			echo
+			dna-echo -e "ejabberd SHA256 file integrity check failed."
+
+		fi
+
+		return 1
+
+	fi
+
+	if [ -n "${check_silently-}" ]
+	then
+		echo
+	fi
+
+	### gpg
+
+	if gpg --verify "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.asc"
+	then
+
+		if [ -z "${check_silently-}" ]
+		then
+
+			echo
+			dna-echo -s "ejabberd GPG file integrity check succeeded."
+
+		fi
+
+	else
+
+		if [ -z "${check_silently-}" ]
+		then
+
+			echo
+			dna-echo -e "ejabberd GPG file integrity check failed."
+
+			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [severely NOT recommended]? [y/N]"
+
+			if [ "${boolean_output}" = "y" ]
+			then
+
+				dna-echo "Ok, continuing anyway..."
+
+			else
+
+				dna-echo "Ok, aborting..."
+				dna-exit
+
+			fi
+
+		fi
+
+		return 1
+
+	fi
+
+	if [ -n "${check_silently-}" ]
+	then
+		echo
+	fi
+
+	############################################################################
+	############################################################################
+
+}
+
 aenigma-install_ejabberd_deb() {
 
 	############################################################################
@@ -1289,9 +1404,41 @@ aenigma-install_ejabberd_deb() {
 
 	### Download .deb package
 
-	wget -O "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb"
+	if [ -f "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb" ]
+	then
 
-	### Verify .deb package ###todo
+		if aenigma-verify_ejabberd_deb_package -s
+		then
+
+			dna-echo -s "ejabberd deb file already downloaded and integer."
+
+		else
+
+			dna-echo -e "ejabberd deb file already downloaded but NOT integer."
+			dna-echo -m "Downloading it once again now..."
+
+			ejabberd_deb_file_download_needed="y"
+
+		fi
+
+	else
+
+		ejabberd_deb_file_download_needed="y"
+
+	fi
+
+	if [ "${ejabberd_deb_file_download_needed-null}" = "y" ]
+	then
+
+		### Download .deb package file
+
+		wget -O "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb"
+
+		### Verify .deb package file
+
+		aenigma-verify_ejabberd_deb_package
+
+	fi
 
 	### Install .deb package
 
