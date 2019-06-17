@@ -1442,7 +1442,7 @@ aenigma-install_ejabberd_deb() {
 
 	### Install .deb package
 
-	dpkg -i "${tmp_project_dir}/ejabberd-${hardcoded_package_version_ejabberd_extended}.deb" || true
+	dpkg -i "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb" || true
 
 	echo
 
