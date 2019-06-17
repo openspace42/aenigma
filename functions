@@ -5212,7 +5212,7 @@ synthia-perform_installation() {
 
 	### Perform a full APT upgrade
 
-	dna-apt_full_upgrade -e
+#	dna-apt_full_upgrade -e ## re-enable after v0.7.1 stable
 
 	### Actually install ejabberd from DEB package.
 
