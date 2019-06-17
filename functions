@@ -4204,6 +4204,8 @@ synthia-perform_installation() {
 		rm /etc/systemd/system/ejabberd* || true
 		rm /usr/sbin/ejabberdctl || true
 
+		epmd -kill || true
+
 	fi
 
 	############################################################################
