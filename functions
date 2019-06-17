@@ -1357,20 +1357,6 @@ aenigma-verify_ejabberd_deb_package() {
 			echo
 			dna-echo -e "ejabberd GPG file integrity check failed."
 
-			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [severely NOT recommended]? [y/N]"
-
-			if [ "${boolean_output}" = "y" ]
-			then
-
-				dna-echo "Ok, continuing anyway..."
-
-			else
-
-				dna-echo "Ok, aborting..."
-				dna-exit
-
-			fi
-
 		fi
 
 		return 1
@@ -1381,6 +1367,8 @@ aenigma-verify_ejabberd_deb_package() {
 	then
 		echo
 	fi
+
+	unset check_silently
 
 	############################################################################
 	############################################################################
@@ -1414,6 +1402,7 @@ aenigma-install_ejabberd_deb() {
 
 		else
 
+			echo
 			dna-echo -e "ejabberd deb file already downloaded but NOT integer."
 			dna-echo -m "Downloading it once again now..."
 
@@ -1436,7 +1425,24 @@ aenigma-install_ejabberd_deb() {
 
 		### Verify .deb package file
 
-		aenigma-verify_ejabberd_deb_package
+		if ! aenigma-verify_ejabberd_deb_package
+		then
+
+			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [severely NOT recommended]? [y/N]"
+
+			if [ "${boolean_output}" = "y" ]
+			then
+
+				dna-echo "Ok, continuing anyway..."
+
+			else
+
+				dna-echo "Ok, aborting..."
+				dna-exit
+
+			fi
+
+		fi
 
 	fi
 
@@ -1452,6 +1458,8 @@ aenigma-install_ejabberd_deb() {
 	sed -i "s|^ROOT_DIR.*|ROOT_DIR=\"/opt/ejabberd-${hardcoded_package_version_ejabberd}/\"|g" "/usr/sbin/ejabberdctl"
 
 	dna-echo_operation -t
+
+	unset ejabberd_deb_file_download_needed
 
 	############################################################################
 
