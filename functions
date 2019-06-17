@@ -1428,7 +1428,7 @@ aenigma-install_ejabberd_deb() {
 		if ! aenigma-verify_ejabberd_deb_package
 		then
 
-			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [severely NOT recommended]?"
+			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [strongly NOT recommended]?"
 
 			if [ "${boolean_output}" = "y" ]
 			then
