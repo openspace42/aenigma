@@ -1280,6 +1280,8 @@ aenigma-verify_ejabberd_deb_package() {
 
 	############################################################################
 
+	unset check_silently
+
 	while getopts ":s" arguments
     do
         case "${arguments}" in
@@ -1368,8 +1370,6 @@ aenigma-verify_ejabberd_deb_package() {
 		echo
 	fi
 
-	unset check_silently
-
 	############################################################################
 	############################################################################
 
@@ -1428,16 +1428,16 @@ aenigma-install_ejabberd_deb() {
 		if ! aenigma-verify_ejabberd_deb_package
 		then
 
-			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [severely NOT recommended]? [y/N]"
+			dna-ask_for_boolean -d "n" -q "Would you like to continue anyway [severely NOT recommended]?"
 
 			if [ "${boolean_output}" = "y" ]
 			then
 
-				dna-echo "Ok, continuing anyway..."
+				dna-echo -m "Ok, continuing anyway..."
 
 			else
 
-				dna-echo "Ok, aborting..."
+				dna-echo -m "Ok, aborting..."
 				dna-exit
 
 			fi
