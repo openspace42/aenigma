@@ -4289,9 +4289,18 @@ synthia-perform_installation() {
 
 	if dpkg -s ejabberd &> /dev/null
 	then
-		if ! grep -q "default_db: sql" "/opt/ejabberd/conf/ejabberd.yml"
+		if [ -f "/etc/ejabberd/ejabberd.yml" ]
 		then
-			export psql_migration_required="true"
+			if ! grep -q "default_db: sql" "/etc/ejabberd/ejabberd.yml"
+			then
+				export psql_migration_required="true"
+			fi
+		elif [ -f "/opt/ejabberd/conf/ejabberd.yml" ]
+		then
+			if ! grep -q "default_db: sql" "/opt/ejabberd/conf/ejabberd.yml"
+			then
+				export psql_migration_required="true"
+			fi
 		fi
 	fi
 
