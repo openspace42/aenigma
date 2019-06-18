@@ -1296,7 +1296,7 @@ aenigma-verify_ejabberd_deb_package() {
 
 	############################################################################
 
-	dna-install_dependencies -p "gpg"
+	dna-install_dependencies -p "gnupg"
 
 	gpg --import "${source_dir}/conf/gpg/process-one.asc"
 	echo
