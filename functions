@@ -1174,6 +1174,13 @@ aenigma-set_permissions() {
 		chown -R "ejabberd:ejabberd" "/opt/ejabberd/"
 	fi
 
+	### /opt/ejabberd/.erlang.cookie
+
+	if id "ejabberd" &> /dev/null && [ -f "/opt/ejabberd/.erlang.cookie" ]
+	then
+		chown "ejabberd:ejabberd" "/opt/ejabberd/.erlang.cookie"
+	fi
+
 	### /opt/ejabberd/captcha.sh
 
 	if [ -f "/opt/ejabberd/captcha.sh" ]
@@ -1181,13 +1188,6 @@ aenigma-set_permissions() {
 
 		chmod +x "/opt/ejabberd/captcha.sh"
 
-	fi
-
-	### /opt/ejabberd/.erlang.cookie
-
-	if [ -f "/opt/ejabberd/.erlang.cookie" ]
-	then
-		chown ejabberd:ejabberd "/opt/ejabberd/.erlang.cookie"
 	fi
 
 	############################################################################
