@@ -4,6 +4,18 @@ Follow our development updates together with the aenigma community on our chatro
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
+### 2019-06-19 | v0.7.1-beta.3 release
+
+```
+After the [openssl-v1.1.1 incident](https://github.com/openspace42/aenigma/wiki/aenigma-upgrades-on-Ubuntu-18.04-are-temporarily-broken.-Here's-how-to-fix-them.) we seem to be back on track with v0.7.1 release and aenigma in general.
+If you haven't followed, the news is that we were forced to rapidly switch to a DEB-package-file ejabberd installation moving on from the old jabber.at APT repo installation strategy, as the version provided by that repo was too old [v18.12.1] with respect to the current stable release of ejabberd [v19.05], and an update to openssl in the Ubuntu 18.04 built-in canonical repository broke TLS in ejabberd, therefore forcing us to moving to DEB-package installation earlier than schedule.
+Fortunately, after a week of work, both installation of DEB-file version *and* migration from old to new version seem to work, and you can now test it out for yourself if you'd like.
+Please note that:
+1. upgrading v0.7.1 [and related betas] will *not* preserve existing ejabberd uploads. All existing ejabberd uploads will be lost.
+2. If you're running any version of aenigma prior to v0.7.1-beta.2 you *must* follow [this guide](https://github.com/openspace42/aenigma/wiki/aenigma-upgrades-on-Ubuntu-18.04-are-temporarily-broken.-Here's-how-to-fix-them.#how-to-work-your-way-out-of-this-and-upgrade-beyond-) before you do anything else.
+After you follow the above step you can upgrade to v0.7.1-beta.3 with `bash aenigma/setup -db -pb` after re-cloning from origin.
+```
+
 ### 2019-06-11 | v0.7.1 beta release
 
 ```

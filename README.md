@@ -26,7 +26,7 @@ If you're finding XMPP to your liking, then deploy your own server following the
 * **latest and most robust security by default** in addition to a built-in first-boot system-wide hardening script
 * **one touch deployment**: just clone and run the setup script on one or multiple freshly installed machines
 * features a **simple, clear, step-by-step installer** that makes sure you get everything perfect on the first run
-* always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server [thanks to the jabber.at APT repository that allows your system to keep ejabberd up to date independently of aenigma]
+* always based on the **latest version of ejabberd**, a modern, scalable, and robust XMPP server
 * provisions **100% compliant servers** by passing all of the [2018 XEP-0387 compliance checks](https://compliance.conversations.im/about/) and therefore those performed by the Conversations client
 * natively supports **[almost] signal-level encrypted conversations** with all the required modules for **OMEMO E2EE**
 * allows you to and guides you through using your **top level domain as the xmpp domain [@domain.xyz]** while hosting the server on a subdomain [xmpp.domain.xyz] as its hostname by using SRV records [without any XMPP client UI/UX complications or TLS conflicts]
@@ -39,6 +39,7 @@ If you're finding XMPP to your liking, then deploy your own server following the
 * provisions and automatically renews **free and fully valid LetsEncrypt wildcard TLS [SSL] certificates** and correctly configures all deployed services [ejabberd, nginx, etc...] accordingly
 * provisions a **PostgreSQL database instance** [and clusters it if necessary with etcd, Patroni, and HAProxy] to provide a robust and high performance backend to ejabberd and movim
 * creates ejabberd **Shared Roster Groups** to easily allow admins to see all users registered on their own rosters and all users online at any given time
+* uses nginx-based XMPP uploads rather than ejabberd's built-in module for higher robustness.
 * automatically **backups up** all configuration, the ejabberd database, and XMPP data storage **locally and [optionally] to S3 with strong encryption** via duplicity and includes a script for a **guided, consistent, and complete restore**
 * allows you to easily run your aenigma instance on **multiple servers [a cluster]** for **robustness, load distribution / balancing, and failover**
 * is **idempotent and self-versioning** to allow for easy re-installs, re-configurations, and upgrades
@@ -61,39 +62,16 @@ Follow our development updates together with the aenigma community on our chatro
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
-### Latest post: 2019-06-11 | v0.7.1 beta release
+### Latest post: 2019-06-11 | v0.7.1-beta.2 beta release
 
 ```
-Hi there!
-
-aenigma v0.7.1-beta.1 is out with the following improvements:
-
-- NGINX-handled ejabberd uploads. This is another feature [after the PostgreSQL database integration in the previous release] that is highly recommended by the ejabberd team and which brings the robustness of this feature to a new level.
-- the new set_mam_disabled function, which - especially when combined with set_loglevel_zero - further turns your server's "stealth mode" on, limiting the amount of user data stored onto it, which is a good idea if you believe your server might be compromised or seized in the future.
-- removed mod_echo as it's deprecated
-- refined nginx websocket revproxy config for .onion version of converse.js
-- enable mod_proxy65 for continued 100% compliance with caas
-- enabled an option in synthia+dna to install the project from a custom git branch on origin
-- stability and notable speed improvements when reclustering PostgreSQL
-- very many bugfixes and general retouches
-
-aenigma v0.7.1 will also ship with dna v0.3.14 which fixes a couple of small issues.
-
-As always, you can test out this specific beta with:
-
-aenigma-upgrade -dt -pt
-
-or try out the latest bleeding_edge version up to HEAD with:
-
-aenigma-upgrade -db -pb
-
-or simply wait for this stable release to be published - after which you'll be able to upgrade normally with:
-
-aenigma-upgrade
-
-Thanks for following our project and please consider becoming a supporter if you're finding it interesting, useful, or both!
-
-Nz
+After the [openssl-v1.1.1 incident](https://github.com/openspace42/aenigma/wiki/aenigma-upgrades-on-Ubuntu-18.04-are-temporarily-broken.-Here's-how-to-fix-them.) we seem to be back on track with v0.7.1 release and aenigma in general.
+If you haven't followed, the news is that we were forced to rapidly switch to a DEB-package-file ejabberd installation moving on from the old jabber.at APT repo installation strategy, as the version provided by that repo was too old [v18.12.1] with respect to the current stable release of ejabberd [v19.05], and an update to openssl in the Ubuntu 18.04 built-in canonical repository broke TLS in ejabberd, therefore forcing us to moving to DEB-package installation earlier than schedule.
+Fortunately, after a week of work, both installation of DEB-file version *and* migration from old to new version seem to work, and you can now test it out for yourself if you'd like.
+Please note that:
+1. upgrading v0.7.1 [and related betas] will *not* preserve existing ejabberd uploads. All existing ejabberd uploads will be lost.
+2. If you're running any version of aenigma prior to v0.7.1-beta.2 you *must* follow [this guide](https://github.com/openspace42/aenigma/wiki/aenigma-upgrades-on-Ubuntu-18.04-are-temporarily-broken.-Here's-how-to-fix-them.#how-to-work-your-way-out-of-this-and-upgrade-beyond-) before you do anything else.
+After you follow the above step you can upgrade to v0.7.1-beta.3 with `bash aenigma/setup -db -pb` after re-cloning from origin.
 ```
 
 you can find older news items on our archive page [here](/News.md)
