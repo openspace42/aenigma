@@ -463,6 +463,23 @@ echo
 dna-echo -s "Primary_node-level configuration complete."
 dna-echo -m "You can now return to your secondary node and finish running the installation from there."
 
+### Wait for the installation on the secondary node to be complete.
+
+check_condition() {
+
+    if secondary_node_token="$(ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" rm /tmp/aenigma_secondary_node_provisioning_complete)" exit &> /dev/null
+    then
+        condition_verified=y
+    fi
+
+}
+
+dna-wait_for -i "8" -d "Now waiting for setup on the secondary node to be complete..."
+dna-echo -s "Secondary node setup complete. Clusterization successful."
+
+unset wait_output
+sleep 1
+
 ############################################################################
 
 dna-remove_tmp_project_dir
