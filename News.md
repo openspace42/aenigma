@@ -4,6 +4,42 @@ Follow our development updates together with the aenigma community on our chatro
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
+### 2019-06-20 | v0.7.1 stable release
+
+```
+Hi there!
+
+aenigma v0.7.1 stable is out with the following improvements:
+
+- ejabberd v19.05 [from the previous v18.12.1] now installed from DEB-package-file directly from the process-one website.
+- NGINX-handled ejabberd uploads. This is another feature [after the PostgreSQL database integration in the previous release] that is highly recommended by the ejabberd team and which brings the robustness of this feature to a new level.
+- the new set_mam_disabled function, which - especially when combined with set_loglevel_zero - further turns your server's "stealth mode" on, limiting the amount of user data stored onto it, which is a good idea if you believe your server might be compromised or seized in the future.
+- removed mod_echo as it's deprecated
+- refined nginx websocket revproxy config for .onion version of converse.js
+- enable mod_proxy65 for continued 100% compliance with caas
+- enabled an option in synthia+dna to install the project from a custom git branch on origin
+- stability and notable speed improvements when reclustering PostgreSQL
+- very many bugfixes and general retouches
+
+aenigma v0.7.1 also ships with dna v0.3.14 which includes fixes a couple of small issues and introduces the following improvements:
+
+- fix postfix not enabling during install_mail_notifications
+- added include_hostname in log_script
+- Fix https://github.com/openspace42/aenigma/issues/58
+
+**This upgrade will delete any existing ejabberd uploads** as we now handle them with NGINX.
+
+If you're running on Ubuntu 18.04 make sure you follow the upgrade guide [here](https://github.com/openspace42/aenigma/wiki/aenigma-upgrades-on-Ubuntu-18.04-are-temporarily-broken.-Here's-how-to-fix-them.) for this specific release because of the 2019/06/12 openssl incident.
+
+After that, or if you're running on Debian, you can upgrade with:
+
+aenigma-upgrade
+
+Thanks for following our project and please consider becoming a supporter if you're finding it interesting, useful, or both!
+
+Nz
+```
+
 ### 2019-06-19 | v0.7.1-beta.3 release
 
 ```
