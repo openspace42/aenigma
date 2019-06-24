@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+### Set bash environment error management
+
+set -eu
+
+################################################################################
+
+### Add padding to output
+
+echo
+
+################################################################################
+
+### Determine script execution directory and install directory.
+
+if [ -L "${BASH_SOURCE}" ]
+then
+
+    ### This file is being executed via a symlink.
+    ### Identify the parent directory of the target file
+
+    link_target="$(readlink ${BASH_SOURCE})"
+    exec_dir="${link_target%/*}"
+
+else
+
+    ### This file is being directly executed.
+    ### Identify our parent directory.
+
+    exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+fi
+
+exec_dir_trim_2="$( echo ${exec_dir} | cut -f 1,2,3 -d'/')"
+exec_dir_trim_3="$( echo ${exec_dir} | cut -f 1,2,3,4 -d'/')"
+
+if [ -f "${exec_dir_trim_2}/functions" ]
+then
+	exec_dir_root="${exec_dir_trim_2}"
+else
+	if [ -f "${exec_dir_trim_3}/functions" ]
+	then
+		exec_dir_root="${exec_dir_trim_3}"
+	else
+		echo "Functions file not found in any second or third level parent directory of: | ${exec_dir} |."
+		echo
+		echo "Exiting..."
+		echo
+        exit 1
+	fi
+fi
+
+### Source local functions file.
+
+. "$exec_dir_root/functions"
+
+################################################################################
+
+### Define formatting
+
+synthia-define_formatting
+
+################################################################################
+
+### Check for root user runtime
+
+synthia-check_root
+
+################################################################################
+
+### Source dna
+
+synthia-source_dna
+
+################################################################################
+
+### Define variables
+
+synthia-define_vars
+
+################################################################################
+
+### Read conf settings
+
+dna-read_conf_settings
+
+################################################################################
+
+### Touch temp dir
+
+dna-touch_tmp_project_dir
+
+################################################################################
+
+### Log script
+
+dna-head_script
+
+################################################################################
+################################################################################
+
+dna-get_project_version
+
+dna-get_dna_version
+
+################################################################################
+################################################################################
