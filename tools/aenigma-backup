@@ -1,34 +1,42 @@
 #!/usr/bin/env bash
 
 ################################################################################
-
-### Set bash environment error management
-
-set -eu
+################################################################################
+################################################################################
 
 ################################################################################
 
-### Add padding to output
+### initialize script with standard synthia bootstrapping block.
+
+################################################################################
+
+### 1 | add padding to output.
 
 echo
 
 ################################################################################
 
-### Determine script execution directory and install directory.
+#### 2 | locate execution environment and perform synthia-bound operations.
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ### this file is being executed via a symlink.
+    ### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ### this file is being directly executed.
+    ### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -53,49 +61,55 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+##### check for root user runtime.
 
 synthia-check_root
 
 ################################################################################
 
-### Source dna
+#### 3 | source dna and perform dna-bound operations.
+
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
-################################################################################
-
-### Read conf settings
+##### read conf settings.
 
 dna-read_conf_settings
 
+##### touch temp dir.
+
+dna-touch_tmp_project_dir
+
 ################################################################################
 
-### Log script
+#### 4 | head/log script.
 
 dna-log_script
 
 ################################################################################
+################################################################################
 
-while getopts ":s" arguments; do
+### actually start script operations.
+
+################################################################################
+
+#### evaluate arguments.
+
+while getopts ":s" arguments
+do
     case $arguments in
 		s)	skip_install_complete_check="-s"
 			;;
@@ -108,113 +122,8 @@ OPTIND=1
 
 ################################################################################
 
-### Check for lockfile to avoid multiple simultaneous backups
-
-if [ -f /tmp/${proj_name}-backup-running-lockfile ]
-then
-
-    dna-echo -e "It appears a ${proj_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted."
-    dna-echo -m "If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted."
-    dna-echo -m "Running multiple simultaneous backups is absolutely not supported and will make both fail."
-
-	if [ "${interactive}" = "y" ]
-    then
-        dna-ask_for_boolean -d "n" -q "If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
-        if [ "${boolean_output}" = "y" ]
-        then
-            dna-echo -m "Ok, continuing anyway..."
-            export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
-        else
-            dna-echo -m "Ok, aborting..."
-            dna-exit
-        fi
-
-    else
-
-        dna-echo -m "If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted."
-        dna-echo -m "Alternatively, you can also log into this machine and | ${o-}rm /tmp/${proj_name}-backup-running-lockfile${n-} |."
-        dna-echo -e "Aborting backup for now."
-        dna-exit
-
-    fi
-
-else
-
-    ### Set lockfile.
-
-    export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
-    touch "${lockfile_set}"
-
-fi
+aenigma_backup
 
 ################################################################################
-
-dna-br_purge_incomplete_archives
-
-dna-br_purge_dirs
-
-dna-br_create_dirs backup
-
-dna-br_update_storage_info
-
-dna-br_purge_backups
-
-if [ "$backup_archival_location" = "s3" ]
-then
-
-    dna-br_restore_from_S3 test
-
-    dna-br_purge_dirs
-
-    dna-br_create_dirs backup
-
-fi
-
-dna-br_backup_locally "${skip_install_complete_check-}"
-
 ################################################################################
-
-if [ "$backup_archival_location" = "s3" ]
-then
-
-    if [ "${s3_restore_test_failed-null}" = "y" ]
-    then
-
-        dna-echo -e "Skipping S3 backup because of a previous test restore failure."
-
-        rm -r "$tmp_backup_dir"
-
-    else
-
-    	mv "$tmp_backup_dir"/* "$backup_local_storage_path/latest"
-
-    	############################################################################
-
-    	dna-br_backup_to_S3
-
-    fi
-
-else
-
-	rm -r "$tmp_backup_dir"
-
-fi
-
-if [ -d "$backup_local_storage_path/temp" ]
-then
-	rm -r "${backup_local_storage_path:?}/temp"
-fi
-
-dna-br_purge_dirs
-
-if [ -f "/tmp/${proj_name}-backup-running-lockfile" ]
-then
-    rm "/tmp/${proj_name}-backup-running-lockfile"
-fi
-
-if [ "${s3_restore_test_failed-null}" = "y" ]
-then
-    dna-exit
-fi
-
-dna-echo -s "Backup complete!"
+################################################################################
