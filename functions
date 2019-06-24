@@ -1497,7 +1497,7 @@ aenigma-localize_ejabberd_install() {
 	while getopts ":s" arguments
 	do
         case $arguments in
-            s)	skip_ejabberd_start="y"
+            s)	skip_ejabberd_stop_start_operations="y"
 	            ;;
             \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
 	            dna-exit
@@ -1514,7 +1514,12 @@ aenigma-localize_ejabberd_install() {
 
 	### Stop ejabberd if it's already installed and running
 
-	aenigma-stop_ejabberd
+	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
+	then
+
+		aenigma-stop_ejabberd
+
+	fi
 
 	### Perform customizations on the ejabberd config files.
 
@@ -1560,34 +1565,12 @@ aenigma-localize_ejabberd_install() {
 	sed -i "/# ERLANG_NODE/d" "/opt/ejabberd/conf/ejabberdctl.cfg"
 	sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
-	#if [ "${wipe_var_lib_ejabberd-null}" = "ok" ] && [ ! "${set_erlang_node_to_hostname-null}" = "not_necessary" ]
-	#then
-
-	#	dna-echo -e "Now wiping ejabberd to prepare for the new installation..."
-	#	dna-echo -e "This is your final warning: if you're not absolutely sure your data is safe, abort the installation now!"
-
-	#	dna-wait -s "11" -d "Counting down to full ejabberd wipe on this machine..."
-
-	#	/usr/sbin/service ejabberd stop 2> /dev/null || true
-	#	( cd /var/lib/ejabberd/ && find -maxdepth 1 ! -name .erlang.cookie ! -name uploads ! -name . -exec rm -rv {} \; ) > /dev/null
-
-	#	export wipe_var_lib_ejabberd="done"
-
-	#fi
-
-	### Link config files into /opt/ejabberd-version/conf/
-
-	#mkdir -p "/opt/ejabberd-${hardcoded_package_version_ejabberd}/conf/"
-
-	#ln -s "/opt/ejabberd/conf/ejabberd.yml" "/opt/ejabberd-19.05/conf/ejabberd.yml"
-	#ln -s "/opt/ejabberd/conf/ejabberdctl.cfg" "/opt/ejabberd-19.05/conf/ejabberdctl.cfg"
-	#ln -s "/opt/ejabberd/conf/inetrc" "/opt/ejabberd-19.05/conf/inetrc"
-
-	### Set permissions now that user ejabberd exists while ejabberd has still not started yet
+	### set permissions now that user ejabberd exists
+	### while ejabberd has still not started yet
 
 	aenigma-set_permissions
 
-	if [ -z "${skip_ejabberd_start-}" ]
+	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
 	then
 
 		### Finally start ejabberd
@@ -1596,8 +1579,9 @@ aenigma-localize_ejabberd_install() {
 
 	fi
 
-	unset skip_ejabberd_start
+	unset skip_ejabberd_stop_start_operations
 
+	############################################################################
 	############################################################################
 
 }
@@ -2247,6 +2231,191 @@ aenigma-test_online_nodes() {
 
 	aenigma-push_routing_info
 
+	############################################################################
+
+}
+
+aenigma-create_push_certs() {
+
+	############################################################################
+
+	### evaluate arguments.
+
+	############################################################################
+
+	while getopts ":e" arguments
+	do
+		case "${arguments}" in
+			e)	skip_ejabberd_stop_start_operations="y"
+				;;
+			\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+				dna-exit
+				;;
+		esac
+	done
+	OPTIND=1
+
+	############################################################################
+	############################################################################
+
+	### ensure that this is the primary node in the event that cluster
+	### is enabled.
+
+	############################################################################
+
+	if [ "${cluster_mode-null}" = "secondary" ]
+	then
+		dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
+		dna-exit
+	fi
+
+	############################################################################
+
+	if [ ! -f "${nodes_db_ipv4_path}" ]
+	then
+		dna-echo -e " | ${n-}nodes_db${r-} | file not found."
+		dna-echo -m "Either the initial installation was never completed or the file was somehow removed."
+		dna-echo -m "Re-run the installation to fix this."
+		dna-exit
+	fi
+
+	############################################################################
+	############################################################################
+
+	### ensure public IPs are still the same
+	### as when the installer ran the last time.
+
+	############################################################################
+
+	aenigma-check_ip_info_current
+
+	############################################################################
+	############################################################################
+
+	### ensure $tls_project_dir exists.
+
+	############################################################################
+
+	mkdir -p "${tls_project_dir}"
+
+	############################################################################
+	############################################################################
+
+	### provision the LetsEncrypt wildcard TLS certificate for $domain
+	### and each $additional_domains item.
+
+	############################################################################
+
+	dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} | and for any additional domains you specified."
+
+	for this_domain in $(cat < "${domains_db_path}")
+	do
+
+	    dna-provision_le_wildcard_cert -d "${this_domain}"
+
+	done
+
+	############################################################################
+	############################################################################
+
+	### create all-in-one TLS certs for ejabberd.
+
+	############################################################################
+
+	operation_message="creating all-in-one TLS file from LetsEncrypt wildcard cert for ejabberd"
+
+	dna-echo_operation -h
+
+	for le_cert_domain_full in "$le_live_dir"/*
+	do
+
+	    le_cert_domain="$(echo ${le_cert_domain_full} | sed 's:.*/::')"
+
+	    if [[ "${domain}" == "${le_cert_domain}" ]] || [[ "${additional_domains}" == *"${le_cert_domain}"* ]]
+	    then
+
+	        ####################################################################
+
+	        dna-echo -m "Now creating all-in-one TLS certificate file for ${le_cert_domain}..."
+
+	        touch "${tls_project_dir}/${le_cert_domain}.pem"
+
+	        cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${tls_project_dir}/${le_cert_domain}.pem"
+	        cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${tls_project_dir}/${le_cert_domain}.pem"
+
+	        dna-echo -s "Finished creating all-in-one TLS certificate file for ${le_cert_domain}."
+
+	        ####################################################################
+
+	        dna-echo -m "Now copying individual fullchain and privkey files for ${le_cert_domain}..."
+
+	        mkdir -p "${tls_project_dir}/${le_cert_domain}.d/"
+
+	        cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${tls_project_dir}/${le_cert_domain}.d/"
+	        cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${tls_project_dir}/${le_cert_domain}.d/"
+
+	        dna-echo -s "Finished copying individual fullchain and privkey files for ${le_cert_domain}."
+
+	        ####################################################################
+			####################################################################
+
+	    fi
+
+	done
+
+	############################################################################
+	############################################################################
+
+	### set permissions.
+
+	############################################################################
+
+	chown -R "ejabberd:ejabberd" "${tls_project_dir}" 2> /dev/null || true
+	chmod -R 700 "${tls_project_dir}"
+
+	dna-echo_operation -t
+
+	############################################################################
+	############################################################################
+
+	### Verify output
+
+	############################################################################
+
+	if [ -f "${tls_project_dir}/${domain}.pem" ]
+	then
+	    dna-echo -s "TLS certificate for ${domain} found in | ${n-}${tls_project_dir}/${domain}.pem${g-} |."
+	    sleep 1
+	else
+	    dna-echo -e "Something went wrong provisioning the wildcard TLS certificate for ${domain}."
+	    dna-exit
+	fi
+
+	################################################################################
+	############################################################################
+
+	if [ ! "${psql_migration_required-null}" = "true" ] && [ -z "${skip_ejabberd_stop_start_operations-}" ]
+	then
+
+	    aenigma-restart_ejabberd_if_running
+
+	fi
+
+	############################################################################
+	############################################################################
+
+	### push certs to other nodes.
+
+	############################################################################
+
+	aenigma-push_certs
+
+	############################################################################
+	############################################################################
+
+	unset skip_ejabberd_stop_start_operations
+
+	############################################################################
 	############################################################################
 
 }
@@ -3823,11 +3992,35 @@ aenigma-set_loglevel_zero_enabled() {
 	### server be compromised or seized.
 
 	############################################################################
+	############################################################################
+
+	### evaluate arguments.
+
+	############################################################################
+
+	while getopts ":e" arguments
+	do
+		case "${arguments}" in
+			e)	skip_ejabberd_stop_start_operations="y"
+				;;
+			\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+				dna-exit
+				;;
+		esac
+	done
+	OPTIND=1
+
+	############################################################################
+	############################################################################
 
 	operation_message="disabling logging for all services"
 	dna-echo_operation -h
 
+	############################################################################
+
 	### ejabberd
+
+	############################################################################
 
 	sed -i "s|^loglevel.*|loglevel: 0|g" "/opt/ejabberd/conf/ejabberd.yml"
 
@@ -3836,15 +4029,32 @@ aenigma-set_loglevel_zero_enabled() {
 		rm /opt/ejabberd/logs/*
 	fi
 
-	aenigma-restart_ejabberd_if_running
+	### Restart ejabberd to take effect of the changes.
+
+	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
+	then
+
+		aenigma-restart_ejabberd_if_running
+
+	fi
+
+	############################################################################
+	############################################################################
 
 	### sslh
+
+	############################################################################
 
 	sed -i "s|log_level: 1;|log_level: 0;|g" "/etc/sslh.cfg"
 
 	service sslh restart
 
+	############################################################################
+	############################################################################
+
 	### nginx
+
+	############################################################################
 
 	sed -i "s|^\    access_log.*|\    access_log off;|g" "/etc/nginx/nginx.conf"
 	sed -i "s|^error_log.*|error_log off;|g" "/etc/nginx/nginx.conf"
@@ -3859,8 +4069,14 @@ aenigma-set_loglevel_zero_enabled() {
 
 	service nginx restart
 
+	############################################################################
+	############################################################################
+
 	dna-echo_operation -t
 
+	unset skip_ejabberd_stop_start_operations
+
+	############################################################################
 	############################################################################
 
 }
@@ -3869,26 +4085,66 @@ aenigma-set_loglevel_zero_disabled() {
 
 	############################################################################
 
-	### Turn all logging back on if set_loglevel_zero_enabled was previously ran.
+	### turn all logging back on
+	### if set_loglevel_zero_enabled was previously ran.
 
+	############################################################################
+	############################################################################
+
+	### evaluate arguments.
+
+	############################################################################
+
+	while getopts ":e" arguments
+	do
+		case "${arguments}" in
+			e)	export skip_ejabberd_stop_start_operations="y"
+				;;
+			\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+				dna-exit
+				;;
+		esac
+	done
+	OPTIND=1
+
+	############################################################################
 	############################################################################
 
 	operation_message="[re-]enabling logging for all services"
 	dna-echo_operation -h
 
+	############################################################################
+
 	### ejabberd
+
+	############################################################################
 
 	sed -i "s|^loglevel.*|loglevel: 4|g" "/opt/ejabberd/conf/ejabberd.yml"
 
-	aenigma-restart_ejabberd_if_running
+	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
+	then
 
-	### sslh
+		aenigma-restart_ejabberd_if_running
+
+	fi
+
+	############################################################################
+	############################################################################
+
+	### sslh.
+
+	############################################################################
 
 	sed -i "s|log_level: 0;|log_level: 1;|g" "/etc/sslh.cfg"
 
 	service sslh restart
 
-	### nginx
+	############################################################################
+	############################################################################
+
+	### nginx.
+
+	############################################################################
 
 	sed -i "s|\    access_log off;|\    access_log  /var/log/nginx/access.log  main;|g" "/etc/nginx/nginx.conf"
 	sed -i "s|error_log off;|error_log  /var/log/nginx/error.log warn;|g" "/etc/nginx/nginx.conf"
@@ -3909,8 +4165,14 @@ aenigma-set_loglevel_zero_disabled() {
 
 	service nginx restart
 
+	############################################################################
+	############################################################################
+
 	dna-echo_operation -t
 
+	unset skip_ejabberd_stop_start_operations
+
+	############################################################################
 	############################################################################
 
 }
@@ -3922,9 +4184,33 @@ aenigma-set_mam_off_enabled() {
 	### Turn all ejabberd message archiving [mod_mam] off for extra stealth.
 
 	############################################################################
+	############################################################################
+
+	### evaluate arguments.
+
+	############################################################################
+
+	while getopts ":e" arguments
+	do
+		case "${arguments}" in
+			e)	skip_ejabberd_stop_start_operations="y"
+				;;
+			\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+				dna-exit
+				;;
+		esac
+	done
+	OPTIND=1
+
+	############################################################################
+	############################################################################
 
 	operation_message="disabling ejabberd message archiving [mod_mam] globally"
 	dna-echo_operation -h
+
+	############################################################################
+
+	### ejabberd.
 
 	############################################################################
 
@@ -3949,11 +4235,19 @@ aenigma-set_mam_off_enabled() {
 
 	### Restart ejabberd to take effect of the changes.
 
-	aenigma-restart_ejabberd_if_running
+	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
+	then
 
+		aenigma-restart_ejabberd_if_running
+
+	fi
+
+	############################################################################
 	############################################################################
 
 	dna-echo_operation -t
+
+	unset skip_ejabberd_stop_start_operations
 
 	############################################################################
 	############################################################################
@@ -3964,8 +4258,28 @@ aenigma-set_mam_off_disabled() {
 
 	############################################################################
 
-	### Turn all ejabberd message archiving [mod_mam] back on
+	### turn all ejabberd message archiving [mod_mam] back on.
 
+	############################################################################
+	############################################################################
+
+	### evaluate arguments.
+
+	############################################################################
+
+	while getopts ":e" arguments
+	do
+		case "${arguments}" in
+			e)	export skip_ejabberd_stop_start_operations="y"
+				;;
+			\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+				dna-exit
+				;;
+		esac
+	done
+	OPTIND=1
+
+	############################################################################
 	############################################################################
 
 	operation_message="[re-]enabling ejabberd message archiving [mod_mam] globally"
@@ -3979,6 +4293,8 @@ aenigma-set_mam_off_disabled() {
 	############################################################################
 
 	dna-echo_operation -t
+
+	unset skip_ejabberd_stop_start_operations
 
 	############################################################################
 	############################################################################
@@ -5505,9 +5821,9 @@ synthia-perform_installation() {
 
 	if [ "${loglevel_zero_mode}" = "enabled" ]
 	then
-		aenigma-set_loglevel_zero_enabled
+		aenigma-set_loglevel_zero_enabled -e
 	else
-		aenigma-set_loglevel_zero_disabled
+		aenigma-set_loglevel_zero_disabled -e
 	fi
 
 	############################################################################
@@ -5544,9 +5860,9 @@ synthia-perform_installation() {
 
 	if [ "${mam_off_mode}" = "enabled" ]
 	then
-		aenigma-set_mam_off_enabled
+		aenigma-set_mam_off_enabled -e
 	else
-		aenigma-set_mam_off_disabled
+		aenigma-set_mam_off_disabled -e
 	fi
 
 	############################################################################
@@ -5604,11 +5920,18 @@ synthia-perform_installation() {
 			sed -i "s|### dhfile: 'DHFILE'|dhfile: 'DHFILE'|g" "/opt/ejabberd/conf/ejabberd.yml"
 			sed -i "s|### s2s_dhfile: 'DHFILE'|s2s_dhfile: 'DHFILE'|g" "/opt/ejabberd/conf/ejabberd.yml"
 
-			aenigma-restart_ejabberd_if_running
-
 		fi
 
 	fi
+
+	############################################################################
+	############################################################################
+
+	### restart ejabberd to take effect of the last customizations we applied.
+
+	############################################################################
+
+	aenigma-restart_ejabberd_if_running
 
 	############################################################################
 	############################################################################

@@ -2,33 +2,34 @@
 
 ################################################################################
 
-### Set bash environment error management
+### initialize script with standard synthia bootstrapping block
+
+################################################################################
+################################################################################
+
+### set bash environment error management.
 
 set -eu
 
-################################################################################
-
-### Add padding to output
+### add padding to output.
 
 echo
 
-################################################################################
-
-### Determine script execution directory and install directory.
+### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ### this file is being executed via a symlink.
+    ### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ### this file is being directly executed.
+    ### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -53,172 +54,46 @@ else
 	fi
 fi
 
-### Source local functions file.
+### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+### check for root user runtime.
 
 synthia-check_root
 
-################################################################################
-
-### Source dna
+### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+### define variables.
 
 synthia-define_vars
 
-################################################################################
-
-### Read conf settings
+### read conf settings.
 
 dna-read_conf_settings
 
-################################################################################
-
-### Touch temp dir
+### touch temp dir.
 
 dna-touch_tmp_project_dir
 
-################################################################################
-
-### Log script
+### head/log script.
 
 dna-log_script
 
 ################################################################################
+################################################################################
 
-### Ensure that this is the primary node in the event that cluster is enabled.
-
-if [ "${cluster_mode-null}" = "secondary" ]
-then
-	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
-	dna-exit
-fi
+### actually start script operations.
 
 ################################################################################
 
-if [ ! -f "${nodes_db_ipv4_path}" ]
-then
-	dna-echo -e " | ${n-}nodes_db${r-} | file not found."
-	dna-echo -m "Either the initial installation was never completed or the file was somehow removed."
-	dna-echo -m "Re-run the installation to fix this."
-	dna-exit
-fi
+aenigma-create_push_certs
 
 ################################################################################
-
-### Ensure public IPs are still the same as when the installer ran the last time
-
-aenigma-check_ip_info_current
-
 ################################################################################
-
-### Ensure $tls_project_dir exists
-
-mkdir -p "${tls_project_dir}"
-
-########################################################################
-
-### Provision the LetsEncrypt wildcard TLS certificate for $domain and each $additional_domains item
-
-dna-echo -m "It's time to set up the LetsEncrypt wildcard TLS [SSL] certificate that will be valid for | *.${domain} | and for any additional domains you specified."
-
-for this_domain in $(cat < "${domains_db_path}")
-do
-
-    dna-provision_le_wildcard_cert -d "${this_domain}"
-
-done
-
-################################################################################
-
-### Create all-in-one TLS certs for ejabberd
-
-operation_message="creating all-in-one TLS file from LetsEncrypt wildcard cert for ejabberd"
-
-dna-echo_operation -h
-
-for le_cert_domain_full in "$le_live_dir"/*
-do
-
-    le_cert_domain="$(echo ${le_cert_domain_full} | sed 's:.*/::')"
-
-    if [[ "${domain}" == "${le_cert_domain}" ]] || [[ "${additional_domains}" == *"${le_cert_domain}"* ]]
-    then
-
-        ########################################################################
-
-        dna-echo -m "Now creating all-in-one TLS certificate file for ${le_cert_domain}..."
-
-        touch "${tls_project_dir}/${le_cert_domain}.pem"
-
-        cat "${le_live_dir}/${le_cert_domain}/privkey.pem" > "${tls_project_dir}/${le_cert_domain}.pem"
-        cat "${le_live_dir}/${le_cert_domain}/fullchain.pem" >> "${tls_project_dir}/${le_cert_domain}.pem"
-
-        dna-echo -s "Finished creating all-in-one TLS certificate file for ${le_cert_domain}."
-
-        ########################################################################
-
-        dna-echo -m "Now copying individual fullchain and privkey files for ${le_cert_domain}..."
-
-        mkdir -p "${tls_project_dir}/${le_cert_domain}.d/"
-
-        cp "${le_live_dir}/${le_cert_domain}/privkey.pem" "${tls_project_dir}/${le_cert_domain}.d/"
-        cp "${le_live_dir}/${le_cert_domain}/fullchain.pem" "${tls_project_dir}/${le_cert_domain}.d/"
-
-        dna-echo -s "Finished copying individual fullchain and privkey files for ${le_cert_domain}."
-
-        ########################################################################
-
-    fi
-
-done
-
-### Set permissions
-
-chown -R "ejabberd:ejabberd" "${tls_project_dir}" 2> /dev/null || true
-chmod -R 700 "${tls_project_dir}"
-
-dna-echo_operation -t
-
-################################################################################
-
-### Verify output
-
-if [ -f "${tls_project_dir}/${domain}.pem" ]
-then
-    dna-echo -s "TLS certificate for ${domain} found in | ${n-}${tls_project_dir}/${domain}.pem${g-} |."
-    sleep 1
-else
-    dna-echo -e "Something went wrong provisioning the wildcard TLS certificate for ${domain}."
-    dna-exit
-fi
-
-################################################################################
-
-if [ ! "${psql_migration_required-null}" = "true" ]
-then
-
-    aenigma-restart_ejabberd_if_running
-
-fi
-
-################################################################################
-
-### Push certs to other nodes
-
-aenigma-push_certs
