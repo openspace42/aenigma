@@ -1,34 +1,40 @@
 #!/usr/bin/env bash
 
 ################################################################################
+################################################################################
+################################################################################
 
-### Set bash environment error management
-
-set -eu
+### initialize script with standard synthia bootstrapping block.
 
 ################################################################################
 
-### Start fresh
+### 1 | clear screen.
 
 clear
 
 ################################################################################
 
-### Determine script execution directory and install directory.
+#### 2 | locate execution environment and perform synthia-bound operations.
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ### this file is being executed via a symlink.
+    ### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ### this file is being directly executed.
+    ### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -53,26 +59,22 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+##### check for root user runtime.
 
 synthia-check_root
 
 ################################################################################
 ################################################################################
 
-### Head setup
+### head setup.
 
 echo "${g-}${b-}Initiating setup...${x-}"
 echo
@@ -146,12 +148,12 @@ fi
 
 ################################################################################
 
-### If not using local version of project repo...
+### if not using local version of project repo...
 
 if [ ! "${custom_project_version-null}" = "l" ]
 then
 
-	### Reset the repo to HEAD before proceeding with anything
+	### reset the repo to HEAD before proceeding with anything.
 
 	( cd "${exec_dir_root}" && git fetch && git reset --hard origin/master > /dev/null )
 
@@ -159,24 +161,35 @@ fi
 
 ################################################################################
 
-### Download dna
+### download dna.
 
 synthia-download_dna
 
-### Source dna
+################################################################################
+################################################################################
+
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
+##### read conf settings.
+
+dna-read_conf_settings
+
+##### touch temp dir.
+
+dna-touch_tmp_project_dir
+
 ################################################################################
 ################################################################################
 
-### Actually run the installer
+### actually start script operations.
+
+################################################################################
 
 dna-run_install
 

@@ -1,21 +1,26 @@
 #!/usr/bin/env bash
 
 ################################################################################
-
-### initialize script with standard synthia bootstrapping block
-
 ################################################################################
 ################################################################################
 
-### set bash environment error management.
+### initialize script with standard synthia bootstrapping block.
 
-set -eu
+################################################################################
 
-### add padding to output.
+### 1 | add padding to output.
 
 echo
 
-### determine script execution directory and install directory.
+################################################################################
+
+#### 2 | locate execution environment and perform synthia-bound operations.
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
@@ -54,35 +59,41 @@ else
 	fi
 fi
 
-### source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-### define formatting.
+##### define formatting.
 
 synthia-define_formatting
 
-### check for root user runtime.
+##### check for root user runtime.
 
 synthia-check_root
 
-### source dna.
+################################################################################
+
+#### 3 | source dna and perform dna-bound operations.
+
+##### source dna.
 
 synthia-source_dna
 
-### define variables.
+##### define variables.
 
 synthia-define_vars
 
-### read conf settings.
+##### read conf settings.
 
 dna-read_conf_settings
 
-### touch temp dir.
+##### touch temp dir.
 
 dna-touch_tmp_project_dir
 
-### head/log script.
+################################################################################
+
+#### 4 | head/log script.
 
 dna-log_script
 
