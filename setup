@@ -79,11 +79,22 @@ echo
 
 ################################################################################
 
-### Evaluate command arguments for custom-version install
+### evaluate command arguments for custom-version install
+### and project_specific command arguments.
 
-while getopts ":b:d:p:o:" arguments
+################################################################################
+
+while getopts ":b:d:p:o:u:" arguments
 do
+
     case $arguments in
+
+        ########################################################################
+
+        ### synthia
+
+        ########################################################################
+
         b)  export custom_branch="${OPTARG}"
             ;;
         d)	export custom_dna_version="${OPTARG}"
@@ -91,16 +102,35 @@ do
 		p)	export custom_project_version="${OPTARG}"
 	        ;;
         o)	export custom_output="${OPTARG}"
-        ;;
+            ;;
+
+        ########################################################################
+        ########################################################################
+
+        ### project_specific
+
+        ########################################################################
+
+        u)  export apt_upgrade="${OPTARG}"
+            ;;
+
+        ########################################################################
+        ########################################################################
+
         \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 	        echo
 			echo "${b-}Exiting...${x-}"
 			echo
 	        exit 1
 	        ;;
+
     esac
+
 done
+
 OPTIND=1
+
+################################################################################
 
 if [ -n "${custom_branch-}" ] && [ -n "${custom_project_version-}" ]
 then
@@ -144,36 +174,6 @@ synthia-source_dna
 synthia-define_vars
 
 ################################################################################
-################################################################################
-
-### Evaluate project_specific command arguments
-
-while getopts ":u:" arguments
-do
-    case $arguments in
-        u)  export apt_upgrade="${OPTARG}"
-            ;;
-        \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
-	        echo
-			echo "${b-}Exiting...${x-}"
-			echo
-	        exit 1
-	        ;;
-    esac
-done
-OPTIND=1
-
-if [ -n "${apt_upgrade-}" ]
-then
-	case "${apt_upgrade}" in
-		n)	apt_upgrade="none"
-			;;
-		*)	dna-echo -e "Invalid content for describe argument in function | ${n-}${FUNCNAME[0]}${r-} |."
-			dna-exit
-			;;
-	esac
-fi
-
 ################################################################################
 
 ### Actually run the installer
