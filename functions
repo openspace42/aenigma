@@ -5222,34 +5222,39 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Perform a full APT upgrade
+	### perform a full APT upgrade.
 
-#	dna-apt_full_upgrade -e ## re-enable after v0.7.1 stable
+	if [ "${apt_upgrade-null}" = "n" ]
+	then
 
-	### Actually install ejabberd from DEB package.
+		dna-apt_full_upgrade -e
+
+	fi
+
+	### actually install ejabberd from deb package.
 
 	aenigma-install_ejabberd_deb
 
-	### Install the aenigma ejabberd config.
+	### install the aenigma ejabberd config.
 
 	aenigma-install_ejabberd_config
 
-	### Localize ejabberd configuration without restarting it.
+	### localize ejabberd configuration without restarting it.
 
 	aenigma-localize_ejabberd_install -s
 
-	### Enable ejabberd
+	### enable ejabberd
 
 	aenigma-enable_ejabberd
 
-	### Start ejabberd
+	### start ejabberd
 
 	aenigma-start_ejabberd
 
 	############################################################################
 	############################################################################
 
-	### Only for psql migration
+	### only for psql migration
 
 	############################################################################
 
@@ -5264,7 +5269,7 @@ synthia-perform_installation() {
 	############################################################################
 	############################################################################
 
-	### Perform primary_node-only operations on ejabberd.
+	### perform primary_node-only operations on ejabberd.
 
 	############################################################################
 
