@@ -153,7 +153,6 @@ do
     case $arguments in
         u)  export apt_upgrade="${OPTARG}"
             ;;
-        ;;
         \?)	echo "${r-}${b-}Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |.${x-}"
 	        echo
 			echo "${b-}Exiting...${x-}"
