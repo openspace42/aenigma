@@ -1,48 +1,42 @@
 #!/usr/bin/env bash
 
 ################################################################################
-
-### Set bash environment error management
-
-set -eu
+################################################################################
+################################################################################
 
 ################################################################################
 
-while getopts ":e" arguments
-do
-    case $arguments in
-        e)	force_reinstall_etcd_cluster="yes"
-            ;;
-        \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
-            dna-exit
-            ;;
-    esac
-done
-OPTIND=1
+### initialize script with standard synthia bootstrapping block.
 
 ################################################################################
 
-### Add padding to output
+### 1 | add padding to output.
 
 echo
 
 ################################################################################
 
-### Determine script execution directory and install directory.
+#### 2 | locate execution environment and perform synthia-bound operations.
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ### this file is being executed via a symlink.
+    ### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ### this file is being directly executed.
+    ### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -67,55 +61,73 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+##### check for root user runtime.
 
 synthia-check_root
 
 ################################################################################
 
-### Source dna
+#### 3 | source dna and perform dna-bound operations.
+
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
-################################################################################
-
-### Read conf settings
+##### read conf settings.
 
 dna-read_conf_settings
 
-################################################################################
-
-### Touch temp dir
+##### touch temp dir.
 
 dna-touch_tmp_project_dir
 
 ################################################################################
 
-### Head script
+#### 4 | head/log script.
 
 dna-head_script
 
 ################################################################################
+################################################################################
 
-### Check / enable clusterization
+### actually start script operations.
+
+################################################################################
+
+#### evaluate arguments.
+
+################################################################################
+
+while getopts ":e" arguments
+do
+    case $arguments in
+        e)	force_reinstall_etcd_cluster="yes"
+            ;;
+        \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+            dna-exit
+            ;;
+    esac
+done
+OPTIND=1
+
+################################################################################
+################################################################################
+
+#### check / enable clusterization.
+
+################################################################################
 
 if [ ! "${cluster_enabled-null}" = "cluster" ]
 then
@@ -132,356 +144,8 @@ then
 fi
 
 ################################################################################
-
-### Ensure cluster is enabled and this is the primary node.
-
-if [ -z "${cluster_mode-}" ]
-then
-	dna-echo -m "This script must only be run on the primary node of ${proj_name}."
-	dna-ask_for_boolean -d "n" -q "Do you confirm that this will in fact be the primary node for your ${proj_name} instance?"
-	if [ "${boolean_output}" = "y" ]
-	then
-		dna-echo -m "Ok, proceeding..."
-		dna-set_option -o cluster_mode -p cluster -s "primary"
-	else
-		dna-echo -m "Ok, no problem. If this is a secondary node all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup."
-		dna-exit
-	fi
-elif [ "${cluster_mode}" = "secondary" ]
-then
-	dna-echo -e "This script must only be run on the primary node of ${proj_name}."
-	dna-echo -m "You've previously specified during install that this will instead be a secondary node."
-	dna-echo -m "If that's the case then all you need to do is run the standard ${proj_name} installation and select | secondary | when asked about the node type during clusterization setup."
-	dna-echo -m "Otherwise if you actually intend to use this machine as your primary node, simply re-run the standard installation and specify so when promted."
-else
-	dna-echo -s "${proj_name} | ${n-}clusterization mode${g-} | already set to: | ${n-}primary${g-} |."
-fi
-
 ################################################################################
-
-dna-ask_for_boolean -d "y" -q "Have you already started the ${proj_name} installation on your secondary node?"
-if [ "${boolean_output}" = "y" ]
-then
-	dna-echo -m "Ok, continuing..."
-else
-	dna-echo -m "Ok, no problem. Start the installation [or re-installation] on your secondary node now from scratch just by running the standard: | ${o-}bash ${proj_name}/setup${n-} | command."
-	dna-echo -m "When prompted to start this very script come back here and continue on."
-	dna-press_to_continue
-fi
-
-################################################################################
-
-### Ensure the nodes_db files are up to date with the IP address[es] of this machine
-
-aenigma-initialize_nodes_db_files
-
-################################################################################
-
-### Create a nodes_db_initial file so that we can absolutely detect if any nodes were actually added during this script [rather than simply re-provisioned or skipped]
-
-aenigma-create_nodes_db_initial
-
-################################################################################
-
-validate_input() {
-
-	dna-validate_ipv4 -s -i "${input}"
-
-	if [ "${ip_is_valid}" = "y" ]
-	then
-		valid="y"
-	else
-		dna-echo -e "The value you specified does NOT appear to be a valid IPv4 address."
-		valid="n"
-	fi
-
-    unset silent
-
-}
-
-dna-set_value -d "Now enter the public IPv4 address displayed on your secondary node:" -v "y"
-
-secondary_node_ipv4="${value}"
-
-################################################################################
-
-### Now add the secondary node's IPv4 to nodes_db_ipv4
-
-if grep -q "^${secondary_node_ipv4}$" "${nodes_db_ipv4_path}"
-then
-	### Specified secondary node is already registered
-	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	dna-echo -m "The server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | is already registered as part of this cluster with node number | ${o-}${secondary_node_number}${n-} |."
-	dna-ask_for_boolean -d "y" -q "Would you like to re-provision it?"
-	if [ "${boolean_output}" = "y" ]
-	then
-		dna-echo -m "Ok, re-provisioning node number | ${o-}${secondary_node_number}${n-} |..."
-	else
-		dna-echo -m "Ok, skipping re-provisioning for node | ${o-}${secondary_node_number}${n-} |."
-		dna-exit
-	fi
-else
-	### Specified secondary node is new to this cluster
-	echo "${secondary_node_ipv4}" >> "${nodes_db_ipv4_path}"
-	secondary_node_number="$(grep -n "${secondary_node_ipv4}" "${nodes_db_ipv4_path}" | grep -Eo '^[^:]+' | xargs printf %02d)"
-	dna-echo -m "Ok, added server with IPv4 | ${y-}${secondary_node_ipv4}${n-} | to this cluster with node number | ${o-}${secondary_node_number}${n-} |."
-fi
-
-aenigma-create_nodes_db_numbered
-
-################################################################################
-
-### Generate or read and print the clusterization SSH pubkey and prompt the user to configure it on the seondary node
-
-if [ -f "/root/.ssh/aenigma_cluster.pub" ]
-then
-	aenigma_cluster_ssh_keypair_preexisting="y"
-else
-	dna-generate_ssh_keypair -n "aenigma_cluster" -h "ae01.${domain}"
-fi
-
-ssh_keypair_pubkey_path="/root/.ssh/aenigma_cluster.pub"
-
-################################################################################
-
-if [ "${aenigma_cluster_ssh_keypair_preexisting-null}" = "y" ]
-then
-
-	### The aenigma_cluster SSH keypair was already generated during a previous clusterization.
-	### Check to see if a connection to the secondary node already succeeds [i.e. because of a previous provisioning of such node]
-
-	if ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit  &> /dev/null
-	then
-		ssh_connection_to_secondary_node_succeded="y"
-	fi
-
-fi
-
-if [ "${ssh_connection_to_secondary_node_succeded-null}" = "y" ]
-then
-
-	### SSH back into the secondary node, and inform it that we are already able to connect to it.
-
-	ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
-set -eu
-touch "/tmp/aenigma/aenigma-cluster-ssh-connection-successful"
-exit
-END
-	echo
-
-	dna-echo -s "SSH connection to secondary node succeeded. Now continuing installation..."
-
-else
-
-	### The SSH pubkey must be specified by the user on the secondary node.
-
-	dna-echo -m "Now, when prompted, enter the following SSH public key on the secondary node:"
-	dna-echo -m " | ${y-}$(cat ${ssh_keypair_pubkey_path})${n-} | "
-
-	########################################################################
-
-	check_condition() {
-
-		if ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" exit &> /dev/null
-		then
-			condition_verified=y
-		fi
-
-	}
-
-	dna-wait_for -i "8" -d "Now waiting for successful connection to the secondary node..." -m "64" -e "Timeout exceed for SSH connection test to secondary node."
-
-	if [ "${wait_output}"  = "ok" ]
-	then
-		dna-echo -s "SSH connection to secondary node succeeded. Now continuing installation..."
-	else
-		dna-echo -e "SSH connection to secondary node failed."
-		dna-echo -m "Please ensure the secondary node's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} |, that its SSH port is | ${y}42022${n-} |, and that its firewall isn't blocking connections on that port."
-		dna-exit
-	fi
-
-	unset wait_output
-	sleep 1
-
-	########################################################################
-
-fi
-
-### Fetch and prompt user to confirm the clusterization token visualised on the secondary node to ensure we're speaking to the right machine
-
-if secondary_node_token="$(ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" cat /tmp/aenigma/aenigma-cluster-token)"
-then
-	dna-echo -s "Token on secondary node found."
-	dna-echo -m "Its value is: | ${y-}${secondary_node_token}${n-} |."
-	dna-ask_for_boolean -d "y" -q "Does this token match what you see on the secondary node?"
-	if [ "${boolean_output}" = "y" ]
-	then
-		dna-echo -m "Ok, continuing..."
-	else
-		dna-echo -m "No problem. Please ensure the secondary node in question's IPv4 address is actually | ${y}${secondary_node_ipv4}${n-} | and try again."
-		dna-exit
-	fi
-else
-	dna-echo -e "Token on secondary node not found."
-	dna-echo -m "Please ensure you've followed the configuration steps on your secondary node up to the point where it displays the clusterization token and try again."
-	dna-exit
-fi
-
-################################################################################
-
-#### Add blank line to nodes_db_ipv6 if it doesn't yet exist for sed matching below
-
-nodes_db_ipv6_lines="$(wc -l < ${nodes_db_ipv6_path})"
-if [ "${nodes_db_ipv6_lines}" -lt "${secondary_node_number}" ]
-then
-	echo " " >> "${nodes_db_ipv6_path}"
-fi
-
-#### If token is an IPv6 address then import it here and add it to nodes_db_ipv6 otherwise specify lack thereof
-
-echo "${secondary_node_token}" > "${tmp_project_dir}/secondary_node_token"
-
-if grep -q ":" "${tmp_project_dir}/secondary_node_token"
-then
-	### The secondary node is IPv6 enabled, add this to nodes_db_ipv6
-	secondary_node_ipv6="$(cat ${tmp_project_dir}/secondary_node_token)"
-	sed -i "${secondary_node_number}s/.*/${secondary_node_ipv6}/" "${nodes_db_ipv6_path}"
-else
-	### The secondary node is NOT IPv6 enabled, specify this in nodes_db_ipv6
-	sed -i "${secondary_node_number}s/.*/null/" "${nodes_db_ipv6_path}"
-fi
-
-################################################################################
-
-### Update routing info on this [the primary] node
-
-aenigma-update_routing_info
-
-### Push and update routing info on all secondary nodes [both existing and the new one we're now provisioning] to allow them to connect to each other correctly.
-
-aenigma-push_routing_info
-
-################################################################################
-
-### Perform updated DNS checks based on the newly registered information about the secondary node [only if new nodes were actually added]
-
-aenigma-compare_nodes_db_initial
-
-if [ "${nodes_db_initial_diff}" = "diff" ]
-then
-
-    aenigma-perform_dns_checks
-
-fi
-
-################################################################################
-
-### Push node_number to the secondary node
-
-echo "${secondary_node_number}" > "/${tmp_project_dir}/aenigma_cluster_secondary_node_number"
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/${tmp_project_dir}/aenigma_cluster_secondary_node_number" "root@${secondary_node_ipv4}:${conf_cluster_dir}/node_number"
-
-### Push config to the secondary node
-
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/domain" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/additional_domains" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "${conf_dir}/xmpp/nginx_ejabberd_uploads_external_secret" "root@${secondary_node_ipv4}:${conf_dir}/xmpp/"
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "/opt/ejabberd/.erlang.cookie" "root@${secondary_node_ipv4}:/opt/ejabberd/"
-
-### Push postgresql/patroni passwords to the secondary node
-
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${conf_dir}/postgresql/" "root@${secondary_node_ipv4}:${conf_dir}/"
-
-### Push wildcard LE TLS cert for $domain to the secondary node
-
-/usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tls_project_dir}" "root@${secondary_node_ipv4}:/etc/ssl/"
-
-echo
 
 ################################################################################
 ################################################################################
-
-### Apply and source new hostname on newly provisioned node
-### so that etcd will start up correctly right from the start
-
-aenigma-exec() {
-
-    ### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-    bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-set_secondary_node_hostname
-"
-
-}
-
-############################################################################
-
-### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-
-ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-. /root/openspace42/aenigma/functions
-synthia-source_dna
-synthia-define_vars
-dna-read_conf_settings
-aenigma-exec
-exit
-END
-echo
-
 ################################################################################
-################################################################################
-
-if [ "${nodes_db_initial_diff}" = "diff" ] || [ -n "${force_reinstall_etcd_cluster-}" ]
-then
-
-    ### Re-run the etcd cluster installation now that we have a new node
-
-    aenigma-install_etcd_cluster
-
-fi
-
-### Apply new configs and restart patroni, haproxy, and ejabberd
-### on existing nodes [not the one we're provisioning now, which we exclude]
-
-aenigma-apply_and_restart_patroni_haproxy_ejabberd -e "${secondary_node_ipv4}"
-
-################################################################################
-################################################################################
-
-### SSH into the secondary node, and inform it that the setup here on the primary node has been completed.
-
-ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "exec bash -li" > /dev/null <<END
-set -eu
-touch "/tmp/aenigma/aenigma-cluster-primary-node-setup-complete"
-exit
-END
-echo
-
-### Prompt the user to finish the installation on secondary node by following the next steps on the other node
-
-dna-echo -s "Primary_node-level configuration complete."
-dna-echo -m "You can now return to your secondary node and finish running the installation from there."
-
-### Wait for the installation on the secondary node to be complete.
-
-check_condition() {
-
-    if secondary_node_token="$(ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" rm /tmp/aenigma_secondary_node_provisioning_complete)" exit &> /dev/null
-    then
-        condition_verified=y
-    fi
-
-}
-
-dna-wait_for -i "8" -d "Now waiting for setup on the secondary node to be complete..."
-dna-echo -s "Secondary node setup complete. Clusterization successful."
-
-unset wait_output
-sleep 1
-
-############################################################################
-
-dna-remove_tmp_project_dir
-
-############################################################################
