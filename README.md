@@ -18,7 +18,6 @@ You can register your account right now by specifying a `your-user@aenigma.xyz` 
 
 If you're finding XMPP to your liking, then deploy your own server following the very simple instructions below! As soon as you're up and running join our group chat at [aenigma@xc.aenigma.xyz](xmpp:aenigma@xc.aenigma.xyz) !
 
-<a href='https://compliance.conversations.im/server/aenigma.xyz'><img src='https://compliance.conversations.im/badge/aenigma.xyz'></a>
 
 ## Features
 
