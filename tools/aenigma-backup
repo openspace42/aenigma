@@ -113,7 +113,7 @@ do
     case $arguments in
 		s)	skip_install_complete_check="-s"
 			;;
-		\?)	dna-echo -e "Invalid option | ${n-}-$OPTARG${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+		\?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
 			dna-exit
 			;;
 	esac
