@@ -110,7 +110,7 @@ dna-head_script
 while getopts ":e" arguments
 do
     case $arguments in
-        e)	force_reinstall_etcd_cluster="yes"
+        e)	force_reinstall_etcd_cluster="y"
             ;;
         \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
             dna-exit

@@ -2,33 +2,37 @@
 
 ################################################################################
 
-### Set bash environment error management
+### initialize script with standard synthia bootstrapping block.
 
-set -eu
+### ############################################################################
 
-################################################################################
-
-### Start fresh
+#### 1 | clear screen.
 
 clear
 
-################################################################################
+#### 2 | locate execution environment and perform synthia-bound operations.
 
-### Determine script execution directory and install directory.
+#### ###########################################################################
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ## this file is being executed via a symlink.
+    ## therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ## this file is being directly executed.
+    ## therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -53,49 +57,43 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+##### check for root user runtime.
 
 synthia-check_root
 
-################################################################################
+#### ###########################################################################
 
-### Source dna
+#### 3 | source dna and perform dna-bound operations.
+
+#### ###########################################################################
+
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
-################################################################################
-
-### Read conf settings
+##### read conf settings.
 
 dna-read_conf_settings
 
-################################################################################
-
-### Touch temp dir
+##### touch temp dir.
 
 dna-touch_tmp_project_dir
 
-################################################################################
+#### ###########################################################################
 
-### Head shell
+#### 4 | head shell.
 
 if [[ $- == *i* ]]
 then
@@ -109,4 +107,9 @@ else
         dna-exit
 fi
 
+#### ###########################################################################
+
+### ############################################################################
+
+################################################################################
 ################################################################################
