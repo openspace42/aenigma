@@ -5244,10 +5244,10 @@ synthia-perform_installation() {
 
 		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
 
-		### execute the post-renewal script now
-		### to generate the all-in-one TLS cert for ejabberd.
+		### execute create_push_certs now to generate the all-in-one TLS cert
+		### for ejabberd.
 
-		bash "${tools_dir}/${proj_name}-create-push-certs"
+		aenigma-create_push_certs -e
 
 		########################################################################
 		########################################################################
