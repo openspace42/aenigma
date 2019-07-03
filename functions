@@ -4482,8 +4482,7 @@ synthia-calculate_backup_size() {
 
 	## fetch sizes for the directories that have the most impactful sizes that
 	## will affect backups [such as '/var/www/' for nginx-related projects].
-
-	## all sizes in MB
+	## all sizes in MB.
 
 	dna-get_hostname
 
@@ -4492,8 +4491,6 @@ synthia-calculate_backup_size() {
 	patroni_ejabberd_db_size="$(PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -t -c "select pg_database_size('ejabberd') / 1024 / 1024;" | xargs)"
 
 	backup_size_estimate="$((${uploads_dir_size} + ${patroni_ejabberd_db_size}))"
-
-	export backup_ref_dir="/home/user-data"
 
 }
 
