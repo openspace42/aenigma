@@ -1,66 +1,84 @@
 #!/usr/bin/env bash
 
-### openspace synthia bootstrap framework
-### [https://github.com/openspace42/synthia]
-### v0.3.3
+### ############################################################################
+
+### openspace42 synthia bootstrap framework.
+### [https://github.com/openspace42/synthia].
+### v0.4.0.
 
 dna_version="v0.3.14"
 
-################################################################################
+### ############################################################################
+
+### 1 | synthia global functions
+
+### ############################################################################
 
 synthia-define_vars() {
 
-	############################################################################
-	#################### Insert your initial variables here ####################
-	############################################################################
+	### define default variables.
+
+	### 1 | synthia global variables.
+
+	### ########################################################################
 
 	export proj_name="aenigma"
 	export author_name="openspace42"
 	export git_host="https://github.com"
 
-	## set this to 'disabled' to disable local backups and only upload to S3
-	## [useful if your project handles large amounts of data for example].
-	## S3 must be set up by the user or else backups will not work at all.
-	## this is only the default, which will be suggested to the user during
-	## install, and it can be overridden.
+	### ########################################################################
+
+	### 2 | synthia project_specific variales.
+
+	### ########################################################################
+
+	#### backup / restore.
+
+	#### #######################################################################
+
+	#### set this to 'disabled' to disable local backups and only upload to S3
+	#### [useful if your project handles large amounts of data for example].
+	#### S3 must be set up by the user or else backups will not work at all.
+	#### this is only the default, which will be suggested to the user during
+	#### install, and it can be overridden.
 
 	export backup_locally_mode_default="enabled"
 
-	## set this to 'disabled' to disable restore test during S3 backup.
-	## this is only the default, which will be suggested to the user during
-	## install, and it can be overridden.
+	#### set this to 'disabled' to disable restore test during S3 backup.
+	#### this is only the default, which will be suggested to the user during
+	#### install, and it can be overridden.
 
 	export backup_test_restore_mode="enabled"
 
-	## set this to 'n' if your project stores no data on end users' machines
-	## that could go lost during a re-install or update.
+	#### set this to 'n' if your project stores no data on end users' machines
+	#### that could go lost during a re-install or update.
 
 	export backup_prompt_during_install="y"
 
-	############################################################################
-	############################################################################
-	############################################################################
+	#### #######################################################################
 
-	### Do NOT edit the following line
+	### ########################################################################
+
+	### 3 | define dna variables.
 
 	dna-define_vars
 
-	############################################################################
-	################## Insert your additional variables here ###################
-	############################################################################
+	### 4 | define any additional custom variables.
 
-	### Set the paths to the cluster / nodes conf dirs
+	### ########################################################################
+
+	#### set the paths to the cluster / nodes conf dirs.
 
 	export conf_cluster_dir="${conf_dir}/cluster"
 	export conf_cluster_nodes_dir="${conf_cluster_dir}/nodes"
 
 	export conf_xmpp_dir="${conf_dir}/xmpp"
 
-	### Set the path to the domains_db file
+	#### set the path to the domains_db file.
 
 	export domains_db_path="${conf_xmpp_dir}/domains_db"
 
-	### Set the paths to the nodes_db files
+	#### set the paths to the nodes_db files.
 
 	export nodes_db_ipv4_path="${conf_cluster_nodes_dir}/nodes_db_ipv4"
 	export nodes_db_ipv6_path="${conf_cluster_nodes_dir}/nodes_db_ipv6"
@@ -68,20 +86,26 @@ synthia-define_vars() {
 	export nodes_db_online_path="${tmp_project_dir}/nodes_db_online"
 	export nodes_db_initial_path="${tmp_project_dir}/nodes_db_initial"
 
-	### Hardcode package versions for installation
+	#### hardcode package versions for installation.
 
 	export hardcoded_package_version_ejabberd="19.05"
 	export hardcoded_package_version_ejabberd_extended="19.05-0"
 	export hardcoded_package_version_ejabberd_fallback="19.05"
 	export hardcoded_package_version_ejabberd_fallback_extended="19.05-0"
 
-	############################################################################
-	############################################################################
-	############################################################################
+	### ########################################################################
+
+	### 5 | define final variables that depend on custom ones.
+
+	### ########################################################################
+
+	#### set default backup paths [absolute, space separated].
+
+	export backup_paths_default="/var/www/uploads ${tmp_project_dir}/pgdump/"
+
+	### ########################################################################
 
 }
-
-################################################################################
 
 synthia-define_formatting() {
 
@@ -219,11 +243,198 @@ synthia-source_dna() {
 
 }
 
-################################################################################
+### ############################################################################
 
-################################################################################
-######################## Insert project functions here #########################
-################################################################################
+### 2 | synthia project-specific functions.
+
+### ############################################################################
+
+#### backup / restore.
+
+#### ###########################################################################
+
+synthia-calculate_backup_size() {
+
+	### ########################################################################
+
+	### calculate backup_paths size.
+
+	dna_calculate_backup_paths_size
+
+	### ########################################################################
+
+	### calculate any additional custom size.
+
+	### ########################################################################
+
+	#### calculate postgresql database size.
+
+	dna-get_hostname
+
+	patroni_ejabberd_db_size="$(PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -t -c "select pg_database_size('ejabberd') / 1024 / 1024;" | xargs)"
+
+	### ########################################################################
+
+	### add it up.
+
+	backup_total_size_estimate="$((${backup_paths_size_estimate} + ${patroni_ejabberd_db_size}))"
+
+	### ########################################################################
+
+}
+
+synthia-backup_additional_backup_paths() {
+
+	### backup any additional custom item by populating their respective
+	### backup_paths.
+
+	dna-echo_operation -h "backing up any additional custom backup_path"
+
+	### ########################################################################
+
+	#### postgresql dump.
+
+	pg_dump --dbname="postgresql://ejabberd:${patroni_ejabberd_password}@${public_ipv4}:5432/ejabberd" > "${tmp_project_dir}/pgdump/ejabberd.pgsql"
+
+	### ########################################################################
+
+	dna-echo_operation -t
+
+}
+
+synthia-backup_locally() {
+
+	dna-echo_operation -h "backing up locally"
+
+	### run backups for additional custom items.
+
+	dna-backup_additional_backup_paths
+
+	### backup backup paths locally.
+
+	dna-backup_locally_data_backup_paths
+
+	dna-echo_operation -t
+
+}
+
+aenigma_backup() {
+
+	#### check for lockfile to avoid multiple simultaneous backups.
+
+	if [ -f /tmp/${proj_name}-backup-running-lockfile ]
+	then
+
+	    dna-echo -e "It appears a ${proj_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted."
+	    dna-echo -m "If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted."
+	    dna-echo -m "Running multiple simultaneous backups is absolutely not supported and will make both fail."
+
+		if [ "${interactive}" = "y" ]
+	    then
+	        dna-ask_for_boolean -d "n" -q "If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
+	        if [ "${boolean_output}" = "y" ]
+	        then
+	            dna-echo -m "Ok, continuing anyway..."
+	            export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
+	        else
+	            dna-echo -m "Ok, aborting..."
+	            dna-exit
+	        fi
+
+	    else
+
+	        dna-echo -m "If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted."
+	        dna-echo -m "Alternatively, you can also log into this machine and | ${o-}rm /tmp/${proj_name}-backup-running-lockfile${n-} |."
+	        dna-echo -e "Aborting backup for now."
+	        dna-exit
+
+	    fi
+
+	else
+
+	    ### Set lockfile.
+
+	    export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
+	    touch "${lockfile_set}"
+
+	fi
+
+	################################################################################
+
+	dna-br_purge_incomplete_archives
+
+	dna-br_purge_dirs
+
+	dna-br_create_dirs backup
+
+	dna-br_update_storage_info
+
+	dna-br_purge_backups
+
+	if [ "$backup_archival_location" = "s3" ]
+	then
+
+	    dna-br_restore_from_S3 test
+
+	    dna-br_purge_dirs
+
+	    dna-br_create_dirs backup
+
+	fi
+
+	dna-br_backup_locally "${skip_install_complete_check-}"
+
+	################################################################################
+
+	if [ "$backup_archival_location" = "s3" ]
+	then
+
+	    if [ "${s3_restore_test_failed-null}" = "y" ]
+	    then
+
+	        dna-echo -e "Skipping S3 backup because of a previous test restore failure."
+
+	        rm -r "$tmp_backup_dir"
+
+	    else
+
+	    	mv "$tmp_backup_dir"/* "$backup_local_storage_path/latest"
+
+	    	############################################################################
+
+	    	dna-br_backup_to_S3
+
+	    fi
+
+	else
+
+		rm -r "$tmp_backup_dir"
+
+	fi
+
+	if [ -d "$backup_local_storage_path/temp" ]
+	then
+		rm -r "${backup_local_storage_path:?}/temp"
+	fi
+
+	dna-br_purge_dirs
+
+	if [ -f "/tmp/${proj_name}-backup-running-lockfile" ]
+	then
+	    rm "/tmp/${proj_name}-backup-running-lockfile"
+	fi
+
+	if [ "${s3_restore_test_failed-null}" = "y" ]
+	then
+	    dna-exit
+	fi
+
+	dna-echo -s "Backup complete!"
+
+}
+
+
+#### ###########################################################################
 
 aenigma-display_logo() {
 
@@ -432,8 +643,7 @@ aenigma-xmpp_intro() {
 	dna-echo -m "In that case, a DNS MX record tells sending servers to direct mail intended for amsterdamhacklab.xyz to mx01.amsterdamhacklab.xyz."
 	dna-echo -m "In the same way, the XMPP server for amsterdamhacklab.xyz can be located at ae01.amsterdamhacklab.xyz and a DNS SRV record tells any sending servers that XMPP for that domain [i.e. a message directed to mark@amsterdamhacklab.xyz] is handled by the server located at ae01.amsterdamhacklab.xyz."
 
-	read -rp "${b-}[press enter to continue reading...]${x-}"
-	clear
+	dna-press_to_continue
 
 	dna-echo -m "$proj_name fully embraces this opportunity."
 	dna-echo -m "The domain for which you're setting up your new $proj_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
@@ -443,10 +653,9 @@ aenigma-xmpp_intro() {
 	dna-echo -m "${o-}Your JID format:${n-}      ${y-}mark@amsterdamhacklab.xyz.${n-}"
 	dna-echo -m "${o-}XMPP server:${n-}          ${y-}xmpp.amsterdamhacklab.xyz${n-}"
 
-	read -rp "${b-}[press enter to continue reading...]${x-}"
-	clear
+	dna-press_to_continue
 
-	### Add cluster info here
+	### add cluster info here.
 
 	dna-echo -m "Now that you know how XMPP works, let's get your brand new $proj_name server up and running!"
 
@@ -454,7 +663,8 @@ aenigma-xmpp_intro() {
 
 aenigma-set_secondary_node_hostname() {
 
-	### Set hostname according to the node_number from the newly received config
+	### set hostname according to the node_number from the newly received
+	### config.
 
 	echo "ae${node_number}.${domain}" > "/etc/hostname"
 
@@ -477,8 +687,7 @@ aenigma-provision_nginx() {
 	if systemctl is-active --quiet sslh
 	then
 
-		operation_message="stopping SSLH"
-		dna-echo_operation -h
+		dna-echo_operation -h "stopping SSLH"
 
 		service sslh stop
 
@@ -631,8 +840,7 @@ aenigma-provision_nginx() {
 
 	### Start sslh back up if it's already installed
 
-	operation_message="starting SSLH back up"
-	dna-echo_operation -h
+	dna-echo_operation -h "starting SSLH back up"
 
 	if which sslh &> /dev/null
 	then
@@ -645,8 +853,7 @@ aenigma-provision_nginx() {
 
 	### Start nginx back up
 
-	operation_message="starting NGINX back up"
-	dna-echo_operation -h
+	dna-echo_operation -h "starting NGINX back up"
 
 	service nginx restart || true
 
@@ -662,8 +869,7 @@ aenigma-install_sslh() {
 
 	### Customize config file for aenigma
 
-	operation_message="customizing SSLH config for ${proj_name}"
-	dna-echo_operation -h
+	dna-echo_operation -h "customizing SSLH config for ${proj_name}"
 
 	cp "${source_dir}/conf/sslh/etc-sslh.cfg" "/etc/sslh.cfg"
 
@@ -718,8 +924,7 @@ aenigma-restart_ejabberd_if_running() {
 		if systemctl is-active --quiet ejabberd
 		then
 
-			local operation_message="restarting ejabberd on node: | ${l-}${hostname}${n-} |"
-			dna-echo_operation -h
+			dna-echo_operation -h "restarting ejabberd on node: | ${l-}${hostname}${n-} |"
 
 			if service ejabberd restart
 			then
@@ -769,8 +974,7 @@ aenigma-start_ejabberd() {
 	if dpkg -s ejabberd &> /dev/null
 	then
 
-		operation_message="starting ejabberd on node: | ${l-}${hostname}${n-} |"
-		dna-echo_operation -h
+		dna-echo_operation -h "starting ejabberd on node: | ${l-}${hostname}${n-} |"
 
 		if service ejabberd start
 		then
@@ -815,8 +1019,7 @@ aenigma-stop_ejabberd() {
 		if systemctl is-active --quiet ejabberd
 		then
 
-			operation_message="stopping ejabberd on node: | ${l-}${hostname}${n-} |"
-			dna-echo_operation -h
+			dna-echo_operation -h "stopping ejabberd on node: | ${l-}${hostname}${n-} |"
 
 			service ejabberd stop &> /dev/null || true
 
@@ -854,8 +1057,7 @@ aenigma-start_patroni() {
 	if dpkg -s python-pip &> /dev/null && pip list 2> /dev/null | grep -q patroni && [ -f "/etc/systemd/system/patroni.service" ] && [ -d "/usr/lib/postgresql/" ]
 	then
 
-		operation_message="starting patroni on node: | ${l-}${hostname}${n-} |"
-		dna-echo_operation -h
+		dna-echo_operation -h "starting patroni on node: | ${l-}${hostname}${n-} |"
 
 		service patroni start
 
@@ -888,8 +1090,7 @@ aenigma-stop_patroni() {
 		if systemctl is-active --quiet patroni
 		then
 
-			operation_message="stopping patroni on node: | ${l-}${hostname}${n-} |"
-			dna-echo_operation -h
+			dna-echo_operation -h "stopping patroni on node: | ${l-}${hostname}${n-} |"
 
 			service patroni stop &> /dev/null || true
 
@@ -1088,14 +1289,6 @@ aenigma-get_ejabberd_installed_version() {
 
 }
 
-#aenigma-get_ejabberd_candidate_version() {
-#
-#	dna-apt_update
-#
-#	ejabberd_candidate_version="$(apt-cache show ejabberd | grep Version | head -1 | sed "s|Version: ||" | cut -d ':' -f 2 | cut -f1 -d'-')"
-#
-#}
-
 aenigma-install_ejabberd_config() {
 
 	############################################################################
@@ -1107,14 +1300,16 @@ aenigma-install_ejabberd_config() {
 	if [ ! -f "${source_ejab_conf_file}" ]
 	then
 
-		### Fallback to old ejabberd.yml in case the ejabberd candidate install version isn't among the ones we have config files for
+		### fallback to old ejabberd.yml in case the ejabberd candidate install
+		### version isn't among the ones we have config files for.
+
 		source_ejab_conf_file="${source_dir}/conf/ejabberd/ejabberd-${hardcoded_package_version_ejabberd_fallback}.yml"
 
 	fi
 
 	cp "${source_ejab_conf_file}" "/opt/ejabberd/conf/ejabberd.yml"
 
-	### Install captcha script
+	### install captcha script.
 
 	dna-install_dependencies -p "imagemagick"
 
@@ -1128,7 +1323,7 @@ aenigma-install_ejabberd_config() {
 
 	############################################################################
 
-	### Set permissions
+	### set permissions.
 
 	aenigma-set_permissions
 
@@ -1140,12 +1335,11 @@ aenigma-install_ejabberd_config() {
 
 aenigma-set_permissions() {
 
-	### Set permissions globally
+	### set permissions globally.
 
 	############################################################################
 
-	operation_message="setting permissions"
-	dna-echo_operation -h
+	dna-echo_operation -h "setting permissions"
 
 	############################################################################
 
@@ -1243,43 +1437,16 @@ aenigma-set_permissions() {
 
 aenigma-create_ejabberd_locations() {
 
-	### Create ejabberd directory for correct .erlang.cookie placement
-	### on secondary nodes before ejabberd is installed from deb package.
+	### create ejabberd directory for correct .erlang.cookie placement on
+	### secondary nodes before ejabberd is installed from deb package.
 
-	operation_message="creating /opt/ejabberd/ directory"
-	dna-echo_operation -h
+	dna-echo_operation -h "creating /opt/ejabberd/ directory"
 
 	mkdir -p "/opt/ejabberd/"
 
 	dna-echo_operation -t
 
-	### Create ejabberd uploads directory
-
-	#operation_message="creating uploads directory"
-	#dna-echo_operation -h
-
-	#mkdir -p "/opt/ejabberd/uploads/"
-	#dna-echo -m "${g-}Finished creating uploads directory."
-
-	#dna-echo_operation -t
-
-	### Create HTTP uploads directory
-
-#	dna-echo -m "Now creating HTTP fileserver directory..."
-#	mkdir -p "/var/www/ejabberd/"
-#	dna-echo -m "${g-}Finished creating HTTP fileserver directory."
-
-	### Create logfile
-
-	#operation_message="creating logfiles directory"
-	#dna-echo_operation -h
-
-#	mkdir -p "/opt/ejabberd/logs/"
-#	touch "/opt/ejabberd/logs/www_access.log"
-
-#	dna-echo_operation -t
-
-	### Set permissions
+	### set permissions.
 
 	aenigma-set_permissions
 
@@ -1396,8 +1563,7 @@ aenigma-install_ejabberd_deb() {
 
 	############################################################################
 
-	operation_message="installing ejabberd"
-	dna-echo_operation -h
+	dna-echo_operation -h "installing ejabberd"
 
 	### Ensure DPKG is available before proceeding.
 
@@ -1476,31 +1642,6 @@ aenigma-install_ejabberd_deb() {
 
 	############################################################################
 
-}
-
-aenigma-install_ejabberd() {
-
-	### Ensure DPKG is available before proceeding.
-
-	dna-check_dpkg_availability
-
-	### Inhibit ejabberd from starting after install as permissions won't be already correct
-
-	echo exit 101 > "/usr/sbin/policy-rc.d"
-	chmod +x "/usr/sbin/policy-rc.d"
-
-	### Proceed
-
-	dna-echo -m "Now installing ejabberd..."
-
-	export DEBIAN_FRONTEND=noninteractive ; apt-get install -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" --force-yes ejabberd || true
-	echo
-
-	### Remove autostart inhibition
-
-	rm "/usr/sbin/policy-rc.d"
-
-	dna-echo -s "Finished installing ejabberd."
 }
 
 aenigma-localize_ejabberd_install() {
@@ -1603,8 +1744,7 @@ aenigma-enable_ejabberd() {
 
 	############################################################################
 
-	operation_message="enabling ejabberd"
-	dna-echo_operation -h
+	dna-echo_operation -h "enabling ejabberd"
 
 	### Install service.
 
@@ -1685,393 +1825,6 @@ aenigma-create_nodes_db_initial() {
 
 aenigma-compare_nodes_db_initial() {
 
-	if diff "${nodes_db_numbered_path}" "${nodes_db_initial_path}" > /dev/null
-	then
-	    export nodes_db_initial_diff="same"
-	else
-	    export nodes_db_initial_diff="diff"
-	fi
-
-}
-
-aenigma-initialize_nodes_db_files() {
-
-	mkdir -p "${conf_cluster_nodes_dir}"
-
-	dna-get_public_ipv4 -s
-
-	dna-check_ipv6_connectivity -s
-
-	### IPv4
-
-	touch "${nodes_db_ipv4_path}"
-
-	if [ -s "${nodes_db_ipv4_path}" ]
-	then
-		### File is not empty, alter first line.
-		sed -i "1s/.*/${public_ipv4}/" "${nodes_db_ipv4_path}"
-	else
-		### File is empty, write to it.
-		echo "${public_ipv4}" > "${nodes_db_ipv4_path}"
-	fi
-
-	### IPv6
-
-	touch "${nodes_db_ipv6_path}"
-
-	if [ -s "${nodes_db_ipv6_path}" ]
-	then
-
-		### File is not empty, alter first line.
-
-		if [ "${ipv6_available}" = "y" ]
-		then
-			sed -i "1s/.*/${this_ipv6}/" "${nodes_db_ipv6_path}"
-		else
-			sed -i "1s/.*/null/" "${nodes_db_ipv6_path}"
-		fi
-
-	else
-
-		### File is empty, write to it.
-
-		if [ "${ipv6_available}" = "y" ]
-		then
-			echo "${this_ipv6}" > "${nodes_db_ipv6_path}"
-		else
-			echo "null" > "${nodes_db_ipv6_path}"
-		fi
-
-	fi
-
-	aenigma-create_nodes_db_numbered
-
-}
-
-aenigma-get_ejabberd_cluster_size() {
-
-	ejabberd_cluster_size="$(wc -l < ${nodes_db_ipv4_path})"
-
-}
-
-aenigma-wipe_old_ufw_cluster_rules() {
-
-	### Remove any and all UFW rules related to old cluster nodes
-
-	############################################################################
-
-	### Only do this check if ufw has actually been initialized
-
-	if systemctl is-active --quiet ufw
-	then
-
-		### Get "ufw allow from x.x.x.x" rules previously set by us
-
-		ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_dir}/ufw_previous_cluster_rules" || true
-
-		### Check every item from previous command output to see if those IPv4s
-		### are still part of the cluster and if not remove those rules
-
-		while read line
-		do
-
-			if [ ! "${line}" = "" ]
-			then
-
-				if ! grep -qr "${line}" "${conf_cluster_nodes_dir}"
-				then
-
-					ufw --force delete "$(ufw status | grep -E ' (ALLOW|LIMIT) ' | grep -n ${line} | cut -f1 -d":")"
-
-				fi
-
-			fi
-
-		done < "${tmp_dir}/ufw_previous_cluster_rules"
-
-		unset line
-
-		rm "${tmp_dir}/ufw_previous_cluster_rules"
-
-	fi
-
-	############################################################################
-
-}
-
-aenigma-update_routing_info() {
-
-	### Wipe any old cluster-related UFW rule
-
-	aenigma-wipe_old_ufw_cluster_rules
-
-	### Set UFW rules on this node according to the updated nodes_db
-
-	array_iter=1
-	IFS=$'\n'
-	set -f
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
-	do
-		/usr/sbin/ufw insert "${array_iter}" allow from "${node_ipv4}"
-		array_iter=$((array_iter + 1))
-	done
-	unset node_ipv4 array_iter
-	IFS=$' \t\n'
-	set +f
-	echo
-
-	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
-
-	if ! grep -q "### aenigma nodes list start" /etc/hosts
-	then
-		echo >> /etc/hosts
-		echo "### aenigma nodes list start" >> /etc/hosts
-	fi
-
-	if ! grep -Pzoq '### aenigma nodes list start(?:.*\n)*?\K### aenigma nodes list end' /etc/hosts
-	then
-		echo "### aenigma nodes list end" >> /etc/hosts
-	fi
-
-	sed -i '/### aenigma nodes list start/,/### aenigma nodes list end/{//!d}' /etc/hosts
-	sed -i "/### aenigma nodes list start/ r ${nodes_db_numbered_path}" /etc/hosts
-
-}
-
-aenigma-refresh_nodes_db_online() {
-
-	############################################################################
-
-	### This function will always get invoked at the beginning push_routing_info() in the later event that an existing node cannot be reached at the time of running a new clusterization.
-	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed from it, for use by subsequent functions, until the end of the clusterize script.
-
-	############################################################################
-
-	### Touch temp dir
-
-	dna-touch_tmp_project_dir
-
-	############################################################################
-
-	if [ -f "${nodes_db_online_path}" ]
-	then
-		rm "${nodes_db_online_path}"
-		touch "${nodes_db_online_path}"
-	fi
-
-	############################################################################
-
-	cp "${nodes_db_ipv4_path}" "${nodes_db_online_path}"
-
-	############################################################################
-
-}
-
-aenigma-get_nodes_online() {
-
-	############################################################################
-
-	### Generate a list of online nodes by opening SSH sessions to other nodes.
-	### If any nodes are offline, remove them from nodes_db_online.
-
-	aenigma-refresh_nodes_db_online
-
-	array_iter=1
-	IFS=$'\n'
-	set -f
-
-	touch "${tmp_dir}/online_test_token"
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
-	do
-		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
-		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tmp_dir}/online_test_token" "root@${node_ipv4}:${tmp_dir}/online_test_token"
-			then
-				echo
-				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
-				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
-				dna-echo -m "However, you can continue running the installation now and re-run the installation script at at a later time."
-	            dna-ask_for_boolean -d "y" -q "Continue anyway?"
-	            if [ "${boolean_output}" = "y" ]
-	            then
-					dna-echo -n -m "Ok, continuing..."
-					### Remove node from nodes_db_online
-					sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
-				else
-					dna-echo -m "Ok, aborting..."
-					dna-exit
-				fi
-			fi
-		fi
-		array_iter=$((array_iter + 1))
-	done
-	unset node_ipv4
-	IFS=$' \t\n'
-	set +f
-
-}
-
-aenigma-check_ip_info_current() {
-
-	if [ ! -f "${nodes_db_ipv4_path}" ] || [ ! -f "${nodes_db_ipv6_path}" ]
-    then
-		dna-echo -m "Not all nodes_db files found or none at all. Skipping IP change checks."
-        return 0
-    fi
-
-	### Fetch IP addresses for this machine
-
-	dna-get_public_ipv4
-
-	dna-check_ipv6_connectivity
-
-	### Check to see if this machine's IPs have changed since last install / clusterization
-
-	this_registered_ipv4="$(cat ${nodes_db_ipv4_path} | head -1 | xargs)"
-
-	this_registered_ipv6="$(cat ${nodes_db_ipv6_path} | head -1 | xargs)"
-
-	if [ ! "${public_ipv4}" = "${this_registered_ipv4}" ]
-	then
-		dna-echo -e "The public IPv4 address for this machine appears to have changed since the last install or the last run of the clusterize script."
-		dna-echo -m "It now appears to be: | ${y-}${public_ipv4}${n-} |."
-		dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv4}${n-} |."
-		dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
-		dna-exit
-	fi
-
-	if [ ! "${this_ipv6}" = "${this_registered_ipv6}" ]
-	then
-		dna-echo -e "The public IPv6 address for this machine appears to have changed since the last install or the last run of the clusterize script."
-		dna-echo -m "It now appears to be: | ${y-}${this_ipv6}${n-} |."
-		dna-echo -m "This node, however, appears to be registered with the following: | ${y-}${this_registered_ipv6}${n-} |."
-		dna-echo -m "Please re-run the installation to update the records for this machine on the nodes database."
-		dna-exit
-	fi
-
-}
-
-aenigma-push_routing_info() {
-
-	############################################################################
-
-	### Push nodes_db files to all secondary nodes for /etc/hosts and ufw rules configuration.
-	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online.
-
-	aenigma-refresh_nodes_db_online
-
-	array_iter=1
-	IFS=$'\n'
-	set -f
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
-	do
-		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
-		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${conf_cluster_nodes_dir}" "root@${node_ipv4}:${conf_cluster_dir}"
-			then
-				echo
-				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
-				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
-				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
-				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
-	            dna-ask_for_boolean -d "y" -q "Continue anyway?"
-	            if [ "${boolean_output}" = "y" ]
-	            then
-					dna-echo -n -m "Ok, continuing..."
-					### Remove node from nodes_db_online
-					sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
-				else
-					dna-echo -m "Ok, aborting..."
-					dna-exit
-				fi
-			fi
-		fi
-		array_iter=$((array_iter + 1))
-	done
-	unset node_ipv4
-	IFS=$' \t\n'
-	set +f
-
-	############################################################################
-
-	aenigma-exec() {
-
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
-
-        bash openspace42/aenigma/tools/aenigma-exec -c "
-aenigma-update_routing_info
-"
-
-	}
-
-	############################################################################
-
-	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
-	do
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
-		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
-	        ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
-set -eu
-. /root/openspace42/aenigma/functions
-synthia-source_dna
-synthia-define_vars
-dna-read_conf_settings
-aenigma-exec
-exit
-END
-		fi
-		echo
-	done
-	unset online_node_ipv4
-
-	############################################################################
-
-}
-
-aenigma-push_certs() {
-
-	############################################################################
-
-	### Push LetsEncrypt TLS certificate files to all secondary nodes.
-	### At the same time, check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online.
-
-	aenigma-refresh_nodes_db_online
-
-	array_iter=1
-	IFS=$'\n'
-	set -f
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
-	do
-		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
-		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_project_dir}" "root@${node_ipv4}:${tls_dir}"
-			then
-				echo
-				dna-echo -e "Node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
-				dna-echo -m "Ensure such node is actually online and when it is execute this script again by running:"
-				dna-echo -m " | ${y-}${tools_dir}/${proj_name}-create-push-certs${n-} | "
-				if [ "${interactive}" = "y" ]
-				then
-		            dna-ask_for_boolean -d "y" -q "Continue anyway with all other nodes now?"
-		            if [ "${boolean_output}" = "y" ]
-		            then
-						dna-echo -n -m "Ok, continuing..."
-						### Remove node from nodes_db_online
-						sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
-					else
-						dna-echo -m "Ok, aborting..."
-						dna-exit
 					fi
 				else
 					dna-echo -e "Skipping node | ${n-}${current_node_number}${r-} | and continuing with all others now."
@@ -2335,9 +2088,7 @@ aenigma-create_push_certs() {
 
 	############################################################################
 
-	operation_message="creating all-in-one TLS file from LetsEncrypt wildcard cert for ejabberd"
-
-	dna-echo_operation -h
+	dna-echo_operation -h "creating all-in-one TLS file from LetsEncrypt wildcard cert for ejabberd"
 
 	for le_cert_domain_full in "$le_live_dir"/*
 	do
@@ -2805,8 +2556,7 @@ EOF
 	sed -i "s|domain-var|${domain}|g" "/etc/default/etcd"
 	sed -i "s|public_ipv4-var|${public_ipv4}|g" "/etc/default/etcd"
 
-	operation_message="starting etcd on node: | ${l-}${hostname}${n-} |"
-	dna-echo_operation -h
+	dna-echo_operation -h "starting etcd on node: | ${l-}${hostname}${n-} |"
 
 	update-rc.d etcd enable
 
@@ -3060,8 +2810,7 @@ aenigma-migrate-mnesia-postgresql() {
 
 		### Insert the new_sql_schema directive in a random point of the config without enabling SQL yet
 
-		operation_message="applying new_sql_schema directive"
-		dna-echo_operation -h
+		dna-echo_operation -h "applying new_sql_schema directive"
 
 		sed -i "s|## fqdn: \"server3.example.com\"|new_sql_schema: true|g" "/opt/ejabberd/conf/ejabberd.yml"
 
@@ -3083,8 +2832,7 @@ aenigma-migrate-mnesia-postgresql() {
 
 		### Export data for every ejabberd domain
 
-		operation_message="exporting data from the ejabberd mnesia database"
-		dna-echo_operation -h
+		dna-echo_operation -h "exporting data from the ejabberd mnesia database"
 
 		ejabberdctl export2sql "${domain}" "aenigma-ejabberd-export-${domain}.sql"
 		mv "/var/lib/ejabberd/aenigma-ejabberd-export-${domain}.sql" "${tmp_dir}/aenigma-ejabberd-export-${domain}.sql"
@@ -3102,8 +2850,7 @@ aenigma-migrate-mnesia-postgresql() {
 
 		### Import to psql
 
-		operation_message="importing data into PSQL"
-		dna-echo_operation -h
+		dna-echo_operation -h "importing data into PSQL"
 
 		for export in ${tmp_dir}/aenigma-ejabberd-export*.sql
 		do
@@ -3140,8 +2887,7 @@ aenigma-apply_patroni_config() {
 
 		########################################################################
 
-		operation_message="applying patroni config on node: | ${l-}${hostname}${n-} |"
-		dna-echo_operation -h
+		dna-echo_operation -h "applying patroni config on node: | ${l-}${hostname}${n-} |"
 
 		########################################################################
 
@@ -3309,8 +3055,7 @@ aenigma-install_postgresql_patroni() {
 
 	### Install postgresql
 
-	operation_message="installing PostgreSQL"
-	dna-echo_operation -h
+	dna-echo_operation -h "installing PostgreSQL"
 
 	dna-install_postgresql
 
@@ -3442,8 +3187,7 @@ EOF
 
 	############################################################################
 
-	operation_message="starting patroni on node: | ${l-}${hostname}${n-} |"
-	dna-echo_operation -h
+	dna-echo_operation -h "starting patroni on node: | ${l-}${hostname}${n-} |"
 
 	dna-wait -s "11" -d "Now allowing patroni to start up correctly..."
 
@@ -3614,8 +3358,7 @@ EOF
 
 	############################################################################
 
-	operation_message="restarting haproxy on node: | ${l-}${hostname}${n-} |"
-	dna-echo_operation -h
+	dna-echo_operation -h "restarting haproxy on node: | ${l-}${hostname}${n-} |"
 
 	systemctl restart haproxy
 
@@ -3683,8 +3426,7 @@ aenigma-provision_tor() {
 
 	dna-install_tor
 
-	operation_message="enabling Tor Hidden Service"
-	dna-echo_operation -h
+	dna-echo_operation -h "enabling Tor Hidden Service"
 
 	dna-tor_enable_hidden_service
 
@@ -3695,8 +3437,7 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
-	operation_message="restarting Tor"
-	dna-echo_operation -h
+	dna-echo_operation -h "restarting Tor"
 
 	service tor restart
 
@@ -3727,8 +3468,7 @@ aenigma-provision_tor() {
 
 	### Install conf for onion hostname
 
-	operation_message="applying NGINX config for Tor"
-	dna-echo_operation -h
+	dna-echo_operation -h "applying NGINX config for Tor"
 
 	cp "${source_dir}/conf/nginx/onion" "/etc/nginx/conf.d/onion.conf"
 
@@ -3741,8 +3481,7 @@ aenigma-provision_tor() {
 
 	### Make onion the default_server in nginx to avoid domain leaks in case of domains mismatches
 
-	operation_message="applying NGINX config for Tor"
-	dna-echo_operation -h
+	dna-echo_operation -h "applying NGINX config for Tor"
 
 	sed -i "s|443 default_server ssl|443 ssl|g" "/etc/nginx/conf.d/${domain}.conf"
 	sed -i "s|443 ssl|443 default_server ssl|g" "/etc/nginx/conf.d/onion.conf"
@@ -3751,8 +3490,7 @@ aenigma-provision_tor() {
 
 	### Restart nginx
 
-	operation_message="restarting NGINX"
-	dna-echo_operation -h
+	dna-echo_operation -h "restarting NGINX"
 
 	service nginx restart
 
@@ -3763,8 +3501,7 @@ aenigma-provision_tor() {
 
 	### Allow .onion JID registrations and federate with other XMPP servers hosted inside the Tor network on hidden services via Tor itself [https://www.grepular.com/Transparent_Access_to_Tor_Hidden_Services]
 
-	operation_message="adding .onion hostname to ejabberd hosts"
-	dna-echo_operation -h
+	dna-echo_operation -h "adding .onion hostname to ejabberd hosts"
 
 	if ! grep -q "${tor_hidden_service_hostname}" "/opt/ejabberd/conf/ejabberd.yml"
 	then
@@ -3773,8 +3510,7 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
-	operation_message="adding .onion hostname to SSLH config"
-	dna-echo_operation -h
+	dna-echo_operation -h "adding .onion hostname to SSLH config"
 
 	if ! grep -q "xh${node_number}.${tor_hidden_service_hostname}" "/etc/sslh.cfg"
 	then
@@ -3788,22 +3524,19 @@ aenigma-provision_tor() {
 
 	dna-echo_operation -t
 
-	operation_message="restarting SSLH"
-	dna-echo_operation -h
+	dna-echo_operation -h "restarting SSLH"
 
 	service sslh restart
 
 	dna-echo_operation -t
 
-	operation_message="restarting ejabberd"
-	dna-echo_operation -h
+	dna-echo_operation -h "restarting ejabberd"
 
 	service ejabberd restart
 
 	dna-echo_operation -t
 
-	operation_message="enabling Tor DNS resolution for .onion domains"
-	dna-echo_operation -h
+	dna-echo_operation -h "enabling Tor DNS resolution for .onion domains"
 
 	### Tor
 
@@ -3824,8 +3557,7 @@ EOF
 
 	### Unbound
 
-	operation_message="installing unbound local DNS server"
-	dna-echo_operation -h
+	dna-echo_operation -h "installing unbound local DNS server"
 
 	dna-install_dependencies -p "unbound"
 
@@ -3852,8 +3584,7 @@ EOF
 
 	### UFW / IPTABLES
 
-	operation_message="configuring IPtables for Tor routing"
-	dna-echo_operation -h
+	dna-echo_operation -h "configuring IPtables for Tor routing"
 
 	if ! grep -q "DNSPort   0.0.0.0:5300" "/etc/ufw/before.rules"
 	then
@@ -4026,8 +3757,7 @@ aenigma-set_loglevel_zero_enabled() {
 	############################################################################
 	############################################################################
 
-	operation_message="disabling logging for all services"
-	dna-echo_operation -h
+	dna-echo_operation -h "disabling logging for all services"
 
 	############################################################################
 
@@ -4123,8 +3853,7 @@ aenigma-set_loglevel_zero_disabled() {
 	############################################################################
 	############################################################################
 
-	operation_message="[re-]enabling logging for all services"
-	dna-echo_operation -h
+	dna-echo_operation -h "[re-]enabling logging for all services"
 
 	############################################################################
 
@@ -4218,8 +3947,7 @@ aenigma-set_mam_off_enabled() {
 	############################################################################
 	############################################################################
 
-	operation_message="disabling ejabberd message archiving [mod_mam] globally"
-	dna-echo_operation -h
+	dna-echo_operation -h "disabling ejabberd message archiving [mod_mam] globally"
 
 	############################################################################
 
@@ -4295,8 +4023,7 @@ aenigma-set_mam_off_disabled() {
 	############################################################################
 	############################################################################
 
-	operation_message="[re-]enabling ejabberd message archiving [mod_mam] globally"
-	dna-echo_operation -h
+	dna-echo_operation -h "[re-]enabling ejabberd message archiving [mod_mam] globally"
 
 	############################################################################
 
@@ -4311,19 +4038,6 @@ aenigma-set_mam_off_disabled() {
 
 	############################################################################
 	############################################################################
-
-}
-
-backup_locally_loop() {
-
-	cp -r "${conf_dir}" "${tmp_backup_dir}/conf/"
-
-	mkdir -p "${tmp_backup_dir}/data/"
-
-	cp -r /opt/ejabberd/ "${tmp_backup_dir}/data/etc-ejabberd/"
-	cp -r /var/lib/ejabberd/ "${tmp_backup_dir}/data/var-lib-ejabberd/"
-
-	pg_dump --dbname="postgresql://ejabberd:${patroni_ejabberd_password}@${public_ipv4}:5432/ejabberd" > ejabberd.pgsql
 
 }
 
@@ -4478,146 +4192,13 @@ restore_loop() {
 
 }
 
-synthia-calculate_backup_size() {
+### ############################################################################
 
-	## fetch sizes for the directories that have the most impactful sizes that
-	## will affect backups [such as '/var/www/' for nginx-related projects].
-	## all sizes in MB.
+### 3 | synthia installation.
 
-	dna-get_hostname
-
-	uploads_dir_size="$(du -sm /var/www/upload/ | cut -f1)"
-
-	patroni_ejabberd_db_size="$(PGPASSWORD="${patroni_postgres_password}" psql -h "${hostname}" -p "5432" -U "postgres" -t -c "select pg_database_size('ejabberd') / 1024 / 1024;" | xargs)"
-
-	backup_size_estimate="$((${uploads_dir_size} + ${patroni_ejabberd_db_size}))"
-
-}
-
-aenigma_backup() {
-
-	#### check for lockfile to avoid multiple simultaneous backups.
-
-	if [ -f /tmp/${proj_name}-backup-running-lockfile ]
-	then
-
-	    dna-echo -e "It appears a ${proj_name} backup is already running, perhaps an automated daily one, or perhaps the last one was interrupted."
-	    dna-echo -m "If this *is* an automated daily one, please check that you're not running a manual one or that the last run was interrupted."
-	    dna-echo -m "Running multiple simultaneous backups is absolutely not supported and will make both fail."
-
-		if [ "${interactive}" = "y" ]
-	    then
-	        dna-ask_for_boolean -d "n" -q "If you're certain that another backup is NOT running, would you like to ignore the lockfile and continue?"
-	        if [ "${boolean_output}" = "y" ]
-	        then
-	            dna-echo -m "Ok, continuing anyway..."
-	            export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
-	        else
-	            dna-echo -m "Ok, aborting..."
-	            dna-exit
-	        fi
-
-	    else
-
-	        dna-echo -m "If you're certain that another backup is NOT running, run this script manually and select to ignore the lockfile and continue when prompted."
-	        dna-echo -m "Alternatively, you can also log into this machine and | ${o-}rm /tmp/${proj_name}-backup-running-lockfile${n-} |."
-	        dna-echo -e "Aborting backup for now."
-	        dna-exit
-
-	    fi
-
-	else
-
-	    ### Set lockfile.
-
-	    export lockfile_set="/tmp/${proj_name}-backup-running-lockfile"
-	    touch "${lockfile_set}"
-
-	fi
-
-	################################################################################
-
-	dna-br_purge_incomplete_archives
-
-	dna-br_purge_dirs
-
-	dna-br_create_dirs backup
-
-	dna-br_update_storage_info
-
-	dna-br_purge_backups
-
-	if [ "$backup_archival_location" = "s3" ]
-	then
-
-	    dna-br_restore_from_S3 test
-
-	    dna-br_purge_dirs
-
-	    dna-br_create_dirs backup
-
-	fi
-
-	dna-br_backup_locally "${skip_install_complete_check-}"
-
-	################################################################################
-
-	if [ "$backup_archival_location" = "s3" ]
-	then
-
-	    if [ "${s3_restore_test_failed-null}" = "y" ]
-	    then
-
-	        dna-echo -e "Skipping S3 backup because of a previous test restore failure."
-
-	        rm -r "$tmp_backup_dir"
-
-	    else
-
-	    	mv "$tmp_backup_dir"/* "$backup_local_storage_path/latest"
-
-	    	############################################################################
-
-	    	dna-br_backup_to_S3
-
-	    fi
-
-	else
-
-		rm -r "$tmp_backup_dir"
-
-	fi
-
-	if [ -d "$backup_local_storage_path/temp" ]
-	then
-		rm -r "${backup_local_storage_path:?}/temp"
-	fi
-
-	dna-br_purge_dirs
-
-	if [ -f "/tmp/${proj_name}-backup-running-lockfile" ]
-	then
-	    rm "/tmp/${proj_name}-backup-running-lockfile"
-	fi
-
-	if [ "${s3_restore_test_failed-null}" = "y" ]
-	then
-	    dna-exit
-	fi
-
-	dna-echo -s "Backup complete!"
-
-}
-
-################################################################################
-################################################################################
-################################################################################
+### ############################################################################
 
 synthia-perform_installation() {
-
-	############################################################################
-	################### Add your install-time functions here ###################
-	############################################################################
 
 	### Start.
 
@@ -5523,8 +5104,7 @@ synthia-perform_installation() {
 
 	############################################################################
 
-	operation_message="setting UFW rules"
-	dna-echo_operation -h
+	dna-echo_operation -h "setting UFW rules"
 
 	ufw allow 5222
 	ufw allow 5223
@@ -6076,14 +5656,7 @@ synthia-perform_installation() {
 	dna-remove_tmp_project_dir
 
 	############################################################################
-	############################################################################
-
-	### End.
-
-	############################################################################
-	############################################################################
-	############################################################################
 
 }
 
-################################################################################
+### ############################################################################
