@@ -23,16 +23,16 @@ set -eu
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ## this file is being executed via a symlink.
-    ## therefore identify the parent directory of the target file.
+    ###### this file is being executed via a symlink.
+    ###### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ## this file is being directly executed.
-    ## therefore identify our parent directory.
+    ###### this file is being directly executed.
+    ###### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -99,31 +99,49 @@ dna-log_script
 
 ### ############################################################################
 
+### evaluate arguments.
+
+### ############################################################################
+
+while getopts ":lsri" arguments
+do
+    case $arguments in
+        l)	export backup_locally_only="y"
+            ;;
+        s)	export backup_s3_only="y"
+            ;;
+        r)	export backup_last_before_restore="y"
+            ;;
+        i)	export backup_skip_install_complete_check="y"
+            ;;
+        \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+            dna-exit
+            ;;
+    esac
+done
+OPTIND=1
+
+if [ -n "${backup_last_before_restore-}" ]
+then
+
+    if [ -n "${backup_s3_only-}" ]
+    then
+
+        dna-echo -e "Option | ${n-}backup_s3_only [-s]${r-} | is incompatible with option | ${n-}backup_last_before_restore [-r]${r-} |."
+        dna-exit
+
+    fi
+
+    export backup_locally_only="y"
+
+fi
+
+### ############################################################################
+
 ### actually start script operations.
 
 ### ############################################################################
 
-#### evaluate arguments.
-
-#### ###########################################################################
-
-while getopts ":s" arguments
-do
-    case $arguments in
-		s)	skip_install_complete_check="-s"
-			;;
-		\?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
-			dna-exit
-			;;
-	esac
-done
-OPTIND=1
-
-#### ###########################################################################
-
-aenigma_backup
+synthia-backup
 
 ### ############################################################################
-
-################################################################################
-################################################################################
