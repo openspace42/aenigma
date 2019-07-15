@@ -99,7 +99,7 @@ if [[ "${@#--return-check}" = "$@" ]]
 then
     dna-echo -e "This script must not be run directly."
     dna-echo -m "It is only intended to be started at boot time by cron and it should be already running right now on this machine in the background if this node is part of a cluster."
-    dna-echo -m "You can see its runtime log at this location: | ${y-}/root/logs/${proj_name}-resync_cluster${n-} | and you should get email notifications in case of a | ${r-}running_partitioned_network${n-} | error message appearance."
+    dna-echo -m "You can see its runtime log at this location: | ${y-}/root/logs/${project_name}-resync_cluster${n-} | and you should get email notifications in case of a | ${r-}running_partitioned_network${n-} | error message appearance."
     dna-exit
 fi
 

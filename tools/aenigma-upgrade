@@ -107,9 +107,9 @@ if [[ "${custom_project_version-null}" == "l" ]]                                
 then
 	echo
     dna-echo -e "You're running the installation via the upgrade script."
-    dna-echo -m "Therefore the | ${r-}local${n-} | version of the ${proj_name} directory doesn't exist, as it's cloned automatically by the upgrade script itself."
+    dna-echo -m "Therefore the | ${r-}local${n-} | version of the ${project_name} directory doesn't exist, as it's cloned automatically by the upgrade script itself."
     dna-echo -m "If you want to make customizations to the project before installing it, clone it yourself while in the root directory of the root user and then run:"
-    dna-echo -m " | ${c-}bash ${proj_name}/setup -pl | "
+    dna-echo -m " | ${c-}bash ${project_name}/setup -pl | "
     dna-exit
 fi
 
@@ -148,9 +148,9 @@ synthia-define_vars
 
 ### ############################################################################
 
-if [ -d "/root/${proj_name}/" ]
+if [ -d "/root/${project_name}/" ]
 then
-    rm -r "/root/${proj_name}/"
+    rm -r "/root/${project_name}/"
 fi
 
 echo
@@ -159,9 +159,9 @@ cd
 
 if [ -z "${custom_branch}" ]
 then
-    git clone "${git_host}/${author_name}/${proj_name}"
+    git clone "${git_host}/${author_name}/${project_name}"
 else
-    git clone "${git_host}/${author_name}/${proj_name}" -b "${custom_branch}"
+    git clone "${git_host}/${author_name}/${project_name}" -b "${custom_branch}"
 fi
 
 dna-run_install

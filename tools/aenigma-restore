@@ -118,9 +118,9 @@ dna-check_install_complete
 if [ "$install_complete" = "n" ]
 then
 
-	echo "${r-}${b-}It appears ${proj_name} is not currently installed or there is an incomplete installation on this machine.${x-}"
+	echo "${r-}${b-}It appears ${project_name} is not currently installed or there is an incomplete installation on this machine.${x-}"
 	echo
-	echo "${b-}If you have an S3 backup and want to restore your previous instance of ${proj_name} on this machine while inheriting all of your old settings, you can still run this script, although in bootstrap mode, therefore running the restore prior to actually running the ${proj_name} installation.${x-}"
+	echo "${b-}If you have an S3 backup and want to restore your previous instance of ${project_name} on this machine while inheriting all of your old settings, you can still run this script, although in bootstrap mode, therefore running the restore prior to actually running the ${project_name} installation.${x-}"
 	echo
 	echo "${b-}If this is not the case, you must run [or finish running] the install script first.${x-}"
 	echo
@@ -170,10 +170,10 @@ fi
 ################################################################################
 
 restore_from_standalone_content_description() {
-	echo "${b-}1] /root/${proj_name}-restore/config${x-}"
-	echo "${b-}2] /root/${proj_name}-restore/ejabberd-mnesia-backup${x-}"
-	echo "${b-}3] /root/${proj_name}-restore/etc-ejabberd${x-}"
-	echo "${b-}4] /root/${proj_name}-restore/var-lib-ejabberd${x-}"
+	echo "${b-}1] /root/${project_name}-restore/config${x-}"
+	echo "${b-}2] /root/${project_name}-restore/ejabberd-mnesia-backup${x-}"
+	echo "${b-}3] /root/${project_name}-restore/etc-ejabberd${x-}"
+	echo "${b-}4] /root/${project_name}-restore/var-lib-ejabberd${x-}"
 }
 
 validate_standalone_restore_content="y"

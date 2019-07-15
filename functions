@@ -22,7 +22,7 @@ synthia-define_vars() {
 
 	### ########################################################################
 
-	export proj_name="aenigma"
+	export project_name="aenigma"
 	export author_name="openspace42"
 	export git_host="https://github.com"
 
@@ -534,9 +534,9 @@ restore_loop() {
 		rm -r "$restores_dir/local/"
 	fi
 
-	if [ -d "/root/${proj_name}-restore/" ]
+	if [ -d "/root/${project_name}-restore/" ]
 	then
-		rm -r "/root/${proj_name}-restore/"
+		rm -r "/root/${project_name}-restore/"
 	fi
 
 	if [ -d "$tmpdir" ]
@@ -770,9 +770,9 @@ aenigma-xmpp_intro() {
 
 	dna-press_to_continue
 
-	dna-echo -m "$proj_name fully embraces this opportunity."
-	dna-echo -m "The domain for which you're setting up your new $proj_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
-	dna-echo -m "This will give you working @amsterdamhacklab.xyz JIDs [XMPP account addresses], but the $proj_name server will reside at ae01.amsterdamhacklab.xyz, as in the following example:"
+	dna-echo -m "$project_name fully embraces this opportunity."
+	dna-echo -m "The domain for which you're setting up your new $project_name server can definitely be a domain connected to a bigger project, that already points to other servers, and for which XMPP is just another service."
+	dna-echo -m "This will give you working @amsterdamhacklab.xyz JIDs [XMPP account addresses], but the $project_name server will reside at ae01.amsterdamhacklab.xyz, as in the following example:"
 	dna-echo -m "${o-}Domain:${n-}               ${y-}amsterdamhacklab.xyz.${n-}"
 	dna-echo -m "${o-}Website:${n-}              ${y-}amsterdamhacklab.xyz${n-} / ${y-}www.amsterdamhacklab.xyz${n-} [hosted by another server]."
 	dna-echo -m "${o-}Your JID format:${n-}      ${y-}mark@amsterdamhacklab.xyz.${n-}"
@@ -782,7 +782,7 @@ aenigma-xmpp_intro() {
 
 	### add cluster info here.
 
-	dna-echo -m "Now that you know how XMPP works, let's get your brand new $proj_name server up and running!"
+	dna-echo -m "Now that you know how XMPP works, let's get your brand new $project_name server up and running!"
 
 }
 
@@ -891,13 +891,13 @@ aenigma-provision_nginx() {
 
 	### Create web locations and populate them.
 
-	mkdir -p "/var/www/${proj_name}/"
-	chown -R "www-data:www-data" "/var/www/${proj_name}/"
+	mkdir -p "/var/www/${project_name}/"
+	chown -R "www-data:www-data" "/var/www/${project_name}/"
 
 	mkdir -p "/var/www/upload"
 	chown -R "www-data:www-data" "/var/www/upload/"
 
-	cp "${source_dir}/conf/web/global/index.html" "/var/www/${proj_name}/"
+	cp "${source_dir}/conf/web/global/index.html" "/var/www/${project_name}/"
 
 	############################################################################
 
@@ -994,7 +994,7 @@ aenigma-install_sslh() {
 
 	### Customize config file for aenigma
 
-	dna-echo_operation -h "customizing SSLH config for ${proj_name}"
+	dna-echo_operation -h "customizing SSLH config for ${project_name}"
 
 	cp "${source_dir}/conf/sslh/etc-sslh.cfg" "/etc/sslh.cfg"
 
@@ -2136,10 +2136,14 @@ aenigma-refresh_nodes_db_online() {
 
 aenigma-get_nodes_online() {
 
-	############################################################################
-
-	### Generate a list of online nodes by opening SSH sessions to other nodes.
-	### If any nodes are offline, remove them from nodes_db_online.
+	### generate a list of online nodes by opening SSH sessions to other nodes.
+	### if any nodes are offline, remove them from nodes_db_online.
+	### this is a routine function that gets called automatically before any
+	### remote operation by the primary node, which simply temporarily excludes
+	### offline nodes from those contacted by the primary node during the
+	### installation, without in any way affecting nodes_db permanently,
+	### and is mostly intented to be non-interactive, as opposed to
+	### get_nodes_onlines.
 
 	aenigma-refresh_nodes_db_online
 
@@ -2147,37 +2151,289 @@ aenigma-get_nodes_online() {
 	IFS=$'\n'
 	set -f
 
-	touch "${tmp_dir}/online_test_token"
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
+
 		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+
+		### ensure we don't try connecting to ourselves [therefore ignore the
+		### first line of nodes_db_ipv4].
+
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" -r "${tmp_dir}/online_test_token" "root@${node_ipv4}:${tmp_dir}/online_test_token"
+
+			if ! ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
 			then
+
 				echo
+
 				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue running the installation now and re-run the installation script at at a later time."
-	            dna-ask_for_boolean -d "y" -q "Continue anyway?"
-	            if [ "${boolean_output}" = "y" ]
+
+				dna-ask_for_boolean -d "y" -q "Continue anyway?"
+
+				if [ "${boolean_output}" = "y" ]
 	            then
+
 					dna-echo -n -m "Ok, continuing..."
-					### Remove node from nodes_db_online
+
+					### remove node from nodes_db_online.
+
 					sed -i "/^${node_ipv4}$/d" "${nodes_db_online_path}"
+
 				else
+
 					dna-echo -m "Ok, aborting..."
 					dna-exit
+
 				fi
+
 			fi
+
 		fi
+
 		array_iter=$((array_iter + 1))
+
 	done
+
 	unset node_ipv4
 	IFS=$' \t\n'
 	set +f
+
+}
+
+aenigma-test_nodes_online() {
+
+	### check to see if any existing secondary nodes are offline, and, if so,
+	### prompt to remove them from nodes_db_online.
+	### this is meant as a specifically interactive and user-called function
+	### to perform one-time cluster node removal operations, as opposed to
+	### get_nodes_online.
+
+	### evaluate arguments.
+
+	### ########################################################################
+
+	while getopts ":as" arguments
+	do
+	    case $arguments in
+			a)	test_nodes_online_automated="y"
+			   ;;
+	        s)	test_nodes_online_silent="y"
+	            ;;
+	        \?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+	            dna-exit
+	            ;;
+	    esac
+	done
+	OPTIND=1
+
+	### ########################################################################
+
+	if [ -z "${test_nodes_online_automated-}" ]
+	then
+
+		dna-echo -m "This function attempts to connect to every node in your cluster, and checks for consistency across all nodes' ejabberd's cluster synchronization state."
+		dna-echo -m "If a node is found to be offline, you will have the choice to remove it from your primary node [this machine]'s database of nodes."
+		dna-press_to_continue
+
+	fi
+
+	aenigma-refresh_nodes_db_online
+
+	array_iter=1
+	IFS=$'\n'
+	set -f
+
+	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
+	do
+
+		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
+
+		### ensure we don't try connecting to ourselves [therefore ignore the
+		### first line of nodes_db_ipv4].
+
+		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
+		then
+
+			if ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
+			then
+
+				if [ -z "${test_nodes_online_silent-}" ]
+				then
+
+					dna-echo -s "Node number: | ${n-}${current_node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
+
+					aenigma-get_ejabberd_cluster_size
+
+					if current_node_ejabberd_cluster_size="$(ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" "ejabberdctl list_cluster | wc -l")" && [ "${current_node_ejabberd_cluster_size}" = "${ejabberd_cluster_size}" ]
+					then
+
+						dna-echo -s "ejabberd cluster status on node number: | ${n-}${current_node_number}${g-} | is nominal."
+
+					else
+
+						dna-echo -e "ejabberd cluster status on node number: | ${n-}${current_node_number}${g-} | is off-nominal."
+						dna-echo -m "In order to fix this simply re-run the: | ${l-}clusterize${n-} | script once again after exiting this one."
+
+					fi
+
+				fi
+
+			else
+
+				echo
+
+				dna-echo -e "Node number: | ${n-}${current_node_number}${r-} | is NOT responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
+				dna-echo -m "If the public IPv4 of such machine has changed, you will have to reinstall it again as a new node, after having removed it now."
+				dna-echo -m "If you have decommissioned this server or intend to do so, you can remove this node from this primary node's configuration about the cluster."
+				dna-echo -m "In either way, data on such secondary node will not be affected in any way, but this primary node won't consider it part of the cluster during future operations."
+				dna-echo -m "If somehow such secondary node is still running, even though we cannot reach it right now, it will still actually take part in the ejabberd cluster."
+
+	            dna-ask_for_boolean -d "n" -q "Would you like to remove this node from the ${project_name} cluster database now?"
+
+	            if [ "${boolean_output}" = "y" ]
+	            then
+
+					dna-echo -m "Ok, removing node now..."
+
+					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${current_node_number}.${domain}" || true
+
+					dna-echo -m "Now restarting ejabberd..."
+
+					/usr/sbin/service ejabberd restart
+
+					initial_last_node_number=$(wc -l < "${nodes_db_ipv4_path}" | xargs printf %02d)
+
+					if [ "${current_node_number}" = "${initial_last_node_number}" ]
+					then
+
+						### remove node from nodes_db files.
+
+						sed -i "${current_node_number}d" "${nodes_db_ipv4_path}"
+						sed -i "${current_node_number}d" "${nodes_db_ipv6_path}"
+
+						aenigma-create_nodes_db_numbered
+						aenigma-push_routing_info
+
+						dna-echo -s "Node deleted successfully."
+
+						node_removed="y"
+
+					else
+
+						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${current_node_number}${n-} |."
+						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: [number | ${o-}${initial_last_node_number}${n-} |] to take the place of the newly removed node."
+						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
+
+						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_last_node_number}${n-} | now?"
+
+						if [ "${boolean_output}" = "y" ]
+						then
+
+							dna-echo -m "Ok, reconfiguring node now..."
+
+							/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${initial_last_node_number}.${domain}" || true
+
+							dna-echo -m "Now restarting ejabberd..."
+
+							/usr/sbin/service ejabberd restart
+
+							### get the last node in nodes_db_ipv4.
+
+							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${initial_last_node_number}"p)
+
+							### copy its ipv4 to the line of the node to be
+							### removed.
+
+							sed -i "${current_node_number}s/.*/${target_node_ipv4}/" "${nodes_db_ipv4_path}"
+
+							### delete what previously was the
+							### reconfigured node's line.
+
+							sed -i "${initial_last_node_number}d" "${nodes_db_ipv4_path}"
+
+							### get the last node in nodes_db_ipv6.
+
+							target_node_ipv6=$(cat ${nodes_db_ipv6_path} | sed -n "${initial_last_node_number}"p)
+
+							### copy its IPv6 to the line of the node to be
+							### removed.
+
+							sed -i "${current_node_number}s/.*/${target_node_ipv6}/" "${nodes_db_ipv6_path}"
+
+							### delete what previously was the
+							### reconfigured node's line.
+
+							sed -i "${initial_last_node_number}d" "${nodes_db_ipv6_path}"
+
+							aenigma-create_nodes_db_numbered
+
+							dna-echo -s "Node number: | ${n-}${initial_last_node_number}${g-} | successfully changed to number: | ${n-}${current_node_number}${g-} |."
+
+							node_removed="y"
+							launch_node_reinstallation="y"
+
+						else
+
+							dna-echo -m "Ok, aborting node removal."
+
+						fi
+
+					fi
+
+					if [ "${launch_node_reinstallation-null}" = "y" ]
+					then
+
+						dna-echo -m "Having re-ordered what is now node number | ${o-}${current_node_number}${n-} | it's time to re-configure it and notify it of the change."
+						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}${n-} |] and run the installer from there now. Then come back here."
+
+						dna-press_to_continue
+
+						dna-echo -n -m "Ok, now launching | ${c-}${project_name}-clusterize${n-} | script..."
+
+						bash "${tools_dir}/${project_name}-clusterize"
+
+					fi
+
+				else
+
+					dna-echo -m "Ok, leaving node registered in cluster database for now."
+					dna-exit
+
+				fi
+
+			fi
+
+		fi
+
+		array_iter=$((array_iter + 1))
+
+		if [ "${node_removed}" = "y" ]
+		then
+
+			dna-echo -e "Interrupting | ${n-}test_nodes_online${r-} | function execution."
+			dna-echo -m "Having removed a node, if you want to keep testing online nodes, given the new node arrangement, simply re-run the script."
+
+			dna-press_to_continue
+			break
+
+		fi
+
+	done
+
+	unset node_ipv4
+	IFS=$' \t\n'
+	set +f
+
+	############################################################################
+
+	dna-echo -m "Now pushing routing info..."
+
+	aenigma-push_routing_info
+
+	############################################################################
 
 }
 
@@ -2246,7 +2502,7 @@ aenigma-push_routing_info() {
 				dna-echo -e "Existing node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "It is NOT reccommended to continue the installation as the node in question will not be informed of the new node we're setting up right now."
 				dna-echo -m "However, you can continue running the installation now and run the | ${o-}push_routing_info${n-} | script at at a later time by executing:"
-				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-push_routing_info${n-} | "
+				dna-echo -m " | ${y-}bash ${tools_dir}/${project_name}-push_routing_info${n-} | "
 	            dna-ask_for_boolean -d "y" -q "Continue anyway?"
 	            if [ "${boolean_output}" = "y" ]
 	            then
@@ -2322,12 +2578,12 @@ aenigma-push_certs() {
 		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
 		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
 		then
-			if ! /usr/bin/scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_project_dir}" "root@${node_ipv4}:${tls_dir}"
+			if ! scp -P42022 -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i /root/.ssh/aenigma_cluster -r "${tls_project_dir}" "root@${node_ipv4}:${tls_dir}"
 			then
 				echo
 				dna-echo -e "Node number | ${n-}${current_node_number}${r-} | is not responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
 				dna-echo -m "Ensure such node is actually online and when it is execute this script again by running:"
-				dna-echo -m " | ${y-}${tools_dir}/${proj_name}-create-push-certs${n-} | "
+				dna-echo -m " | ${y-}${tools_dir}/${project_name}-create-push-certs${n-} | "
 				if [ "${interactive}" = "y" ]
 				then
 		            dna-ask_for_boolean -d "y" -q "Continue anyway with all other nodes now?"
@@ -2344,7 +2600,7 @@ aenigma-push_certs() {
 					dna-echo -e "Skipping node | ${n-}${current_node_number}${r-} | and continuing with all others now."
 					### Send an alert email.
 			        dna-send_mail -s "aenigma: node: | ${current_node_number} | offline" \
-			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${current_node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [the machine sending this very notification] and execute: | ${tools_dir}/${proj_name}-create-push-certs |." \
+			        -b "Automated post-renewal LetsEncrypt TLS certificate files push to node: | ${current_node_number} | has failed, as it appears to be offline. Look into the situation and when the node is back online simply log into your primary node [the machine sending this very notification] and execute: | ${tools_dir}/${project_name}-create-push-certs |." \
 			        -r "${admin_mail}"
 				fi
 			fi
@@ -2397,124 +2653,6 @@ END
 
 }
 
-aenigma-test_online_nodes() {
-
-	############################################################################
-
-	dna-echo -m "This function attempts to connect to every node in your cluster, and checks for consistency across all nodes' ejabberd's cluster synchronization state."
-	dna-echo -m "If a node is found to be offline, you will have the choice to remove it from your primary node [this machine]'s database of nodes."
-	dna-press_to_continue
-
-	############################################################################
-
-	### Check to see if any existing secondary nodes are offline, and, if so, remove them from nodes_db_online
-
-	aenigma-refresh_nodes_db_online
-
-	array_iter=1
-	IFS=$'\n'
-	set -f
-
-	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")							### Do NOT escape this variable
-	do
-		current_node_number="$(echo ${array_iter} | xargs printf %02d)"
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
-		if [ ! "${node_ipv4}" = "${public_ipv4}" ]
-		then
-			if /usr/bin/ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${node_ipv4}" exit
-			then
-				dna-echo -s "Node number: | ${n-}${current_node_number}${g-} | is responding at IPv4 address: | ${n-}${node_ipv4}${g-} |."
-			else
-				echo
-				dna-echo -e "Node number: | ${n-}${current_node_number}${r-} | is NOT responding at IPv4 address | ${n-}${node_ipv4}${r-} |."
-				dna-echo -m "If you have decommissioned this server or intend to do so, you can remove this node from this primary node's configuration about the cluster."
-				dna-echo -m "Data on such secondary node will not be affected in any way, but this primary node won't consider it part of the cluster during future operations."
-				dna-echo -m "If somehow such secondary node is still running, even though we cannot reach it right now, it will still actually take part in the ejabberd cluster."
-	            dna-ask_for_boolean -d "n" -q "Would you like to remove this node from the cluster database now?"
-	            if [ "${boolean_output}" = "y" ]
-	            then
-					dna-echo -m "Ok, removing node now..."
-					/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${current_node_number}.${domain}" || true
-					dna-echo -m "Now restarting ejabberd..."
-					/usr/sbin/service ejabberd restart
-					initial_last_node_number=$(wc -l < "${nodes_db_ipv4_path}" | xargs printf %02d)
-					if [ "${current_node_number}" = "${initial_last_node_number}" ]
-					then
-						### Remove node from nodes_db files
-						sed -i "${current_node_number}d" "${nodes_db_ipv4_path}"
-						sed -i "${current_node_number}d" "${nodes_db_ipv6_path}"
-						aenigma-create_nodes_db_numbered
-						aenigma-push_routing_info
-						dna-echo -s "Node deleted successfully."
-						node_removed="y"
-					else
-						dna-echo -m "Performing this removal would leave an empty space for node number | ${o-}${current_node_number}${n-} |."
-						dna-echo -m "To remove it from our cluster configuration it is required to reconfigure the last numbered node: [number | ${o-}${initial_last_node_number}${n-} |] to take the place of the newly removed node."
-						dna-echo -m "If you do not want to proceed with this operation, the removal will be aborted."
-						dna-ask_for_boolean -d "y" -q "Would you like to reconfigure node number | ${o-}${initial_last_node_number}${n-} | now?"
-						if [ "${boolean_output}" = "y" ]
-						then
-							dna-echo -m "Ok, reconfiguring node now..."
-							/usr/sbin/ejabberdctl --no-timeout leave_cluster "ejabberd@ae${initial_last_node_number}.${domain}" || true
-							dna-echo -m "Now restarting ejabberd..."
-							/usr/sbin/service ejabberd restart
-							### Get the last node in nodes_db_ipv4
-							target_node_ipv4=$(cat ${nodes_db_ipv4_path} | sed -n "${initial_last_node_number}"p)
-							### Copy its IPv4 to the line of the node to be removed
-							sed -i "${current_node_number}s/.*/${target_node_ipv4}/" "${nodes_db_ipv4_path}"
-							### Delete the reconfigured node's initial line
-							sed -i "${initial_last_node_number}d" "${nodes_db_ipv4_path}"
-							### Get the last node in nodes_db_ipv6
-							target_node_ipv6=$(cat ${nodes_db_ipv6_path} | sed -n "${initial_last_node_number}"p)
-							### Copy its IPv6 to the line of the node to be removed
-							sed -i "${current_node_number}s/.*/${target_node_ipv6}/" "${nodes_db_ipv6_path}"
-							### Delete the reconfigured node's initial line
-							sed -i "${initial_last_node_number}d" "${nodes_db_ipv6_path}"
-							aenigma-create_nodes_db_numbered
-							dna-echo -s "Node number: | ${n-}${initial_last_node_number}${g-} | successfully changed to number: | ${n-}${current_node_number}${g-} |."
-							node_removed="y"
-							launch_node_reinstallation="y"
-						else
-							dna-echo -m "Ok, aborting node removal."
-						fi
-					fi
-					if [ "${launch_node_reinstallation-null}" = "y" ]
-					then
-						dna-echo -m "Having re-ordered what is now node number | ${o-}${current_node_number}${n-} | it's time to re-configure it and notify it of the change."
-						dna-echo -m "Open a new shell to it [located at IP: | ${y-}${target_node_ipv4}${n-} |] and run the installer from there now. Then come back here."
-						dna-press_to_continue
-						dna-echo -n -m "Ok, now launching | ${c-}${proj_name}-clusterize${n-} | script..."
-						bash "${tools_dir}/${proj_name}-clusterize"
-					fi
-				else
-					dna-echo -m "Ok, skipping node removal."
-					dna-exit
-				fi
-			fi
-		fi
-		array_iter=$((array_iter + 1))
-		if [ "${node_removed}" = "y" ]
-		then
-			dna-echo -e "Interrupting | ${n-}test_online_nodes${r-} | function execution."
-			dna-echo -m "Having removed a node, if you want to keep testing online nodes, given the new node arrangement, simply re-run the script."
-			dna-press_to_continue
-			break
-		fi
-	done
-	unset node_ipv4
-	IFS=$' \t\n'
-	set +f
-
-	############################################################################
-
-	dna-echo -m "Now pushing routing info..."
-
-	aenigma-push_routing_info
-
-	############################################################################
-
-}
-
 aenigma-create_push_certs() {
 
 	############################################################################
@@ -2545,7 +2683,7 @@ aenigma-create_push_certs() {
 
 	if [ "${cluster_mode-null}" = "secondary" ]
 	then
-		dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
+		dna-echo -e "This script must only be run on the primary node of your ${project_name} instance."
 		dna-exit
 	fi
 
@@ -4156,56 +4294,56 @@ aenigma-provision_conversejs() {
 
 	### Clone and build
 
-	if [ -d "/var/www/${proj_name}/xmpp/" ]
+	if [ -d "/var/www/${project_name}/xmpp/" ]
 	then
-		if [ -d "/var/www/${proj_name}/xmpp-old/" ]
+		if [ -d "/var/www/${project_name}/xmpp-old/" ]
 		then
-			rm -rf "/var/www/${proj_name}/xmpp-old/"
+			rm -rf "/var/www/${project_name}/xmpp-old/"
 		fi
-		mv "/var/www/${proj_name}/xmpp/" "/var/www/${proj_name}/xmpp-old/"
+		mv "/var/www/${project_name}/xmpp/" "/var/www/${project_name}/xmpp-old/"
 	fi
 
-	git clone https://github.com/conversejs/converse.js "/var/www/${proj_name}/xmpp/"
+	git clone https://github.com/conversejs/converse.js "/var/www/${project_name}/xmpp/"
 
-	( cd "/var/www/${proj_name}/xmpp/" && git checkout tags/v4.2.0 && make dev && make dist )
+	( cd "/var/www/${project_name}/xmpp/" && git checkout tags/v4.2.0 && make dev && make dist )
 
 	echo
 
 	### Install libsignal dependency
 
-	( cd "/var/www/${proj_name}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
+	( cd "/var/www/${project_name}/xmpp/" && mkdir -p "3rdparty" && curl "https://raw.githubusercontent.com/signalapp/libsignal-protocol-javascript/master/dist/libsignal-protocol.js" > "./3rdparty/libsignal-protocol.js" )
 
 	echo
 
 	### Move fullscreen.html to index.html
 
-	mv "/var/www/${proj_name}/xmpp/fullscreen.html" "/var/www/${proj_name}/xmpp/index.html"
+	mv "/var/www/${project_name}/xmpp/fullscreen.html" "/var/www/${project_name}/xmpp/index.html"
 
 	### Localize sources
 
-	sed -i "s|https://cdn.conversejs.org/4.2.0/css/converse.min.css|dist/converse.min.css|g" "/var/www/${proj_name}/xmpp/index.html"
-	sed -i "s|https://cdn.conversejs.org/3rdparty/libsignal-protocol.min.js|3rdparty/libsignal-protocol.js|g" "/var/www/${proj_name}/xmpp/index.html"
-	sed -i "s|https://cdn.conversejs.org/4.2.0/dist/converse.min.js|dist/converse.min.js|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/4.2.0/css/converse.min.css|dist/converse.min.css|g" "/var/www/${project_name}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/3rdparty/libsignal-protocol.min.js|3rdparty/libsignal-protocol.js|g" "/var/www/${project_name}/xmpp/index.html"
+	sed -i "s|https://cdn.conversejs.org/4.2.0/dist/converse.min.js|dist/converse.min.js|g" "/var/www/${project_name}/xmpp/index.html"
 
 	### Remove analytics
 
-	sed -i "/inverse-analytics.js/d" "/var/www/${proj_name}/xmpp/index.html"
-	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "/inverse-analytics.js/d" "/var/www/${project_name}/xmpp/index.html"
+	sed -i "/stats.opkode.com\/piwik.php/d" "/var/www/${project_name}/xmpp/index.html"
 
 	### Use our own ejabberd websocket service
 
-	sed -i "s|bosh_service_url|websocket_url|g" "/var/www/${proj_name}/xmpp/index.html"
-	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|bosh_service_url|websocket_url|g" "/var/www/${project_name}/xmpp/index.html"
+	sed -i "s|https://conversejs.org/http-bind/|wss://xh${node_number}.${domain}/ws/|g" "/var/www/${project_name}/xmpp/index.html"
 
 	### Remove test bosh service warning
 
-	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|, // Please use this connection manager only for testing purposes|,|g" "/var/www/${project_name}/xmpp/index.html"
 
 	### Add config parameters
 
-	sed -i "s|view_mode: 'fullscreen'|view_mode: 'fullscreen',|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|view_mode: 'fullscreen'|view_mode: 'fullscreen',|g" "/var/www/${project_name}/xmpp/index.html"
 
-	sed -i "/view_mode/ r /dev/stdin" "/var/www/${proj_name}/xmpp/index.html" <<'EOF'
+	sed -i "/view_mode/ r /dev/stdin" "/var/www/${project_name}/xmpp/index.html" <<'EOF'
         allow_chat_pending_contacts: true,
         allow_non_roster_messaging: true,
         allow_otr: false,
@@ -4217,17 +4355,17 @@ aenigma-provision_conversejs() {
         muc_show_join_leave: false,
 EOF
 
-	sed -i "s|domain-var|${domain}|g" "/var/www/${proj_name}/xmpp/index.html"
+	sed -i "s|domain-var|${domain}|g" "/var/www/${project_name}/xmpp/index.html"
 
 	### Set permissions
 
-	chown -R www-data:www-data "/var/www/${proj_name}/xmpp/"
+	chown -R www-data:www-data "/var/www/${project_name}/xmpp/"
 
 	############################################################################
 
 	### Also make Converse available over Tor in its alternate webroot
 
-	rsync -aAXXz "/var/www/${proj_name}/xmpp/" "/var/www/onion/xmpp/"
+	rsync -aAXXz "/var/www/${project_name}/xmpp/" "/var/www/onion/xmpp/"
 
 	### Use onion-specific websocket
 
@@ -4582,7 +4720,7 @@ synthia-perform_installation() {
 
 	if ! dna-check_distro_ubuntu_18 && ! dna-check_distro_debian_9
 	then
-		dna-echo -e "${proj_name} only runs on Ubuntu 18.04 LTS [bionic] or Debian 9 [stretch]."
+		dna-echo -e "${project_name} only runs on Ubuntu 18.04 LTS [bionic] or Debian 9 [stretch]."
 		dna-echo -m "This is due - among other factors - to the fact that the ejabberd version installed by our APT repo of choice on previous releases is too old."
 		dna-echo -m "You can edit out this check to proceed at your own risk."
 		dna-exit
@@ -4719,8 +4857,8 @@ synthia-perform_installation() {
 
 	describe_setting() {
 
-		dna-echo -m "${proj_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing."
-		dna-echo -m "If you wish to setup ${proj_name} in a cluster configuration, you must specify so now."
+		dna-echo -m "${project_name} can be setup to run in a cluster of multiple servers, all working together to make your instance run smoothly, robustly, and be fault-tolerant and load-balancing."
+		dna-echo -m "If you wish to setup ${project_name} in a cluster configuration, you must specify so now."
 
 	}
 
@@ -4747,7 +4885,7 @@ synthia-perform_installation() {
 
 		describe_setting() {
 
-			dna-echo -m "Having chosen to run ${proj_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster."
+			dna-echo -m "Having chosen to run ${project_name} in a cluster of servers, you must now designate your master node that will be performing some special operations to lead the cluster."
 
 		}
 
@@ -4772,12 +4910,12 @@ synthia-perform_installation() {
 		if [ "${cluster_mode-null}" = "primary" ]
 		then
 
-			dna-echo -m "Having chosen that this server will be your primary node for your ${proj_name} installation, we can carry on with the standard installation."
+			dna-echo -m "Having chosen that this server will be your primary node for your ${project_name} installation, we can carry on with the standard installation."
 
 		else
 
-			dna-echo -m "Having chosen that this server will be a secondary node for your ${proj_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured."
-            dna-ask_for_boolean -d "y" -q "Is the primary node for this ${proj_name} already up and running and perfectly configured?"
+			dna-echo -m "Having chosen that this server will be a secondary node for your ${project_name} installation, we first need to make sure that there is an already running primary node that is already up and running and perfectly configured."
+            dna-ask_for_boolean -d "y" -q "Is the primary node for this ${project_name} already up and running and perfectly configured?"
 
             if [ "${boolean_output}" = "y" ]
             then
@@ -4786,7 +4924,7 @@ synthia-perform_installation() {
 
             else
 
-				dna-echo -m "Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${proj_name} install and selecting the | ${y-}primary${n-} | node option when prompted."
+				dna-echo -m "Ok, no problem. Please proceed with the full installation and configuration of your primary node on its respective server by following the same ${project_name} install and selecting the | ${y-}primary${n-} | node option when prompted."
 				dna-echo -m "Only then will we be able to continue with the installation of this secondary node."
 				dna-echo -m "Aborting installation for now."
                 dna-exit
@@ -4833,7 +4971,7 @@ synthia-perform_installation() {
 
 	        dna-echo -m "Now specify your top level domain, which will become the part after the @ in your JIDs [XMPP account addresses]."
 			dna-echo -m "In the next step you'll be able to specify additional domains for which all XMPP services will be fully provided just like this one."
-			dna-echo -m "The domain you'll be specifying right now will simply be the administrative domain for this and any other machines part of this ${proj_name} instance."
+			dna-echo -m "The domain you'll be specifying right now will simply be the administrative domain for this and any other machines part of this ${project_name} instance."
 
 	    }
 
@@ -4877,7 +5015,7 @@ synthia-perform_installation() {
 
 	    fi
 
-		#### set additioanl xmpp domains.
+		#### set additional xmpp domains.
 
 	    describe_setting() {
 
@@ -4956,7 +5094,7 @@ synthia-perform_installation() {
 		else
 
 			dna-echo -m "This machine's hostname must become: | ${y-}ae01.${domain}${n-} |."
-			dna-echo -m "This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${proj_name} into a cluster should you ever choose to do so."
+			dna-echo -m "This allows for a correct setup of ejabberd that will make it possible in the future to turn this instance of ${project_name} into a cluster should you ever choose to do so."
 			dna-echo -m "Your current hostname is:"
 			dna-echo -m " | ${y-}${curr_host_name}${n-} | "
 
@@ -4995,7 +5133,7 @@ synthia-perform_installation() {
 		dna-echo -m " | ${y-}aurora@${domain}${n-} | "
 		dna-echo -m "3] Your | ${o-}hostname${n-} | [the location on the internet of this server] will be:"
 		dna-echo -m " | ${y-}${hostname}${n-} | "
-		dna-echo -m "4] And therefore your | ${o-}${proj_name} admin panel${n-} | will be located at:"
+		dna-echo -m "4] And therefore your | ${o-}${project_name} admin panel${n-} | will be located at:"
 		dna-echo -m " | ${y-}https://${hostname}${n-} | "
 
 		dna-echo -m "----------------------------------------------------------------"
@@ -5068,7 +5206,7 @@ synthia-perform_installation() {
 	if [ "${cluster_enabled}" = "cluster" ]
 	then
 
-		dna-add_cron_job -n "${proj_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-resync_cluster --return-check"
+		dna-add_cron_job -n "${project_name}-resync_cluster" -t "@reboot" -c "bash /root/openspace42/${project_name}/tools/${project_name}-resync_cluster --return-check"
 
 	fi
 
@@ -5098,7 +5236,7 @@ synthia-perform_installation() {
 		##### copy the LetsEncrypt post-renewal script to its location and
 		##### actually run it now to be ready for the installation.
 
-		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
+		cp "${source_dir}/conf/letsencrypt/post-renewal-hook" "/etc/letsencrypt/renewal-hooks/post/${project_name}-create-push-certs"
 
 		##### execute create_push_certs now to generate the all-in-one tls cert
 		##### for ejabberd.
@@ -5116,9 +5254,9 @@ synthia-perform_installation() {
 		#### clear any letsencrypt post-renewal-hook if present from a previous
 		#### installation in primary node mode.
 
-		if [ -f "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs" ]
+		if [ -f "/etc/letsencrypt/renewal-hooks/post/${project_name}-create-push-certs" ]
 		then
-			rm "/etc/letsencrypt/renewal-hooks/post/${proj_name}-create-push-certs"
+			rm "/etc/letsencrypt/renewal-hooks/post/${project_name}-create-push-certs"
 		fi
 
 		#### generate token [or use the public IPv6 address of this machine if
@@ -5462,12 +5600,12 @@ synthia-perform_installation() {
 
 		###### add backup script to crontab.
 
-		dna-add_cron_job -n ${proj_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-backup"
+		dna-add_cron_job -n ${project_name}-backup -t "8 4 * * *" -c "bash /root/openspace42/${project_name}/tools/${project_name}-backup"
 
 		###### add create_push_certs script to crontab for monthly LE
 		###### autorenewal and distribution to other nodes.
 
-		dna-add_cron_job -n ${proj_name}-backup -t "8 4 2 * *" -c "bash /root/openspace42/${proj_name}/tools/${proj_name}-create_push_certs"
+		dna-add_cron_job -n ${project_name}-backup -t "8 4 2 * *" -c "bash /root/openspace42/${project_name}/tools/${project_name}-create_push_certs"
 
 		###### register ejabberd admin user.
 
@@ -5623,7 +5761,7 @@ synthia-perform_installation() {
 
 				dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script now..."
 
-				bash "${tools_dir}/${proj_name}-clusterize"
+				bash "${tools_dir}/${project_name}-clusterize"
 
 				while [ ! "${exit_clusterization_loop-null}" = "y" ]
 				do
@@ -5635,7 +5773,7 @@ synthia-perform_installation() {
 
 						dna-echo -n -m "Ok, running the | ${o-}clusterize${n-} | script again now..."
 
-						bash "${tools_dir}/${proj_name}-clusterize"
+						bash "${tools_dir}/${project_name}-clusterize"
 
 					else
 
@@ -5650,7 +5788,7 @@ synthia-perform_installation() {
 			else
 
 				dna-echo -m "Ok, you can run the | ${o-}clusterize${n-} | script at any time by executing:"
-				dna-echo -m " | ${y-}bash ${tools_dir}/${proj_name}-clusterize${n-} | "
+				dna-echo -m " | ${y-}bash ${tools_dir}/${project_name}-clusterize${n-} | "
 				dna-press_to_continue
 
 			fi

@@ -105,13 +105,13 @@ dna-log_script
 
 if [ "${cluster_enabled}" = "single" ]
 then
-	dna-echo -e "This script is only intended to be executed when running ${proj_name} in a cluster of several nodes."
+	dna-echo -e "This script is only intended to be executed when running ${project_name} in a cluster of several nodes."
 	dna-exit
 fi
 
 if [ "${cluster_mode-null}" = "secondary" ]
 then
-	dna-echo -e "This script must only be run on the primary node of your ${proj_name} instance."
+	dna-echo -e "This script must only be run on the primary node of your ${project_name} instance."
 	dna-exit
 fi
 
