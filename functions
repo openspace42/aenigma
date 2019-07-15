@@ -563,41 +563,41 @@ restore_loop() {
 
 aenigma-display_logo() {
 
-	### Add delay for previous outputs
+	### add delay for previous outputs.
 
 	sleep 1
 
-	### Determine terminal window size
+	### determine terminal window size.
 
 	columns_number="$(tput cols)"
 	rows_number="$(tput lines)"
 
-	### Check that the terminal window is large enough to display the logo
+	### check that the terminal window is large enough to display the logo.
 
 	if [ "${columns_number}" -ge "93" ] && [ "${rows_number}" -ge "24" ]
 	then
 
-	    ### Determine terminal window horizontal center
+	    ### determine terminal window horizontal center.
 
 	    columns_median="$(echo $((columns_number / 2)))"
 
-	    ### The aenigma logo is 45 pixels and therefore 90 columns wide, therefore...
+	    ### the aenigma logo is 45 pixels and therefore 90 columns wide.
 
 	    base_column="$(echo $((columns_median - 45)))"
 
-		### Determine terminal window vertical center
+		### determine terminal window vertical center.
 
 	    rows_median="$(echo $((rows_number / 2)))"
 
-	    ### The aenigma logo is 17 rows tall, therefore...
+	    ### the aenigma logo is 17 rows tall.
 
 	    base_row="$(echo $((rows_median - 9)))"
 
-		### Determine bottom padding
+		### determine bottom padding.
 
 		bottom_padding="$(echo $((base_row - 2)))"
 
-	    ### Set colors
+	    ### set colors.
 
 	    b=$'\e[38;5;16m'
 	    w=$'\e[38;5;15m'
@@ -607,7 +607,8 @@ aenigma-display_logo() {
 	    x=$'\e[0m'
 	    z=$'\e[8m'
 
-	    ### Set white base for all lines
+	    ### set white base for all lines.
+
 	    set p02{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
 	    set p03{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
 	    set p04{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
@@ -625,11 +626,11 @@ aenigma-display_logo() {
 	    set p16{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
 	    set p17{01..45} && array="$@" && for item in $array; do eval $item='$w'; done && unset array item
 
-	    ### Line 03
+	    ### line 03.
 
 	    eval p0319='$b'
 
-	    ### Line 06
+	    ### line 06.
 
 	    eval p06{03..09}='$l'
 	    eval p06{11..17}='$b'
@@ -638,7 +639,7 @@ aenigma-display_logo() {
 	    eval p06{29..35}='$b'
 	    eval p06{38..43}='$b'
 
-	    ### Lines {07..08}
+	    ### lines {07..08}.
 
 	    eval p{07..08}06='$l'
 		eval p{07..08}{07..08}='$b'
@@ -653,7 +654,7 @@ aenigma-display_logo() {
 	    eval p{07..08}35='$b'
 	    eval p{07..08}43='$b'
 
-	    ### Line 09
+	    ### line 09.
 
 	    eval p09{03..09}='$l'
 	    eval p0911='$b'
@@ -666,7 +667,7 @@ aenigma-display_logo() {
 	    eval p0935='$b'
 	    eval p09{37..43}='$b'
 
-	    ### Lines {10..11}
+	    ### lines {10..11}.
 
 	    eval p{10..11}03='$l'
 		eval p{10..11}{04..05}='$b'
@@ -682,7 +683,7 @@ aenigma-display_logo() {
 	    eval p{10..11}37='$b'
 	    eval p{10..11}43='$b'
 
-	    ### Line 12
+	    ### line 12.
 
 	    eval p12{03..09}='$l'
 	    eval p1211='$b'
@@ -694,30 +695,30 @@ aenigma-display_logo() {
 	    eval p1235='$b'
 	    eval p12{37..43}='$b'
 
-	    ### Lines {13..14}
+	    ### lines {13..14}.
 
 	    eval p{13..14}27='$b'
 
-	    ### Line 15
+	    ### line 15.
 
 	    eval p15{22..27}='$b'
 
-	    ### Set borders
+	    ### set borders.
 
 	    set p01{01..45} && array="$@" && for item in $array; do eval $item='$b'; done && unset array item
 	    set p17{01..45} && array="$@" && for item in $array; do eval $item='$b'; done && unset array item
 	    eval p{01..17}01='$b'
 	    eval p{01..17}45='$b'
 
-		### Clear
+		### clear.
 
 		clear
 
-		### Print top padding
+		### print top padding.
 
 		yes '' | sed ${base_row}q
 
-	    ### Print
+	    ### print.
 
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p01{01..45}██ | tr -d ' ')"
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p02{01..45}██ | tr -d ' ')"
@@ -737,7 +738,7 @@ aenigma-display_logo() {
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p16{01..45}██ | tr -d ' ')"
 	    echo "$(eval $(echo printf '" %0.s"' {1..$base_column}))${x}$(echo $p17{01..45}██ | tr -d ' ')"
 
-		### Reset formatting
+		### reset formatting.
 
 	    echo ${x}
 
@@ -745,15 +746,15 @@ aenigma-display_logo() {
 
 		synthia-define_formatting
 
-		### Print bottom padding
+		### print bottom padding.
 
 		yes '' | sed ${bottom_padding}q
 
-		### Add delay
+		### add delay.
 
 		sleep 2
 
-		### Clear
+		### clear.
 
 		clear
 
@@ -780,7 +781,7 @@ aenigma-xmpp_intro() {
 
 	dna-press_to_continue
 
-	### add cluster info here.
+	## add cluster info here.
 
 	dna-echo -m "Now that you know how XMPP works, let's get your brand new $project_name server up and running!"
 
@@ -801,13 +802,9 @@ aenigma-set_secondary_node_hostname() {
 
 aenigma-provision_nginx() {
 
-	############################################################################
-
 	dna-get_hostname
 
-	############################################################################
-
-	### Stop SSLH to avoid any conflicts with a brand new nginx installation
+	### stop sslh to avoid any conflicts with a brand new nginx installation.
 
 	if systemctl is-active --quiet sslh
 	then
@@ -820,26 +817,18 @@ aenigma-provision_nginx() {
 
 	fi
 
-	############################################################################
-	############################################################################
-
-	### Install nginx and configure ejabberd admin panel reverse proxy site.
-
-	### Here we use the distro provided nginx as the nginx.org repo
-	### does not have nginx-common required for libnginx-mod-http-perl.
+	### install nginx and configure ejabberd admin panel reverse proxy site.
+	### here we use the distro provided nginx as the nginx.org repo does not
+	### have nginx-common required for libnginx-mod-http-perl.
 
 	dna-install_dependencies -p "nginx-common nginx libnginx-mod-http-perl"
 
-	############################################################################
-
-	### Increase names_hash_bucket_size to 128 in nginx config
-	### as the .onion hostname is really long should it be later provisioned.
+	### increase names_hash_bucket_size to 128 in nginx config as the .onion
+	### hostname is really long should it be later provisioned.
 
 	dna-nginx_increase_names_hash_bucket_size_128
 
-	############################################################################
-
-	### Remove default nginx stuff
+	### remove default nginx stuff.
 
 	if [ -d "/etc/nginx/sites-enabled/" ]
 	then
@@ -851,10 +840,8 @@ aenigma-provision_nginx() {
 		rm "/etc/nginx/conf.d/default.conf"
 	fi
 
-	############################################################################
-
-	### Install perl and upload module.
-	### https://github.com/weiss/ngx_http_upload
+	### install perl and upload module.
+	### https://github.com/weiss/ngx_http_upload.
 
 	mkdir -p "/usr/local/lib/perl"
 	wget -O "/usr/local/lib/perl/upload.pm" "https://git.io/fNZgL"
@@ -866,7 +853,7 @@ aenigma-provision_nginx() {
 
 	dna-get_distro_name
 
-	### If this is debian manually load perl module #ephemeral
+	### if this is debian manually load perl module. ## vestigial
 
 #	if [ "${distro_name}" = "debian" ]
 #	then
@@ -887,9 +874,7 @@ aenigma-provision_nginx() {
 
     fi
 
-	############################################################################
-
-	### Create web locations and populate them.
+	### create web locations and populate them.
 
 	mkdir -p "/var/www/${project_name}/"
 	chown -R "www-data:www-data" "/var/www/${project_name}/"
@@ -899,17 +884,15 @@ aenigma-provision_nginx() {
 
 	cp "${source_dir}/conf/web/global/index.html" "/var/www/${project_name}/"
 
-	############################################################################
-
-	### Create and configure the $domain website.
+	### create and configure the $domain website.
 
 	cp "${source_dir}/conf/nginx/domain" "/etc/nginx/conf.d/${domain}.conf"
 
 	sed -i "s/hostname.xyz/${hostname}/g" "/etc/nginx/conf.d/${domain}.conf"
 	sed -i "s/domain.xyz/${domain}/g" "/etc/nginx/conf.d/${domain}.conf"
 
-	### Delete default_server setting in $domain nginx conf file in case .onion
-	### nginx conf is present and already has default_server setting itslef
+	### delete default_server setting in $domain nginx conf file in case .onion
+	### nginx conf is present and already has default_server setting itslef.
 
 	if [ -f "/etc/nginx/conf.d/onion.conf" ]
 	then
@@ -926,7 +909,7 @@ aenigma-provision_nginx() {
 	if [ ! "${cluster_mode-null}" = "secondary" ]
 	then
 
-		### Generate a random external_secret for the nginx ejabberd uploads
+		### generate a random external_secret for the nginx ejabberd uploads.
 
 		if [ -z "${nginx_ejabberd_uploads_external_secret-}" ]
 		then
@@ -939,9 +922,7 @@ aenigma-provision_nginx() {
 
 	sed -i "s|it-is-secret|${nginx_ejabberd_uploads_external_secret}|g" "/usr/local/lib/perl/upload.pm"
 
-	############################################################################
-
-	### Create and configure the websites for any and every $additional_domain.
+	### create and configure the websites for any and every $additional_domain.
 
 	if [ ! "${additional_domains-null}" = "none" ]
 	then
@@ -961,9 +942,7 @@ aenigma-provision_nginx() {
 
 	fi
 
-	############################################################################
-
-	### Start sslh back up if it's already installed
+	### start sslh back up if it's already installed.
 
 	dna-echo_operation -h "starting SSLH back up"
 
@@ -976,15 +955,13 @@ aenigma-provision_nginx() {
 
 	dna-echo_operation -t
 
-	### Start nginx back up
+	### start nginx back up.
 
 	dna-echo_operation -h "starting NGINX back up"
 
 	service nginx restart || true
 
 	dna-echo_operation -t
-
-	############################################################################
 
 }
 
