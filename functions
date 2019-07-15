@@ -992,7 +992,7 @@ aenigma-install_sslh() {
 
 	dna-install_sslh
 
-	### Customize config file for aenigma
+	### customize config file for aenigma
 
 	dna-echo_operation -h "customizing SSLH config for ${project_name}"
 
@@ -1035,11 +1035,11 @@ aenigma-install_sslh() {
 
 aenigma-restart_ejabberd_if_running() {
 
-	############################################################################
+	### ########################################################################
 
-	### Restart ejabberd if it's already installed and running
+	### restart ejabberd if it's already installed and running.
 
-	############################################################################
+	### ########################################################################
 
 	dna-get_hostname
 
@@ -1082,17 +1082,15 @@ aenigma-restart_ejabberd_if_running() {
 
 	fi
 
-	############################################################################
-
 }
 
 aenigma-start_ejabberd() {
 
-	############################################################################
+	### ########################################################################
 
-	### Start ejabberd if it's already installed
+	### start ejabberd if it's already installed.
 
-	############################################################################
+	### ########################################################################
 
 	dna-get_hostname
 
@@ -1130,11 +1128,11 @@ aenigma-start_ejabberd() {
 
 aenigma-stop_ejabberd() {
 
-	############################################################################
+	### ########################################################################
 
-	### Stop ejabberd if it's already installed and running
+	### stop ejabberd if it's already installed and running.
 
-	############################################################################
+	### ########################################################################
 
 	dna-get_hostname
 
@@ -1171,11 +1169,11 @@ aenigma-stop_ejabberd() {
 
 aenigma-start_patroni() {
 
-	############################################################################
+	### ########################################################################
 
-	### Start patroni if it's already installed
+	### start patroni if it's already installed.
 
-	############################################################################
+	### ########################################################################
 
 	dna-get_hostname
 
@@ -1201,11 +1199,11 @@ aenigma-start_patroni() {
 
 aenigma-stop_patroni() {
 
-	############################################################################
+	### ########################################################################
 
-	### Stop patroni if it's already installed and running
+	### stop patroni if it's already installed and running.
 
-	############################################################################
+	### ########################################################################
 
 	dna-get_hostname
 
@@ -1240,34 +1238,37 @@ aenigma-stop_patroni() {
 
 }
 
-aenigma-stop_ejabberd_patroni() {
+aenigma-stop_ejabberd_patroni_clusterwide() {
 
-	############################################################################
-	############################################################################
+	### ########################################################################
 
-	### Stop ejabberd and subsequently patroni on all nodes of the cluster
-	### if they're already installed and running
+	### stop ejabberd and subsequently patroni on all nodes of the cluster
+	### if they're already installed and running.
 
-	############################################################################
-	############################################################################
+	### ########################################################################
 
-	### ejabberd
+	### ejabberd.
 
-	############################################################################
+	### ########################################################################
 
-	### Stop ejabberd locally
+	#### stop ejabberd locally.
 
 	aenigma-stop_ejabberd
 
-	############################################################################
+	#### stop ejabberd on secondary nodes.
 
-	### Stop ejabberd on secondary nodes
+	##### aenigma-exec block
+
+	##### ######################################################################
+
+	## >>> get online nodes.
 
 	aenigma-get_nodes_online
 
-	aenigma-exec() {
+	## >>> define the commands that will be passed to the aenigma-exec script
+	## >>> on the remote machine to be run, one per line between the quotes.
 
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+	aenigma-exec() {
 
 		bash openspace42/aenigma/tools/aenigma-exec -c "
 aenigma-stop_ejabberd
@@ -1275,14 +1276,20 @@ aenigma-stop_ejabberd
 
 	}
 
-	############################################################################
+	## >>> connect to every online node and perform operations remotely.
 
 	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 	do
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+
+		## >>>> ensure we don't try connecting to ourselves [therefore ignore
+		## >>>> the first line of nodes_db_ipv4].
+
 		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
 		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+
+			## >>>> ssh into the secondary node, declare the aenigma-exec
+			## >>>> function, and run it inside of the subshell.
+
 			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 . /root/openspace42/aenigma/functions
@@ -1292,31 +1299,41 @@ dna-read_conf_settings
 aenigma-exec
 exit
 END
+
 		fi
+
 		echo
+
 	done
+
 	unset online_node_ipv4
 
-	############################################################################
-	############################################################################
+	##### ######################################################################
 
-	### patroni
+	### ########################################################################
 
-	############################################################################
+	### patroni.
 
-	### Stop ejabberd locally
+	### ########################################################################
+
+	#### stop patroni locally.
 
 	aenigma-stop_patroni
 
-	############################################################################
+	#### stop patroni on secondary nodes.
 
-	### Stop patroni on secondary nodes
+	##### aenigma-exec block
+
+	##### ######################################################################
+
+	## >>> get online nodes.
 
 	aenigma-get_nodes_online
 
-	aenigma-exec() {
+	## >>> define the commands that will be passed to the aenigma-exec script
+	## >>> on the remote machine to be run, one per line between the quotes.
 
-		### Define the commands that will be passed to the aenigma-exec script on the remote machine to be run, one per line between the quotes.
+	aenigma-exec() {
 
 		bash openspace42/aenigma/tools/aenigma-exec -c "
 aenigma-stop_patroni
@@ -1324,14 +1341,20 @@ aenigma-stop_patroni
 
 	}
 
-	############################################################################
+	## >>> connect to every online node and perform operations remotely.
 
 	for online_node_ipv4 in $(cat < "${nodes_db_online_path}")
 	do
-		### Ensure we don't try connecting to ourselves [therefore ignore the first line of nodes_db_ipv4].
+
+		## >>>> ensure we don't try connecting to ourselves [therefore ignore
+		## >>>> the first line of nodes_db_ipv4].
+
 		if [ ! "${online_node_ipv4}" = "${public_ipv4}" ]
 		then
-			### SSH into the secondary node, declare the aenigma-exec function, and run it inside of the subshell.
+
+			## >>>> ssh into the secondary node, declare the aenigma-exec
+			## >>>> function, and run it inside of the subshell.
+
 			ssh -tt -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${online_node_ipv4}" "$(declare -f aenigma-exec); export -f aenigma-exec; exec bash -li" <<END
 set -eu
 . /root/openspace42/aenigma/functions
@@ -1341,38 +1364,40 @@ dna-read_conf_settings
 aenigma-exec
 exit
 END
+
 		fi
+
 		echo
+
 	done
+
 	unset online_node_ipv4
 
-	############################################################################
-	############################################################################
+	##### ######################################################################
+
+	### ########################################################################
 
 }
 
 aenigma-add_ejabberd_repo() {
 
-	############################################################################
-
-	### Install dependencies
+	### install dependencies.
 
 	dna-install_wget
 
-	############################################################################
-
-	### Add repo
+	### add repo.
 
 	dna-check_dpkg_availability
 	dna-install_dependencies -p "apt-transport-https"
 
-	### Add the apt.jabber.at repo
+	### add the apt.jabber.at repo.
 
 	dna-get_distro_codename
 
 	echo "deb https://apt.jabber.at ${distro_codename} ejabberd" > "/etc/apt/sources.list.d/jabber.at.list"
 
-	### Pin this repo at max priority in Debian in case testing/unstable repos are enabled
+	### pin this repo at max priority in Debian in case testing/unstable repos
+	### are enabled.
 
 	dna-get_distro_name
 
@@ -1391,15 +1416,13 @@ EOF
 		fi
 	fi
 
-	### Add key
+	### add key.
 
 	if ! apt-key list 2> /dev/null | grep "jabber.at" &> /dev/null
 	then
 		wget -qO- https://apt.jabber.at/gpg-key | apt-key add -
 		apt-get update
 	fi
-
-	############################################################################
 
 }
 
@@ -1415,8 +1438,6 @@ aenigma-get_ejabberd_installed_version() {
 }
 
 aenigma-install_ejabberd_config() {
-
-	############################################################################
 
 	dna-echo -m "Now creating ejabberd directory and setting custom aenigma config..."
 
@@ -1446,13 +1467,9 @@ aenigma-install_ejabberd_config() {
 	curl "https://raw.githubusercontent.com/processone/ejabberd/master/tools/captcha.sh" > "/opt/ejabberd/captcha.sh"
 	echo
 
-	############################################################################
-
 	### set permissions.
 
 	aenigma-set_permissions
-
-	############################################################################
 
 	dna-echo -s "Finished creating ejabberd directory and setting custom aenigma config."
 
@@ -1460,15 +1477,15 @@ aenigma-install_ejabberd_config() {
 
 aenigma-set_permissions() {
 
+	### ########################################################################
+
 	### set permissions globally.
 
-	############################################################################
+	### ########################################################################
 
 	dna-echo_operation -h "setting permissions"
 
-	############################################################################
-
-	### Create the aenigma group if it doesn't exist
+	### create the aenigma group if it doesn't exist.
 
 	if ! grep -q "aenigma" "/etc/group"
 	then
@@ -1476,10 +1493,7 @@ aenigma-set_permissions() {
 		echo
 	fi
 
-	############################################################################
-	############################################################################
-
-	### ~/.ssh/
+	### ~/.ssh/.
 
 	if [ -d "/root/.ssh/" ]
 	then
@@ -1492,28 +1506,25 @@ aenigma-set_permissions() {
 		chmod 600 "/root/.ssh/authorized_keys"
 	fi
 
-	############################################################################
-	############################################################################
+	### ejabberd.
 
-	### ejabberd
+	### ########################################################################
 
-	############################################################################
-
-	### /opt/ejabberd/
+	#### /opt/ejabberd/.
 
 	if id "ejabberd" &> /dev/null && [ -d "/opt/ejabberd/" ]
 	then
 		chown -R "ejabberd:ejabberd" "/opt/ejabberd/"
 	fi
 
-	### /opt/ejabberd/.erlang.cookie
+	#### /opt/ejabberd/.erlang.cookie.
 
 	if id "ejabberd" &> /dev/null && [ -f "/opt/ejabberd/.erlang.cookie" ]
 	then
 		chown "ejabberd:ejabberd" "/opt/ejabberd/.erlang.cookie"
 	fi
 
-	### /opt/ejabberd/captcha.sh
+	#### /opt/ejabberd/captcha.sh.
 
 	if [ -f "/opt/ejabberd/captcha.sh" ]
 	then
@@ -1522,12 +1533,10 @@ aenigma-set_permissions() {
 
 	fi
 
-	############################################################################
-	############################################################################
+	### ########################################################################
 
-	### $tls_project_dir
-
-	### Assign new permissions to tls_project_dir so that postgresql and etcd
+	### $tls_project_dir.
+	### assign new permissions to tls_project_dir so that postgresql and etcd
 	### too can read from it, if ejabberd doesn't exist yet at least set group.
 
 	if id "ejabberd" >/dev/null 2>&1
@@ -1539,10 +1548,7 @@ aenigma-set_permissions() {
 
 	chmod -R 770 "${tls_project_dir}"
 
-	############################################################################
-	############################################################################
-
-	### /data/
+	### /data/.
 
 	mkdir -p "/data/"
 
@@ -1552,9 +1558,6 @@ aenigma-set_permissions() {
 	fi
 
 	chmod -R 700 "/data/"
-
-	############################################################################
-	############################################################################
 
 	dna-echo_operation -t
 
@@ -1579,11 +1582,15 @@ aenigma-create_ejabberd_locations() {
 
 aenigma-verify_ejabberd_deb_package() {
 
-	############################################################################
+	### ########################################################################
 
 	### https://www.process-one.net/index.php/docs/verifying_process_one_downloads_integrity/
 
-	############################################################################
+	### ########################################################################
+
+	### evaluate arguments.
+
+	### ########################################################################
 
 	unset check_silently
 
@@ -1599,7 +1606,7 @@ aenigma-verify_ejabberd_deb_package() {
     done
     OPTIND=1
 
-	############################################################################
+	### ########################################################################
 
 	dna-install_dependencies -p "gnupg"
 
@@ -1643,7 +1650,7 @@ aenigma-verify_ejabberd_deb_package() {
 		echo
 	fi
 
-	### gpg
+	### gpg.
 
 	if gpg --verify "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb.asc"
 	then
@@ -1675,26 +1682,23 @@ aenigma-verify_ejabberd_deb_package() {
 		echo
 	fi
 
-	############################################################################
-	############################################################################
-
 }
 
 aenigma-install_ejabberd_deb() {
 
-	############################################################################
+	### ########################################################################
 
 	### https://computingforgeeks.com/how-to-install-ejabberd-xmpp-server-on-ubuntu-18-04-ubuntu-16-04/
 
-	############################################################################
+	### ########################################################################
 
 	dna-echo_operation -h "installing ejabberd"
 
-	### Ensure DPKG is available before proceeding.
+	### ensure dpkg is available before proceeding.
 
 	dna-check_dpkg_availability
 
-	### Download .deb package
+	### download .deb package.
 
 	if [ -f "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb" ]
 	then
@@ -1723,11 +1727,11 @@ aenigma-install_ejabberd_deb() {
 	if [ "${ejabberd_deb_file_download_needed-null}" = "y" ]
 	then
 
-		### Download .deb package file
+		### download .deb package file.
 
 		wget -O "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb" "https://www.process-one.net/downloads/downloads-action.php?file=/ejabberd/${hardcoded_package_version_ejabberd}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb"
 
-		### Verify .deb package file
+		### verify .deb package file.
 
 		if ! aenigma-verify_ejabberd_deb_package
 		then
@@ -1750,13 +1754,13 @@ aenigma-install_ejabberd_deb() {
 
 	fi
 
-	### Install .deb package
+	### install .deb package.
 
 	dpkg -i "${tmp_project_dir}/ejabberd_${hardcoded_package_version_ejabberd_extended}_amd64.deb" || true
 
 	echo
 
-	### Link binaries
+	### link binaries.
 
 	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberdctl" "/usr/sbin/"
 	sed -i "s|^ROOT_DIR.*|ROOT_DIR=\"/opt/ejabberd-${hardcoded_package_version_ejabberd}/\"|g" "/usr/sbin/ejabberdctl"
@@ -1771,7 +1775,9 @@ aenigma-install_ejabberd_deb() {
 
 aenigma-localize_ejabberd_install() {
 
-	############################################################################
+	### evaluate arguments.
+
+	### ########################################################################
 
 	while getopts ":s" arguments
 	do
@@ -1785,13 +1791,11 @@ aenigma-localize_ejabberd_install() {
     done
     OPTIND=1
 
-	############################################################################
+	### ########################################################################
 
 	dna-get_hostname
 
-	############################################################################
-
-	### Stop ejabberd if it's already installed and running
+	### stop ejabberd if it's already installed and running.
 
 	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
 	then
@@ -1800,9 +1804,11 @@ aenigma-localize_ejabberd_install() {
 
 	fi
 
-	### Perform customizations on the ejabberd config files.
+	### perform customizations on the ejabberd config files.
 
-	#### ejabberd.yml
+	### ########################################################################
+
+	#### ejabberd.yml.
 
 	if [ ! "${additional_domains-null}" = "none" ]
 	then
@@ -1837,22 +1843,24 @@ aenigma-localize_ejabberd_install() {
 
 	sed -i "s/ejabberd-psql-user-password-var/${patroni_ejabberd_password}/g" "/opt/ejabberd/conf/ejabberd.yml"
 
-	#### ejabberdctl.cfg
+	#### ejabberdctl.cfg.
 
 	sed -i "/INET_DIST_INTERFACE=/c\INET_DIST_INTERFACE=${public_ipv4}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
 	sed -i "/# ERLANG_NODE/d" "/opt/ejabberd/conf/ejabberdctl.cfg"
 	sed -i "/ERLANG_NODE=/c\ERLANG_NODE=ejabberd@${hostname}" "/opt/ejabberd/conf/ejabberdctl.cfg"
 
-	### set permissions now that user ejabberd exists
-	### while ejabberd has still not started yet
+	### ########################################################################
+
+	### set permissions now that user ejabberd exists while ejabberd has still
+	### not started yet.
 
 	aenigma-set_permissions
 
 	if [ -z "${skip_ejabberd_stop_start_operations-}" ]
 	then
 
-		### Finally start ejabberd
+		### finally start ejabberd.
 
 		aenigma-start_ejabberd
 
@@ -1871,7 +1879,7 @@ aenigma-enable_ejabberd() {
 
 	dna-echo_operation -h "enabling ejabberd"
 
-	### Install service.
+	### install service.
 
 	dna-install_dependencies -p "mlocate"
 
@@ -1879,12 +1887,12 @@ aenigma-enable_ejabberd() {
 
 	cp "/opt/ejabberd-${hardcoded_package_version_ejabberd}/bin/ejabberd.service" "/etc/systemd/system"
 
-	### Reduce timeout to 60 seconds to avoid waiting for a failed ejabberd
+	### reduce timeout to 60 seconds to avoid waiting for a failed ejabberd
 	### startup for no reason.
 
 	sed -i "s|TimeoutSec=300|TimeoutSec=60|g" "/etc/systemd/system/ejabberd.service"
 
-	### Enable service.
+	### enable service.
 
 	systemctl daemon-reload
 	systemctl enable --now ejabberd || true
@@ -1921,7 +1929,7 @@ aenigma-create_domains_db() {
 
 aenigma-create_nodes_db_numbered() {
 
-	### Create a node-numbered version of "nodes_db"
+	### create a node-numbered version of "nodes_db".
 
 	if [ -f "${nodes_db_numbered_path}" ]
 	then
@@ -1932,12 +1940,14 @@ aenigma-create_nodes_db_numbered() {
 	array_iter=1
 	IFS=$'\n'
 	set -f
+
 	for node_ipv4 in $(cat < "${nodes_db_ipv4_path}")
 	do
 		array_iter_padded="$(echo ${array_iter} | xargs printf %02d)"
 		echo -e "${node_ipv4}\tae${array_iter_padded}.${domain}" >> "${nodes_db_numbered_path}"
 		array_iter=$((array_iter + 1))
 	done
+
 	unset node_ipv4
 	IFS=$' \t\n'
 	set +f
@@ -1952,7 +1962,7 @@ aenigma-create_nodes_db_initial() {
 
 aenigma-compare_nodes_db_initial() {
 
-	if diff "${nodes_db_numbered_path}" "${nodes_db_initial_path}" > /dev/null
+	if diff "${nodes_db_numbered_path}" "${nodes_db_initial_path}" > "/dev/null"
 	then
 	    export nodes_db_initial_diff="same"
 	else
@@ -1969,27 +1979,33 @@ aenigma-initialize_nodes_db_files() {
 
 	dna-check_ipv6_connectivity -s
 
-	### IPv4
+	### ipv4.
 
 	touch "${nodes_db_ipv4_path}"
 
 	if [ -s "${nodes_db_ipv4_path}" ]
 	then
-		### File is not empty, alter first line.
+
+		### file is not empty, alter first line.
+
 		sed -i "1s/.*/${public_ipv4}/" "${nodes_db_ipv4_path}"
+
 	else
-		### File is empty, write to it.
+
+		### file is empty, write to it.
+
 		echo "${public_ipv4}" > "${nodes_db_ipv4_path}"
+
 	fi
 
-	### IPv6
+	### ipv6
 
 	touch "${nodes_db_ipv6_path}"
 
 	if [ -s "${nodes_db_ipv6_path}" ]
 	then
 
-		### File is not empty, alter first line.
+		### file is not empty, alter first line.
 
 		if [ "${ipv6_available}" = "y" ]
 		then
@@ -2000,7 +2016,7 @@ aenigma-initialize_nodes_db_files() {
 
 	else
 
-		### File is empty, write to it.
+		### file is empty, write to it.
 
 		if [ "${ipv6_available}" = "y" ]
 		then
@@ -2023,21 +2039,23 @@ aenigma-get_ejabberd_cluster_size() {
 
 aenigma-wipe_old_ufw_cluster_rules() {
 
-	### Remove any and all UFW rules related to old cluster nodes
+	### ########################################################################
 
-	############################################################################
+	### remove any and all ufw rules related to old cluster nodes.
 
-	### Only do this check if ufw has actually been initialized
+	### ########################################################################
+
+	### only do this check if ufw has actually been initialized.
 
 	if systemctl is-active --quiet ufw
 	then
 
-		### Get "ufw allow from x.x.x.x" rules previously set by us
+		### get "ufw allow from x.x.x.x" rules previously set by us.
 
 		ufw show added | grep "ufw allow from" | grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' > "${tmp_dir}/ufw_previous_cluster_rules" || true
 
-		### Check every item from previous command output to see if those IPv4s
-		### are still part of the cluster and if not remove those rules
+		### check every item from previous command output to see if those ipv4s
+		### are still part of the cluster and if not remove those rules.
 
 		while read line
 		do
@@ -2068,11 +2086,11 @@ aenigma-wipe_old_ufw_cluster_rules() {
 
 aenigma-update_routing_info() {
 
-	### Wipe any old cluster-related UFW rule
+	### wipe any old cluster-related ufw rule.
 
 	aenigma-wipe_old_ufw_cluster_rules
 
-	### Set UFW rules on this node according to the updated nodes_db
+	### set ufw rules on this node according to the updated nodes_db.
 
 	array_iter=1
 	IFS=$'\n'
@@ -2087,38 +2105,40 @@ aenigma-update_routing_info() {
 	set +f
 	echo
 
-	### Import nodes_db to /etc/hosts to provide ejabberd with a locally resolved list of nodes to cluster with
+	### import nodes_db to /etc/hosts to provide ejabberd with a locally
+	### resolved list of nodes to cluster with.
 
-	if ! grep -q "### aenigma nodes list start" /etc/hosts
+	if ! grep -q "### aenigma nodes list start" "/etc/hosts"
 	then
 		echo >> /etc/hosts
-		echo "### aenigma nodes list start" >> /etc/hosts
+		echo "### aenigma nodes list start" >> "/etc/hosts"
 	fi
 
-	if ! grep -Pzoq '### aenigma nodes list start(?:.*\n)*?\K### aenigma nodes list end' /etc/hosts
+	if ! grep -Pzoq '### aenigma nodes list start(?:.*\n)*?\K### aenigma nodes list end' "/etc/hosts"
 	then
-		echo "### aenigma nodes list end" >> /etc/hosts
+		echo "### aenigma nodes list end" >> "/etc/hosts"
 	fi
 
-	sed -i '/### aenigma nodes list start/,/### aenigma nodes list end/{//!d}' /etc/hosts
-	sed -i "/### aenigma nodes list start/ r ${nodes_db_numbered_path}" /etc/hosts
+	sed -i '/### aenigma nodes list start/,/### aenigma nodes list end/{//!d}' "/etc/hosts"
+	sed -i "/### aenigma nodes list start/ r ${nodes_db_numbered_path}" "/etc/hosts"
 
 }
 
 aenigma-refresh_nodes_db_online() {
 
-	############################################################################
+	### ########################################################################
 
-	### This function will always get invoked at the beginning push_routing_info() in the later event that an existing node cannot be reached at the time of running a new clusterization.
-	### It will create a copy of nodes_db_ipv4 and nodes that appear to be offline will be removed from it, for use by subsequent functions, until the end of the clusterize script.
+	### this function lays out the directory structure for the execution of
+	### get/test_nodes_online functions.
+	### it will create a copy of nodes_db_ipv4 and nodes that appear to be
+	### offline will be removed from it, for use by subsequent functions, until
+	### the end of the clusterize script.
 
-	############################################################################
+	### ########################################################################
 
-	### Touch temp dir
+	### touch temp dir.
 
 	dna-touch_tmp_project_dir
-
-	############################################################################
 
 	if [ -f "${nodes_db_online_path}" ]
 	then
@@ -2126,15 +2146,13 @@ aenigma-refresh_nodes_db_online() {
 		touch "${nodes_db_online_path}"
 	fi
 
-	############################################################################
-
 	cp "${nodes_db_ipv4_path}" "${nodes_db_online_path}"
-
-	############################################################################
 
 }
 
 aenigma-get_nodes_online() {
+
+	### ########################################################################
 
 	### generate a list of online nodes by opening SSH sessions to other nodes.
 	### if any nodes are offline, remove them from nodes_db_online.
@@ -2144,6 +2162,8 @@ aenigma-get_nodes_online() {
 	### installation, without in any way affecting nodes_db permanently,
 	### and is mostly intented to be non-interactive, as opposed to
 	### get_nodes_onlines.
+
+	### ########################################################################
 
 	aenigma-refresh_nodes_db_online
 
@@ -2205,11 +2225,15 @@ aenigma-get_nodes_online() {
 
 aenigma-test_nodes_online() {
 
+	### ########################################################################
+
 	### check to see if any existing secondary nodes are offline, and, if so,
 	### prompt to remove them from nodes_db_online.
 	### this is meant as a specifically interactive and user-called function
 	### to perform one-time cluster node removal operations, as opposed to
 	### get_nodes_online.
+
+	### ########################################################################
 
 	### evaluate arguments.
 
@@ -2655,11 +2679,9 @@ END
 
 aenigma-create_push_certs() {
 
-	############################################################################
-
 	### evaluate arguments.
 
-	############################################################################
+	### ########################################################################
 
 	while getopts ":e" arguments
 	do
@@ -2673,8 +2695,7 @@ aenigma-create_push_certs() {
 	done
 	OPTIND=1
 
-	############################################################################
-	############################################################################
+	### ########################################################################
 
 	### ensure that this is the primary node in the event that cluster
 	### is enabled.
@@ -3252,7 +3273,7 @@ aenigma-install_etcd_cluster() {
 
 		### Stop ejabberd and patroni cluster-wide
 
-		aenigma-stop_ejabberd_patroni
+		aenigma-stop_ejabberd_patroni_clusterwide
 
 		########################################################################
 
