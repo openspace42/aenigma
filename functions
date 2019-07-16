@@ -385,11 +385,15 @@ synthia-backup_generate_additional_paths() {
 
 	### ########################################################################
 
+	### create paths
+
+	dna-backup_generate_additional_paths_dirs
+
+	### ########################################################################
+
 	#### postgresql dump.
 
-	mkdir -p "${tmp_project_dir}/pgdump"
-
-	pg_dump --dbname="postgresql://ejabberd:${patroni_ejabberd_password}@${public_ipv4}:5432/ejabberd" > "${tmp_project_dir}/pgdump/ejabberd.pgsql"
+	pg_dump --dbname="postgresql://ejabberd:${patroni_ejabberd_password}@${public_ipv4}:5432/ejabberd" > "${tmp_project_backup_dir}/pgdump/ejabberd.pgsql"
 
 	### ########################################################################
 
