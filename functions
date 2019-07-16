@@ -99,9 +99,13 @@ synthia-define_vars() {
 
 	### ########################################################################
 
-	#### set default backup paths [absolute, space separated].
+	#### set default backup paths.
+	### [absolute, mark whether existing or generated].
 
-	export backup_paths_default="/var/www/uploads ${tmp_project_dir}/pgdump/"
+	declare -gA backup_paths_default_array=(
+			[/var/www/upload]="existing"
+			[/pgdump]="generated"
+		)
 
 	### ########################################################################
 
@@ -348,7 +352,7 @@ synthia-calculate_backup_size() {
 
 	### calculate backup_paths size.
 
-	dna_calculate_backup_paths_size
+	dna-calculate_backup_paths_size
 
 	### ########################################################################
 
