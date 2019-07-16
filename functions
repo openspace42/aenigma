@@ -376,10 +376,10 @@ synthia-calculate_backup_size() {
 
 }
 
-synthia-backup_additional_paths() {
+synthia-backup_generate_additional_paths() {
 
-	### backup any additional custom item by populating their respective
-	### backup_paths.
+	### generate backups for any additional custom item by populating their
+	### respective backup_paths.
 
 	dna-echo_operation -h "backing up any additional custom backup_path"
 
@@ -398,6 +398,10 @@ synthia-backup_additional_paths() {
 synthia-backup_locally() {
 
 	dna-echo_operation -h "backing up locally"
+
+	### generate backups for any additional custom item
+
+	synthia-backup_generate_additional_paths
 
 	### backup backup paths locally.
 
