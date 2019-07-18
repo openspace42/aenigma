@@ -4,6 +4,36 @@ Follow our development updates together with the aenigma community on our chatro
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
+### 2019-07-18 | v0.7.2-beta.1 release
+
+```
+Hi all, aenigma with working backups is almost out, and will ship with what is now synthia v4, with an entirely re-curated codebase
+
+Making every function faster and easier to read, and standardized spacing and commenting. Some DNA functions have been improved, and, most importantly for you guys, every action previously performed by a script like a aenigma-clusterize has now been made into a function of itself that can be ran standalone from aenigma-env
+
+The installer will now handle user denial conditions more gracefully asking them to re-specify parameters rather then exit the script entirely.
+
+Also, side note, a new project was born called nimbo, it will completely automate the installation of a nextcloud server, with dedicated database, redis caching, and one day even clustering capabilities, of course with our stable and now super stable S3 backup/restore capabilities.
+
+A nice addition to your project team, school, or workplace, if you like aenigma and are looking to host your own cloud. If you like the idea, give it a test when the first beta is out.
+
+As always, you can test out this specific beta with:
+
+aenigma-upgrade -dt -pt
+
+or try out the latest bleeding_edge version up to HEAD with:
+
+aenigma-upgrade -db -pb
+
+or simply wait for this stable release to be published - after which you'll be able to upgrade normally with:
+
+aenigma-upgrade
+
+Thanks for following our project and please consider becoming a supporter if you're finding it interesting, useful, or both!
+
+Nz
+```
+
 ### 2019-06-20 | v0.7.1 stable release
 
 ```
