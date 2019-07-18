@@ -62,7 +62,7 @@ Follow our development updates together with the aenigma community on our chatro
 
 If you have an operational aenigma server, definitely subscribe for new release notifications and other important heads-up alerts.
 
-### Latest post: 2019-07-18 | v0.7.2-beta.1 release
+### Latest post: 2019-07-20 | v0.7.2-beta.1 release
 
 ```
 Hi all, aenigma with working backups is almost out, and will ship with what is now synthia v4, with an entirely re-curated codebase
