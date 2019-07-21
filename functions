@@ -49,7 +49,7 @@ synthia-define_vars() {
 	#### this is only the default, which will be suggested to the user during
 	#### install, and it can be overridden.
 
-	export backup_test_restore_mode="enabled"
+	export backup_test_restore_mode_default="enabled"
 
 	#### set this to 'n' if your project stores no data on end users' machines
 	#### that could go lost during a re-install or update.
@@ -111,6 +111,10 @@ synthia-define_vars() {
 	### ########################################################################
 
 }
+
+#### bootstrap functions.
+
+#### ###########################################################################
 
 synthia-define_formatting() {
 
@@ -254,9 +258,9 @@ synthia-source_dna() {
 
 synthia-backup() {
 
-	#### evaluate arguments.
+	### evaluate arguments.
 
-	#### #######################################################################
+	### ########################################################################
 
     while getopts ":lsri" arguments
 	do
@@ -291,7 +295,7 @@ synthia-backup() {
 
 	fi
 
-	#### #######################################################################
+	### ########################################################################
 
 	dna-check_set_lockfile
 
@@ -389,6 +393,10 @@ synthia-backup_generate_additional_paths() {
 	### create paths
 
 	dna-backup_generate_additional_paths_dirs
+
+	### ########################################################################
+
+	### perform backups of every item individually
 
 	### ########################################################################
 
