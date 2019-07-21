@@ -570,7 +570,7 @@ dna-echo -m "You can now return to your secondary node and finish running the in
 
 check_condition() {
 
-    if secondary_node_token="$(ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" rm /tmp/aenigma_secondary_node_provisioning_complete)" exit &> /dev/null
+    if ssh -p42022 -o "BatchMode=yes" -o "ConnectTimeout=8" -o "LogLevel=ERROR" -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -i "/root/.ssh/aenigma_cluster" "root@${secondary_node_ipv4}" "rm /tmp/aenigma_secondary_node_provisioning_complete" &> /dev/null
     then
         condition_verified=y
     fi
