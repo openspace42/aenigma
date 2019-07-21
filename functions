@@ -5468,6 +5468,10 @@ synthia-perform_installation() {
 
 		aenigma-set_secondary_node_hostname
 
+		#### install duplicity.
+
+		dna-install_duplicity
+
 	fi
 
 	### initiate actual services installation.
