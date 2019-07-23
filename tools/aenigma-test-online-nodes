@@ -1,34 +1,38 @@
 #!/usr/bin/env bash
 
-################################################################################
+### ############################################################################
 
-### Set bash environment error management
+### initialize script with standard synthia bootstrapping block.
 
-set -eu
+### ############################################################################
 
-################################################################################
-
-### Add padding to output
+#### 1 | add padding to output / clear screen.
 
 echo
 
-################################################################################
+#### 2 | locate execution environment and perform synthia-bound operations.
 
-### Determine script execution directory and install directory.
+#### ###########################################################################
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ###### this file is being executed via a symlink.
+    ###### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ###### this file is being directly executed.
+    ###### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -53,82 +57,63 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+##### check for root user runtime.
 
 synthia-check_root
 
-################################################################################
+#### ###########################################################################
 
-### Source dna
+#### 3 | source dna and perform dna-bound operations.
+
+#### ###########################################################################
+
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
-################################################################################
-
-### Read conf settings
+##### read conf settings.
 
 dna-read_conf_settings
 
-################################################################################
-
-### Touch temp dir
+##### touch temp dir.
 
 dna-touch_tmp_project_dir
 
-################################################################################
+#### ###########################################################################
 
-### Head script
+#### 4 | head/log script.
 
-dna-head_script
+dna-log_script
 
-################################################################################
+### ############################################################################
 
-### Ensure cluster is enabled and this is the primary node.
+### evaluate arguments.
 
-if [ "${cluster_enabled}" = "single" ]
-then
-	dna-echo -e "This script is only intended to be executed when running ${project_name} in a cluster of several nodes."
-	dna-exit
-fi
+### ############################################################################
+### ############################################################################
 
-if [ "${cluster_mode-null}" = "secondary" ]
-then
-	dna-echo -e "This script must only be run on the primary node of your ${project_name} instance."
-	dna-exit
-fi
+### actually start script operations.
 
-################################################################################
+### ############################################################################
 
-if [ ! -f "${nodes_db_ipv4_path}" ]
-then
-	dna-echo -e " | ${n-}nodes_db${r-} | file not found."
-	dna-echo -m "Either the initial installation was never completed or the file was somehow removed."
-	dna-echo -m "Re-run the installation to fix this."
-	dna-exit
-fi
+#### perform cluster operations preflight check.
 
-################################################################################
+aenigma-cluster_operations_preflight
 
-aenigma-check_ip_info_current
-
-################################################################################
+### test online nodes.
 
 aenigma-test_nodes_online
+
+### ############################################################################

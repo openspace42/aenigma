@@ -1234,6 +1234,38 @@ aenigma-stop_patroni() {
 
 }
 
+aenigma-cluster_operations_preflight() {
+
+	#### ensure cluster is enabled and this is the primary node.
+
+	if [ "${cluster_enabled}" = "single" ]
+	then
+		dna-echo -e "This script is only intended to be executed when running ${project_name} in a cluster of several nodes."
+		dna-exit
+	fi
+
+	if [ "${cluster_mode-null}" = "secondary" ]
+	then
+		dna-echo -e "This script must only be run on the primary node of your ${project_name} instance."
+		dna-exit
+	fi
+
+	#### ensure the nodes_db file exists.
+
+	if [ ! -f "${nodes_db_ipv4_path}" ]
+	then
+		dna-echo -e " | ${n-}nodes_db${r-} | file not found."
+		dna-echo -m "Either the initial installation was never completed or the file was somehow removed."
+		dna-echo -m "Re-run the installation to fix this."
+		dna-exit
+	fi
+
+	#### ensure ip info is current.
+
+	aenigma-check_ip_info_current
+
+}
+
 aenigma-clusterize() {
 
 	### ########################################################################

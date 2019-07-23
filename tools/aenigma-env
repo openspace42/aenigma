@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-################################################################################
+### ############################################################################
 
 ### initialize script with standard synthia bootstrapping block.
 
 ### ############################################################################
 
-#### 1 | clear screen.
+#### 1 | add padding to output / clear screen.
 
 clear
 
@@ -23,16 +23,16 @@ set -eu
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ## this file is being executed via a symlink.
-    ## therefore identify the parent directory of the target file.
+    ###### this file is being executed via a symlink.
+    ###### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ## this file is being directly executed.
-    ## therefore identify our parent directory.
+    ###### this file is being directly executed.
+    ###### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -110,6 +110,3 @@ fi
 #### ###########################################################################
 
 ### ############################################################################
-
-################################################################################
-################################################################################

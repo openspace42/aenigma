@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-################################################################################
+### ############################################################################
 
 ### initialize script with standard synthia bootstrapping block.
 
@@ -23,16 +23,16 @@ set -eu
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ## this file is being executed via a symlink.
-    ## therefore identify the parent directory of the target file.
+    ###### this file is being executed via a symlink.
+    ###### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ## this file is being directly executed.
-    ## therefore identify our parent directory.
+    ###### this file is being directly executed.
+    ###### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -99,13 +99,9 @@ dna-log_script -h
 
 ### ############################################################################
 
-### actually start script operations.
+### evaluate arguments.
 
 ### ############################################################################
-
-#### evaluate arguments.
-
-#### ###########################################################################
 
 if [ $# -eq 0 ]
 then
@@ -133,9 +129,9 @@ then
     dna-exit
 fi
 
-#### ###########################################################################
+### ############################################################################
 
-#### execute commands.
+### execute commands.
 
 echo "$commands" |
 while IFS= read -r line
@@ -149,6 +145,3 @@ done
 IFS=$' \t\n'
 
 ### ############################################################################
-
-################################################################################
-################################################################################

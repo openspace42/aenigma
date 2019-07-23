@@ -1,34 +1,38 @@
 #!/usr/bin/env bash
 
-################################################################################
+### ############################################################################
 
-### Set bash environment error management
+### initialize script with standard synthia bootstrapping block.
 
-set -eu
+### ############################################################################
 
-################################################################################
-
-### Add padding to output
+#### 1 | add padding to output / clear screen.
 
 echo
 
-################################################################################
+#### 2 | locate execution environment and perform synthia-bound operations.
 
-### Determine script execution directory and install directory.
+#### ###########################################################################
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ###### this file is being executed via a symlink.
+    ###### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ###### this file is being directly executed.
+    ###### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -53,47 +57,51 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
-
-### Check for root user runtime
+##### check for root user runtime.
 
 synthia-check_root
 
-################################################################################
+#### ###########################################################################
 
-### Source dna
+#### 3 | source dna and perform dna-bound operations.
+
+#### ###########################################################################
+
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
-################################################################################
-
-### Read conf settings
+##### read conf settings.
 
 dna-read_conf_settings
 
-################################################################################
+##### touch temp dir.
 
-### Log script
+dna-touch_tmp_project_dir
+
+#### ###########################################################################
+
+#### 4 | head/log script.
 
 dna-log_script
 
-################################################################################
+### ############################################################################
+
+### evaluate arguments.
+
+### ############################################################################
 
 if [[ "${@#--return-check}" = "$@" ]]
 then
@@ -103,7 +111,16 @@ then
     dna-exit
 fi
 
-################################################################################
+
+### ############################################################################
+
+### actually start script operations.
+
+### ############################################################################
+
+#### ensure reference error file exists.
+#### this is the file we monitor for cluster-related errors and trigger the
+#### resync accordingly when necessary.
 
 if [ ! -f "/var/log/ejabberd/error.log" ]
 then
@@ -111,17 +128,16 @@ then
     dna-exit
 fi
 
-### Edit all previous instances of "running_partitioned_network" in the logfile so that we won't generate false positives at this run.
+#### edit all previous instances of "running_partitioned_network" in the logfile
+#### so that we won't generate false positives at this run.
 
 sed -i "s|running_partitioned_network|running-partitioned-network|g" "/var/log/ejabberd/error.log"
 
-################################################################################
-
 schedule_ejabberd_restart() {
 
-    ### A positive result has been found. ejabberd is running in partitioned state.
-
-    ### Define time parameters to schedule an ejabberd reboot in two minutes from now and only once per minute at maximum.
+    ##### a positive result has been found. ejabberd is running in partitioned
+    ##### state. define time parameters to schedule an ejabberd reboot in two
+    ##### minutes frm now and only once per minute at maximum.
 
     nh="$(date +"%H")"
     nm="$(date +"%-M")"
@@ -136,13 +152,13 @@ schedule_ejabberd_restart() {
     if ! $(atq | grep -q $ft)
     then
 
-        ### Send an alert email.
+        ##### send an email alert.
 
         dna-send_mail -s "aenigma: ejabberd cluster partitioned" \
         -b "aenigma has detected that ejabberd is running in a partitioned state. ejabberd has been restarted..." \
         -r "${admin_mail}"
 
-        ### Schedule an ejabberd restart in [0-100] seconds from now.
+        ##### schedule an ejabberd restart in [0-100] seconds from now.
 
         echo "sleep `head /dev/urandom | tr -dc "0123456789" | head -c2` && /usr/sbin/service ejabberd restart" | at $ft
 
@@ -157,3 +173,5 @@ do
     [[ "${LOGLINE}" == *"running_partitioned_network"* ]] && schedule_ejabberd_restart
 
 done
+
+### ############################################################################
