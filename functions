@@ -5010,6 +5010,7 @@ aenigma-set_loglevel_zero_enabled() {
 	### ufw
 
 	ufw logging off
+	echo
 
 	### ########################################################################
 
@@ -5103,6 +5104,7 @@ aenigma-set_loglevel_zero_disabled() {
 	### ufw
 
 	ufw logging low
+	echo
 
 	### ########################################################################
 
