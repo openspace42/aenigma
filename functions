@@ -297,12 +297,12 @@ synthia-backup() {
 
 	### ########################################################################
 
-	dna-check_set_lockfile
+	dna-backup_check_set_lockfile
 
 	if ! dna-backup
 	then
 
-		dna-echo -e "backup subloop function exited with errors."
+		dna-echo -e "backup function exited with errors."
 		dna-echo -m "continuing anyway to perform post-backup operations if any and exit backup function gracefully."
 
 		synthia-backup_post_operations
@@ -428,6 +428,35 @@ synthia-backup_locally() {
 	### ########################################################################
 
 	dna-echo_operation -t
+
+}
+
+synthia-restore() {
+
+	### evaluate arguments.
+
+	### ########################################################################
+
+    while getopts ":lsri" arguments
+	do
+		case $arguments in
+			l)	export backup_locally_only="y"
+				;;
+			\?)	dna-echo -e "Invalid option | ${n-}-${OPTARG}${r-} | for function | ${n-}${FUNCNAME[0]}${r-} |."
+		        dna-exit
+		        ;;
+		esac
+	done
+    OPTIND=1
+
+	### ########################################################################
+
+	if ! dna-backup
+	then
+
+		dna-echo -e "restore function exited with errors."
+
+	fi
 
 }
 
