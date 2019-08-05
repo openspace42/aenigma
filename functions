@@ -104,9 +104,9 @@ synthia-define_vars() {
 	### [absolute, mark whether existing or generated].
 
 	declare -gA backup_paths_default_array=(
-			[/var/www/upload]="existing"
-			[/pgdump]="generated"
-		)
+		[/var/www/upload]="existing"
+		[/pgdump]="generated"
+	)
 
 	### ########################################################################
 
