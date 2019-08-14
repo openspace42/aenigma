@@ -1,0 +1,337 @@
+################################################################################
+################################################################################
+################################################################################
+
+### This is the configuration file for an instance of
+### aenigma: The | state-of-the-art | secure-by-default | one-touch-deployed | XMPP server for everyone.
+### for ejabberd XMPP server v19.08
+
+### aenigma is an openspace project [openspace.xxx]
+### initial commit by Nz on 2017-09-23
+### https://aenigma.xyz | https://github.com/openspace42/aenigma/
+
+################################################################################
+################################################################################
+################################################################################
+
+hosts:
+  - domain.xyz
+
+language: "en"
+
+loglevel: 4
+log_rotate_size: 10485760
+log_rotate_date: ""
+log_rotate_count: 1
+log_rate_limit: 100
+
+certfiles:
+  - /etc/ssl/aenigma/*.pem
+
+define_macro:
+
+  'DHFILE': "/etc/ssl/dhparam.pem"
+  'TLSOPTS':
+    - "no_sslv3"
+    - "no_tlsv1"
+    - "no_tlsv1_1"
+    - "cipher_server_preference"
+    - "no_compression"
+  'S2STLSOPTS':
+    - "no_sslv3"
+    - "cipher_server_preference"
+    - "no_compression"
+
+listen:
+  -
+    port: 5222
+    ip: "::"
+    module: ejabberd_c2s
+    max_stanza_size: 262144
+    shaper: c2s_shaper
+    access: c2s
+    starttls_required: true
+    starttls: true
+    ### dhfile: 'DHFILE'
+    zlib: true
+  -
+    port: 5223
+    ip: "::"
+    module: ejabberd_c2s
+    max_stanza_size: 262144
+    shaper: c2s_shaper
+    access: c2s
+    tls: true
+    ### dhfile: 'DHFILE'
+    zlib: true
+  -
+    port: 5269
+    ip: "::"
+    module: ejabberd_s2s_in
+    max_stanza_size: 524288
+    shaper: s2s_shaper
+  -
+    port: 5443
+    ip: "::"
+    module: ejabberd_http
+    tls: true
+    request_handlers:
+      "/admin": ejabberd_web_admin
+      "/api": mod_http_api
+      "/bosh": mod_bosh
+      "/captcha": ejabberd_captcha
+      "/upload": mod_http_upload
+      "/ws": ejabberd_http_ws
+      "/oauth": ejabberd_oauth
+    http_bind: true
+    ### dhfile: 'DHFILE'
+    ## zlib: true ##re-enable if 1902 supports zlib here
+  -
+    port: 1883
+    ip: "::"
+    module: mod_mqtt
+    backlog: 1000
+
+s2s_use_starttls: required
+### s2s_dhfile: 'DHFILE'
+
+disable_sasl_mechanisms: "digest-md5"
+
+acl:
+  admin:
+    user:
+      - "admin@domain.xyz"
+  local:
+    user_regexp: ""
+  loopback:
+    ip:
+      - 127.0.0.0/8
+      - ::1/128
+
+auth_method: sql
+
+auth_password_format: scram
+
+default_db: sql
+new_sql_schema: true
+sql_type: pgsql
+sql_server: "public_ipv4-var"
+sql_port: 5000
+sql_database: "ejabberd"
+sql_username: "ejabberd"
+sql_password: "ejabberd-psql-user-password-var"
+
+## auth_method: ldap
+## ldap_servers:
+##   - "localhost"
+## ldap_encrypt: none
+## ldap_encrypt: tls
+## ldap_port: 389
+## ldap_port: 636
+## ldap_rootdn: "dc=example,dc=com"
+## ldap_password: "******"
+## ldap_base: "dc=example,dc=com"
+## ldap_uids:
+##   - "mail": "%u@mail.example.org"
+## ldap_filter: "(objectClass=shadowAccount)"
+
+## host_config:
+##   "public.example.org":
+##     auth_method: anonymous
+##     allow_multiple_connections: false
+##     anonymous_protocol: sasl_anon
+
+## host_config:
+##   "public.example.org":
+##     auth_method:
+##       - internal
+##       - anonymous
+
+pgsql_users_number_estimate: true
+
+access_rules:
+  local:
+    allow: local
+  c2s:
+    deny: blocked
+    allow: all
+  announce:
+    allow: admin
+  configure:
+    allow: admin
+  muc_create:
+    allow: local
+  pubsub_createnode:
+    allow: local
+  trusted_network:
+    allow: loopback
+
+api_permissions:
+  "console commands":
+    from:
+      - ejabberd_ctl
+    who: all
+    what: "*"
+  "admin access":
+    who:
+      access:
+        allow:
+          acl: loopback
+          acl: admin
+      oauth:
+        scope: "ejabberd:admin"
+        access:
+          allow:
+            acl: loopback
+            acl: admin
+    what:
+      - "*"
+      - "!stop"
+      - "!start"
+  "public commands":
+    who:
+      ip: 127.0.0.1/8
+    what:
+      - status
+      - connected_users_number
+
+shaper:
+  normal: 1000
+  fast: 50000
+
+shaper_rules:
+  max_user_sessions: 24
+  max_user_offline_messages:
+    16384: admin
+    8192: all
+  c2s_shaper:
+    none: admin
+    normal: all
+  s2s_shaper: fast
+
+max_fsm_queue: 10000
+
+captcha_cmd: /opt/ejabberd/captcha.sh
+captcha_host: 127.0.0.1:5443
+captcha_limit: 5
+
+modules:
+  mod_adhoc: {}
+  mod_admin_extra: {}
+  mod_announce:
+    access: announce
+  mod_avatar: {}
+  mod_blocking: {}
+  mod_bosh: {}
+  mod_caps: {}
+  mod_carboncopy: {}
+  mod_client_state: {}
+  mod_configure: {}
+  mod_disco:
+    server_info:
+      -
+        modules: all
+        name: "abuse-addresses"
+        urls: ["mailto:admin_mail"]
+  mod_fail2ban: {}
+  mod_http_api: {}
+  mod_http_upload:
+    put_url: https://ae.@HOST@/upload
+    max_size: 262144000
+    external_secret: "nginx_ejabberd_uploads_external_secret-var"
+  mod_http_upload_quota:
+    max_days: 3650
+  mod_last: {}
+  mod_mam:
+    db_type: sql
+    assume_mam_usage: true
+    default: always
+    cache_size: 1048576
+    cache_life_time: 2678400
+  mod_mix:
+    host: xm.@HOST@
+  mod_mqtt: {}
+  mod_muc:
+    host: xc.@HOST@
+    access:
+      - allow
+    access_admin:
+      - allow: admin
+    access_create: muc_create
+    access_persistent: muc_create
+    access_mam:
+      - allow
+    history_size: 42
+    default_room_options:
+      mam: true
+      allow_subscription: true
+  mod_muc_admin: {}
+  mod_offline:
+    access_max_user_messages: max_user_offline_messages
+  mod_ping: {}
+  ## mod_pres_counter:
+  ##   count: 5
+  ##   interval: 60
+  mod_privacy: {}
+  mod_private: {}
+  mod_proxy65:
+    host: xr.@HOST@
+  mod_pubsub:
+    host: xp.@HOST@
+    access_createnode: pubsub_createnode
+    ignore_pep_from_offline: false
+    last_item_cache: false
+    max_items_node: 1000
+    default_node_config:
+      max_items: 1000
+    plugins:
+      - flat
+      - hometree
+      - pep
+    force_node_config:
+      storage:bookmarks:
+        access_model: whitelist
+  mod_push:
+    include_sender: true
+    include_body: true
+  mod_push_keepalive: {}
+  mod_register:
+    captcha_protected: true
+    ## password_strength: 32
+    welcome_message:
+      subject: "Hello world"
+      body: |-
+        Hi there!
+        Happy to see you onboard.
+        This is the aenigma ejabberd XMPP server at hostname.xyz.
+        The admin for this instance is admin@domain.xyz.
+        Follow aenigma devs and community at xmpp:aenigma@xc.os.vu.
+        Find us online at: https://aenigma.xyz
+    registration_watchers:
+       - "admin@domain.xyz"
+    access_from: allow
+    access: register
+  mod_roster:
+    versioning: true
+    store_current_id: true
+  mod_s2s_dialback: {}
+  mod_shared_roster: {}
+  mod_stats: {}
+  mod_time: {}
+  mod_stream_mgmt:
+    resend_on_timeout: if_offline
+  mod_vcard:
+    host: xv.@HOST@
+    search: true
+    matches: infinity
+    allow_return_all: true
+  mod_vcard_xupdate: {}
+  mod_version:
+    show_os: false
+
+allow_contrib_modules: true
+
+### Local Variables:
+### mode: yaml
+### End:
+### vim: set filetype=yaml tabstop=8
