@@ -89,10 +89,12 @@ synthia-define_vars() {
 
 	#### hardcode package versions for installation.
 
-	export hardcoded_package_version_ejabberd="19.05"
-	export hardcoded_package_version_ejabberd_extended="19.05-0"
+	export hardcoded_package_version_ejabberd="19.08"
+	export hardcoded_package_version_ejabberd_extended="19.08-0"
 	export hardcoded_package_version_ejabberd_fallback="19.05"
 	export hardcoded_package_version_ejabberd_fallback_extended="19.05-0"
+
+	export hardcoded_package_version_conversejs="v5.0.1"
 
 	### ########################################################################
 
@@ -101,7 +103,7 @@ synthia-define_vars() {
 	### ########################################################################
 
 	#### set default backup paths.
-	### [absolute, mark whether existing or generated].
+	#### [absolute, mark whether existing or generated].
 
 	declare -gA backup_paths_default_array=(
 		[/var/www/upload]="existing"
@@ -4881,7 +4883,7 @@ aenigma-provision_conversejs() {
 
 	git clone https://github.com/conversejs/converse.js "/var/www/${project_name}/xmpp/"
 
-	( cd "/var/www/${project_name}/xmpp/" && git checkout tags/v4.2.0 && make dev && make dist )
+	( cd "/var/www/${project_name}/xmpp/" && git checkout "tags/${hardcoded_package_version_conversejs}" && make dev && make dist )
 
 	echo
 
