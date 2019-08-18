@@ -306,8 +306,10 @@ modules:
         Find us online at: https://aenigma.xyz
     registration_watchers:
        - "admin@domain.xyz"
-    access_from: allow
-    access: register
+    ## aenigma notice: uncomment to only allow registrations from trusted
+    ## networks, even though we and our config do adhere to the spam manifesto.
+    ## https://github.com/ge0rg/jabber-spam-fighting-manifesto
+    ## ip_access: trusted_network
   mod_roster:
     versioning: true
     store_current_id: true
