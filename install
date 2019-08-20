@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
 
-################################################################################
+### ############################################################################
 
-### Set bash environment error management
+### initialize script with standard synthia bootstrapping block.
 
-set -eu
+### ############################################################################
 
-################################################################################
+#### 1 | add padding to output / clear screen.
+
+echo
+
+### ############################################################################
+
+### evaluate arguments.
+
+### ############################################################################
 
 if [ "${custom_output-null}" = "v" ]
 then
-    echo
     echo "Printing verbose output as per | -o v |."
     echo
     set -x
 fi
 
-################################################################################
-
 if [[ "${@#--return-check}" = "$@" ]]
 then
-    echo
     echo "This script must not be run directly."
     echo
     echo "You should instead run the | setup | script and it will take care of the installation itself."
@@ -30,23 +34,35 @@ then
     exit 1
 fi
 
-################################################################################
+### ############################################################################
 
-### Determine script execution directory and install directory.
+### continue script initialization.
+
+### ############################################################################
+
+#### 2 | locate execution environment and perform synthia-bound operations.
+
+#### ###########################################################################
+
+##### set bash environment error management.
+
+set -eu
+
+##### determine script execution directory and install directory.
 
 if [ -L "${BASH_SOURCE}" ]
 then
 
-    ### This file is being executed via a symlink.
-    ### Identify the parent directory of the target file
+    ###### this file is being executed via a symlink.
+    ###### therefore identify the parent directory of the target file.
 
     link_target="$(readlink ${BASH_SOURCE})"
     exec_dir="${link_target%/*}"
 
 else
 
-    ### This file is being directly executed.
-    ### Identify our parent directory.
+    ###### this file is being directly executed.
+    ###### therefore identify our parent directory.
 
     exec_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -71,25 +87,33 @@ else
 	fi
 fi
 
-### Source local functions file.
+##### source local functions file.
 
 . "$exec_dir_root/functions"
 
-################################################################################
-
-### Define formatting
+##### define formatting.
 
 synthia-define_formatting
 
-################################################################################
+##### check for root user runtime.
 
-### Ensure that the dna version required hasn't changed due to a new version of this very project being installed
+synthia-check_root
+
+#### ###########################################################################
+
+#### 3 | source dna and perform dna-bound operations.
+
+#### ###########################################################################
+
+##### ensure that the dna version required hasn't changed due to a new version
+##### of this very project being installed.
 
 if [ -z "${custom_dna_version-}" ]
 then
 
-    ### No custom dna version was requested upon running the setup script
-    ### Let's check if an upgrade to the project itself has changed the required dna version
+    ## no custom dna version was requested upon running the setup script.
+    ## let's check if an upgrade to the project itself has changed the required
+    ## dna version.
 
     dna_selected_vers="$(cat "${os_base_dir}/dna/version_installed")"
 
@@ -107,53 +131,83 @@ then
 
 fi
 
-################################################################################
-
-### Source dna
+##### source dna.
 
 synthia-source_dna
 
-################################################################################
-
-### Define variables
+##### define variables.
 
 synthia-define_vars
 
-################################################################################
+##### read conf settings.
 
-### Check for any already existing installation
+dna-read_conf_settings
+
+##### touch temp dir.
+
+dna-touch_tmp_project_dir
+
+#### ###########################################################################
+
+#### 4 | head/log script.
+
+dna-log_script -i
+
+### ############################################################################
+
+### actually start script operations.
+
+### ############################################################################
+
+#### preflight checks.
+
+#### ###########################################################################
+
+##### check for any already existing installation.
 
 dna-check_install_version
 
-################################################################################
+##### install repo contents into destination dir.
 
-### Install repo contents into destination dir
+dna-echo_operation -h "installing repository contents into destination directory"
 
-dna-echo -m "Now installing repository contents into destination directory."
-
-#### Install rsync if it isn't yet [like in Debian]
+##### install rsync if it isn't yet [like in debian].
 
 if ! dpkg -s rsync &> /dev/null
 then
     dna-install_dependencies -p "rsync"
 fi
 
-#### Proceed with rsync
+##### proceed with rsync.
 
 rsync -aAXx "${source_dir}/" "${install_dir}/" --include=tools*** --include=functions --exclude="*"
 
-dna-echo -m $"${g-}Finished installing repository contents into destination directory."
+dna-echo_operation -t
 
-################################################################################
+#### ###########################################################################
 
-### Head install
+#### proceed with installation.
+
+#### ###########################################################################
+
+##### echo install initialization.
 
 dna-echo -m "Initiating install..."
 
+##### perform installation.
+
 synthia-perform_installation
 
-################################################################################
+#### ###########################################################################
 
-### Mark installer as completed successfully
+#### post-install.
+
+#### ###########################################################################
+
+##### mark installer as completed successfully.
 
 touch "$source_dir/install_complete"
+
+#### ###########################################################################
+
+### ############################################################################
