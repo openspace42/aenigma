@@ -3892,7 +3892,7 @@ aenigma-install_etcd_cluster_conditionally() {
 	if dpkg -s etcd &> /dev/null
 	then
 
-		if etcdctl cluster-health | grep -q "cluster is healthy"
+		if etcdctl cluster-health | grep -q "cluster is healthy" && ! etcdctl cluster-health | grep -q "failed"
 		then
 
 			etcd_cluster_size="$(etcdctl member list | wc -l)"
