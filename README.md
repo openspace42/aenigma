@@ -3,14 +3,20 @@
 ## aenigma is shutting down
 
 Three years ago when I started writing the initial code for aenigma, back when the logo - turns out! - really did look like a swastika [although backwards, which surprisingly means quite the opposite], the world was a really different place. Matrix / [then] Riot.IM was still in very early stages, and the desperate necessity was a decentralized version of signal.
+
 Today things have changed, for the good: Matrix is a very mature platform, they have [announced P2P](https://matrix.org/blog/2020/06/02/introducing-p-2-p-matrix) and plans to shutdown the matrix.org homeserver once we won't need homeservers any longer if not for specific organization setups, [status.im](https://status.im) is progressing, and exciting projects like [Berty](https://berty.tech) are on the rise.
+
 aenigma set out to solve the problem in a world where servers were necessary *and* hard to set up. Now both of those limitations have been figured out, no matter how much the great [but often short-sided in my opinion] people in the ejabberd chatrooms make fun of the matrix-synapse memory usage on a raspberrypi or how much progress we've still got to do to make these projects fully functional for everyone.
+
 I'm especially grateful to all those who believed in the project and - separate category but still - the ejabberd devs who've been extremely helpful and nice over the years helping me figuring things out. The very nice folks who hosted my at CCC 2018 also really helped and made for a very nice experience.
+
 aenigma ultimately was most lilkely used by a dozen people at its peak, and never really became the widespread project I had hoped for, but I really hope it helped those 12 individuals bridge the gap in the wait for the new, more thriving projects listed above. Their vision, architecture, and community are everything I've hoped for the future.
+
 aenigma development will continue almost exclusively in its respect to the underlying synthia+dna framework, for which instead I have big plans for the future, and maybe some bugfixing here and there. Improvements specific to aenigma such as secure tinc-vpn clustering and stuff like that will not be further developed.
 I hope to see you all around at our future hackerspace[s]!
 
 Thanks again to all
+
 Nicolas
 
 ![aenigma logo full](logo/aenigma_logo-full-blue-blue-blck-nobg-4x.png?raw=true)
